@@ -76,6 +76,15 @@ return {
           diagnostics = "nvim_lsp",
           show_close_icon = false,
           separator_style = "slant",
+          offsets = {
+            {
+              filetype = "NvimTree",
+              text = "File Explorer",
+              highlight = "Directory",
+              text_align = "center",
+              separator = true,
+            },
+          },
         },
       })
     end,
