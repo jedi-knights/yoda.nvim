@@ -1,6 +1,17 @@
-# Yoda - A Beginner-Friendly Neovim Distribution
-
-Welcome to **Yoda**, a beginner-focused, modular, and fully documented Neovim distribution designed to guide new users through their journey into the world of Neovim. This project grows alongside its users, aiming to simplify, educate, and empower.
+<table>
+  <tr>
+    <td align="center" width="300">
+      <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
+    </td>
+    <td>
+      <h1>Yoda - A Beginner-Friendly Neovim Distribution</h1>
+      <p>
+        Welcome to <strong>Yoda</strong>, a modular, beginner-focused, and fully documented Neovim distribution
+        designed to guide new users through their journey into the world of Neovim.
+      </p>
+    </td>
+  </tr>
+</table>
 
 ---
 
