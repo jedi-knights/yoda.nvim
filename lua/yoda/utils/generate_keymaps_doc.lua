@@ -6,6 +6,7 @@ local function GenerateKeymapsDoc()
 
   local lines = {}
   table.insert(lines, "# Keymap Cheatsheet\n")
+  table.insert(lines, "")
   table.insert(lines, "| Mode | Key | Action |")
   table.insert(lines, "|:----|:----|:-------|")
 
