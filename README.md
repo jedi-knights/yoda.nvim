@@ -1,19 +1,16 @@
-<table>
-  <tr>
-    <td align="center" width="300">
-      <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
-    </td>
-    <td>
-      <h1>Yoda - A Beginner-Friendly Neovim Distribution</h1>
-      <p>
-        Welcome to <strong>Yoda</strong>, a modular, beginner-focused, and fully documented Neovim distribution
-        designed to guide new users through their journey into the world of Neovim.
-      </p>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
+</p>
+
+<h1 align="center">Yoda - A Beginner-Friendly Neovim Distribution</h1>
+
+<p align="center">
+  Welcome to <strong>Yoda</strong>, a modular, beginner-focused, and fully documented Neovim distribution
+  designed to guide new users through their journey into the world of Neovim.
+</p>
 
 ---
+
 
 ## Table of Contents
 
