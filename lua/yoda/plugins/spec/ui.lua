@@ -11,7 +11,8 @@ return {
   -- File Explorer
   {
     "nvim-tree/nvim-tree.lua",
-    cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+    lazy = false, -- load immediately at startup
+    priority = 50, -- load before Lualine, Bufferline, etc...
     keys = {
       { "<leader>e", "<cmd>NvimTreeToggle<CR>", desc = "Toggle File Explorer" },
     },
@@ -28,6 +29,21 @@ return {
         git = {
           enable = true,
         },
+      })
+
+      local function open_nvim_tree(data)
+        -- data.file is empty if no file passed
+        local no_name = data.file == "" and vim.bo[data.buf].buftype == ""
+        local directory = vim.fn.isdirectory(data.file) == 1
+
+        -- open nvim-tree ONLY if no name file
+        if no_name or directory then
+           require("nvim-tree.api").tree.open()
+        end
+      end
+
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = open_nvim_tree
       })
     end,
   },
