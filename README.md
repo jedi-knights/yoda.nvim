@@ -2,7 +2,7 @@
   <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
 </p>
 
-<h1 align="center">Yoda Neovim Distribution</h1>
+<h1 align="center">Yoda  Neovim Distribution</h1>
 
 <p align="center">
   Welcome to <strong>Yoda</strong>, a modular, beginner-focused, and fully documented Neovim distribution
@@ -86,6 +86,20 @@ nvim
 ```
 
 Upon first launch, `lazy.nvim` will bootstrap the plugin setup automatically.
+
+
+**Optional:**
+
+I have found it helpful to alias `vi` and `vim` to `nvim` as my muscle memory keeps forcing me to enter them on the command line.  If I don't I end up with the old versions and not the brand new hotness.
+
+On MacOS I simply added the following to my `~/.zshrc` file:
+
+```shell
+alias vi=nvim
+alias vim=nvim
+```
+
+Now whether I enter `vi`, `vim`, or `nvim` I still get `neovim`.
 
 ---
 
