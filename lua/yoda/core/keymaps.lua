@@ -1,30 +1,58 @@
 -- lua/yoda/core/keymaps.lua
 
-local map = require("yoda.utils.keymap_tracker").track
-
-
 -- General Keymaps
-map("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer"})
-map("n", "<leader>ff", ":Telescope find_files<CR>", { desc = "Find Files" })
-map("n", "<leader>fg", ":Telescope live_grep<CR>", { desc = "Live Grep" })
-map("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim"}) 
-map("n", "<C-s>", ":w<CR>", { desc = "Save File" })
+--vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
+
+vim.keymap.set("n", "<leader>e", function()
+  local api = require("nvim-tree.api")
+  local view = require("nvim-tree.view")
+
+  if view.is_visible() then
+    -- If you're already in the tree window → go right
+    if vim.api.nvim_get_current_win() == view.get_winnr() then
+      vim.cmd("wincmd l") -- move to the right window (your buffer)
+    else
+      api.tree.focus() -- focus the tree
+    end
+  else
+    api.tree.open() -- Tree isn't open? Open it
+  end
+end, { desc = "Toggle focus between NvimTree and buffer" })
+
+
+vim.keymap.set("n", "<leader>ff", function()
+  require("telescope.builtin").find_files()
+end, { desc = "Find Files" })
+
+vim.keymap.set("n", "<leader>fg", function()
+  require("telescope.builtin").live_grep()
+end, { desc = "Live Grep" })
+
+vim.keymap.set("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim" })
+vim.keymap.set("n", "<C-s>", ":w<CR>", { desc = "Save File" })
 
 -- Better Window Navigation
-map("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
-map("n", "<C-j>", "<C-w>j", { desc = "Move to Lower Window" })
-map("n", "<C-k>", "<C-w>k", { desc = "Move to Upper Window" })
-map("n", "<C-l>", "<C-w>l", { desc = "Move to Right Window" })
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to Lower Window" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to Upper Window" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to Right Window" })
 
 -- Visual Mode Improvements
-map("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
-map("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })
 
 -- Visual Block Mode Improvements
-map("x", "J", ":move '>+1<CR>gv-gv", { desc = "Move Block Down" })
-map("x", "K", ":move '<-2<CR>gv-gv", { desc = "Move Block Up" })
+vim.keymap.set("x", "J", ":move '>+1<CR>gv-gv", { desc = "Move Block Down" })
+vim.keymap.set("x", "K", ":move '<-2<CR>gv-gv", { desc = "Move Block Up" })
 
--- Terminal Mode (optional early setup)
-map("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode" })
+-- Terminal Mode
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode" })
 
+-- Yank the entire buffer to the system clipboard
+vim.keymap.set("n", "<leader>y", ":%y+<CR>", { desc = "Yank entire buffer to system clipboard" })
+
+-- Toggle whether or not dotfiles are visible in the tree
+vim.keymap.set("n", "<leader>.", function()
+  require("nvim-tree.api").tree.toggle_filter("dotfiles")
+end, { desc = "Toggle dotfiles in NvimTree" })
 
