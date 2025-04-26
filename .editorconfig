@@ -1,0 +1,38 @@
+# .editorconfig - Yoda Neovim Distribution
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+indent_style = space
+indent_size = 4
+
+# Markdown files - softer rules (don't strip trailing spaces)
+[*.md]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# Lua files - follow Neovim community conventions
+[*.lua]
+indent_style = space
+indent_size = 2
+
+# JSON files - usually 2 spaces
+[*.json]
+indent_style = space
+indent_size = 2
+
+# YAML files - 2 spaces, very sensitive format
+[*.yml]
+indent_style = space
+indent_size = 2
+
+[*.yaml]
+indent_style = space
+indent_size = 2
+
