@@ -2,7 +2,7 @@
   <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
 </p>
 
-<h1 align="center">Yoda - A Beginner-Friendly Neovim Distribution</h1>
+<h1 align="center">Yoda Neovim Distribution</h1>
 
 <p align="center">
   Welcome to <strong>Yoda</strong>, a modular, beginner-focused, and fully documented Neovim distribution
