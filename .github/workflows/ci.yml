@@ -20,6 +20,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Lua
+        run: |
+          echo "Installing Lua..."
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Install Neovim
+        run: |
+          echo "Installing Neovim..."
+          sudo apt-get install -y neovim
+
       - name: Install stylua
         uses: baptiste0928/cargo-install@v2
         with:
@@ -33,12 +44,20 @@ jobs:
   test-keymaps:
     runs-on: ubuntu-latest
 
-    container:
-      image: ghcr.io/neovim/neovim:stable
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: |
+          echo "Installing Lua..."
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Install Neovim
+        run: |
+          echo "Installing Neovim..."
+          sudo apt-get install -y neovim
 
       - name: Run keymap tests
         run: |
