@@ -9,7 +9,7 @@ on:
       - 'hotfix/**'
     paths:
       - '**.lua'
-      - '.github/workflows/lua-syntax-check.yml'
+      - '.github/workflows/ci.yml'
     workflow_dispatch:
 
 jobs:
