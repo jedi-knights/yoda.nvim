@@ -1,7 +1,9 @@
 -- lua/yoda/core/keymaps.lua
 
 -- General Keymaps
---vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
+
+-- Toggle relative numbers
+vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
 
 vim.keymap.set("n", "<leader>e", function()
   local api = require("nvim-tree.api")
