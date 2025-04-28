@@ -13,9 +13,6 @@ return {
     "nvim-tree/nvim-tree.lua",
     lazy = false, -- load immediately at startup
     priority = 50, -- load before Lualine, Bufferline, etc...
-    keys = {
-      { "<leader>e", "<cmd>NvimTreeToggle<CR>", desc = "Toggle File Explorer" },
-    },
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("nvim-tree").setup({
@@ -76,6 +73,8 @@ return {
           diagnostics = "nvim_lsp",
           show_close_icon = false,
           separator_style = "slant",
+          close_command = "bdelete! %d",
+          right_mouse_command = "bdelete! %d",
           offsets = {
             {
               filetype = "NvimTree",
