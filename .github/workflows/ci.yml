@@ -1,0 +1,66 @@
+# .github/workflows/ci.yml
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+    paths:
+      - '**.lua'
+      - '.github/workflows/ci.yml'
+    workflow_dispatch:
+
+jobs:
+  lint-lua:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: |
+          echo "Installing Lua..."
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Install Neovim
+        run: |
+          echo "Installing Neovim..."
+          sudo apt-get install -y neovim
+
+      - name: Install stylua
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: stylua
+
+      - name: Check Lua formatting and syntax
+        run: |
+          echo "Running stylua to check formatting and syntax..."
+          stylua --check lua/ init.lua
+
+  test-keymaps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: |
+          echo "Installing Lua..."
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Install Neovim
+        run: |
+          echo "Installing Neovim..."
+          sudo apt-get install -y neovim
+
+      - name: Run keymap tests
+        run: |
+          echo "Running keymap tests..."
+          nvim --headless -c "luafile .tests/test_keymaps.lua" -c "quit"
+
