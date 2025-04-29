@@ -62,6 +62,12 @@ return {
     end,
   },
 
+  -- Mini Icons
+  {
+    "echasnovski/mini.nvim",
+    version = false,
+  },
+
   -- Bufferline (tab-like buffer UI)
   {
     "akinsho/bufferline.nvim",
