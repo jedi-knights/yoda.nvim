@@ -10,39 +10,40 @@ return {
 
   -- File Explorer
   {
-    "nvim-tree/nvim-tree.lua",
-    lazy = false, -- load immediately at startup
-    priority = 50, -- load before Lualine, Bufferline, etc...
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require("nvim-tree").setup({
-        view = {
-          width = 30,
-          side = "left",
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    },
+    lazy = false,
+    ---@module "neo-tree"
+    ---@type neotree.Config?
+    opts = {
+      window = {
+        width = 35,
+        mappings = {}, -- (leave your custom mappings here later)
+      },
+      filesystem = {
+        filtered_items = {
+          visible = false, -- show hidden file
+          show_hidden_count = true,
+          hide_dotfiles = true,
+          hide_gitignored = true,
+          hide_by_name = {
+            ".github",
+            ".gitignore",
+            "package-lock.json",
+            ".changeset",
+            ".prettierrc.json",
+            ".DS_Store",
+            "thumbs.db",
+          },
+          never_show = { ".git" },
         },
-        filters = {
-          dotfiles = false,
-        },
-        git = {
-          enable = true,
-        },
-      })
-
-      local function open_nvim_tree(data)
-        -- data.file is empty if no file passed
-        local no_name = data.file == "" and vim.bo[data.buf].buftype == ""
-        local directory = vim.fn.isdirectory(data.file) == 1
-
-        -- open nvim-tree ONLY if no name file
-        if no_name or directory then
-           require("nvim-tree.api").tree.open()
-        end
-      end
-
-      vim.api.nvim_create_autocmd("VimEnter", {
-        callback = open_nvim_tree
-      })
-    end,
+      },
+    },
   },
 
   -- Statusline
@@ -77,7 +78,7 @@ return {
           right_mouse_command = "bdelete! %d",
           offsets = {
             {
-              filetype = "NvimTree",
+              filetype = "neo-tree",
               text = "File Explorer",
               highlight = "Directory",
               text_align = "center",
