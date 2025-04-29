@@ -4,6 +4,16 @@
 
 local M = {}
 
+-- optional: pass in cmp capabilities if needed
+local ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+M.capabilities = function()
+  local base = vim.lsp.protocol.make_client_capabilities()
+  if ok then
+    return cmp_nvim_lsp.default_capabilities(base)
+  end
+  return base
+end
+
 -- Define a general on_attach function
 function M.on_attach(client, bufnr)
   local keymap = vim.keymap.set

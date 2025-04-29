@@ -30,12 +30,23 @@ return {
     "neovim/nvim-lspconfig",
     config = function()
       local lspconfig = require("lspconfig")
+      local lsp = require("yoda.lsp")
 
-      -- Example basic setup for Lua and Python
-      lspconfig.lua_ls.setup({})
-      lspconfig.pyright.setup({})
-      lspconfig.gopls.setup({})
-      lspconfig.tsserver.setup({})
+      -- List of language servers
+      local servers = {
+        lua_ls = require("yoda.lsp.servers.lua_ls"),
+        pyright = require("yoda.lsp.servers.pyright"),
+        gopls = require("yoda.lsp.servers.gopls"),
+        eslint = require("yoda.lsp.servers.eslint"),
+        tsserver = require("yoda.lsp.servers.tsserver"),
+      }
+
+      for name, opts in pairs(servers) do
+        lspconfig[name].setup(vim.tbl_deep_extend("force", {
+          on_attach = lsp.on_attach,
+          capabilities = lsp.capabilities(),
+        }, opts))
+      end
     end,
   },
 
