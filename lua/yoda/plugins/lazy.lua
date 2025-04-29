@@ -21,7 +21,7 @@ vim.opt.rtp:prepend(lazypath)
 -- Load plugins using lazy.nvim
 require("lazy").setup({
   spec = {
-    { import = "yoda.plugins.spec" }, -- Import all plugins defined under plugins/spec/
+    import = "yoda.plugins.spec", -- Import all plugins defined under plugins/spec/
   },
   defaults = {
     lazy = true, -- Lazy-load everything by default

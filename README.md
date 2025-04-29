@@ -57,7 +57,6 @@
 │   │   │   │   ├── treesitter.lua# Treesitter config
 │   │   │   │   ├── git.lua       # Git-related plugins
 │   │   │   │   ├── editing.lua   # UX enhancements (surround, commentary)
-│   │   │   │   └── others.lua    # Misc plugins
 │   │   ├── lsp/
 │   │   │   ├── servers/          # Server-specific configs
 │   │   │   └── init.lua          # General LSP setup (mason, cmp, etc.)

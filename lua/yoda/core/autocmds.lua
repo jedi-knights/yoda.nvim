@@ -3,6 +3,29 @@
 -- Helper function to define autocommands more easily
 local autocmd = vim.api.nvim_create_autocmd
 
+
+-- Polished startup behaivor
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    -- If no file passed (empty buffer)
+    if vim.fn.argc() == 0 then
+      vim.cmd("Neotree show")
+      return
+    end
+
+    -- If passed a directory
+    local arg = vim.fn.argv(0)
+    if arg and vim.fn.isdirectory(arg) == 1 then
+      -- Change to that directory
+      vim.cmd("cd " .. arg)
+      vim.cmd("Neotree show")
+      return
+    end
+
+    -- If passed a file, do nothing (open normally)
+  end,
+})
+
 -- Highlight yanked text briefly
 autocmd("TextYankPost", {
   desc = "Highlight on yank",
