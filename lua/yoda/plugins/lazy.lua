@@ -36,3 +36,4 @@ require("lazy").setup({
     notify = true, -- Get a notification when plugins are updated
   },
 })
+
