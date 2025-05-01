@@ -4,6 +4,7 @@ return {
   -- LSP configuration and installation manager
   {
     "williamboman/mason.nvim",
+    lazy = false,
     build = ":MasonUpdate", -- Update installed servers on install
     config = function()
       require("mason").setup()
@@ -13,13 +14,14 @@ return {
   -- Bridges Mason and lspconfig
   {
     "williamboman/mason-lspconfig.nvim",
+    lazy = false,
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = {
           "lua_ls",   -- Lua
           "pyright",  -- Python
           "gopls",    -- Go
-          "tsserver", -- JavaScript/TypeScript
+          "ts_ls", -- JavaScript/TypeScript
         },
       })
     end,
@@ -28,6 +30,7 @@ return {
   -- Native LSP configuration
   {
     "neovim/nvim-lspconfig",
+    lazy = false,
     config = function()
       local lspconfig = require("lspconfig")
       local lsp = require("yoda.lsp")
@@ -38,7 +41,7 @@ return {
         pyright = require("yoda.lsp.servers.pyright"),
         gopls = require("yoda.lsp.servers.gopls"),
         eslint = require("yoda.lsp.servers.eslint"),
-        tsserver = require("yoda.lsp.servers.tsserver"),
+        ts_ls = require("yoda.lsp.servers.ts_ls"),
       }
 
       for name, opts in pairs(servers) do
