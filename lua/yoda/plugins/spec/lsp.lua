@@ -33,31 +33,23 @@ return {
     lazy = false,
     config = function()
       local lspconfig = require("lspconfig")
+      local lsp = require("yoda.lsp")
 
-      -- Example basic setup for Lua and Python
-      lspconfig.lua_ls.setup({
-        settings = {
-          Lua = {
-            runtime = {
-              version = "LuaJIT", -- Use LuaJIT
-            },
-            diagnostics = {
-              globals = { "vim" }, -- Recognize 'vim' as a global variable
-            },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true), -- Include runtime files
-              checkThirdParty = false, -- Disable third-party checks
-            },
-            telemetry = {
-              enable = false, -- Disable telemetry
-            },
-          },
-        },
-      })
+      -- List of language servers
+      local servers = {
+        lua_ls = require("yoda.lsp.servers.lua_ls"),
+        pyright = require("yoda.lsp.servers.pyright"),
+        gopls = require("yoda.lsp.servers.gopls"),
+        eslint = require("yoda.lsp.servers.eslint"),
+        ts_ls = require("yoda.lsp.servers.ts_ls"),
+      }
 
-      lspconfig.pyright.setup({})
-      lspconfig.gopls.setup({})
-      lspconfig.ts_ls.setup({})
+      for name, opts in pairs(servers) do
+        lspconfig[name].setup(vim.tbl_deep_extend("force", {
+          on_attach = lsp.on_attach,
+          capabilities = lsp.capabilities(),
+        }, opts))
+      end
     end,
   },
 
