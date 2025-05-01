@@ -4,6 +4,7 @@ return {
   -- LSP configuration and installation manager
   {
     "williamboman/mason.nvim",
+    lazy = false,
     build = ":MasonUpdate", -- Update installed servers on install
     config = function()
       require("mason").setup()
@@ -13,13 +14,14 @@ return {
   -- Bridges Mason and lspconfig
   {
     "williamboman/mason-lspconfig.nvim",
+    lazy = false,
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = {
           "lua_ls",   -- Lua
           "pyright",  -- Python
           "gopls",    -- Go
-          "tsserver", -- JavaScript/TypeScript
+          "ts_ls", -- JavaScript/TypeScript
         },
       })
     end,
@@ -28,14 +30,34 @@ return {
   -- Native LSP configuration
   {
     "neovim/nvim-lspconfig",
+    lazy = false,
     config = function()
       local lspconfig = require("lspconfig")
 
       -- Example basic setup for Lua and Python
-      lspconfig.lua_ls.setup({})
+      lspconfig.lua_ls.setup({
+        settings = {
+          Lua = {
+            runtime = {
+              version = "LuaJIT", -- Use LuaJIT
+            },
+            diagnostics = {
+              globals = { "vim" }, -- Recognize 'vim' as a global variable
+            },
+            workspace = {
+              library = vim.api.nvim_get_runtime_file("", true), -- Include runtime files
+              checkThirdParty = false, -- Disable third-party checks
+            },
+            telemetry = {
+              enable = false, -- Disable telemetry
+            },
+          },
+        },
+      })
+
       lspconfig.pyright.setup({})
       lspconfig.gopls.setup({})
-      lspconfig.tsserver.setup({})
+      lspconfig.ts_ls.setup({})
     end,
   },
 
