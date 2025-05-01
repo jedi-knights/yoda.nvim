@@ -23,6 +23,7 @@ return {
     opts = {
       window = {
         width = 35,
+        auto_expand_width = true,
         mappings = {}, -- (leave your custom mappings here later)
       },
       filesystem = {
@@ -60,6 +61,12 @@ return {
         },
       })
     end,
+  },
+
+  -- Mini Icons
+  {
+    "echasnovski/mini.nvim",
+    version = false,
   },
 
   -- Bufferline (tab-like buffer UI)

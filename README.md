@@ -160,6 +160,11 @@ _"Train yourself to let go of everything you fear to lose." — Yoda_
 
 ---
 
+## References
+
+- [Python Setup](https://www.youtube.com/watch?v=IobijoroGE0&t=10s)
+- [Reference Dotfiles](https://github.com/hendrikmi/dotfiles/tree/main/nvim)
+
 # 🚀 Ready to learn Neovim, you are. Let's go!
 
 
