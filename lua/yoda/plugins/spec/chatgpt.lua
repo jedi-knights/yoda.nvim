@@ -149,6 +149,8 @@ return {
         n = 1,
       },
     }
+
+    vim.keymap.set("n", "<leader>cg", "<cmd>ChatGPT<CR>", { desc = "Open ChatGPT" })
   end,
   dependencies = {
     'MunifTanjim/nui.nvim',
