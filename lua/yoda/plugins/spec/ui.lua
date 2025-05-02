@@ -24,7 +24,8 @@ return {
       window = {
         width = 35,
         auto_expand_width = true,
-        mappings = {}, -- (leave your custom mappings here later)
+        mappings = {
+        }, -- (leave your custom mappings here later)
       },
       filesystem = {
         filtered_items = {
