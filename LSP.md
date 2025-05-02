@@ -25,6 +25,8 @@ LSP allows your editor to have IDE-like features for any language, such as:
 
 ## Implementation
 
+---
+
 ### `lua/yoda/plugins/spec/lsp.lua`
 
 #### What is it?
@@ -38,7 +40,7 @@ Example Responsibilities:
 - Defining on_attach behavior (what to do when any LSP server attaches, e.g., keymaps, formatting on save).
 - Possibly looping through a list of servers and initializing them.
 
-### `lua/yoda/plugins/spec/non-ls.lua`
+### `lua/yoda/plugins/spec/none-ls.lua`
 
 #### What is it?
 
@@ -46,10 +48,12 @@ This is also a Lazy plugin specification, but for null-ls (now renamed to none-l
 
 It's focus:
 
-- Set up formatters, litners, and code actions that act like an LSP but aren't language servers (e.g., black prettier, eslint_d, clang-format).
+- Set up formatters, lint checkers, and code actions that act like an LSP but aren't language servers (e.g., black prettier, eslint_d, clang-format).
 - Register them with none-ls.
 
 So it complements your real LSP servers by adding extra diagnostics/formatting via external tools.
+
+---
 
 ### `lua/yoda/lsp/init.lua`
 
@@ -64,6 +68,8 @@ It:
 - Dynamically loads each server module from `lua/yoda/lsp/servers/` and calls its `.setup()`.
 
 Think of this file as your LSP boostrapper -- it tells Neovim: `Here's how to set up every language server you support.`
+
+---
 
 ### Files under `lua/yoda/lsp/servers/`
 
