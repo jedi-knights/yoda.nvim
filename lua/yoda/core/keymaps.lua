@@ -2,9 +2,6 @@
 
 -- General Keymaps
 
--- Pytest Runner Extension
-vim.keymap.set("n", "<leader>tp", "<cmd>Telescope pytest_runner<CR>", { desc = "Run Pytest Picker" })
-
 -- Toggle relative numbers
 vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
 
@@ -48,4 +45,8 @@ vim.keymap.set("n", "<leader>y", ":%y+<CR>", { desc = "Yank entire buffer to sys
 
 -- Prevent accedental macro recording
 vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
+
+-- Add any additional keymaps here
+vim.api.nvim_set_keymap("i", "jj", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
+vim.api.nvim_set_keymap("i", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
 
