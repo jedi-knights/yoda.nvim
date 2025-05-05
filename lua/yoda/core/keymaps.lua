@@ -2,9 +2,6 @@
 
 -- General Keymaps
 
--- Pytest Runner Extension
-vim.keymap.set("n", "<leader>tp", "<cmd>Telescope pytest_runner<CR>", { desc = "Run Pytest Picker" })
-
 -- Toggle relative numbers
 vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
 
