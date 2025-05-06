@@ -18,3 +18,9 @@ if vim.fn.isdirectory(private_dir) == 1 then
   pcall(require, "init")
 end
 
+-- Define a function to print and return a value
+function _G.P(v)
+  print(vim.inspect(v))
+  return v
+end
+
