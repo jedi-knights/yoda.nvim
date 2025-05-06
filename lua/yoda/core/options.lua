@@ -38,8 +38,19 @@ opt.splitbelow = true            -- Horizontal splits below
 opt.scrolloff = 8                -- Minimum lines to keep above and below cursor
 opt.sidescrolloff = 8            -- Minimum columns to keep left and right of cursor
 
--- Disable some built-in providers if you want faster startup (optional early optimization)
+-- Disable some built-in providers if you want faster startup jk(optional early optimization)
 vim.g.loaded_python_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
+
+
+opt.list = true                -- Show whitespace characters
+opt.listchars = {
+    tab = ">-",
+    trail = "·",
+    extends = "»",
+    precedes = "«",
+    nbsp = "␣",
+    eol = "↲",
+}
