@@ -89,6 +89,8 @@ vim.keymap.set("n", "<leader>y", ":%y+<CR>", { desc = "Yank entire buffer to sys
 vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
 
 -- Add any additional keymaps here
-vim.api.nvim_set_keymap("i", "jj", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
 vim.api.nvim_set_keymap("i", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
+vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Visual Mode" })
+vim.api.nvim.set.keymap("r", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Replace Mode" })
+
 
