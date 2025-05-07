@@ -19,6 +19,48 @@ vim.keymap.set("n", "<leader>fg", function()
   require("telescope.builtin").live_grep()
 end, { desc = "Live Grep" })
 
+vim.keymap.set("n", "<leader>fb", function()
+  require("telescope.builtin").buffers()
+end, { desc = "Find Buffers" })
+
+vim.keymap.set("n", "<leader>fh", function()
+  require("telescope.builtin").help_tags()
+end, { desc = "Find Help Tags" })
+
+vim.keymap.set("n", "<leader>fw", function()
+  require("telescope.builtin").grep_string()
+end, { desc = "Grep String" })
+
+vim.keymap.set("n", "<leader>fd", function()
+  require("telescope.builtin").diagnostics()
+end, { desc = "Find Diagnostics" })
+
+vim.keymap.set("n", "<leader>fp", function()
+  require("telescope.builtin").pickers()
+end, { desc = "Find Pickers" })
+
+vim.keymap.set("n", "<leader>fs", function()
+  require("telescope.builtin").search_history()
+end, { desc = "Search History" })
+
+vim.keymap.set("n", "<leader>ft", function()
+  require("telescope.builtin").tags()
+end, { desc = "Find Tags" })
+
+vim.keymap.set("n", "<leader>fc", function()
+  require("telescope.builtin").commands()
+end, { desc = "Find Commands" })
+
+vim.keymap.set("n", "<leader>fr", function()
+  require("telescope.builtin").registers()
+end, { desc = "Find Registers" })
+
+vim.keymap.set("n", "<leader>fC", function()
+  require("telescope.builtin").command_history()
+end, { desc = "Find Command History" })
+
+
+
 vim.keymap.set("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim" })
 vim.keymap.set("n", "<C-s>", ":w<CR>", { desc = "Save File" })
 
