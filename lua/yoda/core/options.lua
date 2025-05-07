@@ -18,10 +18,16 @@ opt.tabstop = 4                  -- Number of spaces tabs count for
 opt.shiftwidth = 4               -- Size of an indent
 opt.expandtab = true             -- Convert tabs to spaces
 opt.smartindent = true           -- Smart autoindenting on new lines
+opt.softtabstop = 4              -- Number of spaces tabs count for when editing
+opt.smarttab = true              -- Insert spaces when pressing tab in insert mode
+opt.encoding = "utf-8"            -- Set encoding to UTF-8
+opt.visualbell = true            -- Visual bell instead of audible bell
 
 -- UI
 opt.cursorline = true            -- Highlight the current line
-opt.termguicolors = true         -- True color support
+if vim.fn.has("termguicolors") == 1 then
+    opt.termguicolors = true     -- Enable 24-bit RGB colors
+end
 opt.signcolumn = "yes"           -- Always show the sign column
 
 -- Searching
@@ -35,8 +41,18 @@ opt.splitright = true            -- Vertical splits to the right
 opt.splitbelow = true            -- Horizontal splits below
 
 -- Scrolling
-opt.scrolloff = 8                -- Minimum lines to keep above and below cursor
+opt.scrolloff = 5                -- Minimum lines to keep above and below cursor
 opt.sidescrolloff = 8            -- Minimum columns to keep left and right of cursor
+
+opt.fillchars = {
+    eob = " ",                   -- Empty lines at the end of a buffer
+    fold = " ",                 -- Folds
+    diff = "╱",                 -- Diff characters
+    msgsep = "─",               -- Message separator
+    vert = "│",                 -- Vertical line
+    horiz = "─",                -- Horizontal line
+}
+
 
 -- Disable some built-in providers if you want faster startup jk(optional early optimization)
 vim.g.loaded_python_provider = 0
