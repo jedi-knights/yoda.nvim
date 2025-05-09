@@ -20,7 +20,21 @@ return {
     vim.api.nvim_set_keymap("i", "<C-K>", 'copilot#Dismiss()', { silent = true, expr = true, desc = "Dismiss Copilot suggestion" })
     vim.api.nvim_set_keymap("i", "<C-Space>", 'copilot#Complete()', { silent = true, expr = true, desc = "Trigger Copilot completion" })
 
-    vim.keymap.set("n", "<leader>cp", ":Copilot toggle<CR>", { desc = "Toggle Copilot" })
+
+    -- Create a :CopilotToggle command
+    vim.api.nvim_create_user_command("CopilotToggle", function()
+      local copilot_status = vim.g.copilot_enabled
+      if copilot_status == 1 then
+        vim.cmd("Copilot disable")
+        print("Copilot disabled")
+      else
+        vim.cmd("Copilot enable")
+        print("Copilot enabled")
+      end
+    end, { desc = "Toggle Copilot" })
+
+    -- Toggle keymap
+    vim.keymap.set("n", "<leader>cp", ":CopilotToggle<CR>", { desc = "Toggle Copilot" })
   end
 }
 
