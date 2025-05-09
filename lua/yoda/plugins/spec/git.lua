@@ -41,15 +41,15 @@ return {
       local map = vim.keymap.set
       local opts = { noremap = true, silent = true }
 
-      map('n', '<leader>gg', function() neogit.open() end, opts)
-      map('n', '<leader>gc', function() neogit.open({ 'commit' }) end, opts)
-      map('n', '<leader>gP', function() neogit.open({ 'push' }) end, opts)
-      map('n', '<leader>gp', function() neogit.open({ 'pull' }) end, opts)
-      map('n', '<leader>gl', function() neogit.open({ 'log' }) end, opts)
-      map('n', '<leader>gs', function() neogit.open({ 'status' }) end, opts)
-      map('n', '<leader>gb', ":Telescope git_branches<CR>", opts)
-      map('n', '<leader>gB', ":G blame<CR>", opts)
-      map('n', '<leader>gn', function() neogit.open({ 'branch' }) end, opts)
+      map('n', '<leader>gg', function() neogit.open() end, vim.tbl_extend("force", opts, { desc = "Neogit: Open" }))
+      map('n', '<leader>gc', function() neogit.open({ 'commit' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Commit" }))
+      map('n', '<leader>gP', function() neogit.open({ 'push' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Push" }))
+      map('n', '<leader>gp', function() neogit.open({ 'pull' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Pull" }))
+      map('n', '<leader>gl', function() neogit.open({ 'log' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Log" }))
+      map('n', '<leader>gs', function() neogit.open({ 'status' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Status" }))
+      map('n', '<leader>gb', ":Telescope git_branches<CR>", vim.tbl_extend("force", opts, { desc = "Git: Telescope Branches" }))
+      map('n', '<leader>gB', ":G blame<CR>", vim.tbl_extend("force", opts, { desc = "Git: Fugitive Blame" }))
+      map('n', '<leader>gn', function() neogit.open({ 'branch' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Branch" }))
     end,
   },
 

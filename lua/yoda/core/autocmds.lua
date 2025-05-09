@@ -7,22 +7,33 @@ local autocmd = vim.api.nvim_create_autocmd
 -- Polished startup behaivor
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
-    -- If no file passed (empty buffer)
     if vim.fn.argc() == 0 then
+      -- Step 1: Open Neo-tree on the left
       vim.cmd("Neotree show")
-      return
-    end
 
-    -- If passed a directory
-    local arg = vim.fn.argv(0)
-    if arg and vim.fn.isdirectory(arg) == 1 then
-      -- Change to that directory
-      vim.cmd("cd " .. arg)
+      -- Step 2: Move focus to the right window
+      vim.cmd("wincmd l")
+
+      -- Step 3: Start Alpha dashboard in right window
+      --require("alpha").start()
+    elseif vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
+      vim.cmd("cd " .. vim.fn.argv(0))
       vim.cmd("Neotree show")
-      return
+      vim.cmd("wincmd l")
+      --require("alpha").start()
     end
+  end,
+})
 
-    -- If passed a file, do nothing (open normally)
+vim.api.nvim_create_autocmd("User", {
+  pattern = "AlphaReady",
+  callback = function()
+    vim.schedule(function()
+      local bufnr = vim.api.nvim_get_current_buf()
+      if vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_get_name(bufnr) == "" and vim.bo[bufnr].buftype == "" then
+        vim.cmd("bwipeout " .. bufnr)
+      end
+    end)
   end,
 })
 
