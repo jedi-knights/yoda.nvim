@@ -42,6 +42,16 @@ return {
           },
           never_show = { ".git" },
         },
+        follow_current_file = {
+          enabled = true, -- follow the current buffer
+          leave_dirs_open = false, -- optionally collapse dirs unrelated to the file
+        },
+        use_libuv_file_watcher = true, -- use vim.loop to watch for changes
+      },
+      buffers = {
+        follow_current_file = {
+          enabled = true, -- also follow in buffers view
+        },
       },
     },
   },
