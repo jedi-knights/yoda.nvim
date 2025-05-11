@@ -160,6 +160,17 @@ _"Train yourself to let go of everything you fear to lose." — Yoda_
 
 ---
 
+
+## Markdown Rendering
+
+I'm experimenting with
+
+- markdown-preview
+- live-preview
+- render-markdown
+
+I don't believe markdown-preview is supported any longer so I'm not going to use that one.
+
 ## References
 
 - [Python Setup](https://www.youtube.com/watch?v=IobijoroGE0&t=10s)
