@@ -24,7 +24,5 @@ return {
         path = "~/Documents/Obsidian",
       },
     },
-    -- Optional: detect vault automatically if you open a markdown file
-    detect_cwd = true,
   },
 }
