@@ -92,3 +92,22 @@ vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
 vim.api.nvim_set_keymap("i", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
 vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Visual Mode" })
 
+-- Plenary test runner keymaps (global dev tools)
+local plenary_test_tools_ok, test_tools = pcall(require, "plenary_test_tools")
+if plenary_test_tools_ok then
+  local wk = require("which-key")
+
+  -- Set keymaps
+  vim.keymap.set("n", "<leader>tt", test_tools.test_current_file, { desc = "Run Plenary: Current test file" })
+  vim.keymap.set("n", "<leader>ta", test_tools.test_project, { desc = "Run Plenary: All tests in project" })
+
+  -- Optional: register with which-key
+  wk.register({
+    t = {
+      name = "+tests",
+      t = "Run Current Test File",
+      a = "Run All Tests in Project",
+    },
+  }, { prefix = "<leader>" })
+end
+
