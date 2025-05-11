@@ -7,7 +7,15 @@ return {
         version = "LuaJIT",
       },
       diagnostics = {
-        globals = { "vim" }, -- Recognize the `vim` global
+        globals = {
+          "vim",
+          -- Pleneary Busted test globals
+          "describe",
+          "it",
+          "before_each",
+          "after_each",
+          "assert",
+        },
       },
       workspace = {
         library = vim.api.nvim_get_runtime_file("", true), -- Include runtime
