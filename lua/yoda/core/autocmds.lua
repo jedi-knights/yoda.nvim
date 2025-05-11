@@ -3,6 +3,12 @@
 -- Helper function to define autocommands more easily
 local autocmd = vim.api.nvim_create_autocmd
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function()
+    vim.opt_local.conceallevel = 2
+  end,
+})
 
 -- Polished startup behaivor
 vim.api.nvim_create_autocmd("VimEnter", {
