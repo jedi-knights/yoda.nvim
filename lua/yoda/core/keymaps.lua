@@ -8,6 +8,9 @@ vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Re
 -- Toggle neo-tree
 vim.keymap.set("n", "<leader>e", ":Neotree toggle<CR>", { desc = "Toggle NeoTree" })
 
+-- Close Neo-tree
+vim.keymap.set("n", "<leader>c", ":Neotree close<CR>", { desc = "Close NeoTree" })
+
 -- Focus on neo-tree
 vim.keymap.set("n", "<leader>o", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
 
