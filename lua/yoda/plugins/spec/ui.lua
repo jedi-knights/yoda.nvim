@@ -21,6 +21,7 @@ return {
     ---@module "neo-tree"
     ---@type neotree.Config?
     opts = {
+      close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
       window = {
         width = 35,
         auto_expand_width = true,
@@ -118,6 +119,17 @@ return {
   {
     "rcarriga/nvim-notify",
     lazy = true,
+    opts = {},
+  },
+
+  -- Markdown preview
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
     opts = {},
   },
 }
