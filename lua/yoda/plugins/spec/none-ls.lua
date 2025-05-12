@@ -17,6 +17,7 @@ return {
         'prettier', -- ts/js formatter
         'stylua',   -- lua formatter
         'eslint_d', -- ts/js linter
+        'eslint',   -- ts/js linter
         'shfmt',
         'ruff',
       },
