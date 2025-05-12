@@ -95,6 +95,22 @@ vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, des
 -- Indent entire file
 vim.keymap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
 
+-- Close current buffer and switch cleanly
+vim.keymap.set("n", "<leader>q", function()
+  local api = vim.api
+  local cur_buf = api.nvim_get_current_buf()
+  local alt_buf = vim.fn.bufnr("#")
+
+  -- Do not switch to Neo-tree or non-listed buffers
+  if vim.bo[alt_buf].filetype ~= "neo-tree" and vim.bo[alt_buf].buflisted then
+    api.nvim_set_current_buf(alt_buf)
+  else
+    vim.cmd("bnext")
+  end
+
+  vim.cmd("bd " .. cur_buf)
+end, { desc = "Close current buffer and switch cleanly" })
+
 -- Plenary test runner keymaps (global dev tools)
 local plenary_test_tools_ok, test_tools = pcall(require, "plenary_test_tools")
 if plenary_test_tools_ok then
