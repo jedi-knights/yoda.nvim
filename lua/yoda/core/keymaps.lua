@@ -6,7 +6,15 @@
 vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
 
 -- Toggle neo-tree
-vim.keymap.set("n", "<leader>e", ":Neotree toggle<CR>", { desc = "Toggle NeoTree" })
+vim.keymap.set("n", "<leader>e", function()
+  local win = require("neo-tree")
+
+  if win.is_open() then
+    vim.cmd("Neotree close")
+  else
+    vim.cmd("Neotree toggle")
+  end
+end, { desc = "Toggle NeoTree" })
 
 -- Close Neo-tree
 vim.keymap.set("n", "<leader>c", ":Neotree close<CR>", { desc = "Close NeoTree" })
