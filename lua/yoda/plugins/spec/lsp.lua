@@ -27,6 +27,7 @@ return {
             "pyright",  -- Python
             "gopls",    -- Go
             "ts_ls",    -- JavaScript/TypeScript (correct, future-safe)
+            "eslint",   -- JavaScript/TypeScript (correct, future-safe)
           },
         })
       end
