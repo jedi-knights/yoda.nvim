@@ -11,6 +11,9 @@ return {
     local ok, pytest = pcall(require, "pytest")
     if ok then
       pytest.setup()
+
+      -- Show what triggered the plugin to load
+      require("pytest.detect").debug()
     else
       vim.notify("pytest.nvim failed to load", vim.log.levels.WARN)
     end
