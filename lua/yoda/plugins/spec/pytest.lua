@@ -2,7 +2,6 @@ return {
   "jedi-knights/pytest.nvim",
   dir = "~/src/github.com/jedi-knights/pytest.nvim",
   lazy = false,
-  ft = "python",
 
   cond = function()
     return require("pytest.detect").should_load_plugin()
