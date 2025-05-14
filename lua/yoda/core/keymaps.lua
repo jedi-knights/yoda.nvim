@@ -106,6 +106,7 @@ vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, des
 -- Indent entire file
 vim.keymap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
 
+
 -- Close current buffer and switch cleanly
 vim.keymap.set("n", "<leader>q", function()
   local api = vim.api
@@ -121,23 +122,4 @@ vim.keymap.set("n", "<leader>q", function()
 
   vim.cmd("bd " .. cur_buf)
 end, { desc = "Close current buffer and switch cleanly" })
-
--- Plenary test runner keymaps (global dev tools)
-local plenary_test_tools_ok, test_tools = pcall(require, "plenary_test_tools")
-if plenary_test_tools_ok then
-  local wk = require("which-key")
-
-  -- Set keymaps
-  vim.keymap.set("n", "<leader>tt", test_tools.test_current_file, { desc = "Run Plenary: Current test file" })
-  vim.keymap.set("n", "<leader>ta", test_tools.test_project, { desc = "Run Plenary: All tests in project" })
-
-  -- Optional: register with which-key
-  wk.register({
-    t = {
-      name = "+tests",
-      t = "Run Current Test File",
-      a = "Run All Tests in Project",
-    },
-  }, { prefix = "<leader>" })
-end
 
