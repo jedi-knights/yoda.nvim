@@ -51,6 +51,7 @@ return {
             event = "post_commit",
             handler = function()
               require("neo-tree.sources.manager").refresh("filesystem")
+              require("neo-tree.sources.manager").refresh("git_status")
             end,
           },
           -- Trigger after staging files
@@ -58,6 +59,7 @@ return {
             event = "post_stage",
             handler = function()
               require("neo-tree.sources.manager").refresh("filesystem")
+              require("neo-tree.sources.manager").refresh("git_status")
             end,
           },
           -- Trigger after unstaging
@@ -65,6 +67,7 @@ return {
             event = "post_unstage",
             handler = function()
               require("neo-tree.sources.manager").refresh("filesystem")
+              require("neo-tree.sources.manager").refresh("git_status")
             end,
           },
         },
