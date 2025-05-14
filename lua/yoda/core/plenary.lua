@@ -25,13 +25,14 @@ vim.keymap.set("n", "<leader>tt", run_current_file, { desc = "Run Plenary Tests:
 vim.keymap.set("n", "<leader>ta", run_all_tests, { desc = "Run Plenary Tests: All in ./tests" })
 
 -- Optional: register with which-key if you're using it
-local wk_ok, wk = pcall(require, "which-key")
-if wk_ok then
-  wk.register({
-    t = {
-      name = "+tests",
-      t = "Run Current Plenary Test File",
-      a = "Run All Plenary Tests",
-    },
-  }, { prefix = "<leader>" })
-end
+--local wk_ok, wk = pcall(require, "which-key")
+-- if wk_ok then
+--   wk.register({
+--     t = {
+--       name = "+tests",
+--       t = "Run Current Plenary Test File",
+--       a = "Run All Plenary Tests",
+--     },
+--   }, { prefix = "<leader>" })
+-- end
+--

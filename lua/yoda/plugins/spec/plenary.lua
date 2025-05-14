@@ -3,10 +3,5 @@ return {
   lazy = true,
   ft = "lua",
   event = { "BufReadPre *.spec.lua", "BufReadPre *_spec.lua" },
-  config = function()
-    require("plenary").setup({
-      -- Add any additional configuration options here
-    })
-  end,
 }
 

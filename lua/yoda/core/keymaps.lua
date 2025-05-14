@@ -107,6 +107,16 @@ vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, des
 vim.keymap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
 
 
+-- Find buffers
+vim.keymap.set("n", "<leader>b", function()
+  local ok, builtin = pcall(require, "telescope.builtin")
+  if ok then
+    builtin.buffers()
+  else
+    vim.notify("Telescope is not available", vim.log.levels.WARN)
+  end
+end, { desc = "Telescope: Find Buffers" })
+
 -- Close current buffer and switch cleanly
 vim.keymap.set("n", "<leader>q", function()
   local api = vim.api
