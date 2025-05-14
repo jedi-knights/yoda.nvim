@@ -35,7 +35,40 @@ return {
     },
     config = function()
       local neogit = require('neogit')
-      neogit.setup {}
+      neogit.setup({
+        disable_commit_confirmation = true,
+        disable_insert_on_commit = false,
+        integrations = {
+          diffview = true, -- requires diffview.nvim
+          telescope = true, -- requires telescope.nvim
+          fzf = true, -- requires fzf-lua
+          mini = true, -- requires mini.pick
+          snacks = true, -- requires snacks.nvim
+        },
+        event_handlers = {
+          -- Trigger when a commit finishes
+          {
+            event = "post_commit",
+            handler = function()
+              require("neo-tree.sources.manager").refresh("filesystem")
+            end,
+          },
+          -- Trigger after staging files
+          {
+            event = "post_stage",
+            handler = function()
+              require("neo-tree.sources.manager").refresh("filesystem")
+            end,
+          },
+          -- Trigger after unstaging
+          {
+            event = "post_unstage",
+            handler = function()
+              require("neo-tree.sources.manager").refresh("filesystem")
+            end,
+          },
+        },
+      })
 
       -- Keybindings
       local map = vim.keymap.set
