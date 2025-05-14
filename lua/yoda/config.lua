@@ -6,9 +6,9 @@ require("yoda.core.autocmds")
 -- Load plugins
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
+-- Load colorscheme
 require("yoda.core.colorscheme")
 
-vim.api.nvim_create_user_command("GenerateKeymapsDoc", function()
-  require("yoda.utils.generate_keymaps_doc")()
-end, {})
+-- Load Plenary test keymaps
+require("yoda.core.plenary")
 
