@@ -25,9 +25,17 @@ vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Re
 
 -- Toggle neo-tree
 vim.keymap.set("n", "<leader>e", function()
-  local win = require("neo-tree")
+  local neotree_open = false
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.bo[buf].filetype
+    if ft == "neo-tree" then
+      neotree_open = true
+      break
+    end
+  end
 
-  if win.is_open() then
+  if neotree_open then
     vim.cmd("Neotree close")
   else
     vim.cmd("Neotree toggle")
@@ -123,17 +131,6 @@ vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, des
 
 -- Indent entire file
 vim.keymap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
-
-
--- Find buffers
-vim.keymap.set("n", "<leader>b", function()
-  local ok, builtin = pcall(require, "telescope.builtin")
-  if ok then
-    builtin.buffers()
-  else
-    vim.notify("Telescope is not available", vim.log.levels.WARN)
-  end
-end, { desc = "Telescope: Find Buffers" })
 
 -- Close current buffer and switch cleanly
 vim.keymap.set("n", "<leader>q", function()

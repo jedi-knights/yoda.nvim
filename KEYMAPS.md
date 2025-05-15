@@ -10,6 +10,25 @@ The leader key is set to " ".
 
 - `<leader>o` Focus on the tree
 - `<leader>e` Toggle the tree
+- `<leader>c` Close the tree
+
+## Escape Input mode or Visual mode to Normal Mode
+- `jk`
+
+## Miscellaneous
+
+- `<leader>i` Re-indent the entire file
+- `<leader>gg` Open the neogit interface
+- `<leader>r` Toggle relative line numbers
+
+## Harpoon Commands
+
+- `<leader>ha` Add the current file to harpoon
+- `<leader>hm` Access the harpoon menu
+- `<leader>h1` Access the first file
+- `<leader>h2` Access the second file
+- `<leader>h3` Access the third file
+- `<leader>h4` Access the fourth file
 
 ### Window Navigation
 
@@ -27,6 +46,7 @@ The leader key is set to " ".
 
 - `<leader>ff` Find files
 - `<leader>fg` Live grep
+- `<leader>fb` Find buffers
 
 ### Miscellaneous
 
@@ -36,6 +56,5 @@ The leader key is set to " ".
 
 - `C-r` Redo the last undone change
 - `u` Undo the last change
-
 
 
