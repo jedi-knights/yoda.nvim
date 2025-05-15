@@ -20,6 +20,13 @@ The leader key is set to " ".
 - `<leader>i` Re-indent the entire file
 - `<leader>gg` Open the neogit interface
 - `<leader>r` Toggle relative line numbers
+- `<leader>q` Close the current buffer and exit cleanly
+- `<leader>qq` Quit Neovim
+- `C-s` Save file
+- `<leader>y` Yank the entire buffer to the system clipboard
+- `C-r` Redo the last undone change
+- `u` Undo the last change
+
 
 ## Harpoon Commands
 
@@ -47,14 +54,4 @@ The leader key is set to " ".
 - `<leader>ff` Find files
 - `<leader>fg` Live grep
 - `<leader>fb` Find buffers
-
-### Miscellaneous
-
-- `<leader>qq` Quit Neovim
-- `C-s` Save file
-- `<leader>y` Yank the entire buffer to the system clipboard
-
-- `C-r` Redo the last undone change
-- `u` Undo the last change
-
 
