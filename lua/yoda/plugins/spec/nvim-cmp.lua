@@ -41,6 +41,12 @@ return {
         end, { "i", "s" }),
       }),
       sources = cmp.config.sources({
+        {
+          name = "lazydev",
+          module = "lazydev.integrations.blink",
+          -- make lazydev completions top priority (see `:h blink.cmp`)
+          score_offset = 100,
+        },
         { name = "nvim_lsp" },
         { name = "luasnip" },
         { name = "buffer" },
