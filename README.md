@@ -81,6 +81,7 @@
 
 ```bash
 git clone https://github.com/jedi-knights/yoda ~/.config/nvim
+brew install ripgrep # Install ripgrep for use with Telescopes fuzzy finding
 nvim
 ```
 
