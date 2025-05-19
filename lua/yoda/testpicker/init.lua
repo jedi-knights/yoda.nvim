@@ -19,8 +19,8 @@ local function run_tests(opts)
     table.insert(cmd, "auto")
   end
 
-  if opt.markers == nil or opt.markers  == "" then
-    opt.markers = "bdd"
+  if opts.markers == nil or opts.markers  == "" then
+    opts.markers = "bdd"
   end
 
   table.insert(cmd, "-m")
@@ -37,6 +37,52 @@ local function run_tests(opts)
   vim.cmd("botright split | terminal")
   vim.cmd("startinsert")
   vim.fn.chansend(vim.b.terminal_job_id, table.concat(cmd, " ") .. "\n")
+
+  vim.defer_fn(function()
+    if vim.fn.filereadable(tmpfile) == 1 then
+      local lines = vim.fn.readfile(tmpfile)
+      local entries = {}
+      for _, line in ipairs(lines) do
+        local file, lineno, msg = line:match("([^:]+):(%d+): (.+)")
+        if file and lineno and msg then
+          table.insert(entries, {
+            display = string.format("%s:%s %s", file, lineno, msg),
+            filename = file,
+            lnum = tonumber(lineno),
+            text = msg,
+          })
+        end
+      end
+
+      if #entries > 0 then
+        require("telescope.pickers").new({}, {
+          prompt_title = "Test Failures",
+          finder = require("telescope.finders").new_table {
+            results = entries,
+            entry_maker = function(entry)
+              return {
+                value = entry,
+                display = entry.display,
+                ordinal = entry.display,
+                filename = entry.filename,
+                lnum = entry.lnum,
+              }
+            end,
+          },
+          sorter = require("telescope.config").values.generic_sorter({}),
+          attach_mappings = function(prompt_bufnr, _)
+            require("telescope.actions").select_default:replace(function()
+              require("telescope.actions").close(prompt_bufnr)
+              local entry = require("telescope.actions.state").get_selected_entry().value
+              vim.cmd("e " .. entry.filename)
+              vim.api.nvim_win_set_cursor(0, { entry.lnum, 0 })
+            end)
+            return true
+          end,
+        }):find()
+      end
+    end
+  end, 3000) -- delay to allow pytest to finish
 end
 
 local function picker(title, items, on_select, default)
