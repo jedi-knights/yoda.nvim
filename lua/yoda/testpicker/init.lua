@@ -32,11 +32,12 @@ local function run_tests(opts)
 
   table.insert(cmd, string.format("--tb=short"))
   table.insert(cmd, string.format("--capture=tee-sys"))
-  table.insert(cmd, string.format("--output=%s", tmpfile))
 
   vim.cmd("botright split | terminal")
   vim.cmd("startinsert")
-  vim.fn.chansend(vim.b.terminal_job_id, table.concat(cmd, " ") .. "\n")
+
+  local output_cmd = string.format("%s > %s 2>&1", table.concat(cmd, " "), tmpfile)
+  vim.fn.chansend(vim.b.terminal_job_id, output_cmd .. "\n")
 
   vim.defer_fn(function()
     if vim.fn.filereadable(tmpfile) == 1 then
