@@ -12,6 +12,10 @@ return {
           "ts_ls",    -- JavaScript/TypeScript (correct, future-safe)
           "eslint",   -- JavaScript/TypeScript (correct, future-safe)
           "ruff",   -- Python
+          "flake8", -- Python
+          "mypy",   -- Python
+          "autoflake", -- Python
+          "pylint", -- Python
         },
       })
     end
