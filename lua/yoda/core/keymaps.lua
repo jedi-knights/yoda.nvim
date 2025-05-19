@@ -2,6 +2,10 @@
 
 -- General Keymaps
 
+vim.keymap.set("n", "<leader>tp", function()
+  require("yoda.testpicker").run()
+end, { desc = "Run tests with yoda" })
+
 -- Start a small terminal at the bottom of the screen
 --
 local job_id = 0
