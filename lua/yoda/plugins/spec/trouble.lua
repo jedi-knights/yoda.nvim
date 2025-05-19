@@ -35,19 +35,8 @@ return {
     },
     {
       "<leader>xj",
-      function()
-        vim.cmd("Trouble toggle mode=jumplist")
-        vim.defer_fn(function()
-          for win = 1, vim.fn.winnr('$') do
-            local bufname = vim.fn.bufname(vim.fn.winbufnr(win))
-            if bufname:match("Trouble") then
-              vim.fn.win_gotoid(vim.fn.win_getid(win))
-              break
-            end
-          end
-        end, 50)
-      end,
-      desc = "Jumplist (Trouble) + Jump Focus",
+      "<cmd>Trouble lsp toggle<cr>",
+      desc = "LSP Definitions /references / ... (Trouble)",
     },
   },
 }
