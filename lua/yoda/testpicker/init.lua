@@ -31,16 +31,13 @@ local function run_tests(opts)
   if opts.markers then
     vim.fn.setenv("MARKERS", opts.markers)
   end
-  if opts.endpoint then
-    vim.fn.setenv("ENDPOINT", opts.endpoint)
-  end
 
   vim.cmd("botright split | terminal")
   vim.cmd("startinsert")
   vim.fn.chansend(vim.b.terminal_job_id, table.concat(cmd, " ") .. "\n")
 end
 
-local function picker(title, items, on_select)
+local function picker(title, items, on_select, default)
   pickers.new({}, {
     prompt_title = title,
     finder = finders.new_table { results = items },
@@ -48,8 +45,13 @@ local function picker(title, items, on_select)
     attach_mappings = function(_, map)
       actions.select_default:replace(function()
         actions.close()
-        local selection = action_state.get_selected_entry()[1]
-        on_select(selection)
+        local entry = action_state.get_selected_entry()
+        if not entry then
+          vim.notify("No selection made, defaulting to: " .. default, vim.log.levels.INFO)
+          on_select(default)
+        else
+          on_select(entry[1])
+        end
       end)
       return true
     end,
@@ -72,17 +74,18 @@ function M.run()
     picker("Select Region", valid_regions, function(region)
       opts.region = region
       vim.ui.input({ prompt = "Pytest markers (e.g. smoke and not slow): " }, function(markers)
+        if not markers or markers == "" then
+          markers = "bdd"
+          vim.notify("No markers selected, defaulting to 'bdd'", vim.log.levels.INFO)
+        end
         opts.markers = markers
-        vim.ui.input({ prompt = "Custom endpoint (leave blank to auto-generate): " }, function(endpoint)
-          opts.endpoint = endpoint ~= "" and endpoint or nil
-          vim.ui.select({ "Parallel", "Serial" }, { prompt = "Run mode:" }, function(choice)
-            opts.serial = (choice == "Serial")
-            run_tests(opts)
-          end)
+        vim.ui.select({ "Parallel", "Serial" }, { prompt = "Run mode:" }, function(choice)
+          opts.serial = (choice == "Serial")
+          run_tests(opts)
         end)
       end)
-    end)
-  end)
+    end, "auto")
+  end, "qa")
 end
 
-return M
+  return M

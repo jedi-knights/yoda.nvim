@@ -20,6 +20,11 @@ return {
         'eslint',   -- ts/js linter
         'shfmt',
         'ruff',
+        'black',
+        'mypy',
+        'flake8',
+        'autoflake',
+        'pylint',
       },
       -- auto-install configured formatters & linters (with null-ls)
       automatic_installation = true,
