@@ -6,12 +6,96 @@ local finders = require("telescope.finders")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local conf = require("telescope.config").values
+local entry_display = require("telescope.pickers.entry_display")
 
+local log_path = "output.log"
 local valid_envs = { "qa", "prod", "legacy", "fastly" }
 local valid_regions = { "auto", "use1", "usw2", "euw1", "apse1" }
 
+local function parse_pytest_ini_markers()
+  local markers = {}
+  if vim.fn.filereadable("pytest.ini") == 1 then
+    local lines = vim.fn.readfile("pytest.ini")
+    local in_markers = false
+    for _, line in ipairs(lines) do
+      if line:match("^markers") then
+        in_markers = true
+      elseif in_markers then
+        local trimmed = line:match("^%s*%-?%s*(%S+):%s*(.+)$")
+        if trimmed then
+          local marker, desc = line:match("^%s*%-?%s*(%S+):%s*(.+)$")
+          if marker and desc then
+            table.insert(markers, { marker = marker, desc = desc })
+          end
+        elseif line:match("^%[.*%]") then
+          break -- end of markers section
+        end
+      end
+    end
+  end
+  return markers
+end
+
+local function multi_select_picker(title, items, on_submit)
+  local results = {}
+  local displayer = entry_display.create {
+    separator = " ▏",
+    items = {
+      { width = 20 },
+      { remaining = true },
+    },
+  }
+
+  pickers.new({}, {
+    prompt_title = title,
+    finder = finders.new_table {
+      results = items,
+      entry_maker = function(entry)
+        return {
+          value = entry,
+          display = function(e)
+            return displayer {
+              e.value.marker,
+              e.value.desc,
+            }
+          end,
+          ordinal = entry.marker,
+        }
+      end,
+    },
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, map)
+      local toggle = function()
+        local entry = action_state.get_selected_entry()
+        if entry then
+          results[entry.value.marker] = not results[entry.value.marker]
+        end
+      end
+
+      map({ "<CR>" }, function()
+        actions.close(prompt_bufnr)
+        local selected = {}
+        for marker, chosen in pairs(results) do
+          if chosen then table.insert(selected, marker) end
+        end
+        on_submit(selected)
+      end)
+
+      map({ "<Tab>" }, function()
+        toggle()
+        local entry = action_state.get_selected_entry()
+        if entry then
+          vim.notify((results[entry.value.marker] and "+ " or "- ") .. entry.value.marker)
+        end
+      end)
+
+      return true
+    end,
+  }):find()
+end
+
+
 local function run_tests(opts)
-  local tmpfile = vim.fn.tempname()
   local cmd = { "pytest" }
 
   if not opts.serial then
@@ -24,7 +108,7 @@ local function run_tests(opts)
   end
 
   table.insert(cmd, "-m")
-  table.insert(cmd, opts.markers)
+  table.insert(cmd, string.format('"%s"', opts.markers))
 
   vim.fn.setenv("ENVIRONMENT", opts.environment)
   vim.fn.setenv("REGION", opts.region)
@@ -33,57 +117,16 @@ local function run_tests(opts)
   table.insert(cmd, string.format("--tb=short"))
   table.insert(cmd, string.format("--capture=tee-sys"))
 
+  -- Delete old log if it exists
+  if vim.fn.filereadable(log_path) == 1 then
+    vim.fn.delete(log_path)
+  end
+
   vim.cmd("botright split | terminal")
   vim.cmd("startinsert")
 
-  local output_cmd = string.format("%s > %s 2>&1", table.concat(cmd, " "), tmpfile)
-  vim.fn.chansend(vim.b.terminal_job_id, output_cmd .. "\n")
-
-  vim.defer_fn(function()
-    if vim.fn.filereadable(tmpfile) == 1 then
-      local lines = vim.fn.readfile(tmpfile)
-      local entries = {}
-      for _, line in ipairs(lines) do
-        local file, lineno, msg = line:match("([^:]+):(%d+): (.+)")
-        if file and lineno and msg then
-          table.insert(entries, {
-            display = string.format("%s:%s %s", file, lineno, msg),
-            filename = file,
-            lnum = tonumber(lineno),
-            text = msg,
-          })
-        end
-      end
-
-      if #entries > 0 then
-        require("telescope.pickers").new({}, {
-          prompt_title = "Test Failures",
-          finder = require("telescope.finders").new_table {
-            results = entries,
-            entry_maker = function(entry)
-              return {
-                value = entry,
-                display = entry.display,
-                ordinal = entry.display,
-                filename = entry.filename,
-                lnum = entry.lnum,
-              }
-            end,
-          },
-          sorter = require("telescope.config").values.generic_sorter({}),
-          attach_mappings = function(prompt_bufnr, _)
-            require("telescope.actions").select_default:replace(function()
-              require("telescope.actions").close(prompt_bufnr)
-              local entry = require("telescope.actions.state").get_selected_entry().value
-              vim.cmd("e " .. entry.filename)
-              vim.api.nvim_win_set_cursor(0, { entry.lnum, 0 })
-            end)
-            return true
-          end,
-        }):find()
-      end
-    end
-  end, 3000) -- delay to allow pytest to finish
+  local tee_cmd = string.format("%s 2>&1 | tee %s", table.concat(cmd, " "), log_path)
+  vim.fn.chansend(vim.b.terminal_job_id, tee_cmd .. "\n")
 end
 
 local function picker(title, items, on_select, default)
@@ -116,26 +159,34 @@ function M.run()
     region = nil,
     markers = nil,
     serial = false,
-    endpoint = nil,
   }
 
   picker("Select Environment", valid_envs, function(env)
     opts.environment = env
     picker("Select Region", valid_regions, function(region)
       opts.region = region
-      vim.ui.input({ prompt = "Pytest markers (e.g. smoke and not slow): " }, function(markers)
-        if not markers or markers == "" then
-          markers = "bdd"
-          vim.notify("No markers selected, defaulting to 'bdd'", vim.log.levels.INFO)
+      vim.ui.select({ "Parallel", "Serial" }, { prompt = "Run mode:" }, function(choice)
+        opts.serial = (choice == "Serial")
+
+        local markers = parse_pytest_ini_markers()
+        if #markers > 0 then
+          multi_select_picker("Select markers", markers, function(selected)
+            opts.markers = table.concat(selected, " and ")
+            run_tests(opts)
+          end)
+        else
+          vim.ui.input({ prompt = "Pytest markers (e.g. smoke and not slow): " }, function(user_markers)
+            if not user_markers or user_markers == "" then
+              user_markers = "bdd"
+              vim.notify("No markers selected, defaulting to 'bdd'", vim.log.levels.INFO)
+            end
+            opts.markers = user_markers
+            run_tests(opts)
+          end)
         end
-        opts.markers = markers
-        vim.ui.select({ "Parallel", "Serial" }, { prompt = "Run mode:" }, function(choice)
-          opts.serial = (choice == "Serial")
-          run_tests(opts)
-        end)
       end)
     end, "auto")
   end, "qa")
 end
 
-  return M
+return M
