@@ -42,15 +42,16 @@ local function picker(title, items, on_select, default)
     prompt_title = title,
     finder = finders.new_table { results = items },
     sorter = conf.generic_sorter({}),
-    attach_mappings = function(_, map)
+    attach_mappings = function(prompt_bufnr, _)
       actions.select_default:replace(function()
-        actions.close()
+        actions.close(prompt_bufnr)
         local entry = action_state.get_selected_entry()
-        if not entry then
-          vim.notify("No selection made, defaulting to: " .. default, vim.log.levels.INFO)
-          on_select(default)
+        local value = (entry and entry[1]) or default
+        if value then
+          vim.notify("Selected: " .. value, vim.log.levels.INFO)
+          on_select(value)
         else
-          on_select(entry[1])
+          vim.notify("No selection or default provided", vim.log.levels.ERROR)
         end
       end)
       return true
