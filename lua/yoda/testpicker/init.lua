@@ -11,6 +11,7 @@ local valid_envs = { "qa", "prod", "legacy", "fastly" }
 local valid_regions = { "auto", "use1", "usw2", "euw1", "apse1" }
 
 local function run_tests(opts)
+  local tmpfile = vim.fn.tempname()
   local cmd = { "pytest" }
 
   if not opts.serial then
@@ -18,19 +19,20 @@ local function run_tests(opts)
     table.insert(cmd, "auto")
   end
 
-  if opts.markers ~= nil and opts.markers ~= "" then
-    table.insert(cmd, "-m")
-    table.insert(cmd, opts.markers)
-  else
-    table.insert(cmd, "-m")
-    table.insert(cmd, "bdd")
+  if opt.markers == nil or opt.markers  == "" then
+    opt.markers = "bdd"
   end
+
+  table.insert(cmd, "-m")
+  table.insert(cmd, opts.markers)
 
   vim.fn.setenv("ENVIRONMENT", opts.environment)
   vim.fn.setenv("REGION", opts.region)
-  if opts.markers then
-    vim.fn.setenv("MARKERS", opts.markers)
-  end
+  vim.fn.setenv("MARKERS", opts.markers)
+
+  table.insert(cmd, string.format("--tb=short"))
+  table.insert(cmd, string.format("--capture=tee-sys"))
+  table.insert(cmd, string.format("--output=%s", tmpfile))
 
   vim.cmd("botright split | terminal")
   vim.cmd("startinsert")
