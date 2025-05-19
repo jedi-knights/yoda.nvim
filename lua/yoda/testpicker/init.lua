@@ -72,7 +72,7 @@ local function multi_select_picker(title, items, on_submit)
         end
       end
 
-      map({ "<CR>" }, function()
+      map("<CR>", function()
         actions.close(prompt_bufnr)
         local selected = {}
         for marker, chosen in pairs(results) do
