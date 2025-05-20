@@ -65,6 +65,18 @@ return {
 
     map('n', '<leader>gb', ":Telescope git_branches<CR>", vim.tbl_extend("force", opts, { desc = "Git: Telescope Branches" }))
     map('n', '<leader>gB', ":G blame<CR>", vim.tbl_extend("force", opts, { desc = "Git: Fugitive Blame" }))
+
+    -- Refresh Neo-tree when leaving Neogit
+    vim.api.nvim_create_autocmd("BufWinLeave", {
+      pattern = "Neogit*",
+      callback = function()
+        vim.schedule(function()
+          local manager = require("neo-tree.sources.manager")
+          manager.refresh("filesystem")
+          manager.refresh("git_status")
+        end)
+      end,
+    })
   end,
 }
 
