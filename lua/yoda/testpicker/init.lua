@@ -46,54 +46,76 @@ local function multi_select_picker(title, items, on_submit)
     },
   }
 
-  pickers.new({}, {
-    prompt_title = title,
-    finder = finders.new_table {
+  local function make_finder()
+    return finders.new_table {
       results = items,
       entry_maker = function(entry)
         return {
           value = entry,
+          ordinal = entry.marker,
           display = function(e)
+            local checked = results[e.ordinal] and "[x]" or "[ ]"
             return displayer {
-              e.value.marker,
+              checked .. " " .. e.value.marker,
               e.value.desc,
             }
           end,
-          ordinal = entry.marker,
         }
       end,
-    },
+    }
+  end
+
+  -- Select "bdd" marker by default
+  for _, item in ipairs(items) do
+    if item.marker == "bdd" then
+      results[item.marker] = true
+    end
+  end
+
+  local picker
+
+  picker = pickers.new({ prompt_title = title }, {
+    finder = make_finder(),
     sorter = conf.generic_sorter({}),
     attach_mappings = function(prompt_bufnr, map)
       local toggle = function()
         local entry = action_state.get_selected_entry()
         if entry then
-          results[entry.value.marker] = not results[entry.value.marker]
+          results[entry.ordinal] = not results[entry.ordinal]
+          picker:refresh(make_finder())
         end
       end
 
-      map("<CR>", function()
+      map("i", "<CR>", function()
         actions.close(prompt_bufnr)
         local selected = {}
-        for marker, chosen in pairs(results) do
-          if chosen then table.insert(selected, marker) end
+        for _, entry in ipairs(items) do
+          if results[entry.marker] then
+            table.insert(selected, entry.marker)
+          end
         end
         on_submit(selected)
       end)
 
-      map({ "<Tab>" }, function()
+      map("i", "<C-t>", function()
         toggle()
         local entry = action_state.get_selected_entry()
         if entry then
-          vim.notify((results[entry.value.marker] and "+ " or "- ") .. entry.value.marker)
+          vim.notify((results[entry.ordinal] and "+ " or "- ") .. entry.ordinal)
         end
       end)
 
+      map("i", "j", actions.move_selection_next)
+      map("i", "k", actions.move_selection_previous)
+      map("n", "j", actions.move_selection_next)
+      map("n", "k", actions.move_selection_previous)
+
       return true
     end,
-  }):find()
-end
+  })
 
+  picker:find()
+end
 
 local function run_tests(opts)
   local cmd = { "pytest" }
@@ -117,7 +139,6 @@ local function run_tests(opts)
   table.insert(cmd, string.format("--tb=short"))
   table.insert(cmd, string.format("--capture=tee-sys"))
 
-  -- Delete old log if it exists
   if vim.fn.filereadable(log_path) == 1 then
     vim.fn.delete(log_path)
   end
@@ -130,8 +151,7 @@ local function run_tests(opts)
 end
 
 local function picker(title, items, on_select, default)
-  pickers.new({}, {
-    prompt_title = title,
+  pickers.new({ prompt_title = title }, {
     finder = finders.new_table { results = items },
     sorter = conf.generic_sorter({}),
     attach_mappings = function(prompt_bufnr, _)
@@ -169,6 +189,10 @@ function M.run()
         opts.serial = (choice == "Serial")
 
         local markers = parse_pytest_ini_markers()
+        table.sort(markers, function(a, b)
+          return a.marker:lower() > b.marker:lower()
+        end)
+
         if #markers > 0 then
           multi_select_picker("Select markers", markers, function(selected)
             opts.markers = table.concat(selected, " and ")
