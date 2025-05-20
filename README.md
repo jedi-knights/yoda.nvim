@@ -31,15 +31,15 @@
 - **Fast startup** with lazy-loading via `lazy.nvim`
 - **Beautiful default theme** with TokyoNight
 - **Easy file navigation** with `nvim-tree.lua`
-- **Powerful syntax highlighting** with `nvim-treesitter`
+- **Powerful syntax highlighting** with `nvim-treesitter`k
 - **Built-in LSP, Completion, Git integration**
 - **Well-documented and modular Lua configuration**
-
+j
 ---
 
 ## Directory Structure
 
-```bash
+```shell
 ~/.config/nvim/
 ├── init.lua                      # Entry point (very lightweight, just bootstraps `lua/`)
 ├── lua/
