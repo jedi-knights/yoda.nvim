@@ -18,6 +18,23 @@ return {
       }, -- (leave your custom mappings here later)
     },
     filesystem = {
+      -- Default: {"icon", "name", "diagnostics", "git_status", "file_size"}
+      renderers = {
+        file = {
+          { "icon" },
+          { "name" },
+          { "diagnostics" },
+          { "git_status" },
+          -- { "file_size" },
+        },
+        directory = {
+          { "icon" },
+          { "name" },
+          { "clipboard" },
+          { "diagnostics" },
+          { "git_status" },
+        },
+      },
       filtered_items = {
         visible = false, -- show hidden file
         show_hidden_count = true,
