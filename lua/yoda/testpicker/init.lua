@@ -12,6 +12,32 @@ local log_path = "output.log"
 local valid_envs = { "qa", "prod", "legacy", "fastly" }
 local valid_regions = { "auto", "use1", "usw2", "euw1", "apse1" }
 
+
+local function parse_addopts()
+  if vim.fn.filereadable("pytest.ini") == 0 then
+    return {}
+  end
+
+  local lines = vim.fn.readfile("pytest.ini")
+  local in_ini = false
+  for _, line in ipairs(lines) do
+    if line:match("^%[pytest%]") then
+      in_ini = true
+    elseif in_ini and line:match("^addopts%s*=") then
+      local opts_str = line:match("^addopts%s*=%s*(.+)$")
+      if opts_str then
+        local parsed = vim.split(opts_str, "%s+")
+        return parsed
+      end
+    elseif line:match("^%[.*%]") then
+      -- End of [pytest] section
+      break
+    end
+  end
+
+  return {}
+end
+
 local function parse_pytest_ini_markers()
   local markers = {}
   if vim.fn.filereadable("pytest.ini") == 1 then
@@ -119,6 +145,10 @@ end
 
 local function run_tests(opts)
   local cmd = { "pytest" }
+
+  -- Include additional options from pytest.ini
+  local addopts = parse_addopts()
+  vim.list_extend(cmd, addopts)
 
   if not opts.serial then
     table.insert(cmd, "-n")
