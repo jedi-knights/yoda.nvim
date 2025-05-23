@@ -3,6 +3,7 @@ return {
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     require("coverage").setup()
-  end
+  end,
+  cmd = { "Coverage", "CoverageLoad", "Coverageshow", "CoverageHide", "CoverageToggle" },
 }
 
