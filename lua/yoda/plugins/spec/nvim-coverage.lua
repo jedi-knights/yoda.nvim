@@ -4,6 +4,6 @@ return {
   config = function()
     require("coverage").setup()
   end,
-  cmd = { "Coverage", "CoverageLoad", "Coverageshow", "CoverageHide", "CoverageToggle" },
+  cmd = { "Coverage", "CoverageLoad", "CoverageShow", "CoverageToggle" },
 }
 
