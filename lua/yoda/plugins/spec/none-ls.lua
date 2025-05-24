@@ -14,13 +14,13 @@ return {
     require('mason-null-ls').setup {
       ensure_installed = {
         'checkmake',
-        'prettier', -- ts/js formatter
+        --'prettier', -- ts/js formatter
         'stylua',   -- lua formatter
         'eslint_d', -- ts/js linter
         'eslint',   -- ts/js linter
         'shfmt',
         'ruff',
-        'black',
+        --'black',
         'mypy',
         'flake8',
         'autoflake',
