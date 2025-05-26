@@ -11,8 +11,3 @@ function _G.P(v)
   return v
 end
 
-local ks = require('keystroke_logger')
-
-vim.keymap.set('n', '<leader>ks', ks.start, { desc = 'Start keystroke logging' })
-vim.keymap.set('n', '<leader>ke', ks.stop, { desc = 'Stop keystroke logging' })
-
