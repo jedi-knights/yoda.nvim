@@ -177,6 +177,7 @@ I don't believe markdown-preview is supported any longer so I'm not going to use
 - [Python Setup](https://www.youtube.com/watch?v=IobijoroGE0&t=10s)
 - [Reference Dotfiles](https://github.com/hendrikmi/dotfiles/tree/main/nvim)
 - [Debugging Python in Neovim](https://www.youtube.com/watch?v=tfC1i32eW3A)
+- [Top Neovim Plugins](https://dotfyle.com/neovim/plugins/top)
 
 # 🚀 Ready to learn Neovim, you are. Let's go!
 
