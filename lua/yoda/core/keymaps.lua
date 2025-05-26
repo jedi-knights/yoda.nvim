@@ -152,3 +152,8 @@ vim.keymap.set("n", "<leader>q", function()
   vim.cmd("bd " .. cur_buf)
 end, { desc = "Close current buffer and switch cleanly" })
 
+-- Close all buffers other than the current one
+vim.keymap.set("n", "<leader>bd", function()
+  vim.cmd("%bd | e# | bd#")
+end, { desc = "Delete all buffers except current" })
+

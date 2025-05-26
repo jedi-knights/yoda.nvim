@@ -1,6 +1,20 @@
 -- lua/yoda/testpicker/init.lua
 -- Neovim picker for running customized pytest tests
 
+local vendor = require("yoda.vendor.vendor")
+local yaml = vendor.require("yaml")
+
+if not yaml then
+  vim.notify("Failed to load YAML vendor module", vim.log.levels.ERROR)
+  return
+end
+
+if not yaml.eval then
+  vim.notify("Vendored yaml module is invalid", vim.log.levels.ERROR)
+  return
+end
+
+local Path = require("plenary.path")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local actions = require("telescope.actions")
@@ -9,9 +23,63 @@ local conf = require("telescope.config").values
 local entry_display = require("telescope.pickers.entry_display")
 
 local log_path = "output.log"
-local valid_envs = { "qa", "prod", "legacy", "fastly" }
-local valid_regions = { "auto", "use1", "usw2", "euw1", "apse1" }
 
+local function load_env_region_from_ingress_mapping()
+  local candidates = { "ingress-mapping.yaml", "ingress-mapping.yml" }
+  local file_path = nil
+
+  for _, filename in ipairs(candidates) do
+    if vim.fn.filereadable(filename) == 1 then
+      file_path = filename
+      break
+    end
+  end
+
+  if not file_path then
+    return {
+      environments = { "qa", "prod" },
+      regions = { "auto", "use1", "usw2", "euw1", "apse1" },
+    }
+  end
+
+  local content = Path:new(file_path):read()
+  local parsed = yaml.eval(content)
+
+  if not parsed or type(parsed.environments) ~= "table" then
+    vim.notify("Malformed ingress-mapping file. Falling back to default envs/regions.", vim.log.levels.WARN)
+    return {
+      environments = { "qa", "prod" },
+      regions = { "auto", "use1", "usw2", "euw1", "apse1" },
+    }
+  end
+
+  local envs = {}
+  local region_set = {}
+
+  for _, env in ipairs(parsed.environments or {}) do
+    table.insert(envs, env.name)
+    for _, region in ipairs(env.regions or {}) do
+      region_set[region.name] = true
+    end
+  end
+
+  local regions = {}
+  for region in pairs(region_set) do
+    table.insert(regions, region)
+  end
+
+  table.sort(envs)
+  table.sort(regions)
+
+  return {
+    environments = envs,
+    regions = regions,
+  }
+end
+
+local env_region_config = load_env_region_from_ingress_mapping()
+local valid_envs = env_region_config.environments
+local valid_regions = env_region_config.regions
 
 local function parse_addopts()
   if vim.fn.filereadable("pytest.ini") == 0 then
@@ -26,11 +94,9 @@ local function parse_addopts()
     elseif in_ini and line:match("^addopts%s*=") then
       local opts_str = line:match("^addopts%s*=%s*(.+)$")
       if opts_str then
-        local parsed = vim.split(opts_str, "%s+")
-        return parsed
+        return vim.split(opts_str, "%s+")
       end
     elseif line:match("^%[.*%]") then
-      -- End of [pytest] section
       break
     end
   end
@@ -47,14 +113,11 @@ local function parse_pytest_ini_markers()
       if line:match("^markers") then
         in_markers = true
       elseif in_markers then
-        local trimmed = line:match("^%s*%-?%s*(%S+):%s*(.+)$")
-        if trimmed then
-          local marker, desc = line:match("^%s*%-?%s*(%S+):%s*(.+)$")
-          if marker and desc then
-            table.insert(markers, { marker = marker, desc = desc })
-          end
+        local marker, desc = line:match("^%s*%-?%s*(%S+):%s*(.+)$")
+        if marker and desc then
+          table.insert(markers, { marker = marker, desc = desc })
         elseif line:match("^%[.*%]") then
-          break -- end of markers section
+          break
         end
       end
     end
@@ -91,16 +154,13 @@ local function multi_select_picker(title, items, on_submit)
     }
   end
 
-  -- Select "bdd" marker by default
   for _, item in ipairs(items) do
     if item.marker == "bdd" then
       results[item.marker] = true
     end
   end
 
-  local picker
-
-  picker = pickers.new({ prompt_title = title }, {
+  local picker = pickers.new({ prompt_title = title }, {
     finder = make_finder(),
     sorter = conf.generic_sorter({}),
     attach_mappings = function(prompt_bufnr, map)
@@ -146,28 +206,25 @@ end
 local function run_tests(opts)
   local cmd = { "pytest" }
 
-  -- Include additional options from pytest.ini
-  local addopts = parse_addopts()
-  vim.list_extend(cmd, addopts)
+  vim.list_extend(cmd, parse_addopts())
 
   if not opts.serial then
-    table.insert(cmd, "-n")
-    table.insert(cmd, "auto")
+    vim.list_extend(cmd, { "-n", "auto" })
   end
 
-  if opts.markers == nil or opts.markers  == "" then
+  if not opts.markers or opts.markers == "" then
     opts.markers = "bdd"
   end
-
-  table.insert(cmd, "-m")
-  table.insert(cmd, string.format('"%s"', opts.markers))
 
   vim.fn.setenv("ENVIRONMENT", opts.environment)
   vim.fn.setenv("REGION", opts.region)
   vim.fn.setenv("MARKERS", opts.markers)
 
-  table.insert(cmd, string.format("--tb=short"))
-  table.insert(cmd, string.format("--capture=tee-sys"))
+  vim.list_extend(cmd, {
+    "-m", string.format('"%s"', opts.markers),
+    "--tb=short",
+    "--capture=tee-sys",
+  })
 
   if vim.fn.filereadable(log_path) == 1 then
     vim.fn.delete(log_path)
