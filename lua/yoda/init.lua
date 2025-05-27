@@ -1,14 +1,14 @@
 -- Load core settings
-require("yoda.core.options")
-require("yoda.core.keymaps")
-require("yoda.core.autocmds")
+require("yoda.options")
+require("yoda.keymaps")
+require("yoda.autocmds")
 
 -- Load plugins
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
 -- Load colorscheme
-require("yoda.core.colorscheme")
+require("yoda.colorscheme")
 
 -- Load Plenary test keymaps
-require("yoda.core.plenary")
+require("yoda.plenary")
 
