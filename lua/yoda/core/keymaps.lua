@@ -18,17 +18,15 @@ vim.keymap.set("n", "<leader>st", function ()
   job_id = vim.opt.channel
 end)
 
-vim.keymap.set("n", "<leader>example", function()
-  -- make
-  -- go build, go test, go run something (examples)
+vim.keymap.set("n", "<leader>sc", function()
   vim.fn.chansend(job_id, { "echo 'hi'\r\n" })
-end, { desc = "Send command to terminal" })
+end, { desc = "Send Command to Terminal" })
 
 -- Toggle relative numbersq
 vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
 
 -- Toggle neo-tree
-vim.keymap.set("n", "<leader>e", function()
+vim.keymap.set("n", "<leader>te", function()
   local neotree_open = false
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
@@ -47,10 +45,10 @@ vim.keymap.set("n", "<leader>e", function()
 end, { desc = "Toggle NeoTree" })
 
 -- Close Neo-tree
-vim.keymap.set("n", "<leader>c", ":Neotree close<CR>", { desc = "Close NeoTree" })
+vim.keymap.set("n", "<leader>tc", ":Neotree close<CR>", { desc = "Close NeoTree" })
 
 -- Focus on neo-tree
-vim.keymap.set("n", "<leader>o", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
+vim.keymap.set("n", "<leader>to", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
 
 vim.keymap.set("n", "<leader>ff", function()
   require("telescope.builtin").find_files()
@@ -137,7 +135,7 @@ vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, des
 vim.keymap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
 
 -- Close current buffer and switch cleanly
-vim.keymap.set("n", "<leader>q", function()
+vim.keymap.set("n", "<leader>bq", function()
   local api = vim.api
   local cur_buf = api.nvim_get_current_buf()
   local alt_buf = vim.fn.bufnr("#")

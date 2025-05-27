@@ -49,18 +49,13 @@ return {
     keymap.set("n", "<leader>fs", builtin.live_grep, opts)
     keymap.set("n", "<leader>fh", builtin.oldfiles, opts)
 
-    -- search in current working directory
-    keymap.set("n", "<leader>en", function()
-      require('telescope.builtin').find_files({
-        cwd = vim.fn.stdpath("config"),
-      })
-    end)
 
-    -- search in lazy.nvim
-    keymap.set("n", "<leader>ep", function()
-      require('telescope.builtin').find_files({
-        cwd = vim.fn.joinpath(vim.fn.stdpath("data"), "lazy"),
-      })
-    end)
+    keymap.set("n", "<leader>uc", function()
+      require("telescope.builtin").find_files({ cwd = vim.fn.stdpath("config") })
+    end, { desc = "Find User Config" })
+
+    keymap.set("n", "<leader>up", function()
+      require("telescope.builtin").find_files({ cwd = vim.fn.stdpath("data") .. "/lazy" })
+    end, { desc = "Find Plugin Files" })
   end,
 }
