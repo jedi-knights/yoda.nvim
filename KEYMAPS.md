@@ -8,9 +8,9 @@ The leader key is set to " ".
 
 ### Tree
 
-- `<leader>o` Focus on the tree
-- `<leader>e` Toggle the tree
-- `<leader>c` Close the tree
+- `<leader>to` Focus on the tree
+- `<leader>te` Toggle the tree
+- `<leaderj>tc` Close the tree
 
 ## Escape Input mode or Visual mode to Normal Mode
 - `jk`
@@ -20,7 +20,7 @@ The leader key is set to " ".
 - `<leader>i` Re-indent the entire file
 - `<leader>gg` Open the neogit interface
 - `<leader>r` Toggle relative line numbers
-- `<leader>q` Close the current buffer and exit cleanly
+- `<leader>bq` Close the current buffer and exit cleanly
 - `<leader>qq` Quit Neovim
 - `C-s` Save file
 - `<leader>y` Yank the entire buffer to the system clipboard
