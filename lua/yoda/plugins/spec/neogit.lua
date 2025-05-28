@@ -57,13 +57,6 @@ return {
 
     map('n', '<leader>gg', function() neogit.open() end, vim.tbl_extend("force", opts, { desc = "Neogit: Open" }))
 
-    map('n', '<leader>gc', function() neogit.open({ kind = 'commit' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Commit" }))
-    map('n', '<leader>gP', function() neogit.open({ kind = 'push' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Push" }))
-    map('n', '<leader>gp', function() neogit.open({ kind = 'pull' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Pull" }))
-    map('n', '<leader>gl', function() neogit.open({ kind = 'log' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Log" }))
-    map('n', '<leader>gn', function() neogit.open({ kind = 'branch' }) end, vim.tbl_extend("force", opts, { desc = "Neogit: Branch" }))
-
-    map('n', '<leader>gb', ":Telescope git_branches<CR>", vim.tbl_extend("force", opts, { desc = "Git: Telescope Branches" }))
     map('n', '<leader>gB', ":G blame<CR>", vim.tbl_extend("force", opts, { desc = "Git: Fugitive Blame" }))
 
     -- Refresh Neo-tree when leaving Neogit
