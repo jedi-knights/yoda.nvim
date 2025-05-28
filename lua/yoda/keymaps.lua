@@ -1,15 +1,18 @@
 -- lua/yoda/core/keymaps.lua
 
+
+local kmap = require("yoda.utils.keymap_logger")
+
 -- General Keymaps
 
-vim.keymap.set("n", "<leader>tp", function()
+kmap.set("n", "<leader>tp", function()
   require("yoda.testpicker").run()
 end, { desc = "Run tests with yoda" })
 
 -- Start a small terminal at the bottom of the screen
 --
 local job_id = 0
-vim.keymap.set("n", "<leader>st", function ()
+kmap.set("n", "<leader>st", function ()
   vim.cmd.vnew()
   vim.cmd.term()
   vim.cmd.wincmd("J")
@@ -18,15 +21,15 @@ vim.keymap.set("n", "<leader>st", function ()
   job_id = vim.opt.channel
 end)
 
-vim.keymap.set("n", "<leader>sc", function()
+kmap.set("n", "<leader>sc", function()
   vim.fn.chansend(job_id, { "echo 'hi'\r\n" })
 end, { desc = "Send Command to Terminal" })
 
 -- Toggle relative numbersq
-vim.keymap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
+kmap.set("n", "<leader>r", ":set relativenumber!<CR>", { desc = "Toggle Relative Line Numbers" })
 
 -- Toggle neo-tree
-vim.keymap.set("n", "<leader>te", function()
+kmap.set("n", "<leader>te", function()
   local neotree_open = false
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
@@ -45,97 +48,97 @@ vim.keymap.set("n", "<leader>te", function()
 end, { desc = "Toggle NeoTree" })
 
 -- Close Neo-tree
-vim.keymap.set("n", "<leader>tc", ":Neotree close<CR>", { desc = "Close NeoTree" })
+kmap.set("n", "<leader>tc", ":Neotree close<CR>", { desc = "Close NeoTree" })
 
 -- Focus on neo-tree
-vim.keymap.set("n", "<leader>to", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
+kmap.set("n", "<leader>to", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
 
-vim.keymap.set("n", "<leader>ff", function()
+kmap.set("n", "<leader>ff", function()
   require("telescope.builtin").find_files()
 end, { desc = "Find Files" })
 
-vim.keymap.set("n", "<leader>fg", function()
+kmap.set("n", "<leader>fg", function()
   require("telescope.builtin").live_grep()
 end, { desc = "Live Grep" })
 
-vim.keymap.set("n", "<leader>fb", function()
+kmap.set("n", "<leader>fb", function()
   require("telescope.builtin").buffers()
 end, { desc = "Find Buffers" })
 
-vim.keymap.set("n", "<leader>fh", function()
+kmap.set("n", "<leader>fh", function()
   require("telescope.builtin").help_tags()
 end, { desc = "Find Help Tags" })
 
-vim.keymap.set("n", "<leader>fw", function()
+kmap.set("n", "<leader>fw", function()
   require("telescope.builtin").grep_string()
 end, { desc = "Grep String" })
 
-vim.keymap.set("n", "<leader>fd", function()
+kmap.set("n", "<leader>fd", function()
   require("telescope.builtin").diagnostics()
 end, { desc = "Find Diagnostics" })
 
-vim.keymap.set("n", "<leader>fp", function()
+kmap.set("n", "<leader>fp", function()
   require("telescope.builtin").pickers()
 end, { desc = "Find Pickers" })
 
-vim.keymap.set("n", "<leader>fs", function()
+kmap.set("n", "<leader>fs", function()
   require("telescope.builtin").search_history()
 end, { desc = "Search History" })
 
-vim.keymap.set("n", "<leader>ft", function()
+kmap.set("n", "<leader>ft", function()
   require("telescope.builtin").tags()
 end, { desc = "Find Tags" })
 
-vim.keymap.set("n", "<leader>fc", function()
+kmap.set("n", "<leader>fc", function()
   require("telescope.builtin").commands()
 end, { desc = "Find Commands" })
 
-vim.keymap.set("n", "<leader>fr", function()
+kmap.set("n", "<leader>fr", function()
   require("telescope.builtin").registers()
 end, { desc = "Find Registers" })
 
-vim.keymap.set("n", "<leader>fC", function()
+kmap.set("n", "<leader>fC", function()
   require("telescope.builtin").command_history()
 end, { desc = "Find Command History" })
 
 
 
-vim.keymap.set("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim" })
-vim.keymap.set("n", "<C-s>", ":w<CR>", { desc = "Save File" })
+kmap.set("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim" })
+kmap.set("n", "<C-s>", ":w<CR>", { desc = "Save File" })
 
 -- Better Window Navigation
-vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
-vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to Lower Window" })
-vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to Upper Window" })
-vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to Right Window" })
-vim.keymap.set("n", "<C-c>", "<C-w>c", { desc = "Close window" })
+kmap.set("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
+kmap.set("n", "<C-j>", "<C-w>j", { desc = "Move to Lower Window" })
+kmap.set("n", "<C-k>", "<C-w>k", { desc = "Move to Upper Window" })
+kmap.set("n", "<C-l>", "<C-w>l", { desc = "Move to Right Window" })
+kmap.set("n", "<C-c>", "<C-w>c", { desc = "Close window" })
 
 -- Visual Mode Improvements
-vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
-vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })
+kmap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
+kmap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })
 
 -- Visual Block Mode Improvements
-vim.keymap.set("x", "J", ":move '>+1<CR>gv-gv", { desc = "Move Block Down" })
-vim.keymap.set("x", "K", ":move '<-2<CR>gv-gv", { desc = "Move Block Up" })
+kmap.set("x", "J", ":move '>+1<CR>gv-gv", { desc = "Move Block Down" })
+kmap.set("x", "K", ":move '<-2<CR>gv-gv", { desc = "Move Block Up" })
 
 -- Terminal Mode
-vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode" })
+kmap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode" })
 
 -- Yank the entire buffer to the system clipboard
-vim.keymap.set("n", "<leader>y", ":%y+<CR>", { desc = "Yank entire buffer to system clipboard" })
+kmap.set("n", "<leader>y", ":%y+<CR>", { desc = "Yank entire buffer to system clipboard" })
 
 -- Prevent accedental macro recording
-vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
+kmap.set("n", "q", "<nop>", { desc = "Disable q" })
 
 -- Add any additional keymaps here
-vim.api.nvim_set_keymap("i", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
-vim.api.nvim_set_keymap("v", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Visual Mode" })
+kmap.set("i", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
+kmap.set("v", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Visual Mode" })
 
 -- Indent entire file
-vim.keymap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
+kmap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
 
 -- Close current buffer and switch cleanly
-vim.keymap.set("n", "<leader>bq", function()
+kmap.set("n", "<leader>bq", function()
   local api = vim.api
   local cur_buf = api.nvim_get_current_buf()
   local alt_buf = vim.fn.bufnr("#")
@@ -151,7 +154,7 @@ vim.keymap.set("n", "<leader>bq", function()
 end, { desc = "Close current buffer and switch cleanly" })
 
 -- Close all buffers other than the current one
-vim.keymap.set("n", "<leader>bd", function()
+kmap.set("n", "<leader>bd", function()
   vim.cmd("%bd | e# | bd#")
 end, { desc = "Delete all buffers except current" })
 
