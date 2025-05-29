@@ -1,19 +1,5 @@
 -- lua/yoda/testpicker/init.lua
 -- Neovim picker for running customized pytest tests
-
-local vendor = require("yoda.vendor.vendor")
-local yaml = vendor.require("yaml")
-
-if not yaml then
-  vim.notify("Failed to load YAML vendor module", vim.log.levels.ERROR)
-  return
-end
-
-if not yaml.eval then
-  vim.notify("Vendored yaml module is invalid", vim.log.levels.ERROR)
-  return
-end
-
 local Path = require("plenary.path")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
@@ -23,6 +9,59 @@ local conf = require("telescope.config").values
 local entry_display = require("telescope.pickers.entry_display")
 
 local log_path = "output.log"
+
+local function parse_environments_from_ingress_mapping(path)
+  local lines = Path:new(path):readlines()
+  local envs = {}
+  local seen = {}
+  local in_env_list = false
+  local indent_level = nil
+
+  for _, line in ipairs(lines) do
+    if line:match("^%s*environments:%s*$") then
+      in_env_list = true
+    elseif in_env_list then
+      local indent, name = line:match("^(%s*)%- name:%s*(%w+)%s*$")
+      if indent and name and #indent <= 4 then -- direct child of environments
+        if not seen[name] then
+          table.insert(envs, name)
+          seen[name] = true
+        end
+      elseif line:match("^%S") then
+        break -- reached top-level key again
+      end
+    end
+  end
+
+  return envs
+end
+
+local function parse_regions_from_ingress_mapping(path)
+  local lines = Path:new(path):readlines()
+  local regions = {}
+  local seen = {}
+  local in_regions = false
+  local indent_level = nil
+
+  for _, line in ipairs(lines) do
+    if line:match("^%s*regions:%s*$") then
+      in_regions = true
+    elseif in_regions then
+      local indent, name = line:match("^(%s*)%- name:%s*(%w+)%s*$")
+      if indent and name and #indent <= 8 then -- direct child of regions
+        if not seen[name] then
+          table.insert(regions, name)
+          seen[name] = true
+        end
+      elseif line:match("^%S") then
+        in_regions = false -- exit block if we reach a new top-level key
+      end
+    end
+  end
+
+  return regions
+end
+
 
 local function load_env_region_from_ingress_mapping()
   local candidates = { "ingress-mapping.yaml", "ingress-mapping.yml" }
@@ -42,40 +81,12 @@ local function load_env_region_from_ingress_mapping()
     }
   end
 
-  local content = Path:new(file_path):read()
-  local parsed = yaml.eval(content)
-
-  if not parsed or type(parsed.environments) ~= "table" then
-    vim.notify("Malformed ingress-mapping file. Falling back to default envs/regions.", vim.log.levels.WARN)
-    return {
-      environments = { "qa", "prod" },
-      regions = { "auto", "use1", "usw2", "euw1", "apse1" },
-    }
-  end
-
-  local envs = {}
-  local region_set = {}
-
-  for _, env in ipairs(parsed.environments or {}) do
-    table.insert(envs, env.name)
-    for _, region in ipairs(env.regions or {}) do
-      region_set[region.name] = true
-    end
-  end
-
-  local regions = {}
-  for region in pairs(region_set) do
-    table.insert(regions, region)
-  end
-
-  table.sort(envs)
-  table.sort(regions)
-
   return {
-    environments = envs,
-    regions = regions,
+    environments = parse_environments_from_ingress_mapping(file_path),
+    regions = parse_regions_from_ingress_mapping(file_path),
   }
 end
+
 
 local env_region_config = load_env_region_from_ingress_mapping()
 local valid_envs = env_region_config.environments

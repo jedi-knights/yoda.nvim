@@ -172,7 +172,30 @@ I'm experimenting with
 
 I don't believe markdown-preview is supported any longer so I'm not going to use that one.
 
+## DevTools
+
+I have added two user commands to assist in keymap exploration:
+
+**open a buffer with all current keymaps grouped by mode**
+
+```plaintext
+:YodaKeymapDump
+```
+
+**list conflicting mappings**
+
+```plaintext
+:YodaKeymapConflicts
+```
+
+**dump logged mappings**
+
+```plaintext
+:YodaLoggedKeymaps
+```
+
 ## References
+
 
 - [Python Setup](https://www.youtube.com/watch?v=IobijoroGE0&t=10s)
 - [Reference Dotfiles](https://github.com/hendrikmi/dotfiles/tree/main/nvim)
