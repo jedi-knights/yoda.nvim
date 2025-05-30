@@ -88,14 +88,45 @@ end, { desc = "Toggle NeoTree" })
 kmap.set("n", "<leader>ec", ":Neotree close<CR>", { desc = "Close NeoTree" })
 
 -- Telescope mappings (grouped)
-kmap.set("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Find Files" })
-kmap.set("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Find Buffers" })
-kmap.set("n", "<leader>fr", require("telescope.builtin").registers, { desc = "Find Registers" })
-kmap.set("n", "<leader>sg", require("telescope.builtin").live_grep, { desc = "Search Grep" })
-kmap.set("n", "<leader>sw", require("telescope.builtin").grep_string, { desc = "Search Word Under Cursor" })
-kmap.set("n", "<leader>sh", require("telescope.builtin").search_history, { desc = "Search History" })
-kmap.set("n", "<leader>hh", require("telescope.builtin").help_tags, { desc = "Help Tags" })
-kmap.set("n", "<leader>hc", require("telescope.builtin").commands, { desc = "Command Palette" })
+kmap.set("n", "<leader>ff", function()
+  local builtin = require("telescope.builtin")
+  builtin.find_files()
+end, { desc = "Find Files" })
+
+kmap.set("n", "<leader>fb", function()
+  local builtin = require("telescope.builtin")
+  builtin.buffers()
+end, { desc = "Find Buffers" })
+
+kmap.set("n", "<leader>fr", function()
+  local builtin = require("telescope.builtin")
+  builtin.registers()
+end, { desc = "Find Registers" })
+
+kmap.set("n", "<leader>sg", function()
+  local builtin = require("telescope.builtin")
+  builtin.live_grep()
+end, { desc = "Search Grep" })
+
+kmap.set("n", "<leader>sw", function()
+  local builtin = require("telescope.builtin")
+  builtin.grep_string()
+end, { desc = "Search Word Under Cursor" })
+
+kmap.set("n", "<leader>sh", function()
+  local builtin = require("telescope.builtin")
+  builtin.search_history()
+end, { desc = "Search History" })
+
+kmap.set("n", "<leader>hh", function()
+  local builtin = require("telescope.builtin")
+  builtin.help_tags()
+end, { desc = "Help Tags" })
+
+kmap.set("n", "<leader>hc", function()
+  local builtin = require("telescope.builtin")
+  builtin.commands()
+end, { desc = "Command Palette" })
 
 -- Quit all
 kmap.set("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim" })
