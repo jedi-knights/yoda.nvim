@@ -1,61 +1,78 @@
 return {
   "nvim-telescope/telescope.nvim",
-  lazy = false,                                                      -- load at startup (important for your keymaps)
-  priority = 100,                                                    -- load before other UI
+  lazy = false,
+  priority = 100,
   dependencies = {
-    "nvim-lua/plenary.nvim",                                         -- 🔥 mandatory dependency
-    { "nvim-telescope/telescope-fzf-native.nvim",  build = "make" }, -- optional, for fzf support
-    { "nvim-telescope/telescope-ui-select.nvim" },                   -- optional, for ui-select support
-    { "nvim-telescope/telescope-file-browser.nvim" },                -- optional, for file browser support
-    { "nvim-telescope/telescope-frecency.nvim" },                    -- optional, for frecency support
-    { "nvim-telescope/telescope-github.nvim" },                      -- optional, for github support
-    { "nvim-telescope/telescope-media-files.nvim" },                 -- optional, for media files support
-    { "nvim-telescope/telescope-symbols.nvim" },                     -- optional, for symbols support
-    { "nvim-telescope/telescope-project.nvim" },                     -- optional, for project support
+    "nvim-lua/plenary.nvim",
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    { "nvim-telescope/telescope-ui-select.nvim" },
+    { "nvim-telescope/telescope-file-browser.nvim" },
+    { "nvim-telescope/telescope-frecency.nvim" },
+    { "nvim-telescope/telescope-github.nvim" },
+    { "nvim-telescope/telescope-media-files.nvim" },
+    { "nvim-telescope/telescope-symbols.nvim" },
+    { "nvim-telescope/telescope-project.nvim" },
   },
   config = function()
     local telescope = require("telescope")
     telescope.setup({
       defaults = {
-        -- optional: nice defaults
         path_display = { "smart" },
         layout_config = {
           horizontal = { width = 0.9 },
         },
-        file_ignore_patterns = { "node_modules" },
+        file_ignore_patterns = {
+          "^.git/",
+          "node_modules",
+        },
+        vimgrep_arguments = {
+          "rg",
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
+          "--smart-case",
+          "--hidden",
+          "--no-ignore",
+        },
       },
       pickers = {
         find_files = {
           theme = "ivy",
-        }
+          hidden = true,
+          no_ignore = true,
+        },
       },
       extensions = {
         fzf = {},
-      }
+      },
     })
-    telescope.load_extension("fzf")          -- optional, for fzf support
-    telescope.load_extension("ui-select")    -- optional, for ui-select support
-    telescope.load_extension("file_browser") -- optional, for file browser support
-    telescope.load_extension("frecency")     -- optional, for frecency support
-    telescope.load_extension("media_files")  -- optional, for media files support
-    telescope.load_extension("project")      -- optional, for project support
+
+    -- Load extensions
+    telescope.load_extension("fzf")
+    telescope.load_extension("ui-select")
+    telescope.load_extension("file_browser")
+    telescope.load_extension("frecency")
+    telescope.load_extension("media_files")
+    telescope.load_extension("project")
 
     local opts = { noremap = true, silent = true }
-
     local keymap = vim.keymap
     local builtin = require("telescope.builtin")
 
+    -- General file finding
     keymap.set("n", "<leader>ff", builtin.find_files, opts)
     keymap.set("n", "<leader>fs", builtin.live_grep, opts)
     keymap.set("n", "<leader>fh", builtin.oldfiles, opts)
 
-
+    -- Project/user-specific
     keymap.set("n", "<leader>uc", function()
-      require("telescope.builtin").find_files({ cwd = vim.fn.stdpath("config") })
+      builtin.find_files({ cwd = vim.fn.stdpath("config"), hidden = true, no_ignore = true })
     end, { desc = "Find User Config" })
 
     keymap.set("n", "<leader>up", function()
-      require("telescope.builtin").find_files({ cwd = vim.fn.stdpath("data") .. "/lazy" })
+      builtin.find_files({ cwd = vim.fn.stdpath("data") .. "/lazy", hidden = true, no_ignore = true })
     end, { desc = "Find Plugin Files" })
   end,
 }
