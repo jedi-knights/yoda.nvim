@@ -34,7 +34,7 @@ opt.signcolumn = "yes"           -- Always show the sign column
 opt.ignorecase = true            -- Ignore case in search patterns
 opt.smartcase = true             -- Override ignorecase if search contains capitals
 opt.incsearch = true             -- Show search matches while typing
-opt.hlsearch = false             -- Don't highlight matches after search
+opt.hlsearch = true              -- Highlight matches after search
 
 -- Split windows
 opt.splitright = true            -- Vertical splits to the right
