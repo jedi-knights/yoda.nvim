@@ -86,7 +86,6 @@ kmap.set("n", "<leader>e", function()
   vim.cmd("Neotree toggle")
 end, { desc = "Toggle NeoTree" })
 kmap.set("n", "<leader>ec", ":Neotree close<CR>", { desc = "Close NeoTree" })
-kmap.set("n", "<leader>eo", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
 
 -- Telescope mappings (grouped)
 kmap.set("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Find Files" })
