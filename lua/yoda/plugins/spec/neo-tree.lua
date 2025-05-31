@@ -14,10 +14,27 @@ return {
     window = {
       width = 35,
       auto_expand_width = true,
+      name = function(state)
+        -- Show only the final directory name as the window title
+        return "󰉋  " .. vim.fn.fnamemodify(state.path, ":t")
+      end,
       mappings = {
-      }, -- (leave your custom mappings here later)
+        -- Add custom mappings here if needed
+      },
     },
     filesystem = {
+      bind_to_cwd = true,               -- respect vim's cwd
+      cwd_target = {
+        sidebar = "tab",                -- use tab-local cwd
+        --current = "window",             -- optional
+      },
+      -- Set root dir to the current buffer's path (aka your working project dir)
+      commands = {
+        set_root_to_cwd = function(state)
+          local path = vim.fn.getcwd()
+          require("neo-tree.sources.manager").set_root("filesystem", path)
+        end,
+      },
       -- Default: {"icon", "name", "diagnostics", "git_status", "file_size"}
       renderers = {
         file = {
@@ -35,6 +52,7 @@ return {
           { "git_status" },
         },
       },
+      hijack_netrw_behavior = "open_default", -- replace netrw
       filtered_items = {
         visible = false, -- show hidden file
         show_hidden_count = true,
@@ -58,6 +76,20 @@ return {
     buffers = {
       follow_current_file = {
         enabled = true, -- also follow in buffers view
+      },
+    },
+    event_handlers = {
+      {
+        event = "neo_tree_buffer_enter",
+        handler = function()
+          local cwd = vim.fn.getcwd()
+          local root_name = vim.fn.fnamemodify(cwd, ":t") -- tail (last part of path)
+          local bufnr = vim.api.nvim_get_current_buf()
+          local winid = vim.fn.bufwinid(bufnr)
+          if winid ~= -1 then
+            vim.wo[winid].winbar = "󰉋  " .. root_name
+          end
+        end,
       },
     },
   },

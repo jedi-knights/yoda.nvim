@@ -15,4 +15,3 @@ return { -- optional blink completion source for require statements and module a
     },
   },
 }
-
