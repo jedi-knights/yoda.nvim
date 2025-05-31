@@ -17,11 +17,17 @@ kmap.set("n", "<leader>st", function ()
   vim.cmd.wincmd("J")
   vim.api.nvim_win_set_height(0, 5)
   job_id = vim.opt.channel
+  vim.cmd("startinsert!")  -- 👈 auto-enter insert mode after terminal opens
 end, { desc = "Open bottom terminal" })
 
 kmap.set("n", "<leader>sc", function()
   vim.fn.chansend(job_id, { "echo 'hi'\r\n" })
 end, { desc = "Send Command to Terminal" })
+
+-- Windows
+-- Split
+kmap.set("n", "<leader>|", vim.cmd.vs, { desc = "Vertical Split" })
+kmap.set("n", "<leader>-", vim.cmd.sp, { desc = "Horizontal Split" })
 
 -- Window navigation
 kmap.set("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
@@ -29,6 +35,19 @@ kmap.set("n", "<C-j>", "<C-w>j", { desc = "Move to Lower Window" })
 kmap.set("n", "<C-k>", "<C-w>k", { desc = "Move to Upper Window" })
 kmap.set("n", "<C-l>", "<C-w>l", { desc = "Move to Right Window" })
 kmap.set("n", "<C-c>", "<C-w>c", { desc = "Close Window" })
+
+-- Tab navigation
+kmap.set("n", "<C-t>", vim.cmd.tabnew, { desc = "New Tab" })
+kmap.set("n", "<C-w>", vim.cmd.tabclose, { desc = "Close Tab" })
+kmap.set("n", "<C-p>", vim.cmd.tabprevious, { desc = "Previous Tab" })
+kmap.set("n", "<C-n>", vim.cmd.tabnext, { desc = "Next Tab" })
+
+-- Buffer navigation
+kmap.set("n", "<S-Left>", vim.cmd.bprevious, { desc = "Previous Buffer" })
+kmap.set("n", "<S-Right>", vim.cmd.bnext, { desc = "Next Buffer" })
+kmap.set("n", "<S-Down>", vim.cmd.buffers, { desc = "List Buffers" })
+kmap.set("n", "<S-Up>", ":buffer ", { desc = "Switch to Buffer" })
+kmap.set("n", "<S-Del>", vim.cmd.bdelete, { desc = "Delete Buffer" })
 
 -- Window resizing
 kmap.set("n", "<M-Left>",  ":vertical resize -2<CR>", { desc = "Shrink Window Width" })
@@ -82,10 +101,13 @@ end, { desc = "Close others" })
 kmap.set("n", "<leader>bd", ":bufdo bd<CR>", { desc = "Delete all buffers" })
 
 -- Neo-tree (grouped under <leader>e)
-kmap.set("n", "<leader>e", function()
+kmap.set("n", "<leader>nt", function()
   vim.cmd("Neotree toggle")
 end, { desc = "Toggle NeoTree" })
-kmap.set("n", "<leader>ec", ":Neotree close<CR>", { desc = "Close NeoTree" })
+
+kmap.set("n", "<leader>nc", ":Neotree close<CR>", { desc = "Close NeoTree" })
+
+kmap.set("n", "<leader>nf", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
 
 -- Telescope mappings (grouped)
 kmap.set("n", "<leader>ff", function()
