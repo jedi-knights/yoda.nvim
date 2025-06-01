@@ -21,8 +21,8 @@ local function run_current_file()
 end
 
 -- Register keymaps
-vim.keymap.set("n", "<leader>tt", run_current_file, { desc = "Run Plenary Tests: Current File" })
-vim.keymap.set("n", "<leader>ta", run_all_tests, { desc = "Run Plenary Tests: All in ./tests" })
+vim.keymap.set("n", "<leader>pt", run_current_file, { desc = "Run Plenary Tests: Current File" })
+vim.keymap.set("n", "<leader>pa", run_all_tests, { desc = "Run Plenary Tests: All in ./tests" })
 
 -- Optional: register with which-key if you're using it
 --local wk_ok, wk = pcall(require, "which-key")
