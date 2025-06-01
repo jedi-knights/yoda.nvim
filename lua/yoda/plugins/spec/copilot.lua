@@ -2,11 +2,8 @@ return {
   "github/copilot.vim",
   lazy = false,
   config = function()
-    -- Disable default `<Tab>` mapping
+    -- Disable default `<Tab>` maping
     vim.g.copilot_no_tab_map = true
-
-    -- Map `<C-J>` to accept Copilot suggestions
-    vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
 
     -- Optional: Customize Copilot behavior
     vim.g.copilot_filetypes = {
@@ -14,12 +11,6 @@ return {
       ["markdown"] = false, -- Disable Copilot for Markdown files
       ["text"] = false, -- Disable Copilot for plain text files
     }
-
-    -- Copilot Keymaps
-    vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true, desc = "Accept Copilot suggestion" })
-    vim.api.nvim_set_keymap("i", "<C-K>", 'copilot#Dismiss()', { silent = true, expr = true, desc = "Dismiss Copilot suggestion" })
-    vim.api.nvim_set_keymap("i", "<C-Space>", 'copilot#Complete()', { silent = true, expr = true, desc = "Trigger Copilot completion" })
-
 
     -- Create a :CopilotToggle command
     vim.api.nvim_create_user_command("CopilotToggle", function()
@@ -32,9 +23,6 @@ return {
         print("Copilot enabled")
       end
     end, { desc = "Toggle Copilot" })
-
-    -- Toggle keymap
-    vim.keymap.set("n", "<leader>cp", ":CopilotToggle<CR>", { desc = "Toggle Copilot" })
   end
 }
 

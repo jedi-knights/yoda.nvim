@@ -11,7 +11,6 @@ return {
     vim.api.nvim_create_autocmd('FileType', {
       pattern = 'python',
       callback = function()
-        vim.api.nvim_set_keymap('n', '<leader>tr', ':w<CR>:FloatermNew --autoclose=0 python3 %<CR>', { noremap = true, silent = true })
         vim.api.nvim_set_keymap('i', '<leader>tr', '<ESC>:w<CR>:FloatermNew --autoclose=0 python3 %<CR>', { noremap = true, silent = true })
       end
     })

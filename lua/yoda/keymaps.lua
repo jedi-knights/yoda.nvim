@@ -3,87 +3,103 @@
 local kmap = require("yoda.utils.keymap_logger")
 local job_id = 0
 
--- General Keymaps
+-- general keymaps
 
--- Run tests
+-- Reload neovim config
+kmap.set("n", "<leader><leader>r", function()
+  -- Unload your plugin/config namespace so it can be re-required
+  for name, _ in pairs(package.loaded) do
+    if name:match("^yoda") then -- or your namespace prefix
+      package.loaded[name] = nil
+    end
+  end
+
+  -- Reload your plugin spec file (if using `import = "yoda.plugins.spec"`)
+  require("yoda")
+
+  -- Notify the user
+  vim.notify("✅ Reloaded yoda plugin config", vim.log.levels.INFO)
+end, { desc = "Hot reload Yoda plugin config" })
+
+-- run tests
 kmap.set("n", "<leader>tp", function()
   require("yoda.testpicker").run()
-end, { desc = "Run tests with yoda" })
+end, { desc = "run tests with yoda" })
 
--- Toggle terminal at bottom
-kmap.set("n", "<leader>st", function ()
+-- toggle terminal at bottom
+kmap.set("n", "<leader>st", function()
   vim.cmd.vnew()
   vim.cmd.term()
-  vim.cmd.wincmd("J")
+  vim.cmd.wincmd("j")
   vim.api.nvim_win_set_height(0, 5)
   job_id = vim.opt.channel
-  vim.cmd("startinsert!")  -- 👈 auto-enter insert mode after terminal opens
-end, { desc = "Open bottom terminal" })
+  vim.cmd("startinsert!") -- 👈 auto-enter insert mode after terminal opens
+end, { desc = "open bottom terminal" })
 
 kmap.set("n", "<leader>sc", function()
   vim.fn.chansend(job_id, { "echo 'hi'\r\n" })
-end, { desc = "Send Command to Terminal" })
--- Windows
--- Split
-kmap.set("n", "<leader>|", ":vsplit<CR>", { desc = "Vertical Split" })
-kmap.set("n", "<leader>-", ":split<CR>", { desc = "Horizontal Split" })
-kmap.set("n", "<leader>se", "<C-w>=", { desc = "Equalize Window Sizes" })
-kmap.set("n", "<leader>sx", ":close<CR>", { desc = "Close Current Split" })
+end, { desc = "send command to terminal" })
+-- windows
+-- split
+kmap.set("n", "<leader>|", ":vsplit<cr>", { desc = "vertical split" })
+kmap.set("n", "<leader>-", ":split<cr>", { desc = "horizontal split" })
+kmap.set("n", "<leader>se", "<c-w>=", { desc = "equalize window sizes" })
+kmap.set("n", "<leader>sx", ":close<cr>", { desc = "close current split" })
 
--- Window navigation
-kmap.set("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
-kmap.set("n", "<C-j>", "<C-w>j", { desc = "Move to Lower Window" })
-kmap.set("n", "<C-k>", "<C-w>k", { desc = "Move to Upper Window" })
-kmap.set("n", "<C-l>", "<C-w>l", { desc = "Move to Right Window" })
-kmap.set("n", "<C-c>", "<C-w>c", { desc = "Close Window" })
+-- window navigation
+kmap.set("n", "<c-h>", "<c-w>h", { desc = "move to left window" })
+kmap.set("n", "<c-j>", "<c-w>j", { desc = "move to lower window" })
+kmap.set("n", "<c-k>", "<c-w>k", { desc = "move to upper window" })
+kmap.set("n", "<c-l>", "<c-w>l", { desc = "move to right window" })
+kmap.set("n", "<c-c>", "<c-w>c", { desc = "close window" })
 
--- Tab navigation
-kmap.set("n", "<C-t>", vim.cmd.tabnew, { desc = "New Tab" })
-kmap.set("n", "<C-w>", vim.cmd.tabclose, { desc = "Close Tab" })
-kmap.set("n", "<C-p>", vim.cmd.tabprevious, { desc = "Previous Tab" })
-kmap.set("n", "<C-n>", vim.cmd.tabnext, { desc = "Next Tab" })
+-- tab navigation
+kmap.set("n", "<c-t>", vim.cmd.tabnew, { desc = "new tab" })
+kmap.set("n", "<c-w>", vim.cmd.tabclose, { desc = "close tab" })
+kmap.set("n", "<c-p>", vim.cmd.tabprevious, { desc = "previous tab" })
+kmap.set("n", "<c-n>", vim.cmd.tabnext, { desc = "next tab" })
 
--- Buffer navigation
-kmap.set("n", "<S-Left>", vim.cmd.bprevious, { desc = "Previous Buffer" })
-kmap.set("n", "<S-Right>", vim.cmd.bnext, { desc = "Next Buffer" })
-kmap.set("n", "<S-Down>", vim.cmd.buffers, { desc = "List Buffers" })
-kmap.set("n", "<S-Up>", ":buffer ", { desc = "Switch to Buffer" })
-kmap.set("n", "<S-Del>", vim.cmd.bdelete, { desc = "Delete Buffer" })
+-- buffer navigation
+kmap.set("n", "<s-left>", vim.cmd.bprevious, { desc = "previous buffer" })
+kmap.set("n", "<s-right>", vim.cmd.bnext, { desc = "next buffer" })
+kmap.set("n", "<s-down>", vim.cmd.buffers, { desc = "list buffers" })
+kmap.set("n", "<s-up>", ":buffer ", { desc = "switch to buffer" })
+kmap.set("n", "<s-del>", vim.cmd.bdelete, { desc = "delete buffer" })
 
--- Window resizing
-kmap.set("n", "<M-Left>",  ":vertical resize -2<CR>", { desc = "Shrink Window Width" })
-kmap.set("n", "<M-Right>", ":vertical resize +2<CR>", { desc = "Expand Window Width" })
-kmap.set("n", "<M-Up>",    ":resize -1<CR>",          { desc = "Shrink Window Height" })
-kmap.set("n", "<M-Down>",  ":resize +1<CR>",          { desc = "Expand Window Height" })
+-- window resizing
+kmap.set("n", "<m-left>", ":vertical resize -2<cr>", { desc = "shrink window width" })
+kmap.set("n", "<m-right>", ":vertical resize +2<cr>", { desc = "expand window width" })
+kmap.set("n", "<m-up>", ":resize -1<cr>", { desc = "shrink window height" })
+kmap.set("n", "<m-down>", ":resize +1<cr>", { desc = "expand window height" })
 
--- Save/Quit
-kmap.set("n", "<C-s>", ":w<CR>",   { desc = "Save File" })
-kmap.set("n", "<C-q>", ":wq<CR>",  { desc = "Save and Quit" })
-kmap.set("n", "<C-x>", ":bd<CR>",  { desc = "Close Buffer" })
+-- save/quit
+kmap.set("n", "<c-s>", ":w<cr>", { desc = "save file" })
+kmap.set("n", "<c-q>", ":wq<cr>", { desc = "save and quit" })
+kmap.set("n", "<c-x>", ":bd<cr>", { desc = "close buffer" })
 
--- Visual Mode Improvements
-kmap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
-kmap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })
-kmap.set("x", "J", ":move '>+1<CR>gv-gv", { desc = "Move Block Down" })
-kmap.set("x", "K", ":move '<-2<CR>gv-gv", { desc = "Move Block Up" })
+-- visual mode improvements
+kmap.set("v", "j", ":m '>+1<cr>gv=gv", { desc = "move selection down" })
+kmap.set("v", "k", ":m '<-2<cr>gv=gv", { desc = "move selection up" })
+kmap.set("x", "j", ":move '>+1<cr>gv-gv", { desc = "move block down" })
+kmap.set("x", "k", ":move '<-2<cr>gv-gv", { desc = "move block up" })
 
--- Exit Terminal Mode
-kmap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode" })
+-- exit terminal mode
+kmap.set("t", "<esc>", "<c-\\><c-n>", { desc = "exit terminal mode" })
 
--- Clipboard/Yank
-kmap.set("n", "<leader>y", ":%y+<CR>", { desc = "Yank buffer to system clipboard" })
+-- clipboard/yank
+kmap.set("n", "<leader>y", ":%y+<cr>", { desc = "yank buffer to system clipboard" })
 
--- Disable macro recording
-kmap.set("n", "q", "<nop>", { desc = "Disable q" })
+-- disable macro recording
+kmap.set("n", "q", "<nop>", { desc = "disable q" })
 
--- Fast mode exits
-kmap.set("i", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Insert Mode" })
-kmap.set("v", "jk", "<Esc>", { noremap = true, silent = true, desc = "Exit Visual Mode" })
+-- fast mode exits
+kmap.set("i", "jk", "<esc>", { noremap = true, silent = true, desc = "exit insert mode" })
+kmap.set("v", "jk", "<esc>", { noremap = true, silent = true, desc = "exit visual mode" })
 
--- Re-indent whole file
-kmap.set("n", "<leader>i", "gg=G", { desc = "Re-indent entire file" })
+-- re-indent whole file
+kmap.set("n", "<leader>i", "gg=g", { desc = "re-indent entire file" })
 
--- Buffer management
+-- buffer management
 kmap.set("n", "<leader>bq", function()
   local api = vim.api
   local cur_buf = api.nvim_get_current_buf()
@@ -94,63 +110,74 @@ kmap.set("n", "<leader>bq", function()
     vim.cmd("bnext")
   end
   vim.cmd("bd " .. cur_buf)
-end, { desc = "Close buffer and switch" })
+end, { desc = "close buffer and switch" })
 
 kmap.set("n", "<leader>bo", function()
   vim.cmd("%bd | e# | bd#")
-end, { desc = "Close others" })
-kmap.set("n", "<leader>bd", ":bufdo bd<CR>", { desc = "Delete all buffers" })
+end, { desc = "close others" })
+kmap.set("n", "<leader>bd", ":bufdo bd<cr>", { desc = "delete all buffers" })
 
--- Neo-tree (grouped under <leader>e)
+-- neo-tree (grouped under <leader>e)
 kmap.set("n", "<leader>nt", function()
-  vim.cmd("Neotree toggle")
-end, { desc = "Toggle NeoTree" })
+  vim.cmd("neotree toggle")
+end, { desc = "toggle neotree" })
 
-kmap.set("n", "<leader>nc", ":Neotree close<CR>", { desc = "Close NeoTree" })
+kmap.set("n", "<leader>nc", ":neotree close<cr>", { desc = "close neotree" })
 
-kmap.set("n", "<leader>nf", ":Neotree focus<CR>", { desc = "Focus NeoTree" })
+vim.keymap.set("n", "<leader>nf", function()
+  require("neo-tree.command").execute({ action = "focus" })
+end, { desc = "Focus Neo-tree" })
 
--- Telescope mappings (grouped)
+-- telescope mappings (grouped)
 kmap.set("n", "<leader>ff", function()
   local builtin = require("telescope.builtin")
   builtin.find_files()
-end, { desc = "Find Files" })
+end, { desc = "find files" })
 
 kmap.set("n", "<leader>fb", function()
   local builtin = require("telescope.builtin")
   builtin.buffers()
-end, { desc = "Find Buffers" })
+end, { desc = "find buffers" })
 
 kmap.set("n", "<leader>fr", function()
   local builtin = require("telescope.builtin")
   builtin.registers()
-end, { desc = "Find Registers" })
+end, { desc = "find registers" })
 
-kmap.set("n", "<leader>sg", function()
+kmap.set("n", "<leader>fg", function()
   local builtin = require("telescope.builtin")
   builtin.live_grep()
-end, { desc = "Search Grep" })
+end, { desc = "search grep" })
 
 kmap.set("n", "<leader>sw", function()
   local builtin = require("telescope.builtin")
   builtin.grep_string()
-end, { desc = "Search Word Under Cursor" })
+end, { desc = "search word under cursor" })
 
 kmap.set("n", "<leader>sh", function()
   local builtin = require("telescope.builtin")
   builtin.search_history()
-end, { desc = "Search History" })
+end, { desc = "search history" })
 
 kmap.set("n", "<leader>hh", function()
   local builtin = require("telescope.builtin")
   builtin.help_tags()
-end, { desc = "Help Tags" })
+end, { desc = "help tags" })
 
 kmap.set("n", "<leader>hc", function()
   local builtin = require("telescope.builtin")
   builtin.commands()
-end, { desc = "Command Palette" })
+end, { desc = "command palette" })
 
--- Quit all
-kmap.set("n", "<leader>qq", ":qa<CR>", { desc = "Quit Neovim" })
+-- quit all
+kmap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })
 
+-- copilot keymaps
+kmap.set("i", "<c-j>", 'copilot#accept("<cr>")', { silent = true, expr = true, desc = "accept copilot suggestion" })
+kmap.set("i", "<c-k>", 'copilot#dismiss()', { silent = true, expr = true, desc = "dismiss copilot suggestion" })
+kmap.set("i", "<c-space>", 'copilot#complete()', { silent = true, expr = true, desc = "trigger copilot completion" })
+kmap.set("n", "<leader>cp", ":copilottoggle<cr>", { desc = "toggle copilot" })
+
+-- floaterm keymaps
+kmap.set("n", "<leader>tr", ":w<cr>:floattermnew --autoclose=0 python3 %<cr>",
+  { noremap = true, silent = true, desc = "run python in floaterm" })
