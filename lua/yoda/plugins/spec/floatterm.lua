@@ -1,6 +1,7 @@
 -- Floating terminal
 return {
   'voldikss/vim-floaterm',
+  lazy = false, -- ensure it's loaded immediately
   init = function()
     vim.g.floaterm_keymap_new    = '<F7>'
     vim.g.floaterm_keymap_prev   = '<F8>'

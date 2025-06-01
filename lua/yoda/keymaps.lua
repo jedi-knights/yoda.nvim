@@ -181,3 +181,5 @@ kmap.set("n", "<leader>cp", ":copilottoggle<cr>", { desc = "toggle copilot" })
 -- floaterm keymaps
 kmap.set("n", "<leader>tr", ":w<cr>:floattermnew --autoclose=0 python3 %<cr>",
   { noremap = true, silent = true, desc = "run python in floaterm" })
+kmap.set("n", "<leader>tt", ":FloatermToggle<CR>", { desc = "Toggle Floating Terminal", silent = true })
+vim.keymap.set("n", "<leader>tx", ":FloatermKill<CR>", { desc = "Kill Floating Terminal", silent = true })
