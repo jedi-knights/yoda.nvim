@@ -23,11 +23,12 @@ end, { desc = "Open bottom terminal" })
 kmap.set("n", "<leader>sc", function()
   vim.fn.chansend(job_id, { "echo 'hi'\r\n" })
 end, { desc = "Send Command to Terminal" })
-
 -- Windows
 -- Split
-kmap.set("n", "<leader>|", vim.cmd.vs, { desc = "Vertical Split" })
-kmap.set("n", "<leader>-", vim.cmd.sp, { desc = "Horizontal Split" })
+kmap.set("n", "<leader>|", ":vsplit<CR>", { desc = "Vertical Split" })
+kmap.set("n", "<leader>-", ":split<CR>", { desc = "Horizontal Split" })
+kmap.set("n", "<leader>se", "<C-w>=", { desc = "Equalize Window Sizes" })
+kmap.set("n", "<leader>sx", ":close<CR>", { desc = "Close Current Split" })
 
 -- Window navigation
 kmap.set("n", "<C-h>", "<C-w>h", { desc = "Move to Left Window" })
