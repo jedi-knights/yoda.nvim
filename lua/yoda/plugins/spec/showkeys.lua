@@ -6,7 +6,7 @@ return {
       focusable = false,
       relative = "editor",
       style = "minimal",
-      border = "single",
+      border = "rounded",
       height = 1,
       row = 1,
       col = 0,
