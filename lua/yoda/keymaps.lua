@@ -17,9 +17,24 @@ kmap.set("n", "<leader><leader>r", function()
   -- Reload your plugin spec file (if using `import = "yoda.plugins.spec"`)
   require("yoda")
 
-  -- Notify the user
-  vim.notify("✅ Reloaded yoda plugin config", vim.log.levels.INFO)
+  -- Defer notify so that `vim.notify` has a chance to be overridden again
+  vim.defer_fn(function()
+    vim.notify("✅ Reloaded yoda plugin config", vim.log.levels.INFO)
+  end, 100)
 end, { desc = "Hot reload Yoda plugin config" })
+
+-- Toggle ShowKeys plugin
+kmap.set("n", "<leader>sk", function()
+  -- Load the plugin if it hasn't been loaded
+  local loaded = pcall(require, "showkeys")
+  if not loaded then
+    -- Trigger lazy loading via command (which is declared in plugin spec)
+    vim.cmd("ShowkeysToggle")
+  else
+    -- If already loaded, just toggle it
+    require("showkeys").toggle()
+  end
+end, { desc = "Toggle ShowKeys" })
 
 -- run tests
 kmap.set("n", "<leader>tp", function()
