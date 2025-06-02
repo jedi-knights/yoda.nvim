@@ -15,8 +15,8 @@ return {
 
     winhl = "FloatBorder:Comment,Normal:Normal",
 
-    timeout = 3, -- in secs
-    maxkeys = 5,
+    timeout = 8, -- in secs
+    maxkeys = 6,
     show_count = true,
     excluded_modes = {}, -- example: {"i"}
 
