@@ -1,5 +1,5 @@
 return {
-  "nvzone/showkeys"
+  "nvzone/showkeys",
   cmd = "ShowkeysToggle",
   opts = {
     winopts = {
