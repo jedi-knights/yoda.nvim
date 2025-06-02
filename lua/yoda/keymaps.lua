@@ -25,14 +25,15 @@ end, { desc = "Hot reload Yoda plugin config" })
 
 -- Toggle ShowKeys plugin
 kmap.set("n", "<leader>sk", function()
-  -- Load the plugin if it hasn't been loaded
-  local loaded = pcall(require, "showkeys")
-  if not loaded then
-    -- Trigger lazy loading via command (which is declared in plugin spec)
-    vim.cmd("ShowkeysToggle")
+  local ok, showkeys = pcall(require, "showkeys")
+  if not ok then
+    require("lazy").load({ plugins = { "showkeys" } })
+    ok, showkeys = pcall(require, "showkeys")
+  end
+  if ok and showkeys then
+    showkeys.toggle()
   else
-    -- If already loaded, just toggle it
-    require("showkeys").toggle()
+    vim.notify("❌ Failed to load showkeys plugin", vim.log.levels.ERROR)
   end
 end, { desc = "Toggle ShowKeys" })
 
