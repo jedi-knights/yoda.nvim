@@ -1,6 +1,7 @@
 return {
   "github/copilot.vim",
-  lazy = false,
+  lazy = true, -- Load this plugin lazily
+  event = "InsertEnter", -- Load on entering insert mode
   config = function()
     -- Disable default `<Tab>` maping
     vim.g.copilot_no_tab_map = true
