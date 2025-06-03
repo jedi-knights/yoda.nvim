@@ -1,5 +1,6 @@
 -- lua/yoda/testpicker/init.lua
 -- Neovim picker for running customized pytest tests
+
 local Path = require("plenary.path")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
@@ -10,108 +11,61 @@ local entry_display = require("telescope.pickers.entry_display")
 
 local log_path = "output.log"
 
-local function parse_environments_from_ingress_mapping(path)
+local function parse_yaml_block(path, key)
   local lines = Path:new(path):readlines()
-  local envs = {}
+  local entries = {}
   local seen = {}
-  local in_env_list = false
-  local indent_level = nil
+  local in_block = false
 
   for _, line in ipairs(lines) do
-    if line:match("^%s*environments:%s*$") then
-      in_env_list = true
-    elseif in_env_list then
+    if line:match("^%s*" .. key .. ":%s*$") then
+      in_block = true
+    elseif in_block then
       local indent, name = line:match("^(%s*)%- name:%s*(%w+)%s*$")
-      if indent and name and #indent <= 4 then -- direct child of environments
+      if indent and name and #indent <= 8 then
         if not seen[name] then
-          table.insert(envs, name)
+          table.insert(entries, name)
           seen[name] = true
         end
       elseif line:match("^%S") then
-        break -- reached top-level key again
+        in_block = false
       end
     end
   end
 
-  return envs
+  return entries
 end
 
-local function parse_regions_from_ingress_mapping(path)
-  local lines = Path:new(path):readlines()
-  local regions = {}
-  local seen = {}
-  local in_regions = false
-  local indent_level = nil
-
-  for _, line in ipairs(lines) do
-    if line:match("^%s*regions:%s*$") then
-      in_regions = true
-    elseif in_regions then
-      local indent, name = line:match("^(%s*)%- name:%s*(%w+)%s*$")
-      if indent and name and #indent <= 8 then -- direct child of regions
-        if not seen[name] then
-          table.insert(regions, name)
-          seen[name] = true
-        end
-      elseif line:match("^%S") then
-        in_regions = false -- exit block if we reach a new top-level key
-      end
+local function load_env_region()
+  local files = { "ingress-mapping.yaml", "ingress-mapping.yml" }
+  for _, file in ipairs(files) do
+    if vim.fn.filereadable(file) == 1 then
+      return {
+        environments = parse_yaml_block(file, "environments"),
+        regions = parse_yaml_block(file, "regions"),
+      }
     end
-  end
-
-  return regions
-end
-
-
-local function load_env_region_from_ingress_mapping()
-  local candidates = { "ingress-mapping.yaml", "ingress-mapping.yml" }
-  local file_path = nil
-
-  for _, filename in ipairs(candidates) do
-    if vim.fn.filereadable(filename) == 1 then
-      file_path = filename
-      break
-    end
-  end
-
-  if not file_path then
-    return {
-      environments = { "qa", "prod" },
-      regions = { "auto", "use1", "usw2", "euw1", "apse1" },
-    }
   end
 
   return {
-    environments = parse_environments_from_ingress_mapping(file_path),
-    regions = parse_regions_from_ingress_mapping(file_path),
+    environments = { "qa", "prod" },
+    regions = { "auto", "use1", "usw2", "euw1", "apse1" },
   }
 end
 
-
-local env_region_config = load_env_region_from_ingress_mapping()
-local valid_envs = env_region_config.environments
-local valid_regions = env_region_config.regions
-
 local function parse_addopts()
-  if vim.fn.filereadable("pytest.ini") == 0 then
-    return {}
-  end
-
+  if vim.fn.filereadable("pytest.ini") == 0 then return {} end
   local lines = vim.fn.readfile("pytest.ini")
   local in_ini = false
   for _, line in ipairs(lines) do
     if line:match("^%[pytest%]") then
       in_ini = true
     elseif in_ini and line:match("^addopts%s*=") then
-      local opts_str = line:match("^addopts%s*=%s*(.+)$")
-      if opts_str then
-        return vim.split(opts_str, "%s+")
-      end
+      return vim.split(line:match("^addopts%s*=%s*(.+)$") or "", "%s+")
     elseif line:match("^%[.*%]") then
       break
     end
   end
-
   return {}
 end
 
@@ -214,14 +168,42 @@ local function multi_select_picker(title, items, on_submit)
   picker:find()
 end
 
+local function picker(title, items, on_select, default)
+  local default_index = 1
+  for i, item in ipairs(items) do
+    if item == default then
+      default_index = i
+      break
+    end
+  end
+
+  pickers.new({ prompt_title = title }, {
+    finder = finders.new_table { results = items },
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, _)
+      actions.select_default:replace(function()
+        actions.close(prompt_bufnr)
+        local entry = action_state.get_selected_entry()
+        local value = (entry and entry[1]) or default
+        vim.notify("Selected: " .. value, vim.log.levels.INFO)
+        on_select(value)
+      end)
+
+      vim.schedule(function()
+        for _ = 1, default_index - 1 do
+          actions.move_selection_next(prompt_bufnr)
+        end
+      end)
+
+      return true
+    end,
+  }):find()
+end
+
 local function run_tests(opts)
   local cmd = { "pytest" }
-
   vim.list_extend(cmd, parse_addopts())
-
-  if not opts.serial then
-    vim.list_extend(cmd, { "-n", "auto" })
-  end
+  if not opts.serial then vim.list_extend(cmd, { "-n", "auto" }) end
 
   if not opts.markers or opts.markers == "" then
     opts.markers = "bdd"
@@ -248,27 +230,6 @@ local function run_tests(opts)
   vim.fn.chansend(vim.b.terminal_job_id, tee_cmd .. "\n")
 end
 
-local function picker(title, items, on_select, default)
-  pickers.new({ prompt_title = title }, {
-    finder = finders.new_table { results = items },
-    sorter = conf.generic_sorter({}),
-    attach_mappings = function(prompt_bufnr, _)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local entry = action_state.get_selected_entry()
-        local value = (entry and entry[1]) or default
-        if value then
-          vim.notify("Selected: " .. value, vim.log.levels.INFO)
-          on_select(value)
-        else
-          vim.notify("No selection or default provided", vim.log.levels.ERROR)
-        end
-      end)
-      return true
-    end,
-  }):find()
-end
-
 local M = {}
 
 function M.run()
@@ -279,17 +240,15 @@ function M.run()
     serial = false,
   }
 
-  picker("Select Environment", valid_envs, function(env)
+  picker("Select Environment", load_env_region().environments, function(env)
     opts.environment = env
-    picker("Select Region", valid_regions, function(region)
+    picker("Select Region", load_env_region().regions, function(region)
       opts.region = region
       vim.ui.select({ "Parallel", "Serial" }, { prompt = "Run mode:" }, function(choice)
         opts.serial = (choice == "Serial")
 
         local markers = parse_pytest_ini_markers()
-        table.sort(markers, function(a, b)
-          return a.marker:lower() > b.marker:lower()
-        end)
+        table.sort(markers, function(a, b) return a.marker:lower() > b.marker:lower() end)
 
         if #markers > 0 then
           multi_select_picker("Select markers", markers, function(selected)
@@ -297,12 +256,8 @@ function M.run()
             run_tests(opts)
           end)
         else
-          vim.ui.input({ prompt = "Pytest markers (e.g. smoke and not slow): " }, function(user_markers)
-            if not user_markers or user_markers == "" then
-              user_markers = "bdd"
-              vim.notify("No markers selected, defaulting to 'bdd'", vim.log.levels.INFO)
-            end
-            opts.markers = user_markers
+          vim.ui.input({ prompt = "Pytest markers (e.g. smoke and not slow): " }, function(input)
+            opts.markers = input ~= "" and input or "bdd"
             run_tests(opts)
           end)
         end
