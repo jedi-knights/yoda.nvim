@@ -24,7 +24,7 @@ kmap.set("n", "<leader><leader>r", function()
 end, { desc = "Hot reload Yoda plugin config" })
 
 -- Toggle ShowKeys plugin
-kmap.set("n", "<leader>sk", function()
+kmap.set("n", "<leader>kk", function()
   local ok, showkeys = pcall(require, "showkeys")
   if not ok then
     require("lazy").load({ plugins = { "showkeys" } })
