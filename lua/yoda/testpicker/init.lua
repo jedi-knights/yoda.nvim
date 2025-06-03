@@ -36,7 +36,8 @@ local function load_env_region()
 end
 
 local function run_tests(env, region, marker)
-  local cmd = string.format("ENVIRONMENT=%s REGION=%s pytest -n auto -m %s | tee %s", env, region, marker, log_path)
+  local quoted_marker = string.format('"%s"', marker)
+  local cmd = string.format("ENVIRONMENT=%s REGION=%s pytest -n auto -m %s | tee %s", env, region, quoted_marker, log_path)
   vim.cmd(string.format("FloatermNew --autoclose=0 %s", cmd))
 end
 

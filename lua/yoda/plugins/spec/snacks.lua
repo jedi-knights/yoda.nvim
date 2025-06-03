@@ -171,11 +171,11 @@ return {
       end,
       desc = "[N]otification History",
     },
-
     {
       "<leader>.",
       function()
-        Snacks.terminal.toggle()
+        require("yoda.terminals").open_sourced_terminal()
+        --Snacks.terminal.toggle()
       end,
       desc = "Toggle floating terminal",
     },
