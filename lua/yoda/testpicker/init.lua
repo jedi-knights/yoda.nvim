@@ -273,9 +273,9 @@ local M = {}
 
 function M.run()
   local opts = {
-    environment = nil,
-    region = nil,
-    markers = nil,
+    environment = "qa",
+    region = "auto",
+    markers = "bdd",
     serial = false,
   }
 
