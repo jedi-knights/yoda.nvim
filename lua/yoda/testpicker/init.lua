@@ -11,7 +11,7 @@ local entry_display = require("telescope.pickers.entry_display")
 
 local log_path = "output.log"
 
-local function parse_yaml_block(path, key)
+local function parse_yaml_block(path, key, indent_limit)
   local lines = Path:new(path):readlines()
   local entries = {}
   local seen = {}
@@ -22,7 +22,7 @@ local function parse_yaml_block(path, key)
       in_block = true
     elseif in_block then
       local indent, name = line:match("^(%s*)%- name:%s*(%w+)%s*$")
-      if indent and name and #indent <= 8 then
+      if indent and name and #indent <= indent_limit then
         if not seen[name] then
           table.insert(entries, name)
           seen[name] = true
@@ -41,8 +41,8 @@ local function load_env_region()
   for _, file in ipairs(files) do
     if vim.fn.filereadable(file) == 1 then
       return {
-        environments = parse_yaml_block(file, "environments"),
-        regions = parse_yaml_block(file, "regions"),
+        environments = parse_yaml_block(file, "environments", 4),
+        regions = parse_yaml_block(file, "regions", 8),
       }
     end
   end
@@ -240,9 +240,11 @@ function M.run()
     serial = false,
   }
 
-  picker("Select Environment", load_env_region().environments, function(env)
+  local env_region = load_env_region()
+
+  picker("Select Environment", env_region.environments, function(env)
     opts.environment = env
-    picker("Select Region", load_env_region().regions, function(region)
+    picker("Select Region", env_region.regions, function(region)
       opts.region = region
       vim.ui.select({ "Parallel", "Serial" }, { prompt = "Run mode:" }, function(choice)
         opts.serial = (choice == "Serial")
