@@ -189,10 +189,50 @@ end, { desc = "command palette" })
 kmap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })
 
 -- copilot keymaps
-kmap.set("i", "<c-j>", 'copilot#accept("<cr>")', { silent = true, expr = true, desc = "accept copilot suggestion" })
-kmap.set("i", "<c-k>", 'copilot#dismiss()', { silent = true, expr = true, desc = "dismiss copilot suggestion" })
-kmap.set("i", "<c-space>", 'copilot#complete()', { silent = true, expr = true, desc = "trigger copilot completion" })
-kmap.set("n", "<leader>cp", ":copilottoggle<cr>", { desc = "toggle copilot" })
+vim.api.nvim_create_autocmd("InsertEnter", {
+  once = true,
+  callback = function()
+    local kmap = require("yoda.utils.keymap_logger")
+
+    kmap.set("i", "<C-j>", 'copilot#Accept("<CR>")', {
+      expr = true,
+      silent = true,
+      desc = "Copilot Accept",
+    })
+
+    kmap.set("i", "<C-k>", 'copilot#Dismiss()', {
+      expr = true,
+      silent = true,
+      desc = "Copilot Dismiss",
+    })
+
+    kmap.set("i", "<C-Space>", 'copilot#Complete()', {
+      expr = true,
+      silent = true,
+      desc = "Copilot Complete",
+    })
+  end,
+})
+
+kmap.set("n", "<leader>cp", function()
+  -- Ensure the plugin is loaded (if lazy-loaded)
+  require("lazy").load({ plugins = { "copilot.vim" } })
+
+  -- Now it's safe to call VimL functions
+  local status_ok, is_enabled = pcall(vim.fn["copilot#IsEnabled"])
+  if not status_ok then
+    vim.notify("❌ Copilot is not available", vim.log.levels.ERROR)
+    return
+  end
+
+  if is_enabled == 1 then
+    vim.cmd("Copilot disable")
+    vim.notify("🚫 Copilot disabled", vim.log.levels.INFO)
+  else
+    vim.cmd("Copilot enable")
+    vim.notify("✅ Copilot enabled", vim.log.levels.INFO)
+  end
+end, { desc = "Toggle Copilot" })
 
 -- floaterm keymaps
 kmap.set("n", "<leader>tr", ":w<cr>:floattermnew --autoclose=0 python3 %<cr>",
