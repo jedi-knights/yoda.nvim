@@ -293,6 +293,10 @@ vim.keymap.set("n", "<leader>vx", ":FloatermKill<CR>", { desc = "Kill Floating T
 
 
 -- neotest keymaps
+kmap.set("n", "<leader>ta", function()
+  require("neotest").run.run(vim.loop.cwd())
+end, { desc = "Run all tests in project" })
+
 kmap.set("n", "<leader>tn", function()
   require("neotest").run.run()
 end, { desc = "Run nearest test" })
@@ -316,3 +320,19 @@ end, { desc = "Toggle output panel" })
 kmap.set("n", "<leader>td", function()
   require("neotest").run.run({ strategy = "dap" })
 end, { desc = "Debug nearest test with DAP" })
+
+kmap.set("n", "<leader>tv", function()
+  require("neotest").output.open({ enter = true })
+end, { desc = "View test output in floating window" })
+
+
+-- coverage keymaps
+kmap.set("n", "<leader>cv", function()
+  require("coverage").load()
+  require("coverage").show()
+end, { desc = "Show coverage" })
+
+kmap.set("n", "<leader>cx", function()
+  require("coverage").hide()
+end, { desc = "Hide code coverage" })
+
