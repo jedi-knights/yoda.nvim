@@ -2,6 +2,7 @@
 return {
   "folke/snacks.nvim",
   lazy = false,
+  priority = 1000,
   opts = {
     toggle = {
       which_key = true,
@@ -139,7 +140,7 @@ return {
 
     -- open Snacks explorer (like NeoTree)
     {
-      "<leader>e",
+      "<leader>se",
       function()
         Snacks.explorer.open()
       end,
@@ -147,7 +148,7 @@ return {
     },
 
     {
-      "<leader>gg",
+      "<leader>jj",
       function()
         Snacks.terminal.toggle("jjui", {
           win = {
