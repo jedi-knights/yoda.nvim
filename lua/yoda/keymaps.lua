@@ -23,6 +23,8 @@ kmap.set("n", "<leader><leader>r", function()
   end, 100)
 end, { desc = "Hot reload Yoda plugin config" })
 
+local showkeys_enabled = false
+
 -- Toggle ShowKeys plugin
 kmap.set("n", "<leader>kk", function()
   local ok, showkeys = pcall(require, "showkeys")
@@ -32,6 +34,13 @@ kmap.set("n", "<leader>kk", function()
   end
   if ok and showkeys then
     showkeys.toggle()
+    showkeys_enabled = not showkeys_enabled
+
+    if showkeys_enabled then
+      vim.notify("✅ ShowKeys enabled", vim.log.levels.INFO)
+    else
+      vim.notify("🚫 ShowKeys disabled", vim.log.levels.INFO)
+    end
   else
     vim.notify("❌ Failed to load showkeys plugin", vim.log.levels.ERROR)
   end
