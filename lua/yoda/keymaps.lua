@@ -203,11 +203,20 @@ vim.api.nvim_create_autocmd("InsertEnter", {
   callback = function()
     local kmap = require("yoda.utils.keymap_logger")
 
-    kmap.set("i", "<C-j>", 'copilot#Accept("<CR>")', {
-      expr = true,
-      silent = true,
-      desc = "Copilot Accept",
-    })
+    kmap.set("i", "<C-j>", function()
+      return vim.fn["copilot#Accept"]("")
+    end, {
+        expr = true,
+        silent = true,
+        replace_keycodes = false,
+        desc = "Copilot Accept",
+      })
+
+    --kmap.set("i", "<C-j>", 'copilot#Accept("<CR>")', {
+    --  expr = true,
+    --  silent = true,
+    --  desc = "Copilot Accept",
+    -- })
 
     kmap.set("i", "<C-k>", 'copilot#Dismiss()', {
       expr = true,

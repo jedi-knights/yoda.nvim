@@ -25,9 +25,7 @@ opt.visualbell = true            -- Visual bell instead of audible bell
 
 -- UI
 opt.cursorline = true            -- Highlight the current line
-if vim.fn.has("termguicolors") == 1 then
-    opt.termguicolors = true     -- Enable 24-bit RGB colors
-end
+opt.termguicolors = true         -- Enable 24-bit RGB colors in the terminal
 opt.signcolumn = "yes"           -- Always show the sign column
 
 -- Searching
