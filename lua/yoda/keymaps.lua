@@ -237,5 +237,7 @@ end, { desc = "Toggle Copilot" })
 -- floaterm keymaps
 kmap.set("n", "<leader>tr", ":w<cr>:floattermnew --autoclose=0 python3 %<cr>",
   { noremap = true, silent = true, desc = "run python in floaterm" })
-kmap.set("n", "<leader>tt", ":FloatermToggle<CR>", { desc = "Toggle Floating Terminal", silent = true })
+kmap.set("n", "<leader>tt", function()
+  require("yoda.terminals").open_sourced_terminal()
+end, { desc = "Open floating terminal with venv support", silent = true })
 vim.keymap.set("n", "<leader>tx", ":FloatermKill<CR>", { desc = "Kill Floating Terminal", silent = true })
