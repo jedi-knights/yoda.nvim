@@ -31,6 +31,7 @@ return {
     }
 
     local sources = {
+      -- Shell and general
       diagnostics.checkmake,
       formatting.prettier.with { filetypes = { 'html', 'json', 'yaml', 'markdown' } },
       formatting.stylua,
@@ -38,11 +39,22 @@ return {
       formatting.terraform_fmt,
       require('none-ls.formatting.ruff').with { extra_args = { '--extend-select', 'I' } },
       require 'none-ls.formatting.ruff_format',
+
+      -- Python formatting
+      formatting.black,
+      formatting.autoflake,
+      require('none-ls.formatting.ruff').with { extra_args =  { '--extend-select', 'I' } },
+      require('none-ls.formatting.ruff_format'),
+
+      -- Python diagnostics
+      diagnostics.mypy,
+      diagnostics.pylint,
     }
 
     local augroup = vim.api.nvim_create_augroup('LspFormatting', {})
     null_ls.setup {
-      -- debug = true, -- Enable debug mode. Inspect logs with :NullLsLog.
+      debug = true, -- Enable debug mode. Inspect logs with :NullLsLog.
+      log_level = "debug", -- Set log level to debug for more detailed logs
       sources = sources,
       -- you can reuse a shared lspconfig on_attach callback here
       on_attach = function(client, bufnr)
