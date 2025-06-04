@@ -1,4 +1,4 @@
--- lua/yoda/core/keymaps.lua
+-- lua/yoda/keymaps.lua
 
 local kmap = require("yoda.utils.keymap_logger")
 local job_id = 0
@@ -253,9 +253,66 @@ kmap.set("n", "<leader>cp", function()
 end, { desc = "Toggle Copilot" })
 
 -- floaterm keymaps
-kmap.set("n", "<leader>tr", ":w<cr>:floattermnew --autoclose=0 python3 %<cr>",
-  { noremap = true, silent = true, desc = "run python in floaterm" })
-kmap.set("n", "<leader>tt", function()
+kmap.set("n", "<leader>vr", function()
+  local buf = vim.api.nvim_create_buf(false, true)
+
+  local width = math.floor(vim.o.columns * 0.8)
+  local height = math.floor(vim.o.lines * 0.8)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+  })
+
+  -- termopen automatically turns the buffer into a terminal buffer
+  vim.fn.termopen("python3", {
+    on_exit = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end,
+  })
+
+  vim.cmd("startinsert")
+end, {
+  desc = "Launch Python REPL in floating terminal and auto-close on exit",
+})
+
+kmap.set("n", "<leader>vt", function()
   require("yoda.terminals").open_sourced_terminal()
 end, { desc = "Open floating terminal with venv support", silent = true })
-vim.keymap.set("n", "<leader>tx", ":FloatermKill<CR>", { desc = "Kill Floating Terminal", silent = true })
+
+vim.keymap.set("n", "<leader>vx", ":FloatermKill<CR>", { desc = "Kill Floating Terminal", silent = true })
+
+
+-- neotest keymaps
+kmap.set("n", "<leader>tn", function()
+  require("neotest").run.run()
+end, { desc = "Run nearest test" })
+
+kmap.set("n", "<leader>tf", function()
+  require("neotest").run.run(vim.fn.expand("%"))
+end, { desc = "Run tests in current file" })
+
+kmap.set("n", "<leader>tl", function()
+  require("neotest").run.run_last()
+end, { desc = "Run last test" })
+
+kmap.set("n", "<leader>ts", function()
+  require("neotest").summary.toggle()
+end, { desc = "Toggle test summary" })
+
+kmap.set("n", "<leader>to", function()
+  require("neotest").output_panel.toggle()
+end, { desc = "Toggle output panel" })
+
+kmap.set("n", "<leader>td", function()
+  require("neotest").run.run({ strategy = "dap" })
+end, { desc = "Debug nearest test with DAP" })
