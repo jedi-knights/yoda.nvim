@@ -50,6 +50,36 @@ return {
           scope_incremental = false,         -- No scope selection
         },
       },
+      textobjects = {
+        select = {
+          enable = true,
+          lookahead = true, -- Enable lookahead for better selection
+          keymaps = {
+            ["af"] = "@function.outer", -- Select outer function
+            ["if"] = "@function.inner",  -- Select inner function
+            ["ac"] = "@class.outer",      -- Select outer class
+            ["ic"] = "@class.inner",      -- Select inner class
+            ["ap"] = "@parameter.outer",  -- Select outer parameter
+            ["ip"] = "@parameter.inner",  -- Select inner parameter
+          },
+        },
+        move = {
+          enable = true,
+          set_jumps = true, -- Set jumps for easy navigation
+          goto_next_start = {
+            ["]m"] = "@function.outer", -- Go to next function start
+          },
+          goto_next_end = {
+            ["]M"] = "@function.outer", -- Go to next function end
+          },
+          goto_previous_start = {
+            ["[m"] = "@function.outer", -- Go to previous function start
+          },
+          goto_previous_end = {
+            ["[M"] = "@function.outer", -- Go to previous function end
+          },
+        },
+      },
     })
   end,
 }
