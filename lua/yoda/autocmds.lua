@@ -11,31 +11,11 @@ vim.api.nvim_create_autocmd('TermOpen', {
   end,
 })
 
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "markdown",
-  callback = function()
-    vim.opt_local.conceallevel = 2
-  end,
-})
-
 -- Polished startup behaivor
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
-    if vim.fn.argc() == 0 then
-      -- Step 1: Open Neo-tree on the left
-      vim.cmd("Neotree show")
-
-      -- Step 2: Move focus to the right window
-      vim.cmd("wincmd l")
-
-      -- Step 3: Start Alpha dashboard in right window
-      --require("alpha").start()
-    elseif vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
+    if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
       vim.cmd("cd " .. vim.fn.argv(0))
-      vim.cmd("Neotree show")
-      vim.cmd("wincmd l")
-      --require("alpha").start()
     end
   end,
 })
@@ -88,13 +68,13 @@ autocmd("VimResized", {
   command = "tabdo wincmd =",
 })
 
--- Set filetype-specific settings (example for markdown)
 autocmd("FileType", {
   pattern = "markdown",
-  desc = "Settings for Markdown files",
+  desc = "Markdown formatting settings",
   group = vim.api.nvim_create_augroup("YodaMarkdownSettings", { clear = true }),
   callback = function()
     vim.opt_local.wrap = true
     vim.opt_local.spell = true
+    vim.opt_local.conceallevel = 2
   end,
 })
