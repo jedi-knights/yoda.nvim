@@ -1,3 +1,4 @@
+-- lua/yoda/plugins/spec/nvim-treesitter.lua
 return {
   "nvim-treesitter/nvim-treesitter",
   build = ":TSUpdate", -- Auto-update parsers when installing
@@ -24,6 +25,7 @@ return {
         "python",
         "query",
         "tsx",
+        "rust",
         "typescript",
         "vim",
         "vimdoc",

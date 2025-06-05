@@ -336,3 +336,6 @@ kmap.set("n", "<leader>cx", function()
   require("coverage").hide()
 end, { desc = "Hide code coverage" })
 
+vim.keymap.set("n", "<leader>cb", "<cmd>!cargo build<CR>", { desc = "Cargo Build" })
+vim.keymap.set("n", "<leader>cr", "<cmd>!cargo run<CR>", { desc = "Cargo Run" })
+vim.keymap.set("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo Test" })
