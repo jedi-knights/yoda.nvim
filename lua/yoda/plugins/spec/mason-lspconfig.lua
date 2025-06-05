@@ -12,7 +12,7 @@ return {
           "ts_ls",    -- JavaScript/TypeScript (correct, future-safe)
           --"eslint",   -- JavaScript/TypeScript (correct, future-safe)
           "ruff",   -- Python
-          "rust-analyzer", -- Rust
+          --"rust-analyzer", -- Rust
         },
       })
     end
