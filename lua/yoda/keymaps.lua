@@ -144,10 +144,10 @@ kmap.set("n", "<leader>bd", ":bufdo bd<cr>", { desc = "delete all buffers" })
 
 -- neo-tree (grouped under <leader>e)
 kmap.set("n", "<leader>nt", function()
-  vim.cmd("neotree toggle")
+  vim.cmd("Neotree toggle")
 end, { desc = "toggle neotree" })
 
-kmap.set("n", "<leader>nc", ":neotree close<cr>", { desc = "close neotree" })
+kmap.set("n", "<leader>nc", ":Neotree close<cr>", { desc = "close neotree" })
 
 vim.keymap.set("n", "<leader>nf", function()
   require("neo-tree.command").execute({ action = "focus" })
