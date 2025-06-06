@@ -5,7 +5,8 @@ return {
     "nvim-lua/plenary.nvim",
     "antoinemadec/FixCursorHold.nvim",
     "nvim-treesitter/nvim-treesitter",
-    "nvim-neotest/neotest-python", -- ← Add this line
+    "nvim-neotest/neotest-python",
+    "nvim-neotest/neotest-plenary",
   },
   config = function()
     local neotest = require("neotest")
@@ -18,6 +19,7 @@ return {
           runner = "pytest", -- or "unittest"
           python = vim.fn.exepath("python3"), -- auto-detect
         }),
+        require("neotest-plenary"),
       },
     })
   end,
