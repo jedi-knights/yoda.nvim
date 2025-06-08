@@ -194,6 +194,33 @@ I have added two user commands to assist in keymap exploration:
 :YodaLoggedKeymaps
 ```
 
+## Rust Setup
+
+### Installation
+
+First navigate to [rustup.rs](https://rustup.rs/).
+
+The following installation command is presented there to get rust up and running on your system.
+
+```shell
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+If you prefer using homebrew you can install rust as follows:
+
+```shell
+brew install rust
+```
+
+This will install `rustc` and `cargo`. You can verify the installation by executing the following:
+
+```shell
+rustc --version
+cargo --version
+```
+
+
+
 ## References
 
 
