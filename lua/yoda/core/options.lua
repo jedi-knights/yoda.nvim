@@ -12,6 +12,7 @@ opt.swapfile = false             -- Don't use swapfile
 opt.backup = false               -- Don't create backup files
 opt.undofile = true              -- Enable persistent undo
 opt.updatetime = 300             -- Faster completion
+opt.colorcolumn = "80"           -- Set color column at 80 characters
 
 -- Indentation
 opt.tabstop = 4                  -- Number of spaces tabs count for
