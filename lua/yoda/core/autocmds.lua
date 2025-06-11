@@ -8,6 +8,16 @@ local function create_autocmd(events, opts)
   autocmd(events, opts)
 end
 
+-- Add auto commands to refresh neo-tree after git operations
+local neotree_utils = require("yoda.utils.neo-tree")
+for _, event in ipairs({ "NeogitCommitComplete", "NeogitPushComplete", "NeogitPullComplete" }) do
+  create_autocmd("User", {
+    pattern = event,
+    callback = neotree_utils.refresh_neotree,
+    desc = "Refresh Neo-tree after " .. event,
+  })
+end
+
 -- Terminal: Hide line numbers
 create_autocmd("TermOpen", {
   group = augroup("YodaTerminal", { clear = true }),
