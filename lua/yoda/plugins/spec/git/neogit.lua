@@ -12,64 +12,51 @@ return {
     "folke/snacks.nvim",             -- optional
   },
   config = function()
-    local neogit = require('neogit')
+    local neogit = require("neogit")
+
+    -- 🧼 DRY: Refresh Neo-tree helper
+    local function refresh_neo_tree()
+      local manager = require("neo-tree.sources.manager")
+      manager.refresh("filesystem")
+      manager.refresh("git_status")
+    end
+
     neogit.setup({
       disable_commit_confirmation = true,
       disable_insert_on_commit = false,
       integrations = {
-        diffview = true, -- requires diffview.nvim
-        telescope = true, -- requires telescope.nvim
-        fzf = true, -- requires fzf-lua
-        mini = true, -- requires mini.pick
-        snacks = true, -- requires snacks.nvim
+        diffview = true,
+        telescope = true,
+        fzf = true,
+        mini = true,
+        snacks = true,
       },
       event_handlers = {
-        -- Trigger when a commit finishes
         {
           event = "post_commit",
-          handler = function()
-            require("neo-tree.sources.manager").refresh("filesystem")
-            require("neo-tree.sources.manager").refresh("git_status")
-          end,
+          handler = refresh_neo_tree,
         },
-        -- Trigger after staging files
         {
           event = "post_stage",
-          handler = function()
-            require("neo-tree.sources.manager").refresh("filesystem")
-            require("neo-tree.sources.manager").refresh("git_status")
-          end,
+          handler = refresh_neo_tree,
         },
-        -- Trigger after unstaging
         {
           event = "post_unstage",
-          handler = function()
-            require("neo-tree.sources.manager").refresh("filesystem")
-            require("neo-tree.sources.manager").refresh("git_status")
-          end,
+          handler = refresh_neo_tree,
         },
       },
     })
 
-    -- Keybindings
+    -- 🔑 Keymaps
     local map = vim.keymap.set
     local opts = { noremap = true, silent = true }
 
-    map('n', '<leader>gg', function() neogit.open() end, vim.tbl_extend("force", opts, { desc = "Neogit: Open" }))
+    map("n", "<leader>gg", function()
+      neogit.open()
+    end, vim.tbl_extend("force", opts, { desc = "Neogit: Open" }))
 
-    map('n', '<leader>gB', ":G blame<CR>", vim.tbl_extend("force", opts, { desc = "Git: Fugitive Blame" }))
-
-    -- Refresh Neo-tree when leaving Neogit
-    vim.api.nvim_create_autocmd("BufWinLeave", {
-      pattern = "Neogit*",
-      callback = function()
-        vim.schedule(function()
-          local manager = require("neo-tree.sources.manager")
-          manager.refresh("filesystem")
-          manager.refresh("git_status")
-        end)
-      end,
-    })
+    map("n", "<leader>gB", ":G blame<CR>", vim.tbl_extend("force", opts, {
+      desc = "Git: Fugitive Blame",
+    }))
   end,
 }
-

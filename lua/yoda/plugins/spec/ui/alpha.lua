@@ -10,7 +10,7 @@ return {
     require('nvim-web-devicons').setup()
 
     local alpha = require('alpha')
-    local theme = require('yoda.theme')
+    local theme = require('yoda.core.theme')
 
     -- Define Yoda green highlight groups
     vim.cmd([[highlight AlphaHeader guifg=#7FFF00]])

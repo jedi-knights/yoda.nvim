@@ -1,22 +1,23 @@
 -- Load core settings
-require("yoda.options")
+require("yoda.core.options")
 
 pcall(function()
   local telescope = require("telescope")
   telescope.extensions.test_picker = telescope.extensions.test_picker or require("yoda.testpicker")
 end)
 
-require("yoda.keymaps")
-require("yoda.autocmds")
+require("yoda.core.keymaps")
+require("yoda.core.functions")
+require("yoda.core.autocmds")
 
 -- Load plugins
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
 -- Load colorscheme
-require("yoda.colorscheme")
+require("yoda.core.colorscheme")
 
 -- Load Plenary test keymaps
-require("yoda.plenary")
+require("yoda.core.plenary")
 
 vim.api.nvim_create_user_command("YodaKeymapDump", function()
   require("yoda.devtools.keymaps").dump_all_keymaps()
