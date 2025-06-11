@@ -1,4 +1,4 @@
-# vi Cheatsheet
+# vim Cheatsheet
 
 ## Basics
 - `vi filename` — Open file
