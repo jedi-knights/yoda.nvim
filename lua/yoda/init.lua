@@ -7,6 +7,7 @@ pcall(function()
 end)
 
 require("yoda.core.keymaps")
+require("yoda.core.functions")
 require("yoda.core.autocmds")
 
 -- Load plugins
