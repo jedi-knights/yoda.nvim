@@ -2,6 +2,5 @@
 
 return {
     require("yoda.plugins.spec.db.vim-dadbod"),
-    require("yoda.plugins.spec.db.vim-dadbod-ui"),
 }
 
