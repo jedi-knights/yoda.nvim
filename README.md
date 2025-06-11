@@ -29,7 +29,7 @@
 
 ### General Docs
 - [Contributing Guide](docs/CONTRIBUTING.md)
-- [Neovim Cheatsheet](docs/overview/vi-cheatsheet.md)
+- [Neovim Cheatsheet](docs/overview/vim-cheatsheet.md)
 - [ChatGPT Plugin Notes](docs/overview/CHATGPT.md)
 - [Debugging Guide](docs/overview/DEBUGGING.md)
 - [DAP (Debug Adapter Protocol)](docs/overview/DAP.md)
