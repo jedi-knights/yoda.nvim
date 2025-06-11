@@ -25,6 +25,25 @@
 
 ---
 
+## 📚 Documentation
+
+### General Docs
+- [Contributing Guide](docs/CONTRIBUTING.md)
+- [Neovim Cheatsheet](docs/overview/vi-cheatsheet.md)
+- [ChatGPT Plugin Notes](docs/overview/CHATGPT.md)
+- [Debugging Guide](docs/overview/DEBUGGING.md)
+- [DAP (Debug Adapter Protocol)](docs/overview/DAP.md)
+- [LSP (Language Server Protocol)](docs/overview/LSP.md)
+- [Harpoon Usage](docs/overview/HARPOON.md)
+
+### Architecture Decision Records (ADRs)
+- [001 – Create custom Neovim distribution](docs/adr/0001-create-custom-neovim-distribution.md)
+- [002 – Adopt Conventional Commits](docs/adr/0002-adopt-conventional-commits.md)
+- [003 – Use lazy.nvim package manager](docs/adr/0003-use-lazy-package-manager.md)
+- [004 – Use TokyoNight color scheme](docs/adr/0004-use-tokyonight-colorscheme.md)
+- [005 – Use nvim-tree](docs/adr/0005-use-nvim-tree.md)
+- [006 – Use EditorConfig plugin](docs/adr/0006-use-editorconfig-plugin.md)
+
 ## Features
 
 - **Beginner-friendly setup**
