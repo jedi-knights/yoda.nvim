@@ -35,11 +35,33 @@ local function load_env_region()
   }
 end
 
+
 local function run_tests(env, region, marker)
   local quoted_marker = string.format('"%s"', marker)
-  local cmd = string.format("ENVIRONMENT=%s REGION=%s pytest -n auto -m %s | tee %s", env, region, quoted_marker, log_path)
-  vim.cmd(string.format("FloatermNew --autoclose=0 %s", cmd))
+
+  -- Single-line shell script using && and ;
+  local bash_script = string.format(
+    "bash -c %q",
+    string.format([[
+      [ -f junit.xml ] && rm junit.xml;
+      [ -f coverage.xml ] && rm coverage.xml;
+      [ -f .coverage ] && rm .coverage;
+      [ -d allure-results ] && rm -rf allure-results;
+      ENVIRONMENT=%s REGION=%s pytest -n auto -m %s | tee %s;
+      if [ -d allure-results ]; then
+        echo '🧪 Launching Allure report...';
+        allure serve allure-results;
+      else
+        echo '⚠️  No allure-results directory found.';
+      fi
+    ]], env, region, quoted_marker, log_path)
+  )
+
+  -- Use :FloatermNew as a Vim command, passing the entire bash -c string as argument
+  local floaterm_cmd = string.format("FloatermNew --autoclose=0 %s", bash_script)
+  vim.api.nvim_command(floaterm_cmd)
 end
+
 
 function M.run()
   local env_region_config = load_env_region()

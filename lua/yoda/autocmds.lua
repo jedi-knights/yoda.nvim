@@ -78,3 +78,67 @@ autocmd("FileType", {
     vim.opt_local.conceallevel = 2
   end,
 })
+
+-- Dynamically resize vim-dadbod-ui width based on editor width
+autocmd("FileType", {
+  pattern = "dbui",
+  desc = "Auto-resize vim-dadbod-ui window width",
+  group = vim.api.nvim_create_augroup("YodaDadbodResize", { clear = true }),
+  callback = function()
+    vim.g.db_ui_winwidth = math.floor(vim.o.columns * 0.4) -- 40% of total width
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "dbui",
+  desc = "Close Neo-tree when DBUI opens",
+  group = vim.api.nvim_create_augroup("YodaDBUICloseNeoTree", { clear = true }),
+  callback = function()
+    -- Close Neo-tree if it's open
+    vim.cmd("Neotree close")
+  end,
+})
+
+
+-- Optional: Recalculate vim-dadbod-ui width on VimResized
+autocmd("VimResized", {
+  desc = "Adjust vim-dadbod-ui width on resize",
+  group = vim.api.nvim_create_augroup("YodaDadbodResizeOnResize", { clear = true }),
+  callback = function()
+    local has_dbui = false
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      if vim.bo[buf].filetype == "dbui" then
+        has_dbui = true
+        break
+      end
+    end
+
+    if has_dbui then
+      vim.g.db_ui_winwidth = math.floor(vim.o.columns * 0.4)
+      vim.cmd("DBUI")          -- Refresh DBUI
+      vim.cmd("wincmd p")      -- Restore focus
+    end
+  end,
+})
+
+local autocmd = vim.api.nvim_create_autocmd
+local augroup = vim.api.nvim_create_augroup
+
+autocmd("CursorMoved", {
+  pattern = "*",
+  group = augroup("YodaDadbodAutoExpand", { clear = true }),
+  callback = function()
+    local ft = vim.bo.filetype
+    if ft ~= "dbui" then return end
+
+    local line = vim.api.nvim_get_current_line()
+    local indent = line:match("^(%s*)") or ""
+    local depth = math.floor(#indent / 2)
+
+    -- Base width + extra per depth level
+    local new_width = math.min(math.floor(vim.o.columns * 0.4) + depth * 5, math.floor(vim.o.columns * 0.8))
+    vim.g.db_ui_winwidth = new_width
+  end,
+})
+
