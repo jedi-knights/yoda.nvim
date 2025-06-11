@@ -5,6 +5,14 @@ local job_id = 0
 
 -- general keymaps
 
+-- DISABLE arrow keys
+kmap.set("n", "<up>", "<nop>", { desc = "disable up arrow" })
+kmap.set("n", "<down>", "<nop>", { desc = "disable down arrow" })
+kmap.set("n", "<left>", "<nop>", { desc = "disable left arrow" })
+kmap.set("n", "<right>", "<nop>", { desc = "disable right arrow" })
+kmap.set("n", "<pageup>", "<nop>", { desc = "disable page up" })
+kmap.set("n", "<pagedown>", "<nop>", { desc = "disable page down" })
+
 -- Reload neovim config
 kmap.set("n", "<leader><leader>r", function()
   -- Unload your plugin/config namespace so it can be re-required
@@ -339,3 +347,20 @@ end, { desc = "Hide code coverage" })
 vim.keymap.set("n", "<leader>cb", "<cmd>!cargo build<CR>", { desc = "Cargo Build" })
 vim.keymap.set("n", "<leader>cr", "<cmd>!cargo run<CR>", { desc = "Cargo Run" })
 vim.keymap.set("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo Test" })
+
+
+-- VISUAL MODE
+-- Replace
+kmap.set('v', '<leader>r', ':s/')
+
+-- Yank selection to the clipboard
+kmap.set('v', '<leader>y', '"+y')
+
+-- Delete selection to void register
+kmap.set('v', '<leader>d', '"_d')
+
+-- Delete selection into the void register and then paste over it
+kmap.set('v', '<leader>p', '_dP')
+
+
+
