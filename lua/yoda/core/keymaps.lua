@@ -5,6 +5,14 @@ local job_id = 0
 
 -- general keymaps
 
+-- DISABLE arrow keys
+kmap.set("n", "<up>", "<nop>", { desc = "disable up arrow" })
+kmap.set("n", "<down>", "<nop>", { desc = "disable down arrow" })
+kmap.set("n", "<left>", "<nop>", { desc = "disable left arrow" })
+kmap.set("n", "<right>", "<nop>", { desc = "disable right arrow" })
+kmap.set("n", "<pageup>", "<nop>", { desc = "disable page up" })
+kmap.set("n", "<pagedown>", "<nop>", { desc = "disable page down" })
+
 -- Reload neovim config
 kmap.set("n", "<leader><leader>r", function()
   -- Unload your plugin/config namespace so it can be re-required
