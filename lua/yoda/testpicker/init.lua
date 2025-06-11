@@ -50,7 +50,7 @@ function M.run()
     if not env or env == "" then return end
     vim.ui.input({ prompt = "Enter region (" .. table.concat(valid_regions, ", ") .. "): ", default = "auto" }, function(region)
       if not region or region == "" then return end
-      vim.ui.input({ prompt = "Enter pytest marker: ", default = "bdd" }, function(marker)
+      vim.ui.input({ prompt = "Enter pytest marker: ", default = "" }, function(marker)
         if not marker or marker == "" then return end
         run_tests(env, region, marker)
       end)
