@@ -6,7 +6,7 @@ pcall(function()
   telescope.extensions.test_picker = telescope.extensions.test_picker or require("yoda.testpicker")
 end)
 
-require("yoda.commands")
+require("yoda.commands").setup()
 require("yoda.core.keymaps")
 require("yoda.core.functions")
 require("yoda.core.autocmds")
