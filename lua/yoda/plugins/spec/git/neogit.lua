@@ -16,9 +16,14 @@ return {
 
     -- 🧼 DRY: Refresh Neo-tree helper
     local function refresh_neo_tree()
-      local manager = require("neo-tree.sources.manager")
-      manager.refresh("filesystem")
-      manager.refresh("git_status")
+      local ok, manager = pcall(require, "neo-tree.sources.manager")
+      if ok then
+        vim.notify("Refreshing Neo-tree...", vim.log.levels.INFO)
+        manager.refresh("filesystem")
+        manager.refresh("git_status")
+      else
+        vim.notify("Neo-tree manager not available", vim.log.levels.ERROR)
+      end
     end
 
     neogit.setup({
