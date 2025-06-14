@@ -44,6 +44,10 @@ return {
           event = "post_unstage",
           handler = refresh_neo_tree,
         },
+        {
+          event = "post_push",
+          handler = refresh_neo_tree,
+        },
       },
     })
 
