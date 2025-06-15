@@ -164,6 +164,9 @@ Now in command mode you can call your new custom command as follows:
 
 
 
-### Step 1. Create a new 
+From what I've seen so far one can opt to use telescope in a custom plugin,
+but it's not a requirement. Not everyone uses telescope so to begin with
+it's probably a better idea to start with simpler plugins.
 
-## Structurina a Neovim Plugin
+
+
