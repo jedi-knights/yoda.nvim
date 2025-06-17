@@ -16,7 +16,7 @@ return {
         --         return "gpt-3.5-turbo"
         --     end
         -- end,
-        model = "o3",
+        model = "gpt-4o",
         frequency_penalty = 0,
         presence_penalty = 0,
         max_tokens = 4095,
