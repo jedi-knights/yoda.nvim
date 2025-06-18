@@ -13,6 +13,19 @@ kmap.set("n", "<right>", "<nop>", { desc = "disable right arrow" })
 kmap.set("n", "<pageup>", "<nop>", { desc = "disable page up" })
 kmap.set("n", "<pagedown>", "<nop>", { desc = "disable page down" })
 
+-- Trouble custom keymaps
+kmap.set("n", "<leader>xt", function()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local bufname = vim.api.nvim_buf_get_name(buf)
+    if bufname:match("Trouble") then
+      vim.api.nvim_set_current_win(win)
+      return
+    end
+  end
+end, { desc = "Focus Trouble window" })
+
+
 -- Reload neovim config
 kmap.set("n", "<leader><leader>r", function()
   -- Unload your plugin/config namespace so it can be re-required
