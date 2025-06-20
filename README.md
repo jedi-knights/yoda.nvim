@@ -248,6 +248,17 @@ break system packages to install the neovim provider like this:
 /opt/homebrew/bin/python3 -m pip install --break-system-packages neovim
 ```
 
+## Profiling 
+
+If you run into slow startup times, the following will help which plugins
+are slowing down startup time and general performance:
+
+```shell
+nvim --startuptime nvim.log +q && tail -n 20 nvim.log
+```
+
+Look for any plugin that takes a long time (especially over 20–50 ms).
+
 ## References
 
 
