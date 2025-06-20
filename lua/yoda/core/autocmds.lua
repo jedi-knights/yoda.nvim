@@ -63,7 +63,7 @@ create_autocmd("TextYankPost", {
 })
 
 -- Auto reload changed files
-create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+create_autocmd({ "FocusGained", "BufEnter" }, {
   group = augroup("YodaAutoRead", { clear = true }),
   desc = "Reload file changed outside",
   command = "checktime",
