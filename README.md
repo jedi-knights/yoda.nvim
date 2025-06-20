@@ -238,7 +238,15 @@ rustc --version
 cargo --version
 ```
 
+## Neovim module for Python
 
+When executing :checkhealth I was noticing neovim was indicating there was
+no provider for Python. Since I installed my Python using homebrew I had to
+break system packages to install the neovim provider like this:
+
+```shell
+/opt/homebrew/bin/python3 -m pip install --break-system-packages neovim
+```
 
 ## References
 
