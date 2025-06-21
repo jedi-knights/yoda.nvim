@@ -33,6 +33,14 @@ return {
         "dockerfile",
         "css",
         "gitignore",
+        -- Snacks.image additions:
+        "latex",
+        "norg",
+        "scss",
+        "svelte",
+        "typst",
+        "vue",
+        "regex",
       },
       highlight = {
         enable = true,         -- Highlight code
