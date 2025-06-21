@@ -5,6 +5,30 @@ local job_id = 0
 
 -- general keymaps
 
+kmap.set("n", "<leader>cc", function()
+  require("Comment.api").toggle.linewise.current()
+end, { desc = "Toggle line comment" })
+
+-- LSP keymaps
+kmap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "Go to Definition" })
+kmap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "Go to Declaration" })
+kmap.set("n", "<leader>li", vim.lsp.buf.implementation, { desc = "Go to Implementation" })
+kmap.set("n", "<leader>lr", vim.lsp.buf.references, { desc = "Find References" })
+kmap.set("n", "<leader>lrn", vim.lsp.buf.rename, { desc = "Rename Symbol" })
+kmap.set("n", "<leader>la", vim.lsp.buf.code_action, { desc = "Code Action" })
+kmap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { desc = "Document Symbols" })
+kmap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, { desc = "Workspace Symbols" })
+kmap.set("n", "<leader>lf", function()
+  vim.lsp.buf.format({ async = true })
+end, { desc = "Format Buffer" })
+
+-- LSP diagnostics
+kmap.set("n", "<leader>le", vim.diagnostic.open_float, { desc = "Show Diagnostics" })
+kmap.set("n", "<leader>lq", vim.diagnostic.setloclist, { desc = "Set Loclist" })
+kmap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" })
+kmap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
+
+
 -- DISABLE arrow keys
 kmap.set("n", "<up>", "<nop>", { desc = "disable up arrow" })
 kmap.set("n", "<down>", "<nop>", { desc = "disable down arrow" })
@@ -72,19 +96,7 @@ kmap.set("n", "<leader>tp", function()
   require("yoda.testpicker").run()
 end, { desc = "run tests with yoda" })
 
--- toggle terminal at bottom
-kmap.set("n", "<leader>st", function()
-  vim.cmd.vnew()
-  vim.cmd.term()
-  vim.cmd.wincmd("j")
-  vim.api.nvim_win_set_height(0, 5)
-  job_id = vim.opt.channel
-  vim.cmd("startinsert!") -- 👈 auto-enter insert mode after terminal opens
-end, { desc = "open bottom terminal" })
 
-kmap.set("n", "<leader>sc", function()
-  vim.fn.chansend(job_id, { "echo 'hi'\r\n" })
-end, { desc = "send command to terminal" })
 -- windows
 -- split
 kmap.set("n", "<leader>|", ":vsplit<cr>", { desc = "vertical split" })
@@ -100,10 +112,10 @@ kmap.set("n", "<c-l>", "<c-w>l", { desc = "move to right window" })
 kmap.set("n", "<c-c>", "<c-w>c", { desc = "close window" })
 
 -- tab navigation
-kmap.set("n", "<c-t>", vim.cmd.tabnew, { desc = "new tab" })
-kmap.set("n", "<c-w>", vim.cmd.tabclose, { desc = "close tab" })
-kmap.set("n", "<c-p>", vim.cmd.tabprevious, { desc = "previous tab" })
-kmap.set("n", "<c-n>", vim.cmd.tabnext, { desc = "next tab" })
+kmap.set("n", "<leader>tn", vim.cmd.tabnew, { desc = "new tab" })
+kmap.set("n", "<leader>tc", vim.cmd.tabclose, { desc = "close tab" })
+kmap.set("n", "<leader>tp", vim.cmd.tabprevious, { desc = "previous tab" })
+kmap.set("n", "<leader>tN", vim.cmd.tabnext, { desc = "next tab" })
 
 -- buffer navigation
 kmap.set("n", "<s-left>", vim.cmd.bprevious, { desc = "previous buffer" })
@@ -124,13 +136,13 @@ kmap.set("n", "<c-q>", ":wq<cr>", { desc = "save and quit" })
 kmap.set("n", "<c-x>", ":bd<cr>", { desc = "close buffer" })
 
 -- visual mode improvements
-kmap.set("v", "j", ":m '>+1<cr>gv=gv", { desc = "move selection down" })
-kmap.set("v", "k", ":m '<-2<cr>gv=gv", { desc = "move selection up" })
-kmap.set("x", "j", ":move '>+1<cr>gv-gv", { desc = "move block down" })
-kmap.set("x", "k", ":move '<-2<cr>gv-gv", { desc = "move block up" })
+-- kmap.set("v", "j", ":m '>+1<cr>gv=gv", { desc = "move selection down" })
+-- kmap.set("v", "k", ":m '<-2<cr>gv=gv", { desc = "move selection up" })
+-- kmap.set("x", "j", ":move '>+1<cr>gv-gv", { desc = "move block down" })
+-- kmap.set("x", "k", ":move '<-2<cr>gv-gv", { desc = "move block up" })
 
 -- exit terminal mode
-kmap.set("t", "<esc>", "<c-\\><c-n>", { desc = "exit terminal mode" })
+-- kmap.set("t", "<esc>", "<c-\\><c-n>", { desc = "exit terminal mode" })
 
 -- clipboard/yank
 kmap.set("n", "<leader>y", ":%y+<cr>", { desc = "yank buffer to system clipboard" })
@@ -227,11 +239,11 @@ vim.api.nvim_create_autocmd("InsertEnter", {
     kmap.set("i", "<C-j>", function()
       return vim.fn["copilot#Accept"]("")
     end, {
-        expr = true,
-        silent = true,
-        replace_keycodes = false,
-        desc = "Copilot Accept",
-      })
+      expr = true,
+      silent = true,
+      replace_keycodes = false,
+      desc = "Copilot Accept",
+    })
 
     --kmap.set("i", "<C-j>", 'copilot#Accept("<CR>")', {
     --  expr = true,
@@ -273,45 +285,55 @@ kmap.set("n", "<leader>cp", function()
   end
 end, { desc = "Toggle Copilot" })
 
--- floaterm keymaps
-kmap.set("n", "<leader>vr", function()
-  local buf = vim.api.nvim_create_buf(false, true)
 
-  local width = math.floor(vim.o.columns * 0.8)
-  local height = math.floor(vim.o.lines * 0.8)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
+-- snacks terminal keymaps
+kmap.set("n", "<leader>vt", function()
+  local terminal = require("snacks.terminal")
 
-  local win = vim.api.nvim_open_win(buf, true, {
-    relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-  })
-
-  -- termopen automatically turns the buffer into a terminal buffer
-  vim.fn.termopen("python3", {
+  terminal.open({
+    id = "myterm",
+    cmd = { "/bin/zsh" },
+    win = {
+      relative = "editor",
+      position = "float",
+      width = 0.85,
+      height = 0.85,
+      border = "rounded",
+      title = " Floating Shell ",
+      title_pos = "center",
+    },
     on_exit = function()
-      if vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
-      end
+      terminal.close("myterm")
     end,
   })
+end, { desc = "Open terminal with auto-close" })
 
-  vim.cmd("startinsert")
-end, {
-  desc = "Launch Python REPL in floating terminal and auto-close on exit",
-})
+kmap.set("n", "<leader>vr", function()
+  local function get_python()
+    local cwd = vim.loop.cwd()
+    local venv = cwd .. "/.venv/bin/python3"
+    if vim.fn.filereadable(venv) == 1 then
+      return venv
+    end
+    return vim.fn.exepath("python3") or "python3"
+  end
 
-kmap.set("n", "<leader>vt", function()
-  require("yoda.terminals").open_sourced_terminal()
-end, { desc = "Open floating terminal with venv support", silent = true })
-
-vim.keymap.set("n", "<leader>vx", ":FloatermKill<CR>", { desc = "Kill Floating Terminal", silent = true })
-
+  Snacks.terminal.toggle("python", {
+    cmd = { get_python() },
+    win = {
+      relative = "editor",
+      position = "float",
+      width = 0.85,
+      height = 0.85,
+      border = "rounded",
+      title = " Python REPL ",
+      title_pos = "center",
+    },
+    on_exit = function()
+      Snacks.terminal.close("python")
+    end,
+  })
+end, { desc = "Launch Python REPL in float" })
 
 -- neotest keymaps
 kmap.set("n", "<leader>ta", function()
@@ -374,6 +396,3 @@ kmap.set('v', '<leader>d', '"_d')
 
 -- Delete selection into the void register and then paste over it
 kmap.set('v', '<leader>p', '_dP')
-
-
-

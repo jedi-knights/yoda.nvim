@@ -35,5 +35,11 @@ require("lazy").setup({
     enabled = true,
     notify = true, -- Get a notification when plugins are updated
   },
+  dev = {
+    rocks = {
+      enabled = false,    -- disables luarocks support
+      hererocks = false,  -- prevents auto-installing hererocks
+    },
+  },
 })
 

@@ -23,16 +23,37 @@ return {
       },
     },
     terminal = {
+      -- your terminal configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section in the documentation
       win = {
-        style = "terminal",
-        position = "float",
-        width = 0.8,
-        height = 0.8,
-        border = "rounded",
-        relative = "editor",
+        style = "terminal"
       },
-      persistent = true,
-      autoinsert = true,
+    },
+    dashboard = {
+      enabled = true,
+      key = nil,        -- disables <g> for Snacks.dashboard
+    },
+    bigfile = {
+      enabled = true,
+    },
+    image = {
+      enabled = true,
+    },
+    quickfile = {
+      enabled = true,
+    },
+    scope = {
+      enabled = true,
+    },
+    scroll = {
+      enabled = true,
+    },
+    statuscolumn = {
+      enabled = true,
+    },
+    words = {
+      enabled = true,
     },
   },
   keys = {
