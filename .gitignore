@@ -36,3 +36,5 @@ luac.out
 
 .DS_Store
 output.log
+
+node_modules/
