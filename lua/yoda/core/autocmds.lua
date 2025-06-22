@@ -8,15 +8,6 @@ local function create_autocmd(events, opts)
   autocmd(events, opts)
 end
 
--- Grouped: Refresh Neo-tree after Neogit operations
-local neotree_utils = require("yoda.utils.neo-tree")
-create_autocmd("User", {
-  group = augroup("YodaNeoTreeGitEvents", { clear = true }),
-  pattern = { "NeogitCommitComplete", "NeogitPushComplete", "NeogitPullComplete" },
-  callback = neotree_utils.refresh_neotree,
-  desc = "Refresh Neo-tree after Neogit Git events",
-})
-
 -- Terminal: Hide line numbers (local to buffer)
 create_autocmd("TermOpen", {
   group = augroup("YodaTerminal", { clear = true }),
@@ -32,20 +23,6 @@ create_autocmd("VimEnter", {
   callback = function()
     if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
       vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
-    end
-  end,
-})
-
--- Close empty buffer after Alpha loads
-create_autocmd("User", {
-  group = augroup("YodaAlpha", { clear = true }),
-  pattern = "AlphaReady",
-  callback = function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    if vim.api.nvim_buf_is_valid(bufnr)
-      and vim.api.nvim_buf_get_name(bufnr) == ""
-      and vim.bo[bufnr].buftype == "" then
-      vim.cmd("bwipeout " .. bufnr)
     end
   end,
 })
