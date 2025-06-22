@@ -4,9 +4,6 @@ return {
   lazy = false,
   priority = 1000,
   opts = {
-    toggle = {
-      which_key = true,
-    },
     input = {},
     notifier = {},
     lazygit = {},
