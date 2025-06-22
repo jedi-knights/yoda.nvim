@@ -5,10 +5,6 @@ local job_id = 0
 
 -- general keymaps
 
-kmap.set("n", "<leader>cc", function()
-  require("Comment.api").toggle.linewise.current()
-end, { desc = "Toggle line comment" })
-
 -- LSP keymaps
 kmap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "Go to Definition" })
 kmap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "Go to Declaration" })
