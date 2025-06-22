@@ -176,14 +176,32 @@ end, { desc = "close others" })
 kmap.set("n", "<leader>bd", ":bufdo bd<cr>", { desc = "delete all buffers" })
 
 -- Toggle explorer
+local explorer_open = false
+
 kmap.set("n", "<leader>et", function()
-  require("snacks.explorer").toggle()
+  local explorer = require("snacks.explorer")
+
+  if explorer_open then
+    explorer.close()
+  else
+    explorer.open()
+  end
+
+  explorer_open = not explorer_open
 end, { desc = "Toggle Snacks Explorer" })
 
 -- Focus explorer (if in split mode)
 kmap.set("n", "<leader>ef", function()
-  require("snacks.explorer").focus()
-end, { desc = "Focus Snacks Explorer" })
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.bo[buf].filetype
+    if ft == "snacks-explorer" then
+      vim.api.nvim_set_current_win(win)
+      return
+    end
+  end
+  vim.notify("Snacks Explorer is not open", vim.log.levels.WARN)
+end, { desc = "Focus Snacks Explorer window" })
 
 -- Close explorer
 kmap.set("n", "<leader>ec", function()
