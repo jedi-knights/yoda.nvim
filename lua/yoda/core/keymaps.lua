@@ -175,16 +175,20 @@ kmap.set("n", "<leader>bo", function()
 end, { desc = "close others" })
 kmap.set("n", "<leader>bd", ":bufdo bd<cr>", { desc = "delete all buffers" })
 
--- neo-tree (grouped under <leader>e)
-kmap.set("n", "<leader>nt", function()
-  vim.cmd("Neotree toggle")
-end, { desc = "toggle neotree" })
+-- Toggle explorer
+kmap.set("n", "<leader>et", function()
+  require("snacks.explorer").toggle()
+end, { desc = "Toggle Snacks Explorer" })
 
-kmap.set("n", "<leader>nc", ":Neotree close<cr>", { desc = "close neotree" })
+-- Focus explorer (if in split mode)
+kmap.set("n", "<leader>ef", function()
+  require("snacks.explorer").focus()
+end, { desc = "Focus Snacks Explorer" })
 
-vim.keymap.set("n", "<leader>nf", function()
-  require("neo-tree.command").execute({ action = "focus" })
-end, { desc = "Focus Neo-tree" })
+-- Close explorer
+kmap.set("n", "<leader>ec", function()
+  require("snacks.explorer").close()
+end, { desc = "Close Snacks Explorer" })
 
 -- telescope mappings (grouped)
 kmap.set("n", "<leader>ff", function()

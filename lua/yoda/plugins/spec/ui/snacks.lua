@@ -55,6 +55,9 @@ return {
     words = {
       enabled = true,
     },
+    explorer = {
+      enabled = true,
+    },
   },
   keys = {
     -- Smart file search (buffers, project files)
