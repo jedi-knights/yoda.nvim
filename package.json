@@ -1,6 +1,30 @@
 {
+  "name": "yoda.nvim",
+  "version": "1.0.0",
+  "description": "A custom Neovim distribution.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
   "dependencies": {
-    "npm": "^11.4.2",
-    "update": "^0.7.4"
-  }
+    "npm": "^11.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jedi-knights/yoda.nvim.git"
+  },
+  "keywords": [
+    "neovim",
+    "yoda"
+  ],
+  "author": "Omar Crosby",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jedi-knights/yoda.nvim/issues"
+  },
+  "homepage": "https://github.com/jedi-knights/yoda.nvim#readme"
 }
