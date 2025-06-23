@@ -201,7 +201,6 @@ return {
     {
       "<leader>.",
       function()
-        --require("yoda.terminals").open_sourced_terminal()
         Snacks.terminal.toggle()
       end,
       desc = "Toggle floating terminal",
