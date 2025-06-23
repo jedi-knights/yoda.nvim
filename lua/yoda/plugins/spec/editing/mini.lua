@@ -13,7 +13,7 @@ return {
     require("mini.indentscope").setup({
       draw = {
         delay = 100,
-        animation = require("mini.indentscope").gen_automation.none()
+        animation = require("mini.indentscope").gen_animation.none()
       },
     })
   end,
