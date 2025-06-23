@@ -214,43 +214,35 @@ end, { desc = "Close Snacks Explorer" })
 
 -- telescope mappings (grouped)
 kmap.set("n", "<leader>ff", function()
-  local builtin = require("telescope.builtin")
-  builtin.find_files()
+  Snacks.picker.files()
 end, { desc = "find files" })
 
 kmap.set("n", "<leader>fb", function()
-  local builtin = require("telescope.builtin")
-  builtin.buffers()
+  Snacks.picker.buffers()
 end, { desc = "find buffers" })
 
 kmap.set("n", "<leader>fr", function()
-  local builtin = require("telescope.builtin")
-  builtin.registers()
+  Snacks.picker.registers()
 end, { desc = "find registers" })
 
 kmap.set("n", "<leader>fg", function()
-  local builtin = require("telescope.builtin")
-  builtin.live_grep()
+  Snacks.picker.grep({ hidden = true })
 end, { desc = "search grep" })
 
 kmap.set("n", "<leader>sw", function()
-  local builtin = require("telescope.builtin")
-  builtin.grep_string()
+  Snacks.picker.grep_word()
 end, { desc = "search word under cursor" })
 
 kmap.set("n", "<leader>sh", function()
-  local builtin = require("telescope.builtin")
-  builtin.search_history()
+  Snacks.picker.search_history()
 end, { desc = "search history" })
 
 kmap.set("n", "<leader>hh", function()
-  local builtin = require("telescope.builtin")
-  builtin.help_tags()
+  Snacks.picker.help()
 end, { desc = "help tags" })
 
 kmap.set("n", "<leader>hc", function()
-  local builtin = require("telescope.builtin")
-  builtin.commands()
+  Snacks.picker.keymaps()
 end, { desc = "command palette" })
 
 -- quit all
