@@ -4,11 +4,15 @@ return {
   lazy = false,
   priority = 1000,
   opts = {
+    toggle = {
+      which_key = true,
+    },
     input = {},
     notifier = {},
     lazygit = {},
     indent = {},
     explorer = {
+      enabled = true,
       replace_netrw = true,
     },
     picker = {
@@ -20,12 +24,16 @@ return {
       },
     },
     terminal = {
-      -- your terminal configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section in the documentation
       win = {
-        style = "terminal"
+        style = "terminal",
+        position = "float",
+        width = 0.8,
+        height = 0.8,
+        border = "rounded",
+        relative = "editor",
       },
+      persistent = true,
+      autoinsert = true,
     },
     dashboard = {
       enabled = true,
@@ -50,9 +58,6 @@ return {
       enabled = true,
     },
     words = {
-      enabled = true,
-    },
-    explorer = {
       enabled = true,
     },
   },
@@ -196,8 +201,8 @@ return {
     {
       "<leader>.",
       function()
-        require("yoda.terminals").open_sourced_terminal()
-        --Snacks.terminal.toggle()
+        --require("yoda.terminals").open_sourced_terminal()
+        Snacks.terminal.toggle()
       end,
       desc = "Toggle floating terminal",
     },
