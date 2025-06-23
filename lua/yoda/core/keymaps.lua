@@ -212,39 +212,6 @@ kmap.set("n", "<leader>ec", function()
   require("snacks.explorer").close()
 end, { desc = "Close Snacks Explorer" })
 
--- telescope mappings (grouped)
-kmap.set("n", "<leader>ff", function()
-  Snacks.picker.files()
-end, { desc = "find files" })
-
-kmap.set("n", "<leader>fb", function()
-  Snacks.picker.buffers()
-end, { desc = "find buffers" })
-
-kmap.set("n", "<leader>fr", function()
-  Snacks.picker.registers()
-end, { desc = "find registers" })
-
-kmap.set("n", "<leader>fg", function()
-  Snacks.picker.grep({ hidden = true })
-end, { desc = "search grep" })
-
-kmap.set("n", "<leader>sw", function()
-  Snacks.picker.grep_word()
-end, { desc = "search word under cursor" })
-
-kmap.set("n", "<leader>sh", function()
-  Snacks.picker.search_history()
-end, { desc = "search history" })
-
-kmap.set("n", "<leader>hh", function()
-  Snacks.picker.help()
-end, { desc = "help tags" })
-
-kmap.set("n", "<leader>hc", function()
-  Snacks.picker.keymaps()
-end, { desc = "command palette" })
-
 -- quit all
 kmap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })
 
