@@ -207,11 +207,6 @@ kmap.set("n", "<leader>ef", function()
   vim.notify("Snacks Explorer is not open", vim.log.levels.WARN)
 end, { desc = "Focus Snacks Explorer window" })
 
--- Close explorer
-kmap.set("n", "<leader>ec", function()
-  require("snacks.explorer").close()
-end, { desc = "Close Snacks Explorer" })
-
 -- quit all
 kmap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })
 
