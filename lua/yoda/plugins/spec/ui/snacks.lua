@@ -14,6 +14,7 @@ return {
     explorer = {
       enabled = true,
       replace_netrw = true,
+      show_hidden = true,
     },
     picker = {
       sources = {
