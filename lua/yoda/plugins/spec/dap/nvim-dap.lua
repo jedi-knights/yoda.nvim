@@ -11,6 +11,7 @@ return {
     "nvim-neotest/neotest-plenary",
     "nvim-neotest/neotest-go",
     "nvim-neotest/nvim-nio",
+    "leoluz/nvim-dap-go",
     "mfussenegger/nvim-dap-python",
     "theHamsta/nvim-dap-virtual-text",
   },

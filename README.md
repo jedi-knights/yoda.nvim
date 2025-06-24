@@ -245,8 +245,10 @@ no provider for Python. Since I installed my Python using homebrew I had to
 break system packages to install the neovim provider like this:
 
 ```shell
-/opt/homebrew/bin/python3 -m pip install --break-system-packages neovim
+/opt/homebrew/bin/python3 -m pip install --break-system-packages neovim debugpy
 ```
+
+## Python Debugging Mo
 
 ## Profiling 
 
