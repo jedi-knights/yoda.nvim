@@ -105,6 +105,10 @@ function M.setup()
   vim.api.nvim_create_user_command("FormatFeature", function()
     M.format_feature()
   end, {})
+  
+  vim.api.nvim_create_user_command("YodaDiagnostics", function()
+    require("yoda.diagnostics").run_diagnostics()
+  end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" })
 end
 
 return M
