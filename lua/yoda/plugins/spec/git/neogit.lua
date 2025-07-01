@@ -14,16 +14,33 @@ return {
   config = function()
     local neogit = require("neogit")
 
-    -- 🧼 DRY: Refresh Neo-tree helper
-    local function refresh_neo_tree()
-      local ok, manager = pcall(require, "neo-tree.sources.manager")
-      if ok then
-        vim.notify("Refreshing Neo-tree...", vim.log.levels.INFO)
-        manager.refresh("filesystem")
-        manager.refresh("git_status")
-      else
-        vim.notify("Neo-tree manager not available", vim.log.levels.ERROR)
-      end
+    -- 🧼 DRY: Refresh Snacks Explorer helper
+    local function refresh_snacks_explorer()
+      -- Schedule the refresh to avoid timing issues
+      vim.schedule(function()
+        -- Trigger User autocmds that explorers might listen to
+        vim.api.nvim_exec_autocmds("User", {
+          pattern = "NeogitStatusRefresh",
+        })
+        
+        -- Find and refresh any open Snacks Explorer windows
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          local buf = vim.api.nvim_win_get_buf(win)
+          if vim.bo[buf].filetype == "snacks-explorer" then
+            -- Force a refresh by calling the explorer refresh function
+            local ok, snacks_explorer = pcall(require, "snacks.explorer")
+            if ok and snacks_explorer.refresh then
+              snacks_explorer.refresh()
+            else
+              -- Fallback: close and reopen the explorer
+              vim.api.nvim_win_close(win, false)
+              vim.defer_fn(function()
+                snacks_explorer.open()
+              end, 100)
+            end
+          end
+        end
+      end)
     end
 
     neogit.setup({
@@ -39,19 +56,19 @@ return {
       event_handlers = {
         {
           event = "post_commit",
-          handler = refresh_neo_tree,
+          handler = refresh_snacks_explorer,
         },
         {
           event = "post_stage",
-          handler = refresh_neo_tree,
+          handler = refresh_snacks_explorer,
         },
         {
           event = "post_unstage",
-          handler = refresh_neo_tree,
+          handler = refresh_snacks_explorer,
         },
         {
           event = "post_push",
-          handler = refresh_neo_tree,
+          handler = refresh_snacks_explorer,
         },
       },
     })

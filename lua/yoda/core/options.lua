@@ -59,6 +59,9 @@ vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 
+-- Set explicit Python path for better performance
+vim.g.python3_host_prog = "/opt/homebrew/opt/python@3.13/bin/python3"
+
 
 opt.list = true                -- Show whitespace characters
 opt.listchars = {
