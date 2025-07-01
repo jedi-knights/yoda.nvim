@@ -2,24 +2,17 @@
 
 local M = {}
 
--- Extend LSP client capabilities (e.g., for nvim-cmp)
+-- Import enhanced LSP configuration
+local lsp_config = require("yoda.lsp.config")
+
+-- Use enhanced capabilities with file watching
 function M.capabilities()
-  local capabilities = vim.lsp.protocol.make_client_capabilities()
-
-  local ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-  if ok then
-    capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
-  end
-
-  return capabilities
+  return lsp_config.capabilities()
 end
 
--- Attach LSP with minimal built-in behavior
+-- Use enhanced on_attach with file watching
 function M.on_attach(client, bufnr)
-  local opts = { buffer = bufnr, noremap = true, silent = true }
-
-  -- Basic hover functionality only
-  vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+  return lsp_config.on_attach(client, bufnr)
 end
 
 return M

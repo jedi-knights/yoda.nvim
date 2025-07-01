@@ -109,6 +109,14 @@ function M.setup()
   vim.api.nvim_create_user_command("YodaDiagnostics", function()
     require("yoda.diagnostics").run_diagnostics()
   end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" })
+  
+  vim.api.nvim_create_user_command("CleanDuplicateParsers", function()
+    require("yoda.utils.treesitter_cleanup").cleanup_duplicate_parsers()
+  end, { desc = "Clean up duplicate TreeSitter parsers" })
+  
+  vim.api.nvim_create_user_command("IconDiagnostics", function()
+    require("yoda.utils.icon_diagnostics").run_diagnostics()
+  end, { desc = "Run diagnostics for icon display issues" })
 end
 
 return M

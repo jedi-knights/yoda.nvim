@@ -3,6 +3,9 @@ return {
   "folke/snacks.nvim",
   lazy = false,
   priority = 1000,
+  dependencies = {
+    "nvim-tree/nvim-web-devicons", -- For file icons
+  },
   opts = {
     toggle = {
       which_key = true,
@@ -16,6 +19,7 @@ return {
       replace_netrw = true,
       show_hidden = true,
       ignore = {}, -- disables all default ignore patterns
+      refresh_on_git = true,
     },
     picker = {
       sources = {
@@ -63,6 +67,26 @@ return {
       enabled = true,
     },
   },
+  init = function()
+    -- Set up autocmd to refresh Snacks Explorer on git status changes
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "NeogitStatusRefresh",
+      callback = function()
+        local ok, snacks_explorer = pcall(require, "snacks.explorer")
+        if ok then
+          -- Find all Snacks Explorer windows and refresh them
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            if vim.bo[buf].filetype == "snacks-explorer" then
+              if snacks_explorer.refresh then
+                snacks_explorer.refresh()
+              end
+            end
+          end
+        end
+      end,
+    })
+  end,
   keys = {
     -- Smart file search (buffers, project files)
     {

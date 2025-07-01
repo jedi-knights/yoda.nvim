@@ -72,12 +72,80 @@ function M.check_cmp_status()
   return true
 end
 
+--- Check Python provider configuration
+function M.check_python_provider()
+  vim.notify("🐍 Python Provider Status:", vim.log.levels.INFO)
+  
+  if vim.g.python3_host_prog then
+    vim.notify("  ✅ Python path explicitly set: " .. vim.g.python3_host_prog, vim.log.levels.INFO)
+  else
+    vim.notify("  ⚠️ Python path not set (will auto-detect)", vim.log.levels.WARN)
+  end
+  
+  -- Check if Python executable exists
+  local python_path = vim.g.python3_host_prog or "python3"
+  if vim.fn.executable(python_path) == 1 then
+    vim.notify("  ✅ Python executable found", vim.log.levels.INFO)
+  else
+    vim.notify("  ❌ Python executable not found", vim.log.levels.ERROR)
+  end
+end
+
+--- Check LSP file watching status
+function M.check_lsp_file_watching()
+  vim.notify("👀 LSP File Watching Status:", vim.log.levels.INFO)
+  
+  local clients = vim.lsp.get_active_clients()
+  local watching_enabled = false
+  
+  for _, client in ipairs(clients) do
+    if client.supports_method("workspace/didChangeWatchedFiles") then
+      vim.notify("  ✅ " .. client.name .. " supports file watching", vim.log.levels.INFO)
+      watching_enabled = true
+    else
+      vim.notify("  ⚠️ " .. client.name .. " does not support file watching", vim.log.levels.WARN)
+    end
+  end
+  
+  if not watching_enabled and #clients > 0 then
+    vim.notify("  ⚠️ No LSP clients have file watching enabled", vim.log.levels.WARN)
+  elseif #clients == 0 then
+    vim.notify("  ℹ️ No LSP clients currently active", vim.log.levels.INFO)
+  end
+end
+
+--- Check for duplicate TreeSitter parsers
+function M.check_treesitter_duplicates()
+  vim.notify("🌳 TreeSitter Parser Status:", vim.log.levels.INFO)
+  
+  local ok, cleanup = pcall(require, "yoda.utils.treesitter_cleanup")
+  if ok then
+    local duplicates = cleanup.check_duplicates()
+    if #duplicates > 0 then
+      vim.notify("  ⚠️ Found duplicate parsers. Run :CleanDuplicateParsers to fix", vim.log.levels.WARN)
+    else
+      vim.notify("  ✅ No duplicate parsers found", vim.log.levels.INFO)
+    end
+  else
+    vim.notify("  ❌ Could not check for duplicates", vim.log.levels.ERROR)
+  end
+end
+
 --- Run comprehensive diagnostic check
 function M.run_diagnostics()
   vim.notify("🩺 Running Yoda.nvim diagnostics...", vim.log.levels.INFO)
   vim.notify(string.rep("=", 50), vim.log.levels.INFO)
   
   M.check_lsp_status()
+  vim.notify("", vim.log.levels.INFO)
+  
+  M.check_lsp_file_watching()
+  vim.notify("", vim.log.levels.INFO)
+  
+  M.check_python_provider()
+  vim.notify("", vim.log.levels.INFO)
+  
+  M.check_treesitter_duplicates()
   vim.notify("", vim.log.levels.INFO)
   
   M.check_mason_status()
