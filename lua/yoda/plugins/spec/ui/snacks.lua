@@ -15,6 +15,7 @@ return {
       enabled = true,
       replace_netrw = true,
       show_hidden = true,
+      ignore = {}, -- disables all default ignore patterns
     },
     picker = {
       sources = {

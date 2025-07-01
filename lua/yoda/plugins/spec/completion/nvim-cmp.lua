@@ -7,10 +7,14 @@ return {
     "hrsh7th/cmp-path",        -- Path completions
     "saadparwaiz1/cmp_luasnip",-- Snippet completions
     "L3MON4D3/LuaSnip",        -- Snippet engine
+    "zbirenbaum/copilot-cmp",  -- Copilot source for nvim-cmp
   },
   config = function()
     local cmp = require("cmp")
     local luasnip = require("luasnip")
+    
+    -- Setup Copilot CMP
+    require("copilot_cmp").setup()
 
     cmp.setup({
       snippet = {
@@ -47,6 +51,7 @@ return {
           -- make lazydev completions top priority (see `:h blink.cmp`)
           score_offset = 100,
         },
+        { name = "copilot", group_index = 2 },
         { name = "nvim_lsp" },
         { name = "luasnip" },
         { name = "buffer" },
