@@ -44,6 +44,36 @@ return {
     dashboard = {
       enabled = true,
       key = nil,        -- disables <g> for Snacks.dashboard
+      preset = {
+        header = function()
+          -- Read the YODA art from the art file
+          local art_file = vim.fn.stdpath("config") .. "/lua/yoda/art/yoda.txt"
+          local lines = {}
+          
+          -- Try to read the file
+          local file = io.open(art_file, "r")
+          if file then
+            for line in file:lines() do
+              table.insert(lines, line)
+            end
+            file:close()
+          else
+            -- Fallback ASCII art if file can't be read
+            lines = {
+              "",
+              "██╗   ██╗ ██████╗ ██████╗  █████╗",
+              "╚██╗ ██╔╝██╔═══██╗██╔══██╗██╔══██╗",
+              " ╚████╔╝ ██║   ██║██║  ██║███████║",
+              "  ╚██╔╝  ██║   ██║██║  ██║██╔══██║",
+              "   ██║   ╚██████╔╝██████╔╝██║  ██║",
+              "   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝",
+              "",
+            }
+          end
+          
+          return table.concat(lines, "\n")
+        end,
+      },
     },
     bigfile = {
       enabled = true,
