@@ -44,35 +44,54 @@ return {
     dashboard = {
       enabled = true,
       key = nil,        -- disables <g> for Snacks.dashboard
-      preset = {
-        header = function()
-          -- Read the YODA art from the art file
-          local art_file = vim.fn.stdpath("config") .. "/lua/yoda/art/yoda.txt"
-          local lines = {}
-          
-          -- Try to read the file
-          local file = io.open(art_file, "r")
-          if file then
-            for line in file:lines() do
-              table.insert(lines, line)
-            end
-            file:close()
-          else
-            -- Fallback ASCII art if file can't be read
-            lines = {
-              "",
-              "██╗   ██╗ ██████╗ ██████╗  █████╗",
-              "╚██╗ ██╔╝██╔═══██╗██╔══██╗██╔══██╗",
-              " ╚████╔╝ ██║   ██║██║  ██║███████║",
-              "  ╚██╔╝  ██║   ██║██║  ██║██╔══██║",
-              "   ██║   ╚██████╔╝██████╔╝██║  ██║",
-              "   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝",
-              "",
+      sections = {
+        {
+          section = "header",
+          text = function()
+            -- Read the YODA art from the art file  
+            -- Try multiple possible locations for the art file
+            local possible_paths = {
+              vim.fn.stdpath("config") .. "/lua/yoda/art/yoda.txt",
+              "./lua/yoda/art/yoda.txt",
+              vim.fn.fnamemodify(debug.getinfo(1).source:sub(2), ":h:h:h:h") .. "/art/yoda.txt"
             }
-          end
-          
-          return table.concat(lines, "\n")
-        end,
+            
+            local lines = {}
+            local file_found = false
+            
+            -- Try to read the file from different locations
+            for _, art_file in ipairs(possible_paths) do
+              local file = io.open(art_file, "r")
+              if file then
+                for line in file:lines() do
+                  table.insert(lines, line)
+                end
+                file:close()
+                file_found = true
+                break
+              end
+            end
+            
+            if not file_found then
+              -- Fallback ASCII art if file can't be read
+              lines = {
+                "",
+                "██╗   ██╗ ██████╗ ██████╗  █████╗",
+                "╚██╗ ██╔╝██╔═══██╗██╔══██╗██╔══██╗",
+                " ╚████╔╝ ██║   ██║██║  ██║███████║",
+                "  ╚██╔╝  ██║   ██║██║  ██║██╔══██║",
+                "   ██║   ╚██████╔╝██████╔╝██║  ██║",
+                "   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝",
+                "",
+              }
+            end
+            
+            return lines
+          end,
+          padding = 1,
+        },
+        { section = "keys", gap = 1, padding = 1 },
+        { section = "startup" },
       },
     },
     bigfile = {
