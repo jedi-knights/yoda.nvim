@@ -10,5 +10,6 @@ return {
     require("yoda.plugins.spec.ui.trouble"),
     require("yoda.plugins.spec.ui.dressing"),
     require("yoda.plugins.spec.ui.img-clip"),
+    require("yoda.plugins.spec.ui.which-key"),
 }
 
