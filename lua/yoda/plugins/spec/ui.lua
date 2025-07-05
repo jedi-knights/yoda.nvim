@@ -128,6 +128,26 @@ return {
       vim.ui.select = require("snacks.picker").select
       vim.ui.input = require("snacks.input").input
       
+      -- Add safety wrapper for Snacks operations to handle buffer issues
+      local original_picker = require("snacks.picker")
+      local safe_picker = {}
+      
+      -- Wrap picker functions with error handling
+      for name, func in pairs(original_picker) do
+        if type(func) == "function" then
+          safe_picker[name] = function(...)
+            local ok, result = pcall(func, ...)
+            if not ok then
+              vim.notify("Snacks picker error: " .. tostring(result), vim.log.levels.ERROR)
+              return
+            end
+            return result
+          end
+        else
+          safe_picker[name] = func
+        end
+      end
+      
       -- Register custom test picker with Snacks
       local snacks = require("snacks")
       if snacks.picker and snacks.picker.register then
@@ -139,6 +159,50 @@ return {
             require("yoda.testpicker").run()
           end,
         })
+      end
+      
+      -- Add buffer validation before window operations
+      vim.api.nvim_create_autocmd("BufWinEnter", {
+        callback = function(args)
+          local buf = args.buf
+          if buf and vim.api.nvim_buf_is_valid(buf) then
+            -- Buffer is valid, continue
+            return
+          end
+          -- Invalid buffer, try to clean up
+          vim.schedule(function()
+            local ok, _ = pcall(vim.api.nvim_buf_delete, buf, { force = true })
+            if not ok then
+              -- Buffer might already be deleted, ignore
+            end
+          end)
+        end,
+      })
+      
+      -- Add delay to Snacks operations to avoid timing conflicts
+      local original_files = snacks.picker.files
+      local original_grep = snacks.picker.grep
+      
+      if original_files then
+        snacks.picker.files = function(...)
+          vim.defer_fn(function()
+            local ok, result = pcall(original_files, ...)
+            if not ok then
+              vim.notify("Snacks files error: " .. tostring(result), vim.log.levels.ERROR)
+            end
+          end, 10) -- 10ms delay
+        end
+      end
+      
+      if original_grep then
+        snacks.picker.grep = function(...)
+          vim.defer_fn(function()
+            local ok, result = pcall(original_grep, ...)
+            if not ok then
+              vim.notify("Snacks grep error: " .. tostring(result), vim.log.levels.ERROR)
+            end
+          end, 10) -- 10ms delay
+        end
       end
     end,
     keys = {
@@ -326,19 +390,38 @@ return {
     end,
   },
 
-  -- Noice for better UI
+  -- Noice for better UI (minimal config to avoid conflicts)
   {
     "folke/noice.nvim",
     event = "VeryLazy",
     opts = {
-      -- add any options here
+      -- Disable all features that might conflict with Snacks
+      cmdline = {
+        enabled = false,
+      },
+      messages = {
+        enabled = false,
+      },
+      popupmenu = {
+        enabled = false,
+      },
+      notify = {
+        enabled = false, -- Disable notifications to avoid conflicts
+      },
+      lsp = {
+        progress = {
+          enabled = false,
+        },
+        hover = {
+          enabled = false,
+        },
+        signature = {
+          enabled = false,
+        },
+      },
     },
     dependencies = {
-      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
       "MunifTanjim/nui.nvim",
-      -- OPTIONAL:
-      --   `nvim-notify` is only needed, if you want to use the notification view.
-      --   If not available, we use `mini` as the fallback
       "rcarriga/nvim-notify",
     }
   },
