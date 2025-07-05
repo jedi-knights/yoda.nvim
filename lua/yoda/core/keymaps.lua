@@ -265,6 +265,19 @@ kmap.set("n", "<leader>cp", function()
   end
 end, { desc = "Toggle Copilot" })
 
+-- Avante AI keymaps
+kmap.set("n", "<leader>aa", function()
+  vim.cmd("AvanteAsk")
+end, { desc = "Ask Avante AI" })
+
+kmap.set("n", "<leader>ac", function()
+  vim.cmd("AvanteChat")
+end, { desc = "Open Avante Chat" })
+
+kmap.set("n", "<leader>ah", function()
+  vim.cmd("MCPHub")
+end, { desc = "Open MCP Hub" })
+
 
 -- snacks terminal keymaps
 kmap.set("n", "<leader>vt", function()
