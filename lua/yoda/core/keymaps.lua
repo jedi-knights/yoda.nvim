@@ -64,31 +64,24 @@ kmap.set("n", "<leader><leader>r", function()
   end, 100)
 end, { desc = "Hot reload Yoda plugin config" })
 
-local showkeys_enabled = false
+-- Removed showkeys_enabled variable - using which-key instead
 
--- Toggle ShowKeys plugin
-kmap.set("n", "<leader>kk", function()
-  local ok, showkeys = pcall(require, "showkeys")
+-- Show WhichKey
+kmap.set("n", "<leader>sk", function()
+  local ok, whichkey = pcall(require, "which-key")
   if not ok then
-    require("lazy").load({ plugins = { "showkeys" } })
-    ok, showkeys = pcall(require, "showkeys")
+    require("lazy").load({ plugins = { "folke/which-key.nvim" } })
+    ok, whichkey = pcall(require, "which-key")
   end
-  if ok and showkeys then
-    showkeys.toggle()
-    showkeys_enabled = not showkeys_enabled
-
-    if showkeys_enabled then
-      vim.notify("✅ ShowKeys enabled", vim.log.levels.INFO)
-    else
-      vim.notify("🚫 ShowKeys disabled", vim.log.levels.INFO)
-    end
+  if ok and whichkey then
+    whichkey.show()
   else
-    vim.notify("❌ Failed to load showkeys plugin", vim.log.levels.ERROR)
+    vim.notify("❌ Failed to load which-key plugin", vim.log.levels.ERROR)
   end
-end, { desc = "Toggle ShowKeys" })
+end, { desc = "Show WhichKey" })
 
 -- run tests
-kmap.set("n", "<leader>tp", function()
+kmap.set("n", "<leader>rt", function()
   require("yoda.testpicker").run()
 end, { desc = "run tests with yoda" })
 
@@ -175,6 +168,25 @@ kmap.set("n", "<leader>sh", "<cmd>split<cr>", { desc = "split horizontally" })
 kmap.set("n", "<leader>bn", "<cmd>bn<cr>", { desc = "next buffer" })
 kmap.set("n", "<leader>bp", "<cmd>bp<cr>", { desc = "prev buffer" })
 kmap.set("n", "<leader>bd", "<cmd>bd<cr>", { desc = "delete buffer" })
+
+-- File finding keymaps (Snacks equivalents)
+kmap.set("n", "<leader>ff", function()
+  local ok, Snacks = pcall(require, "snacks")
+  if ok and Snacks then
+    Snacks.picker.files()
+  else
+    vim.notify("❌ Snacks not available", vim.log.levels.ERROR)
+  end
+end, { desc = "find files" })
+
+kmap.set("n", "<leader>fg", function()
+  local ok, Snacks = pcall(require, "snacks")
+  if ok and Snacks then
+    Snacks.picker.grep()
+  else
+    vim.notify("❌ Snacks not available", vim.log.levels.ERROR)
+  end
+end, { desc = "find in files (grep)" })
 
 -- Utility function keymaps
 local utils = require("yoda.core.functions")
@@ -368,40 +380,6 @@ kmap.set("n", "<leader>vr", function()
     end,
   })
 end, { desc = "Launch Python REPL in float" })
-
--- neotest keymaps
-kmap.set("n", "<leader>ta", function()
-  require("neotest").run.run(vim.loop.cwd())
-end, { desc = "Run all tests in project" })
-
-kmap.set("n", "<leader>tn", function()
-  require("neotest").run.run()
-end, { desc = "Run nearest test" })
-
-kmap.set("n", "<leader>tf", function()
-  require("neotest").run.run(vim.fn.expand("%"))
-end, { desc = "Run tests in current file" })
-
-kmap.set("n", "<leader>tl", function()
-  require("neotest").run.run_last()
-end, { desc = "Run last test" })
-
-kmap.set("n", "<leader>ts", function()
-  require("neotest").summary.toggle()
-end, { desc = "Toggle test summary" })
-
-kmap.set("n", "<leader>to", function()
-  require("neotest").output_panel.toggle()
-end, { desc = "Toggle output panel" })
-
-kmap.set("n", "<leader>td", function()
-  require("neotest").run.run({ strategy = "dap" })
-end, { desc = "Debug nearest test with DAP" })
-
-kmap.set("n", "<leader>tv", function()
-  require("neotest").output.open({ enter = true })
-end, { desc = "View test output in floating window" })
-
 
 -- coverage keymaps
 kmap.set("n", "<leader>cv", function()
