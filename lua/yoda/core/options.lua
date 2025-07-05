@@ -14,6 +14,14 @@ opt.undofile = true              -- Enable persistent undo
 opt.updatetime = 300             -- Faster completion
 opt.colorcolumn = "80"           -- Set color column at 80 characters
 
+-- Performance optimizations
+opt.lazyredraw = true            -- Don't redraw while executing macros
+opt.hidden = true                -- Allow switching buffers without saving
+opt.completeopt = "menuone,noselect" -- Better completion UX
+opt.pumheight = 10               -- Limit completion menu height
+opt.pumblend = 10                -- Semi-transparent completion menu
+opt.winblend = 10                -- Semi-transparent floating windows
+
 -- Indentation
 opt.tabstop = 4                  -- Number of spaces tabs count for
 opt.shiftwidth = 4               -- Size of an indent
@@ -28,12 +36,16 @@ opt.visualbell = true            -- Visual bell instead of audible bell
 opt.cursorline = true            -- Highlight the current line
 opt.termguicolors = true         -- Enable 24-bit RGB colors in the terminal
 opt.signcolumn = "yes"           -- Always show the sign column
+opt.showmode = false             -- Don't show mode in cmdline (handled by statusline)
+opt.showcmd = false              -- Don't show command in statusline
+opt.ruler = false                -- Don't show ruler (handled by statusline)
 
 -- Searching
 opt.ignorecase = true            -- Ignore case in search patterns
 opt.smartcase = true             -- Override ignorecase if search contains capitals
 opt.incsearch = true             -- Show search matches while typing
 opt.hlsearch = false             -- Don't Highlight matches after search
+opt.gdefault = true              -- Always use global flag for search/replace
 
 -- Split windows
 opt.splitright = true            -- Vertical splits to the right
@@ -52,16 +64,28 @@ opt.fillchars = {
     horiz = "─",                -- Horizontal line
 }
 
-
--- Disable some built-in providers if you want faster startup jk(optional early optimization)
+-- Disable some built-in providers if you want faster startup (optional early optimization)
 vim.g.loaded_python_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 
+-- Additional performance optimizations
+vim.g.loaded_netrw = 1           -- Disable netrw (use Snacks instead)
+vim.g.loaded_netrwPlugin = 1     -- Disable netrw plugin
+vim.g.loaded_matchparen = 1      -- Disable matchparen (use treesitter)
+vim.g.loaded_2html_plugin = 1    -- Disable 2html plugin
+vim.g.loaded_logiPat = 1         -- Disable logiPat plugin
+vim.g.loaded_rrhelper = 1        -- Disable rrhelper plugin
+vim.g.loaded_tarPlugin = 1       -- Disable tar plugin
+vim.g.loaded_tutor_mode_plugin = 1 -- Disable tutor plugin
+vim.g.loaded_vimball = 1         -- Disable vimball plugin
+vim.g.loaded_vimballPlugin = 1   -- Disable vimball plugin
+vim.g.loaded_zip = 1             -- Disable zip plugin
+vim.g.loaded_zipPlugin = 1       -- Disable zip plugin
+
 -- Set explicit Python path for better performance
 vim.g.python3_host_prog = "/opt/homebrew/opt/python@3.13/bin/python3"
-
 
 opt.list = true                -- Show whitespace characters
 opt.listchars = {

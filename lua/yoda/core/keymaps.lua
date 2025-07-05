@@ -150,6 +150,47 @@ kmap.set("n", "q", "<nop>", { desc = "disable q" })
 kmap.set("i", "jk", "<esc>", { noremap = true, silent = true, desc = "exit insert mode" })
 kmap.set("v", "jk", "<esc>", { noremap = true, silent = true, desc = "exit visual mode" })
 
+-- Enhanced navigation
+kmap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "move down" })
+kmap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "move up" })
+
+-- Better search
+kmap.set("n", "n", "nzzzv", { desc = "next search result" })
+kmap.set("n", "N", "Nzzzv", { desc = "prev search result" })
+
+-- Keep cursor in place when joining lines
+kmap.set("n", "J", "mzJ`z", { desc = "join lines" })
+
+-- Paste without overwriting register
+kmap.set("x", "<leader>p", "\"_dP", { desc = "paste without overwriting register" })
+
+-- Quick save
+kmap.set("n", "<leader>w", "<cmd>w<cr>", { desc = "save file" })
+
+-- Better window management
+kmap.set("n", "<leader>sv", "<cmd>vsplit<cr>", { desc = "split vertically" })
+kmap.set("n", "<leader>sh", "<cmd>split<cr>", { desc = "split horizontally" })
+
+-- Quick buffer operations
+kmap.set("n", "<leader>bn", "<cmd>bn<cr>", { desc = "next buffer" })
+kmap.set("n", "<leader>bp", "<cmd>bp<cr>", { desc = "prev buffer" })
+kmap.set("n", "<leader>bd", "<cmd>bd<cr>", { desc = "delete buffer" })
+
+-- Utility function keymaps
+local utils = require("yoda.core.functions")
+kmap.set("n", "<leader>ur", utils.toggle_relative_line_numbers, { desc = "toggle relative line numbers" })
+kmap.set("n", "<leader>us", utils.toggle_spell, { desc = "toggle spell checking" })
+kmap.set("n", "<leader>uc", utils.toggle_cursor_line, { desc = "toggle cursor line" })
+kmap.set("n", "<leader>ul", utils.toggle_list, { desc = "toggle whitespace display" })
+kmap.set("n", "<leader>uw", utils.toggle_wrap, { desc = "toggle word wrap" })
+kmap.set("n", "<leader>uf", utils.format_buffer, { desc = "format buffer" })
+kmap.set("n", "<leader>ud", utils.toggle_diagnostics, { desc = "toggle diagnostics" })
+kmap.set("n", "<leader>uh", utils.clear_search_highlights, { desc = "clear search highlights" })
+kmap.set("n", "<leader>ui", utils.get_file_info, { desc = "show file info" })
+kmap.set("n", "<leader>ut", utils.toggle_terminal, { desc = "toggle terminal" })
+kmap.set("n", "<leader>up", utils.copy_file_path, { desc = "copy file path" })
+kmap.set("n", "<leader>un", utils.copy_file_name, { desc = "copy file name" })
+
 -- re-indent whole file
 kmap.set("n", "<leader>i", "gg=g", { desc = "re-indent entire file" })
 
