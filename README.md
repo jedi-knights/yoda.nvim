@@ -23,27 +23,36 @@
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
----
-
-## 📚 Documentation
+## 📚 Documentation Index
 
 ### General Docs
-- [Contributing Guide](docs/CONTRIBUTING.md)
-- [Neovim Cheatsheet](docs/overview/vim-cheatsheet.md)
-- [ChatGPT Plugin Notes](docs/overview/CHATGPT.md)
-- [Avante AI Integration](docs/overview/AVANTE.md)
-- [Debugging Guide](docs/overview/DEBUGGING.md)
-- [DAP (Debug Adapter Protocol)](docs/overview/DAP.md)
-- [LSP (Language Server Protocol)](docs/overview/LSP.md)
-- [Harpoon Usage](docs/overview/HARPOON.md)
+- [CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- [KEYMAPS.md](docs/KEYMAPS.md)
+- [PLUGIN.md](docs/PLUGIN.md)
+- [SETUP_LSP_AI.md](docs/SETUP_LSP_AI.md)
+
+### Overview
+- [AVANTE.md](docs/overview/AVANTE.md)
+- [CHATGPT.md](docs/overview/CHATGPT.md)
+- [DAP.md](docs/overview/DAP.md)
+- [DEBUGGING.md](docs/overview/DEBUGGING.md)
+- [FUNCTIONS.md](docs/overview/FUNCTIONS.md)
+- [HARPOON.md](docs/overview/HARPOON.md)
+- [KEYMAP_CHEATSHEET.md](docs/overview/KEYMAP_CHEATSHEET.md)
+- [LSP.md](docs/overview/LSP.md)
+- [OPTIMIZATION.md](docs/overview/OPTIMIZATION.md)
+- [PLUGIN_MAP.md](docs/overview/PLUGIN_MAP.md)
+- [vim-cheatsheet.md](docs/overview/vim-cheatsheet.md)
 
 ### Architecture Decision Records (ADRs)
-- [001 – Create custom Neovim distribution](docs/adr/0001-create-custom-neovim-distribution.md)
-- [002 – Adopt Conventional Commits](docs/adr/0002-adopt-conventional-commits.md)
-- [003 – Use lazy.nvim package manager](docs/adr/0003-use-lazy-package-manager.md)
-- [004 – Use TokyoNight color scheme](docs/adr/0004-use-tokyonight-colorscheme.md)
-- [005 – Use nvim-tree](docs/adr/0005-use-nvim-tree.md)
-- [006 – Use EditorConfig plugin](docs/adr/0006-use-editorconfig-plugin.md)
+- [0001-create-custom-neovim-distribution.md](docs/adr/0001-create-custom-neovim-distribution.md)
+- [0002-adopt-conventional-commits.md](docs/adr/0002-adopt-conventional-commits.md)
+- [0003-use-lazy-package-manager.md](docs/adr/0003-use-lazy-package-manager.md)
+- [0004-use-tokyonight-colorscheme.md](docs/adr/0004-use-tokyonight-colorscheme.md)
+- [0005-use-nvim-tree.md](docs/adr/0005-use-nvim-tree.md)
+- [0006-use-editorconfig-plugin.md](docs/adr/0006-use-editorconfig-plugin.md)
+
+---
 
 ## Features
 
