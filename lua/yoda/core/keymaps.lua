@@ -64,24 +64,31 @@ kmap.set("n", "<leader><leader>r", function()
   end, 100)
 end, { desc = "Hot reload Yoda plugin config" })
 
--- Removed showkeys_enabled variable - using which-key instead
+local showkeys_enabled = false
 
--- Show WhichKey
-kmap.set("n", "<leader>sk", function()
-  local ok, whichkey = pcall(require, "which-key")
+-- Toggle ShowKeys plugin
+kmap.set("n", "<leader>kk", function()
+  local ok, showkeys = pcall(require, "showkeys")
   if not ok then
-    require("lazy").load({ plugins = { "folke/which-key.nvim" } })
-    ok, whichkey = pcall(require, "which-key")
+    require("lazy").load({ plugins = { "showkeys" } })
+    ok, showkeys = pcall(require, "showkeys")
   end
-  if ok and whichkey then
-    whichkey.show()
+  if ok and showkeys then
+    showkeys.toggle()
+    showkeys_enabled = not showkeys_enabled
+
+    if showkeys_enabled then
+      vim.notify("✅ ShowKeys enabled", vim.log.levels.INFO)
+    else
+      vim.notify("🚫 ShowKeys disabled", vim.log.levels.INFO)
+    end
   else
-    vim.notify("❌ Failed to load which-key plugin", vim.log.levels.ERROR)
+    vim.notify("❌ Failed to load showkeys plugin", vim.log.levels.ERROR)
   end
-end, { desc = "Show WhichKey" })
+end, { desc = "Toggle ShowKeys" })
 
 -- run tests
-kmap.set("n", "<leader>rt", function()
+kmap.set("n", "<leader>tp", function()
   require("yoda.testpicker").run()
 end, { desc = "run tests with yoda" })
 
@@ -142,66 +149,6 @@ kmap.set("n", "q", "<nop>", { desc = "disable q" })
 -- fast mode exits
 kmap.set("i", "jk", "<esc>", { noremap = true, silent = true, desc = "exit insert mode" })
 kmap.set("v", "jk", "<esc>", { noremap = true, silent = true, desc = "exit visual mode" })
-
--- Enhanced navigation
-kmap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "move down" })
-kmap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "move up" })
-
--- Better search
-kmap.set("n", "n", "nzzzv", { desc = "next search result" })
-kmap.set("n", "N", "Nzzzv", { desc = "prev search result" })
-
--- Keep cursor in place when joining lines
-kmap.set("n", "J", "mzJ`z", { desc = "join lines" })
-
--- Paste without overwriting register
-kmap.set("x", "<leader>p", "\"_dP", { desc = "paste without overwriting register" })
-
--- Quick save
-kmap.set("n", "<leader>w", "<cmd>w<cr>", { desc = "save file" })
-
--- Better window management
-kmap.set("n", "<leader>sv", "<cmd>vsplit<cr>", { desc = "split vertically" })
-kmap.set("n", "<leader>sh", "<cmd>split<cr>", { desc = "split horizontally" })
-
--- Quick buffer operations
-kmap.set("n", "<leader>bn", "<cmd>bn<cr>", { desc = "next buffer" })
-kmap.set("n", "<leader>bp", "<cmd>bp<cr>", { desc = "prev buffer" })
-kmap.set("n", "<leader>bd", "<cmd>bd<cr>", { desc = "delete buffer" })
-
--- File finding keymaps (Snacks equivalents)
-kmap.set("n", "<leader>ff", function()
-  local ok, Snacks = pcall(require, "snacks")
-  if ok and Snacks then
-    Snacks.picker.files()
-  else
-    vim.notify("❌ Snacks not available", vim.log.levels.ERROR)
-  end
-end, { desc = "find files" })
-
-kmap.set("n", "<leader>fg", function()
-  local ok, Snacks = pcall(require, "snacks")
-  if ok and Snacks then
-    Snacks.picker.grep()
-  else
-    vim.notify("❌ Snacks not available", vim.log.levels.ERROR)
-  end
-end, { desc = "find in files (grep)" })
-
--- Utility function keymaps
-local utils = require("yoda.core.functions")
-kmap.set("n", "<leader>ur", utils.toggle_relative_line_numbers, { desc = "toggle relative line numbers" })
-kmap.set("n", "<leader>us", utils.toggle_spell, { desc = "toggle spell checking" })
-kmap.set("n", "<leader>uc", utils.toggle_cursor_line, { desc = "toggle cursor line" })
-kmap.set("n", "<leader>ul", utils.toggle_list, { desc = "toggle whitespace display" })
-kmap.set("n", "<leader>uw", utils.toggle_wrap, { desc = "toggle word wrap" })
-kmap.set("n", "<leader>uf", utils.format_buffer, { desc = "format buffer" })
-kmap.set("n", "<leader>ud", utils.toggle_diagnostics, { desc = "toggle diagnostics" })
-kmap.set("n", "<leader>uh", utils.clear_search_highlights, { desc = "clear search highlights" })
-kmap.set("n", "<leader>ui", utils.get_file_info, { desc = "show file info" })
-kmap.set("n", "<leader>ut", utils.toggle_terminal, { desc = "toggle terminal" })
-kmap.set("n", "<leader>up", utils.copy_file_path, { desc = "copy file path" })
-kmap.set("n", "<leader>un", utils.copy_file_name, { desc = "copy file name" })
 
 -- re-indent whole file
 kmap.set("n", "<leader>i", "gg=g", { desc = "re-indent entire file" })
@@ -318,19 +265,6 @@ kmap.set("n", "<leader>cp", function()
   end
 end, { desc = "Toggle Copilot" })
 
--- Avante AI keymaps
-kmap.set("n", "<leader>aa", function()
-  vim.cmd("AvanteAsk")
-end, { desc = "Ask Avante AI" })
-
-kmap.set("n", "<leader>ac", function()
-  vim.cmd("AvanteChat")
-end, { desc = "Open Avante Chat" })
-
-kmap.set("n", "<leader>ah", function()
-  vim.cmd("MCPHub")
-end, { desc = "Open MCP Hub" })
-
 
 -- snacks terminal keymaps
 kmap.set("n", "<leader>vt", function()
@@ -380,6 +314,40 @@ kmap.set("n", "<leader>vr", function()
     end,
   })
 end, { desc = "Launch Python REPL in float" })
+
+-- neotest keymaps
+kmap.set("n", "<leader>ta", function()
+  require("neotest").run.run(vim.loop.cwd())
+end, { desc = "Run all tests in project" })
+
+kmap.set("n", "<leader>tn", function()
+  require("neotest").run.run()
+end, { desc = "Run nearest test" })
+
+kmap.set("n", "<leader>tf", function()
+  require("neotest").run.run(vim.fn.expand("%"))
+end, { desc = "Run tests in current file" })
+
+kmap.set("n", "<leader>tl", function()
+  require("neotest").run.run_last()
+end, { desc = "Run last test" })
+
+kmap.set("n", "<leader>ts", function()
+  require("neotest").summary.toggle()
+end, { desc = "Toggle test summary" })
+
+kmap.set("n", "<leader>to", function()
+  require("neotest").output_panel.toggle()
+end, { desc = "Toggle output panel" })
+
+kmap.set("n", "<leader>td", function()
+  require("neotest").run.run({ strategy = "dap" })
+end, { desc = "Debug nearest test with DAP" })
+
+kmap.set("n", "<leader>tv", function()
+  require("neotest").output.open({ enter = true })
+end, { desc = "View test output in floating window" })
+
 
 -- coverage keymaps
 kmap.set("n", "<leader>cv", function()
