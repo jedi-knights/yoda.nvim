@@ -31,7 +31,6 @@
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [Neovim Cheatsheet](docs/overview/vim-cheatsheet.md)
 - [ChatGPT Plugin Notes](docs/overview/CHATGPT.md)
-- [Avante AI Integration](docs/overview/AVANTE.md)
 - [Debugging Guide](docs/overview/DEBUGGING.md)
 - [DAP (Debug Adapter Protocol)](docs/overview/DAP.md)
 - [LSP (Language Server Protocol)](docs/overview/LSP.md)
@@ -50,11 +49,11 @@
 - **Beginner-friendly setup**
 - **Fast startup** with lazy-loading via `lazy.nvim`
 - **Beautiful default theme** with TokyoNight
-- **Easy file navigation** with Snacks.nvim
-- **Powerful syntax highlighting** with `nvim-treesitter`
+- **Easy file navigation** with `nvim-tree.lua`
+- **Powerful syntax highlighting** with `nvim-treesitter`k
 - **Built-in LSP, Completion, Git integration**
-- **Agentic AI coding** with Avante.nvim + MCP integration
 - **Well-documented and modular Lua configuration**
+j
 ---
 
 ## Directory Structure
