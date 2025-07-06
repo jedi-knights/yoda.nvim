@@ -81,3 +81,81 @@ create_autocmd("FileType", {
     vim.opt_local.conceallevel = 2
   end,
 })
+
+-- Git commit settings
+create_autocmd("FileType", {
+  group = augroup("YodaGitCommit", { clear = true }),
+  pattern = { "gitcommit", "gitrebase" },
+  desc = "Git commit settings",
+  callback = function()
+    vim.opt_local.spell = true
+    vim.opt_local.wrap = true
+  end,
+})
+
+-- JSON settings
+create_autocmd("FileType", {
+  group = augroup("YodaJSON", { clear = true }),
+  pattern = "json",
+  desc = "JSON settings",
+  callback = function()
+    vim.opt_local.conceallevel = 0
+  end,
+})
+
+-- YAML settings
+create_autocmd("FileType", {
+  group = augroup("YodaYAML", { clear = true }),
+  pattern = "yaml",
+  desc = "YAML settings",
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+  end,
+})
+
+-- Auto-format on save for specific file types
+create_autocmd("BufWritePre", {
+  group = augroup("YodaAutoFormat", { clear = true }),
+  pattern = { "*.lua", "*.py", "*.js", "*.ts", "*.json", "*.yaml", "*.yml" },
+  desc = "Auto-format on save",
+  callback = function()
+    -- Only process modifiable buffers
+    if not vim.bo.modifiable or vim.bo.buftype ~= "" then
+      return
+    end
+    local client = vim.lsp.get_active_clients({ bufnr = 0 })[1]
+    if client and client.supports_method("textDocument/formatting") then
+      vim.lsp.buf.format({ async = false })
+    end
+  end,
+})
+
+-- Remove trailing whitespace on save
+create_autocmd("BufWritePre", {
+  group = augroup("YodaTrimWhitespace", { clear = true }),
+  pattern = "*",
+  desc = "Remove trailing whitespace",
+  callback = function()
+    -- Only process modifiable buffers
+    if not vim.bo.modifiable or vim.bo.buftype ~= "" then
+      return
+    end
+    local save_cursor = vim.fn.getpos(".")
+    vim.cmd([[%s/\s\+$//e]])
+    vim.fn.setpos(".", save_cursor)
+  end,
+})
+
+-- Auto-close quickfix and location list when leaving
+create_autocmd("WinLeave", {
+  group = augroup("YodaAutoClose", { clear = true }),
+  pattern = "*",
+  desc = "Auto-close quickfix/location list",
+  callback = function()
+    if vim.bo.filetype == "qf" then
+      vim.cmd("close")
+    end
+  end,
+})
