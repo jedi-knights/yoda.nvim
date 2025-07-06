@@ -1,24 +1,22 @@
 -- Load core settings
 require("yoda.core.options")
 
-pcall(function()
-  local telescope = require("telescope")
-  telescope.extensions.test_picker = telescope.extensions.test_picker or require("yoda.testpicker")
-end)
+-- Removed telescope integration (using Snacks picker instead)
 
 require("yoda.commands").setup()
 require("yoda.core.keymaps")
 require("yoda.core.functions")
 require("yoda.core.autocmds")
 
--- Load plugins
+-- Load plugins first
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
--- Load colorscheme
-require("yoda.core.colorscheme")
+-- Wait for plugins to load, then set colorscheme
+vim.defer_fn(function()
+  require("yoda.core.colorscheme")
+end, 100)
 
--- Load Plenary test keymaps
-require("yoda.core.plenary")
+-- Note: Plenary test harness removed, using Snacks test harness instead
 
 vim.api.nvim_create_user_command("YodaKeymapDump", function()
   require("yoda.devtools.keymaps").dump_all_keymaps()
