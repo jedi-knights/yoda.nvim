@@ -271,4 +271,3 @@ Look for any plugin that takes a long time (especially over 20–50 ms).
 
 # 🚀 Ready to learn Neovim, you are. Let's go!
 
-
