@@ -107,11 +107,6 @@ return {
       end,
     })
   end,
-  config = function()
-    -- Configure UI selectors after Snacks is loaded
-    vim.ui.select = require("snacks.picker").select
-    vim.ui.input = require("snacks.input").input
-  end,
   keys = {
     -- Smart file search (buffers, project files)
     {
