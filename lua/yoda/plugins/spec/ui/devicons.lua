@@ -40,7 +40,7 @@ return {
           color = "#427819",
           name = "Makefile"
         },
-        ["KEYMAPS.md"] = {
+        ["docs/KEYMAPS.md"] = {
           icon = "🗝️",
           color = "#519aba", 
           name = "Keymaps"

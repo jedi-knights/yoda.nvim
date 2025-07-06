@@ -2,273 +2,314 @@
   <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
 </p>
 
-<h1 align="center">Yoda  Neovim Distribution</h1>
+<h1 align="center">Yoda Neovim Distribution</h1>
 
 <p align="center">
-  Welcome to <strong>Yoda</strong>, a modular, beginner-focused, and fully documented Neovim distribution
-  designed to guide new users through their journey into the world of Neovim.
+  A modular, beginner-friendly Neovim distribution with agentic AI capabilities, designed to guide developers through their Neovim journey while providing powerful modern development tools.
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#documentation">Documentation</a> •
+  <a href="#contributing">Contributing</a>
 </p>
 
 ---
 
+## ✨ Features
 
-## Table of Contents
+### 🎯 **Core Experience**
+- **Beginner-friendly setup** with sensible defaults
+- **Fast startup** with lazy-loading via `lazy.nvim`
+- **Beautiful UI** with TokyoNight theme and modern components
+- **Modular architecture** for easy customization
 
-- [Features](#features)
-- [Directory Structure](#directory-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Customization](#customization)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+### 🛠️ **Development Tools**
+- **LSP integration** with Mason for language servers
+- **Intelligent completion** with nvim-cmp
+- **Syntax highlighting** with Treesitter
+- **Git integration** with Gitsigns, Neogit, and Fugitive
+- **Testing framework** with Neotest and coverage visualization
+
+### 🤖 **AI Capabilities**
+- **Agentic AI assistance** with Avante.nvim
+- **MCP integration** for external tool connectivity
+- **GitHub Copilot** integration
+- **Context-aware conversations** with your codebase
+
+### 🧭 **Navigation & Search**
+- **File explorer** with Snacks.nvim
+- **Fuzzy finding** with Telescope
+- **Quick navigation** with Harpoon and Leap
+- **Smart file operations** and project management
+
+### 🎨 **UI & UX**
+- **Modern status line** and notifications
+- **Floating terminals** and REPLs
+- **Image support** with drag-and-drop
+- **Markdown rendering** and preview capabilities
+
+---
+
+## 🚀 Installation
+
+### Prerequisites
+
+- **Neovim 0.10.1+**
+- **Git**
+- **ripgrep** (for fuzzy finding)
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/jedi-knights/yoda ~/.config/nvim
+
+# Install ripgrep (macOS)
+brew install ripgrep
+
+# Start Neovim
+nvim
+```
+
+The first launch will automatically bootstrap all plugins via `lazy.nvim`.
+
+### Optional: Shell Aliases
+
+Add these to your `~/.zshrc` for convenience:
+
+```bash
+alias vi=nvim
+alias vim=nvim
+```
+
+---
+
+## 🤖 AI Capabilities Setup
+
+Yoda includes powerful agentic AI features. To enable them:
+
+### 1. Install Dependencies
+
+```bash
+# Rust toolchain (for Avante.nvim)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Node.js dependencies (for MCP Hub)
+npm install -g mcp-hub@latest
+
+# Docker (for MCP servers)
+docker --version
+```
+
+### 2. Configure API Keys
+
+Add to your `~/.zshrc`:
+
+```bash
+# For Claude (recommended)
+export CLAUDE_API_KEY="your-claude-api-key-here"
+
+# OR for OpenAI
+export OPENAI_API_KEY="your-openai-api-key-here"
+```
+
+### 3. Detailed Setup
+
+See [AVANTE_SETUP.md](docs/AVANTE_SETUP.md) for comprehensive setup instructions.
+
+---
+
+## ⌨️ Usage
+
+### Essential Commands
+
+| Command | Description |
+|---------|-------------|
+| `<leader>e` | Toggle file explorer |
+| `<leader>ff` | Find files |
+| `<leader>fg` | Live grep search |
+| `<leader>aa` | Ask Avante AI |
+| `<leader>ac` | Open Avante Chat |
+| `<leader>am` | Open MCP Hub |
+| `<leader>qq` | Quit Neovim |
+
+### LSP & Development
+
+| Command | Description |
+|---------|-------------|
+| `<leader>ld` | Go to definition |
+| `<leader>lr` | Find references |
+| `<leader>lf` | Format buffer |
+| `<leader>le` | Show diagnostics |
+
+### Testing
+
+| Command | Description |
+|---------|-------------|
+| `<leader>ta` | Run all tests |
+| `<leader>tn` | Run nearest test |
+| `<leader>ts` | Toggle test summary |
+| `<leader>tp` | Custom test picker |
+
+### Window Management
+
+| Command | Description |
+|---------|-------------|
+| `<c-h/j/k/l>` | Navigate windows |
+| `<leader>\|/-` | Split windows |
+| `<leader>se` | Equalize windows |
+
+> **Note:** `<leader>` is set to `<space>`. See [KEYMAPS.md](docs/KEYMAPS.md) for the complete reference.
 
 ---
 
 ## 📚 Documentation
 
-### General Docs
-- [Contributing Guide](docs/CONTRIBUTING.md)
-- [Neovim Cheatsheet](docs/overview/vim-cheatsheet.md)
-- [ChatGPT Plugin Notes](docs/overview/CHATGPT.md)
-- [Debugging Guide](docs/overview/DEBUGGING.md)
-- [DAP (Debug Adapter Protocol)](docs/overview/DAP.md)
-- [LSP (Language Server Protocol)](docs/overview/LSP.md)
-- [Harpoon Usage](docs/overview/HARPOON.md)
+### Getting Started
+- [Neovim Cheatsheet](docs/overview/vim-cheatsheet.md) - Essential Vim commands
+- [LSP Guide](docs/overview/LSP.md) - Language Server Protocol setup
+- [Debugging Guide](docs/overview/DEBUGGING.md) - Debug your code with DAP
 
-### Architecture Decision Records (ADRs)
-- [001 – Create custom Neovim distribution](docs/adr/0001-create-custom-neovim-distribution.md)
-- [002 – Adopt Conventional Commits](docs/adr/0002-adopt-conventional-commits.md)
-- [003 – Use lazy.nvim package manager](docs/adr/0003-use-lazy-package-manager.md)
-- [004 – Use TokyoNight color scheme](docs/adr/0004-use-tokyonight-colorscheme.md)
-- [005 – Use nvim-tree](docs/adr/0005-use-nvim-tree.md)
-- [006 – Use EditorConfig plugin](docs/adr/0006-use-editorconfig-plugin.md)
+### Advanced Features
+- [DAP (Debug Adapter Protocol)](docs/overview/DAP.md) - Advanced debugging
+- [Harpoon Usage](docs/overview/HARPOON.md) - Quick file navigation
+- [ChatGPT Integration](docs/overview/CHATGPT.md) - AI assistance
 
-## Features
+### Development
+- [Contributing Guide](docs/CONTRIBUTING.md) - How to contribute
+- [Plugin Documentation](docs/PLUGIN.md) - Plugin development guide
 
-- **Beginner-friendly setup**
-- **Fast startup** with lazy-loading via `lazy.nvim`
-- **Beautiful default theme** with TokyoNight
-- **Easy file navigation** with `nvim-tree.lua`
-- **Powerful syntax highlighting** with `nvim-treesitter`k
-- **Built-in LSP, Completion, Git integration**
-- **Well-documented and modular Lua configuration**
-j
+### Architecture
+- [ADR 001](docs/adr/0001-create-custom-neovim-distribution.md) - Project creation
+- [ADR 003](docs/adr/0003-use-lazy-package-manager.md) - Plugin management
+- [ADR 004](docs/adr/0004-use-tokyonight-colorscheme.md) - Theme selection
+
 ---
 
-## Directory Structure
+## 🏗️ Architecture
 
-```shell
+```
 ~/.config/nvim/
-├── init.lua                      # Entry point (very lightweight, just bootstraps `lua/`)
-├── lua/
-│   ├── yoda/
-│   │   ├── core/
-│   │   │   ├── options.lua       # Vim options (e.g., tab size, line numbers)
-│   │   │   ├── keymaps.lua       # Global keymaps
-│   │   │   ├── autocmds.lua      # Autocommands (event triggers)
-│   │   │   └── colorscheme.lua   # Colorscheme loader (TokyoNight, etc.)
-│   │   ├── plugins/
-│   │   │   ├── lazy.lua          # Bootstrap lazy.nvim
-│   │   │   ├── spec/
-│   │   │   │   ├── ui.lua        # UI plugins (e.g., nvim-tree, lualine)
-│   │   │   │   ├── lsp.lua       # LSP, completion, snippets
-│   │   │   │   ├── treesitter.lua# Treesitter config
-│   │   │   │   ├── git.lua       # Git-related plugins
-│   │   │   │   ├── editing.lua   # UX enhancements (surround, commentary)
-│   │   ├── lsp/
-│   │   │   ├── servers/          # Server-specific configs
-│   │   │   └── init.lua          # General LSP setup (mason, cmp, etc.)
-│   │   ├── utils/
-│   │   │   └── init.lua          # General utilities
-│   │   └── config.lua            # Main config loader
-├── after/
-├── docs/
-│   ├── adr/                      # Architecture Decision Records
-│   └── CONTRIBUTING.md           # How to contribute
-├── LICENSE
-├── README.md
-├── .gitignore
-└── .editorconfig
+├── init.lua                      # Entry point
+├── lua/yoda/
+│   ├── core/                     # Core Neovim settings
+│   │   ├── options.lua           # Editor options
+│   │   ├── keymaps.lua           # Key mappings
+│   │   ├── autocmds.lua          # Auto-commands
+│   │   └── colorscheme.lua       # Theme configuration
+│   ├── plugins/
+│   │   ├── lazy.lua              # Plugin manager bootstrap
+│   │   └── spec/                 # Plugin specifications
+│   │       ├── ai/               # AI and Copilot plugins
+│   │       ├── lsp/              # Language servers
+│   │       ├── ui/               # UI components
+│   │       ├── git/              # Git integration
+│   │       └── ...               # Other categories
+│   ├── lsp/                      # LSP configuration
+│   ├── utils/                    # Utility functions
+│   └── testpicker/               # Custom test runner
+└── docs/                         # Documentation
 ```
 
 ---
 
-## Installation
+## ⚙️ Customization
 
-> **Note:** This assumes a working Neovim (0.9+) installation.
+Yoda is designed for easy customization:
+
+### Quick Customizations
+
+- **Colorscheme**: Edit `lua/yoda/core/colorscheme.lua`
+- **Keymaps**: Modify `lua/yoda/core/keymaps.lua`
+- **Options**: Adjust `lua/yoda/core/options.lua`
+- **Plugins**: Add/remove in `lua/yoda/plugins/spec/`
+
+### Plugin Management
+
+- **Add plugins**: Create new files in `lua/yoda/plugins/spec/`
+- **Remove plugins**: Delete or comment out plugin files
+- **Configure plugins**: Edit the plugin specification files
+
+### LSP Servers
+
+- **Add servers**: Create files in `lua/yoda/lsp/servers/`
+- **Configure servers**: Edit server-specific configurations
+- **Install servers**: Use `:Mason` to install language servers
+
+---
+
+## 🛠️ Development Tools
+
+### Keymap Exploration
+
+```vim
+:YodaKeymapDump      " View all keymaps grouped by mode
+:YodaKeymapConflicts " Find conflicting mappings
+:YodaLoggedKeymaps   " View logged keymap usage
+```
+
+### Performance Profiling
 
 ```bash
-git clone https://github.com/jedi-knights/yoda ~/.config/nvim
-brew install ripgrep # Install ripgrep for use with Telescopes fuzzy finding
-nvim
+# Profile startup time
+nvim --startuptime nvim.log +q && tail -n 20 nvim.log
 ```
 
-Upon first launch, `lazy.nvim` will bootstrap the plugin setup automatically.
+### Python Development
 
+For Python development, ensure you have the Neovim provider:
 
-**Optional:**
-
-I have found it helpful to alias `vi` and `vim` to `nvim` as my muscle memory keeps forcing me to enter them on the command line.  If I don't I end up with the old versions and not the brand new hotness.
-
-On MacOS I simply added the following to my `~/.zshrc` file:
-
-```shell
-alias vi=nvim
-alias vim=nvim
+```bash
+# For Homebrew Python installations
+/opt/homebrew/bin/python3 -m pip install --break-system-packages neovim debugpy
 ```
 
-Now whether I enter `vi`, `vim`, or `nvim` I still get `neovim`.
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
+
+### Quick Guidelines
+
+- Use [Conventional Commits](https://www.conventionalcommits.org/)
+- Keep configurations modular and well-documented
+- Test your changes thoroughly
+- Be kind and constructive
 
 ---
 
-## Usage
-
-- `<leader>e` - Toggle file explorer (`nvim-tree.lua`)
-- `<leader>ff` - Find files using Telescope
-- `<leader>fg` - Live grep search in files
-- `<leader>qq` - Quit Neovim
-
-(Full keymap cheatsheet coming soon!)
-
----
-
-## Customization
-
-Yoda is modular and designed for easy customization:
-
-- Change colorschemes in `core/colorscheme.lua`
-- Add or remove plugins under `plugins/spec/`
-- Adjust options in `core/options.lua`
-- Customize LSP servers in `lsp/servers/`
-
-Detailed walkthroughs for customization will be available in the [docs](docs/).
-
----
-
-## Contributing
-
-Contributions are very welcome! 🎉
-
-Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines. In short:
-
-- Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for your commit messages.
-- Ensure configurations are modular and well-documented.
-- Be kind, constructive, and open-minded.
-
-If you're learning along the way — that's exactly the spirit of this project!
-
----
-
-## License
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
-- [Neovim](https://neovim.io/) for creating an amazing editor.
-- [folke/lazy.nvim](https://github.com/folke/lazy.nvim) for plugin management.
-- [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) for the beautiful default theme.
-- [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) for powerful syntax highlighting.
-- The entire Neovim community for resources, ideas, and inspiration.
-
----
-
-_"Train yourself to let go of everything you fear to lose." — Yoda_
+- [Neovim](https://neovim.io/) - The amazing editor that makes this possible
+- [folke/lazy.nvim](https://github.com/folke/lazy.nvim) - Fast plugin manager
+- [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - Beautiful theme
+- [folke/snacks.nvim](https://github.com/folke/snacks.nvim) - Modern UI framework
+- [yetone/avante.nvim](https://github.com/yetone/avante.nvim) - Agentic AI capabilities
+- The entire Neovim community for inspiration and resources
 
 ---
 
+> *"Train yourself to let go of everything you fear to lose." — Yoda*
 
-## Markdown Rendering
+---
 
-I'm experimenting with
+## 🚀 Ready to begin your Neovim journey?
 
-- markdown-preview
-- live-preview
-- render-markdown
+Clone the repository and start exploring the power of modern Neovim development!
 
-I don't believe markdown-preview is supported any longer so I'm not going to use that one.
-
-## DevTools
-
-I have added two user commands to assist in keymap exploration:
-
-**open a buffer with all current keymaps grouped by mode**
-
-```plaintext
-:YodaKeymapDump
+```bash
+git clone https://github.com/jedi-knights/yoda ~/.config/nvim
+nvim
 ```
-
-**list conflicting mappings**
-
-```plaintext
-:YodaKeymapConflicts
-```
-
-**dump logged mappings**
-
-```plaintext
-:YodaLoggedKeymaps
-```
-
-## Rust Setup
-
-### Installation
-
-First navigate to [rustup.rs](https://rustup.rs/).
-
-The following installation command is presented there to get rust up and running on your system.
-
-```shell
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-If you prefer using homebrew you can install rust as follows:
-
-```shell
-brew install rust
-```
-
-This will install `rustc` and `cargo`. You can verify the installation by executing the following:
-
-```shell
-rustc --version
-cargo --version
-```
-
-## Neovim module for Python
-
-When executing :checkhealth I was noticing neovim was indicating there was
-no provider for Python. Since I installed my Python using homebrew I had to
-break system packages to install the neovim provider like this:
-
-```shell
-/opt/homebrew/bin/python3 -m pip install --break-system-packages neovim debugpy
-```
-
-## Python Debugging Mo
-
-## Profiling 
-
-If you run into slow startup times, the following will help which plugins
-are slowing down startup time and general performance:
-
-```shell
-nvim --startuptime nvim.log +q && tail -n 20 nvim.log
-```
-
-Look for any plugin that takes a long time (especially over 20–50 ms).
-
-## References
-
-
-- [Python Setup](https://www.youtube.com/watch?v=IobijoroGE0&t=10s)
-- [Reference Dotfiles](https://github.com/hendrikmi/dotfiles/tree/main/nvim)
-- [Debugging Python in Neovim](https://www.youtube.com/watch?v=tfC1i32eW3A)
-- [Top Neovim Plugins](https://dotfyle.com/neovim/plugins/top)
-
-# 🚀 Ready to learn Neovim, you are. Let's go!
 
 

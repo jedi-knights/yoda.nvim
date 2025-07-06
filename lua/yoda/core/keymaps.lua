@@ -376,3 +376,16 @@ kmap.set('v', '<leader>d', '"_d')
 
 -- Delete selection into the void register and then paste over it
 kmap.set('v', '<leader>p', '_dP')
+
+-- Avante AI keymaps
+kmap.set("n", "<leader>aa", function()
+  vim.cmd("AvanteAsk")
+end, { desc = "Ask Avante AI" })
+
+kmap.set("n", "<leader>ac", function()
+  vim.cmd("AvanteChat")
+end, { desc = "Open Avante Chat" })
+
+kmap.set("n", "<leader>am", function()
+  vim.cmd("AvanteMCP")
+end, { desc = "Open MCP Hub" })
