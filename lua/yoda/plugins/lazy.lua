@@ -21,26 +21,14 @@ vim.opt.rtp:prepend(lazypath)
 -- Load plugins using lazy.nvim
 require("lazy").setup({
   spec = {
-    { import = "yoda.plugins.spec.ai" },
-    { import = "yoda.plugins.spec.completion" },
-    { import = "yoda.plugins.spec.core" },
-    { import = "yoda.plugins.spec.dap" },
-    { import = "yoda.plugins.spec.development" },
-    { import = "yoda.plugins.spec.git" },
-    { import = "yoda.plugins.spec.lsp" },
-    { import = "yoda.plugins.spec.markdown" },
-    { import = "yoda.plugins.spec.navigation" },
-    { import = "yoda.plugins.spec.syntax" },
-    { import = "yoda.plugins.spec.tokyonight" },
-    { import = "yoda.plugins.spec.ui" },
-    -- Which-key temporarily disabled due to persistent errors
+    import = "yoda.plugins.spec", -- Import all plugins defined under plugins/spec/
   },
   defaults = {
     lazy = true, -- Lazy-load everything by default
     version = false, -- Always use the latest commit (you can pin versions later if needed)
   },
   install = {
-    -- Colorscheme is set in tokyonight.lua after plugin setup
+    colorscheme = { "tokyonight" }, -- Try to load this colorscheme after install
   },
   checker = { enabled = false }, -- Manually check for plugin updates
   change_detection = {
@@ -51,14 +39,6 @@ require("lazy").setup({
     rocks = {
       enabled = false,    -- disables luarocks support
       hererocks = false,  -- prevents auto-installing hererocks
-    },
-  },
-  -- Ensure tokyonight is loaded immediately
-  performance = {
-    rtp = {
-      reset = false,
-      paths = {},
-      disabled_plugins = {},
     },
   },
 })

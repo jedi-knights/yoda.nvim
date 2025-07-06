@@ -15,7 +15,7 @@ opt.updatetime = 300             -- Faster completion
 opt.colorcolumn = "80"           -- Set color column at 80 characters
 
 -- Performance optimizations
--- opt.lazyredraw = true            -- Don't redraw while executing macros (DISABLED: causes issues with Noice)
+opt.lazyredraw = true            -- Don't redraw while executing macros
 opt.hidden = true                -- Allow switching buffers without saving
 opt.completeopt = "menuone,noselect" -- Better completion UX
 opt.pumheight = 10               -- Limit completion menu height
@@ -39,10 +39,6 @@ opt.signcolumn = "yes"           -- Always show the sign column
 opt.showmode = false             -- Don't show mode in cmdline (handled by statusline)
 opt.showcmd = false              -- Don't show command in statusline
 opt.ruler = false                -- Don't show ruler (handled by statusline)
-
--- Disable built-in UI components (use Snacks instead)
-opt.showtabline = 0              -- Disable built-in tabline (use Snacks tabline)
-opt.laststatus = 0               -- Disable built-in statusline (use Snacks statusline)
 
 -- Searching
 opt.ignorecase = true            -- Ignore case in search patterns

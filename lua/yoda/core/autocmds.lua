@@ -27,23 +27,6 @@ create_autocmd("VimEnter", {
   end,
 })
 
--- Show Snacks dashboard on startup when no files are opened
-create_autocmd("User", {
-  group = augroup("YodaDashboard", { clear = true }),
-  pattern = "LazyDone",
-  callback = function()
-    -- Only show dashboard if no files were opened
-    if vim.fn.argc() == 0 then
-      vim.schedule(function()
-        local ok, snacks = pcall(require, "snacks")
-        if ok and snacks.dashboard then
-          snacks.dashboard.open()
-        end
-      end)
-    end
-  end,
-})
-
 -- Highlight on yank (throttled and limited to reasonable buffer sizes)
 create_autocmd("TextYankPost", {
   group = augroup("YodaHighlightYank", { clear = true }),
