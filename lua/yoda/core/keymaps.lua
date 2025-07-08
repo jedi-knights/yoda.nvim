@@ -88,7 +88,7 @@ kmap.set("n", "<leader>kk", function()
 end, { desc = "Toggle ShowKeys" })
 
 -- run tests
-kmap.set("n", "<leader>tp", function()
+kmap.set("n", "<leader>tt", function()
   require("yoda.testpicker").run()
 end, { desc = "run tests with yoda" })
 
