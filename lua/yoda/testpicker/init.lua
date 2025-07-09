@@ -4,6 +4,9 @@ local Path = require("plenary.path")
 local json = vim.json
 local M = {}
 
+-- Pre-load the picker module to avoid delay during selection
+local picker = require("snacks.picker")
+
 local log_path = "output.log"
 local cache_file = vim.fn.stdpath("cache") .. "/yoda_testpicker_marker.json"
 
@@ -69,23 +72,28 @@ local function run_tests(env, region, marker)
     fi
   ]], env, region, quoted_marker, log_path)
 
-  Snacks.terminal.open({ "bash", "-c", bash_script }, {
-    win = {
-      relative = "editor",
-      position = "float",
-      width = 0.9,
-      height = 0.85,
-      border = "rounded",
-      title = " Test Runner ",
-      title_pos = "center",
-    },
-  })
+  -- Use vim.schedule to defer terminal creation for faster UI response
+  vim.schedule(function()
+    Snacks.terminal.open({ "bash", "-c", bash_script }, {
+      win = {
+        relative = "editor",
+        position = "float",
+        width = 0.9,
+        height = 0.85,
+        border = "rounded",
+        title = " Test Runner ",
+        title_pos = "center",
+      },
+      -- Optimize terminal startup
+      start_insert = false,  -- Don't start in insert mode immediately
+      auto_insert = false,   -- Don't auto-insert on buffer enter
+    })
+  end)
 end
 
 function M.run()
   local cfg = load_env_region()
   local last_marker = get_last_marker()
-  local picker = require("snacks.picker")
 
   picker.select(cfg.environments, {
     prompt = "Select environment:",
