@@ -1,6 +1,5 @@
 -- lua/yoda/testpicker.lua
 
-local snacks = require("snacks")
 local Path = require("plenary.path")
 local json = vim.json
 local M = {}
@@ -70,9 +69,7 @@ local function run_tests(env, region, marker)
     fi
   ]], env, region, quoted_marker, log_path)
 
-  snacks.terminal.open({
-    id = "test-run",
-    cmd = { "bash", "-c", bash_script },
+  Snacks.terminal.open({ "bash", "-c", bash_script }, {
     win = {
       relative = "editor",
       position = "float",
@@ -88,18 +85,19 @@ end
 function M.run()
   local cfg = load_env_region()
   local last_marker = get_last_marker()
+  local picker = require("snacks.picker")
 
-  snacks.select(cfg.environments, {
+  picker.select(cfg.environments, {
     prompt = "Select environment:",
   }, function(env)
     if not env then return end
 
-    snacks.select(cfg.regions, {
+    picker.select(cfg.regions, {
       prompt = "Select region:",
     }, function(region)
       if not region then return end
 
-      snacks.input({
+      Snacks.input({
         prompt = "Enter pytest marker:",
         default = last_marker,
       }, function(marker)
