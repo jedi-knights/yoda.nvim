@@ -10,7 +10,15 @@ return {
     toggle = {
       which_key = true,
     },
-    input = {},
+    input = {
+      width = 60, -- number of columns
+      win = {
+        position = "float",
+        border = "rounded",
+        relative = "editor",
+        style = "minimal",
+      },
+    },
     notifier = {},
     lazygit = {},
     indent = {},
@@ -22,6 +30,13 @@ return {
       refresh_on_git = true,
     },
     picker = {
+      layout = {
+        position = "float",
+        width = 0.8,
+        height = 0.8,
+        border = "rounded",
+        relative = "editor",
+      },
       sources = {
         explorer = {
           layout = { preset = "sidebar", preview = false },
