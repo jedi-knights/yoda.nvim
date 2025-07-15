@@ -52,25 +52,26 @@ local function get_last_marker()
 end
 
 local function save_last_marker(marker)
+  print("Saving last marker:", marker)
   local encoded = json.encode({ marker = marker })
   pcall(Path.new(cache_file).write, Path.new(cache_file), encoded, "w")
 end
 
-local function run_tests(env, region, marker)
+local function run_tests(env, region, marker, serve_allure)
   local quoted_marker = string.format('"%s"', marker)
-  local bash_script = string.format([[
-    [ -f junit.xml ] && rm junit.xml;
-    [ -f coverage.xml ] && rm coverage.xml;
-    [ -f .coverage ] && rm .coverage;
-    [ -d allure-results ] && rm -rf allure-results;
-    ENVIRONMENT=%s REGION=%s pytest -n auto -m %s | tee %s;
+  local bash_script = string.format([[  
+    [ -f junit.xml ] && rm junit.xml
+    [ -f coverage.xml ] && rm coverage.xml
+    [ -f .coverage ] && rm .coverage
+    [ -d allure-results ] && rm -rf allure-results
+    ENVIRONMENT=%s REGION=%s pytest -n auto -m %s 2>&1 | tee %s
     if [ -d allure-results ]; then
-      echo '🧪 Launching Allure report...';
-      allure serve allure-results;
+      %s
     else
-      echo '⚠️  No allure-results directory found.';
+      echo '⚠️  No allure-results directory found.'
     fi
-  ]], env, region, quoted_marker, log_path)
+    echo "Press Enter to close..."; read
+  ]], env, region, quoted_marker, log_path, serve_allure and "echo '🧪 Launching Allure report...'; allure serve allure-results;" or "echo 'Allure report not served.';")
 
   -- Use vim.schedule to defer terminal creation for faster UI response
   vim.schedule(function()
@@ -99,11 +100,13 @@ function M.run()
     prompt = "Select environment:",
   }, function(env)
     if not env then return end
+    print("Selected env:", env)
 
     picker.select(cfg.regions, {
       prompt = "Select region:",
     }, function(region)
       if not region then return end
+      print("Selected region:", region)
 
       Snacks.input({
         prompt = "Enter pytest marker:",
@@ -111,7 +114,14 @@ function M.run()
       }, function(marker)
         if not marker or marker == "" then return end
         save_last_marker(marker)
-        run_tests(env, region, marker)
+        -- Add a picker for whether to serve the Allure report
+        picker.select({"No", "Yes"}, {
+          prompt = "Serve Allure report after tests?",
+          default = 1, -- Default to 'No'
+        }, function(serve_allure)
+          if not serve_allure then return end
+          run_tests(env, region, marker, serve_allure == "Yes")
+        end)
       end)
     end)
   end)
