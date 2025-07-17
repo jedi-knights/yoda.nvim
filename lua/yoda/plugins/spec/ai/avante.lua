@@ -61,7 +61,7 @@ return {
       provider_config = {
         openai = {
           endpoint = os.getenv("OPENAI_API_BASE"),
-          model = os.getenv("OPENAI_API_MODEL"),
+          model = "mercury/devflow.default",  -- Hardcoded, no prefix
           api_key_name = os.getenv("OPENAI_API_KEY_NAME") or "OPENAI_API_KEY",
           timeout = 30000,
           extra_request_body = {
@@ -70,6 +70,10 @@ return {
           },
         }
       }
+      -- Workaround: forcibly strip 'openai/' if present
+      if provider_config.openai.model and provider_config.openai.model:match("^openai/") then
+        provider_config.openai.model = provider_config.openai.model:gsub("^openai/", "")
+      end
     else
       provider = "claude"
       provider_config = {
