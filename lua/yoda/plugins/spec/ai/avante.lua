@@ -12,27 +12,7 @@ return {
   version = false, -- Never set this value to "*"! Never!
   ---@module 'avante'
   ---@type avante.Config
-  opts = {
-    -- add any opts here
-    -- for example
-    provider = 'claude',
-    -- provider = 'openai',
-    providers = {
-      claude = {
-      -- openai = {
-        endpoint = 'https://api.anthropic.com',
-        model = "claude-sonnet-4-20250514",
-        api_key_name = 'CLAUDE_API_KEY',
-        -- model = 'o3-mini',
-        -- api_key_name = 'OPENAI_API_KEY',
-        timeout = 30000, -- Timeout in milliseconds
-        extra_request_body = {
-          temperature = 0.75,
-          max_tokens = 20480,
-        },
-      },
-    },
-  },
+  opts = {},
   dependencies = {
     'nvim-lua/plenary.nvim',
     'MunifTanjim/nui.nvim',
@@ -72,19 +52,52 @@ return {
     },
   },
   config = function()
-    require('avante').setup {
-      -- system_prompt as function ensures LLM always has latest MCP server state
-      -- This is evaluated for every message, even in existing chats
+    local env = os.getenv("YODA_ENV")
+    local is_work = env == "work"
+
+    local provider, provider_config
+    if is_work then
+      provider = "openai"
+      provider_config = {
+        openai = {
+          endpoint = os.getenv("OPENAI_API_BASE"),
+          model = os.getenv("OPENAI_API_MODEL"),
+          api_key_name = os.getenv("OPENAI_API_KEY_NAME") or "OPENAI_API_KEY",
+          timeout = 30000,
+          extra_request_body = {
+            temperature = tonumber(os.getenv("OPENAI_API_TEMPERATURE")) or 0.75,
+            max_tokens = tonumber(os.getenv("OPENAI_API_MAX_TOKENS")) or 20480,
+          },
+        }
+      }
+    else
+      provider = "claude"
+      provider_config = {
+        claude = {
+          endpoint = "https://api.anthropic.com",
+          model = "claude-3-opus-20240229", -- or your preferred Claude model
+          api_key_name = "CLAUDE_API_KEY",
+          timeout = 30000,
+          extra_request_body = {
+            temperature = 0.75,
+            max_tokens = 20480,
+          },
+        }
+      }
+    end
+
+    require("avante").setup({
+      provider = provider,
+      providers = provider_config,
       system_prompt = function()
         local hub = require('mcphub').get_hub_instance()
         return hub and hub:get_active_servers_prompt() or ''
       end,
-      -- Using function prevents requiring mcphub before it's loaded
       custom_tools = function()
         return {
           require('mcphub.extensions.avante').mcp_tool(),
         }
       end,
-    }
+    })
   end,
 } 
