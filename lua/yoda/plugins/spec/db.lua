@@ -1,9 +1,15 @@
-return {
+-- lua/yoda/plugins/spec/db.lua
+-- Consolidated database plugin specifications
+
+local plugins = {
+  -- Vim Dadbod - Database interface
   {
     "tpope/vim-dadbod",
     lazy = true,
     cmd = { "DB", "DBUI", "DBUIToggle", "DBUIAddConnection" },
   },
+
+  -- Vim Dadbod UI - Database user interface
   {
     "kristijanhusak/vim-dadbod-ui",
     lazy = true,
@@ -16,9 +22,13 @@ return {
       }
     end,
   },
+
+  -- Vim Dadbod Completion - Database completion
   {
     "kristijanhusak/vim-dadbod-completion",
     ft = { "sql", "mysql", "plsql", "pgsql" },
     dependencies = { "tpope/vim-dadbod" },
   },
 }
+
+return plugins 
