@@ -19,8 +19,18 @@ dashboard.section.buttons.val = {
   dashboard.button("q", "  Quit", ":qa<CR>"),
 }
 
--- Footer with Yoda quote
-dashboard.section.footer.val = '"Do or do not. There is no try." - Yoda'
+-- Dynamic environment indicator
+local env = vim.env.YODA_ENV or ""
+local env_label = "Unknown"
+if env == "home" then
+  env_label = "Home"
+elseif env == "work" then
+  env_label = "Work"
+end
+
+-- Footer with Yoda quote and environment
+local yoda_quote = '"Do or do not. There is no try." - Yoda'
+dashboard.section.footer.val = yoda_quote .. "  |  Environment: " .. env_label
 
 -- Layout (clean, no MRU)
 dashboard.config.layout = {
