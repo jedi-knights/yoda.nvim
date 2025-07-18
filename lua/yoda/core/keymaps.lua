@@ -389,3 +389,21 @@ end, { desc = "Open Avante Chat" })
 kmap.set("n", "<leader>am", function()
   vim.cmd("AvanteMCP")
 end, { desc = "Open MCP Hub" })
+
+if vim.env.YODA_ENV == "work" then
+  local ok, mercury = pcall(require, "mercury")
+  if ok and mercury.open then
+    vim.keymap.set("n", "<leader>m", mercury.open, { desc = "Open Mercury" })
+  else
+    vim.keymap.set("n", "<leader>m", ":Mercury<CR>", { desc = "Open Mercury" })
+  end
+
+  vim.keymap.set("n", "<leader>ma", function()
+    local ok, mercury_ui = pcall(require, "mercury.ui")
+    if ok and mercury_ui and mercury_ui.open_panel then
+      mercury_ui.open_panel()
+    else
+      vim.notify("Mercury Agentic Panel not available", vim.log.levels.ERROR)
+    end
+  end, { desc = "Open Mercury Agentic Panel" })
+end
