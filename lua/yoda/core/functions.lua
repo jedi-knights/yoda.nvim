@@ -1,6 +1,8 @@
 -- lua/yoda/core/functions.lua
 -- Utility functions for Neovim configuration
 
+local M = {}
+
 ---
 --- Scans all directories in the project root for Python virtual environments.
 --
@@ -10,7 +12,7 @@
 --
 -- @return table A list of absolute paths to detected virtual environment directories.
 --               Returns an empty table if none are found.
-local function find_virtual_envs()
+M.find_virtual_envs = function()
   local cwd = vim.fn.getcwd()
   local entries = vim.fn.readdir(cwd)
   local venvs = {}
@@ -36,8 +38,8 @@ end
 -- If one is found, returns its path. If multiple are found, shows a Snacks picker and returns the selected path.
 --
 -- @param callback function A function to call with the selected venv path (or nil if none selected).
-local function select_virtual_env(callback)
-  local venvs = find_virtual_envs()
+M.select_virtual_env = function(callback)
+  local venvs = M.find_virtual_envs()
   if #venvs == 0 then
     local ok, noice = pcall(require, "noice")
     if ok and noice and noice.notify then
@@ -65,7 +67,7 @@ end
 --- Returns a table of window options for snacks.terminal, with a custom title.
 -- @param title string The title to display at the top of the terminal window.
 -- @return table The window options table.
-local function make_terminal_win_opts(title)
+M.make_terminal_win_opts = function(title)
   return {
     relative = "editor",
     position = "float",
@@ -81,34 +83,63 @@ end
 --- Opens a floating terminal using snacks.terminal.
 -- If a Python virtual environment is selected, sources it and sets the title to indicate Python Environment.
 -- Otherwise, opens a simple terminal with a different title.
-local function open_floating_terminal()
-  select_virtual_env(function(venv)
+M.open_floating_terminal = function()
+  M.select_virtual_env(function(venv)
     local snacks_terminal = require("snacks.terminal")
+    local shell = os.getenv("SHELL") or vim.o.shell
     if venv then
-      local venv_activate = get_activate_script_path(venv)
+      local venv_activate = M.get_activate_script_path(venv)
       if venv_activate then
-        local shell = os.getenv("SHELL") or vim.o.shell
-        local rcfile = vim.fn.tempname()
-        local f = io.open(rcfile, "w")
-        f:write("source " .. venv_activate .. "\nexec " .. shell .. "\n")
-        f:close()
-        snacks_terminal.open({ shell, "--rcfile", rcfile }, {
-          win = make_terminal_win_opts(" Python Environment "),
-          start_insert = true,
-          auto_insert = true,
-        })
+        if shell:match("bash") then
+          local rcfile = vim.fn.tempname()
+          local f = io.open(rcfile, "w")
+          f:write("source " .. venv_activate .. "\nexec bash -i\n")
+          f:close()
+          snacks_terminal.open({ shell, "--rcfile", rcfile, "-i" }, {
+            win = M.make_terminal_win_opts(" Bash Python Environment "),
+            start_insert = true,
+            auto_insert = true,
+          })
+        elseif shell:match("zsh") then
+          local tmpdir = vim.fn.tempname()
+          vim.fn.mkdir(tmpdir)
+          local zshrc = tmpdir .. "/.zshrc"
+          local f = io.open(zshrc, "w")
+          f:write("source " .. venv_activate .. "\n")
+          f:write("[ -f ~/.zshrc ] && source ~/.zshrc\n")
+          f:close()
+          snacks_terminal.open({ shell }, {
+            env = { ZDOTDIR = tmpdir },
+            win = M.make_terminal_win_opts(" Zshell Python Environment "),
+            start_insert = true,
+            auto_insert = true,
+          })
+        else
+          -- fallback: just open the shell interactively if possible
+          snacks_terminal.open({ shell, "-i" }, {
+            win = M.make_terminal_win_opts(" Python Environment "),
+            start_insert = true,
+            auto_insert = true,
+          })
+        end
         return
       end
-      -- If no activate script found, fall through to simple terminal
-      -- this should never happen
       print("No activate script found for " .. venv)
     end
-    -- Open simple terminal
-    snacks_terminal.open({ vim.o.shell }, {
-      win = make_terminal_win_opts(" Simple Terminal "),
-      start_insert = true,
-      auto_insert = true,
-    })
+    -- Open simple terminal (interactive if possible)
+    if shell:match("bash") or shell:match("zsh") then
+      snacks_terminal.open({ shell, "-i" }, {
+        win = M.make_terminal_win_opts(" Simple Terminal "),
+        start_insert = true,
+        auto_insert = true,
+      })
+    else
+      snacks_terminal.open({ shell }, {
+        win = M.make_terminal_win_opts(" Simple Terminal "),
+        start_insert = true,
+        auto_insert = true,
+      })
+    end
   end)
 end
 
@@ -117,7 +148,7 @@ end
 -- Handles both Unix (bin/activate) and Windows (Scripts/activate) conventions.
 -- @param venv_path string The absolute path to the virtual environment directory.
 -- @return string|nil The path to the activate script, or nil if not found.
-local function get_activate_script_path(venv_path)
+M.get_activate_script_path = function(venv_path)
   local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
   local activate_path
   if is_windows then
@@ -130,5 +161,7 @@ local function get_activate_script_path(venv_path)
   end
   return nil
 end
+
+return M
 
 
