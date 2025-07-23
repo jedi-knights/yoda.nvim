@@ -424,9 +424,9 @@ local plugins = {
       {
         "<leader>.",
         function()
-          Snacks.terminal.toggle()
+          require("yoda.core.functions").open_floating_terminal()
         end,
-        desc = "Toggle floating terminal",
+        desc = "Open floating terminal (venv aware)",
       },
       {
         "<esc><esc>",
