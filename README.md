@@ -120,7 +120,18 @@ export CLAUDE_API_KEY="your-claude-api-key-here"
 export OPENAI_API_KEY="your-openai-api-key-here"
 ```
 
-### 3. Detailed Setup
+### 3. (Optional) Set Mercury Model
+
+If you are using Mercury as your AI provider, you can specify which model to use by setting the `MERCURY_MODEL` environment variable. If not set, Yoda will use the default model `mercury/devflow.default`.
+
+```bash
+# To use a custom Mercury model
+export MERCURY_MODEL="mercury/your-custom-model"
+```
+
+If `MERCURY_MODEL` is not defined, the default (`mercury/devflow.default`) will be used for both code and chat.
+
+### 4. Detailed Setup
 
 See [AVANTE_SETUP.md](docs/AVANTE_SETUP.md) for comprehensive setup instructions.
 
