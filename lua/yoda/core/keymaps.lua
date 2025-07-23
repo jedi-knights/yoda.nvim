@@ -349,7 +349,6 @@ kmap.set("n", "<leader>tv", function()
 end, { desc = "View test output in floating window" })
 
 
--- coverage keymaps
 kmap.set("n", "<leader>cv", function()
   require("coverage").load()
   require("coverage").show()
