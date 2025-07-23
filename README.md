@@ -5,6 +5,10 @@
 <h1 align="center">Yoda Neovim Distribution</h1>
 
 <p align="center">
+  <img src="docs/assets/Yoda.gif" alt="Yoda.nvim Demo" width="700"/>
+</p>
+
+<p align="center">
   A modular, beginner-friendly Neovim distribution with agentic AI capabilities, designed to guide developers through their Neovim journey while providing powerful modern development tools.
 </p>
 
