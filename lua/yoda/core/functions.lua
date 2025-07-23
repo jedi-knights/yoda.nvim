@@ -79,10 +79,37 @@ M.make_terminal_win_opts = function(title)
   }
 end
 
----
---- Opens a floating terminal using snacks.terminal.
--- If a Python virtual environment is selected, sources it and sets the title to indicate Python Environment.
--- Otherwise, opens a simple terminal with a different title.
+local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
+  local tmpdir, rcfile, env, args
+  if shell_type == "bash" then
+    rcfile = vim.fn.tempname()
+    local f = io.open(rcfile, "w")
+    f:write("source " .. venv_activate .. "\nexec bash -i\n")
+    f:close()
+    args = { shell, "--rcfile", rcfile, "-i" }
+    env = nil
+  elseif shell_type == "zsh" then
+    tmpdir = vim.fn.tempname()
+    vim.fn.mkdir(tmpdir)
+    rcfile = tmpdir .. "/.zshrc"
+    local f = io.open(rcfile, "w")
+    f:write("source " .. venv_activate .. "\n")
+    f:write("[ -f ~/.zshrc ] && source ~/.zshrc\n")
+    f:close()
+    args = { shell }
+    env = { ZDOTDIR = tmpdir }
+  else
+    args = { shell, "-i" }
+    env = nil
+  end
+  require("snacks.terminal").open(args, {
+    env = env,
+    win = M.make_terminal_win_opts(win_title),
+    start_insert = true,
+    auto_insert = true,
+  })
+end
+
 M.open_floating_terminal = function()
   M.select_virtual_env(function(venv)
     local snacks_terminal = require("snacks.terminal")
@@ -91,33 +118,14 @@ M.open_floating_terminal = function()
       local venv_activate = M.get_activate_script_path(venv)
       if venv_activate then
         if shell:match("bash") then
-          local rcfile = vim.fn.tempname()
-          local f = io.open(rcfile, "w")
-          f:write("source " .. venv_activate .. "\nexec bash -i\n")
-          f:close()
-          snacks_terminal.open({ shell, "--rcfile", rcfile, "-i" }, {
-            win = M.make_terminal_win_opts(" Bash Python Environment "),
-            start_insert = true,
-            auto_insert = true,
-          })
+          open_shell_with_venv(shell, venv_activate, "bash", "Bash Python Environment")
         elseif shell:match("zsh") then
-          local tmpdir = vim.fn.tempname()
-          vim.fn.mkdir(tmpdir)
-          local zshrc = tmpdir .. "/.zshrc"
-          local f = io.open(zshrc, "w")
-          f:write("source " .. venv_activate .. "\n")
-          f:write("[ -f ~/.zshrc ] && source ~/.zshrc\n")
-          f:close()
-          snacks_terminal.open({ shell }, {
-            env = { ZDOTDIR = tmpdir },
-            win = M.make_terminal_win_opts(" Zshell Python Environment "),
-            start_insert = true,
-            auto_insert = true,
-          })
+          open_shell_with_venv(shell, venv_activate, "zsh", "Zshell Python Environment")
         else
           -- fallback: just open the shell interactively if possible
+          -- this should never happen
           snacks_terminal.open({ shell, "-i" }, {
-            win = M.make_terminal_win_opts(" Python Environment "),
+            win = M.make_terminal_win_opts(" Simple Terminal Fallback "),
             start_insert = true,
             auto_insert = true,
           })
