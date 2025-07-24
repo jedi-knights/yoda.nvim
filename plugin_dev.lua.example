@@ -1,7 +1,7 @@
 return {
   -- Example: develop pytest.nvim locally
-  pytest = "/Users/omar/src/github.com/jedi-knights/pytest.nvim",
+  pytest = "~/src/github.com/jedi-knights/pytest.nvim",
   -- Example: develop go-task.nvim locally
-  go_task = "/Users/omar/src/github.com/jedi-knights/go-task.nvim",
+  go_task = "~/src/github.com/jedi-knights/go-task.nvim",
   -- Add more plugins as needed
 } 
