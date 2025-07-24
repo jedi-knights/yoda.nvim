@@ -8,6 +8,18 @@ local function create_autocmd(events, opts)
   autocmd(events, opts)
 end
 
+
+create_autocmd({"BufReadPre"}, {
+  pattern = { "test_*.py", "*_test.py" },
+  group = augroup("YodaPytest", { clear = true }),
+  desc = "Load pytest.nvim for Python test files",
+  callback = function()
+    -- Load pytest.nvim plugin
+    require('lazy').load({ plugins = { 'jedi-knights/pytest.nvim' } })
+    require('pytest').setup_keymaps()
+  end,
+})
+
 -- Terminal: Hide line numbers (local to buffer)
 create_autocmd("TermOpen", {
   group = augroup("YodaTerminal", { clear = true }),

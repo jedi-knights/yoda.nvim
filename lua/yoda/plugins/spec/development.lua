@@ -21,6 +21,17 @@ local plugins = {
     lazy = false,
     priority = 1000,
   },
+
+  -- Pytest - Custom test runner plugin
+  {
+    "jedi-knights/pytest.nvim",
+    dependencies = {
+      "folke/snacks.nvim", -- Required for pytest.nvim
+    },
+    config = function()
+      require("pytest").setup()
+    end,
+  },
 }
 
-return plugins 
+return plugins
