@@ -53,4 +53,27 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
   return spec
 end
 
+---
+-- Checks which plugins are being loaded from local paths via plugin_dev
+function M.check_plugin_dev_status()
+  local config = load_config()
+  local results = {}
+  for name, path in pairs(config) do
+    local exists = vim.fn.isdirectory(vim.fn.expand(path)) == 1
+    table.insert(results, string.format("%s: %s%s", name, path, exists and " (found)" or " (not found)"))
+  end
+  if #results == 0 then
+    print("[plugin_dev] No local plugins configured.")
+  else
+    print("[plugin_dev] Local plugin paths:")
+    for _, line in ipairs(results) do
+      print("  " .. line)
+    end
+  end
+end
+
+vim.api.nvim_create_user_command("PluginDevStatus", function()
+  require("yoda.utils.plugin_dev").check_plugin_dev_status()
+end, {})
+
 return M 

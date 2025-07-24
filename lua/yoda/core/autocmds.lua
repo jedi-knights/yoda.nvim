@@ -14,11 +14,16 @@ create_autocmd({"BufReadPre"}, {
   group = augroup("YodaPytest", { clear = true }),
   desc = "Load pytest.nvim for Python test files",
   callback = function()
-    -- Load pytest.nvim plugin
     require('lazy').load({ plugins = { 'jedi-knights/pytest.nvim' } })
-    vim.schedule(function()
-      require('pytest').setup_keymaps()
-    end)
+    -- Use a short delay to ensure the plugin is loaded
+    vim.defer_fn(function()
+      local ok, pytest = pcall(require, 'pytest')
+      if ok and pytest.setup_keymaps then
+        pytest.setup_keymaps()
+      else
+        vim.notify("pytest.nvim is not loaded or setup_keymaps is missing", vim.log.levels.WARN)
+      end
+    end, 50) -- 50ms delay
   end,
 })
 
