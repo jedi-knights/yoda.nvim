@@ -1,6 +1,8 @@
 -- lua/yoda/plugins/spec/development.lua
 -- Consolidated development plugin specifications
 
+local plugin_dev = require("yoda.utils.plugin_dev")
+
 local plugins = {
   -- LazyDev - Development tools for lazy.nvim plugin development
   {
@@ -16,22 +18,20 @@ local plugins = {
   },
 
   -- Go Task - Custom task runner plugin
-  {
-    "jedi-knights/go-task.nvim",
+  plugin_dev.local_or_remote_plugin("go_task", "jedi-knights/go-task.nvim", {
     lazy = false,
     priority = 1000,
-  },
+  }),
 
   -- Pytest - Custom test runner plugin
-  {
-    "jedi-knights/pytest.nvim",
+  plugin_dev.local_or_remote_plugin("pytest", "jedi-knights/pytest.nvim", {
     dependencies = {
       "folke/snacks.nvim", -- Required for pytest.nvim
     },
     config = function()
       require("pytest").setup()
     end,
-  },
+  }),
 }
 
 return plugins

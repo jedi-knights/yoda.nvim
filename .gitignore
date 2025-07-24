@@ -38,3 +38,5 @@ luac.out
 output.log
 
 node_modules/
+
+plugin_dev.lua

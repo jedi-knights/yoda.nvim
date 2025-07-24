@@ -16,7 +16,9 @@ create_autocmd({"BufReadPre"}, {
   callback = function()
     -- Load pytest.nvim plugin
     require('lazy').load({ plugins = { 'jedi-knights/pytest.nvim' } })
-    require('pytest').setup_keymaps()
+    vim.schedule(function()
+      require('pytest').setup_keymaps()
+    end)
   end,
 })
 
