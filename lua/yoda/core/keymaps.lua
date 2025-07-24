@@ -192,20 +192,26 @@ end, { desc = "Toggle Snacks Explorer" })
 -- Focus explorer (if in split mode)
 kmap.set("n", "<leader>ef", function()
   local candidates = { "snacks_picker_list", "snacks_picker_input", "snacks_layout_box" }
-
+  local found = false
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.bo[buf].filetype
     for _, match in ipairs(candidates) do
       if ft == match then
         vim.api.nvim_set_current_win(win)
+        found = true
         return
       end
     end
   end
-
-  vim.notify("Snacks Explorer is not open", vim.log.levels.WARN)
-end, { desc = "Focus Snacks Explorer window" })
+  -- If not found, open/toggle the Snacks Explorer
+  local ok, explorer = pcall(require, "snacks.explorer")
+  if ok and explorer and explorer.open then
+    explorer.open()
+  else
+    vim.notify("Snacks Explorer could not be opened", vim.log.levels.ERROR)
+  end
+end, { desc = "Focus or Open Snacks Explorer window" })
 
 -- quit all
 kmap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })

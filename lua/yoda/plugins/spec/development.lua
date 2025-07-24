@@ -34,4 +34,6 @@ local plugins = {
   }),
 }
 
+-- Remove debug prints
+
 return plugins
