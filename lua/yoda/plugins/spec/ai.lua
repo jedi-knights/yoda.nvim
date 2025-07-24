@@ -1,6 +1,8 @@
 -- lua/yoda/plugins/spec/ai.lua
 -- Consolidated AI plugin specifications
 
+local plugin_dev = require("yoda.utils.plugin_dev")
+
 local plugins = {
   -- GitHub Copilot
   {
@@ -67,12 +69,9 @@ local plugins = {
   },
 }
 
--- Conditionally add Mercury plugin for work environment
+-- Only add Mercury plugin if YODA_ENV == 'work'
 if vim.env.YODA_ENV == "work" then
-  table.insert(plugins, {
-    -- "TheWeatherCompany/mercury.nvim",   -- <-- Comment this out
-    dir = "/Users/omar.crosby/src/github/TheWeatherCompany/mercury.nvim", -- <-- Add this
-    name = "mercury.nvim", -- (optional, but recommended for clarity)
+  local mercury_opts = {
     dependencies = {
       "nvim-lua/plenary.nvim",
       "johnseth97/codex.nvim", -- optional
@@ -81,7 +80,17 @@ if vim.env.YODA_ENV == "work" then
     config = function()
       require("mercury").setup()
     end,
-  })
+  }
+
+  local mercury_plugin = plugin_dev.local_or_remote_plugin(
+    "mercury",
+    "TheWeatherCompany/mercury.nvim",
+    mercury_opts
+  )
+
+  if mercury_plugin then
+    table.insert(plugins, mercury_plugin)
+  end
 end
 
 return plugins 
