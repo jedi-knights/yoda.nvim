@@ -1,0 +1,56 @@
+-- lua/yoda/utils/plugin_dev.lua
+-- Utility for local/remote plugin development in Yoda.nvim
+
+local M = {}
+
+local config_path = vim.fn.stdpath("config") .. "/plugin_dev.lua"
+local plugin_dev_config = nil
+
+-- Attempt to load the plugin_dev.lua config file
+local function load_config()
+  if plugin_dev_config ~= nil then
+    return plugin_dev_config
+  end
+  local ok, config = pcall(dofile, config_path)
+  if ok and type(config) == "table" then
+    plugin_dev_config = config
+    return config
+  else
+    plugin_dev_config = {}
+    return plugin_dev_config
+  end
+end
+
+---
+--- Returns a plugin spec for local or remote development.
+-- @param name (string) The plugin key (e.g., 'pytest', 'go_task')
+-- @param remote_spec (string|table) The remote plugin spec (e.g., 'jedi-knights/pytest.nvim')
+-- @param opts (table) Additional plugin options (optional)
+-- @return table Plugin spec for Lazy.nvim
+function M.local_or_remote_plugin(name, remote_spec, opts)
+  opts = opts or {}
+  local config = load_config()
+  local local_path = config[name]
+  local spec = vim.deepcopy(opts)
+  if local_path and type(local_path) == "string" and #local_path > 0 then
+    spec.dir = local_path
+    if type(remote_spec) == "string" then
+      spec.name = remote_spec
+    elseif type(remote_spec) == "table" then
+      for k, v in pairs(remote_spec) do
+        spec[k] = v
+      end
+    end
+  else
+    if type(remote_spec) == "string" then
+      table.insert(spec, 1, remote_spec)
+    elseif type(remote_spec) == "table" then
+      for k, v in pairs(remote_spec) do
+        spec[k] = v
+      end
+    end
+  end
+  return spec
+end
+
+return M 

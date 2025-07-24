@@ -39,4 +39,4 @@ output.log
 
 node_modules/
 
-plugin_dev.lua
+/plugin_dev.lua
