@@ -3,7 +3,9 @@ return {
   pytest = "~/src/github.com/jedi-knights/pytest.nvim",
   -- Example: develop go-task.nvim locally
   go_task = "~/src/github.com/jedi-knights/go-task.nvim",
+  -- Example: develop invoke.nvim locally
+  invoke = "~/src/github.com/jedi-knights/invoke.nvim",
   -- Example: develop mercury.nvim locally
   mercury = "~/src/github.com/TheWeatherCompany/mercury.nvim",
   -- Add more plugins as needed
-} 
+}
