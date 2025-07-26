@@ -54,6 +54,15 @@ create_autocmd("VimEnter", {
     if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
       vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
     end
+    
+    -- Auto update dependencies on startup
+    vim.defer_fn(function()
+      local lazy = require("lazy")
+      if lazy then
+        vim.notify("Checking for plugin updates...", vim.log.levels.INFO, { title = "Yoda.nvim" })
+        lazy.sync()
+      end
+    end, 1000) -- 1 second delay to ensure everything is loaded
   end,
 })
 
