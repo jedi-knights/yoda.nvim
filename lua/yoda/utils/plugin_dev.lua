@@ -34,8 +34,8 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
   local spec = vim.deepcopy(opts)
   
   if local_path and type(local_path) == "string" and #local_path > 0 then
-    -- Use local path
-    spec.url = local_path
+    -- Use local path for development
+    spec.dir = vim.fn.expand(local_path)
     if type(remote_spec) == "string" then
       spec.name = remote_spec
     elseif type(remote_spec) == "table" then
