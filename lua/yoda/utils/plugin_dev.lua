@@ -32,8 +32,10 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
   local config = load_config()
   local local_path = config[name]
   local spec = vim.deepcopy(opts)
+  
   if local_path and type(local_path) == "string" and #local_path > 0 then
-    spec.dir = local_path
+    -- Use local path
+    spec.url = local_path
     if type(remote_spec) == "string" then
       spec.name = remote_spec
     elseif type(remote_spec) == "table" then
@@ -42,6 +44,7 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
       end
     end
   else
+    -- Use remote spec
     if type(remote_spec) == "string" then
       table.insert(spec, 1, remote_spec)
     elseif type(remote_spec) == "table" then
@@ -50,6 +53,7 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
       end
     end
   end
+  
   return spec
 end
 
@@ -72,8 +76,31 @@ function M.check_plugin_dev_status()
   end
 end
 
+---
+-- Debug function to show generated plugin specs
+function M.debug_plugin_specs()
+  local config = load_config()
+  print("[plugin_dev] Generated plugin specs:")
+  
+  -- Test go_task
+  local go_task_spec = M.local_or_remote_plugin("go_task", "jedi-knights/go-task.nvim", { lazy = false })
+  print("  go_task:", vim.inspect(go_task_spec))
+  
+  -- Test invoke
+  local invoke_spec = M.local_or_remote_plugin("invoke", "jedi-knights/invoke.nvim", { lazy = false })
+  print("  invoke:", vim.inspect(invoke_spec))
+  
+  -- Test pytest
+  local pytest_spec = M.local_or_remote_plugin("pytest", "jedi-knights/pytest.nvim", {})
+  print("  pytest:", vim.inspect(pytest_spec))
+end
+
 vim.api.nvim_create_user_command("PluginDevStatus", function()
   require("yoda.utils.plugin_dev").check_plugin_dev_status()
+end, {})
+
+vim.api.nvim_create_user_command("PluginDevDebug", function()
+  require("yoda.utils.plugin_dev").debug_plugin_specs()
 end, {})
 
 return M 
