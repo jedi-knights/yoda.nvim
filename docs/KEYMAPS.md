@@ -141,22 +141,18 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 | `<M-[>` | Insert | Previous suggestion |
 | `<C-]>` | Insert | Dismiss suggestion |
 
-### ChatGPT Integration
+### Avante AI
 | Keymap | Mode | Description |
 |--------|------|-------------|
-| `<leader>cc` | Normal | Open ChatGPT chat window |
-| `<leader>ce` | Normal | Edit with instructions |
-| `<leader>cg` | Normal | Grammar correction |
-| `<leader>ct` | Normal | Translate |
-| `<leader>ck` | Normal | Extract keywords |
-| `<leader>cd` | Normal | Generate docstring |
-| `<leader>ca` | Normal | Add tests |
-| `<leader>co` | Normal | Optimize code |
-| `<leader>cs` | Normal | Summarize code |
-| `<leader>cf` | Normal | Fix bugs |
-| `<leader>cx` | Normal | Explain code |
-| `<leader>cr` | Normal | Roxygen edit (R language) |
-| `<leader>cl` | Normal | Code readability analysis |
+| `<leader>aa` | Normal | Ask Avante AI |
+| `<leader>ac` | Normal | Open Avante Chat |
+| `<leader>am` | Normal | Open MCP Hub |
+
+### Mercury (Work Environment)
+| Keymap | Mode | Description |
+|--------|------|-------------|
+| `<leader>m` | Normal | Open Mercury |
+| `<leader>ma` | Normal | Open Mercury Agentic Panel |
 
 ---
 
@@ -173,7 +169,7 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 | `<leader>to` | Normal | Toggle output panel |
 | `<leader>td` | Normal | Debug nearest test with DAP |
 | `<leader>tv` | Normal | View test output in floating window |
-| `<leader>tp` | Normal | Run tests with Yoda test picker |
+| `<leader>tt` | Normal | Run tests with Yoda test picker |
 
 ### Debugging (DAP)
 | Keymap | Mode | Description |
@@ -269,19 +265,22 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 |--------|------|-------------|
 | `<leader>xt` | Normal | Focus Trouble window |
 
+### Trouble (Diagnostics & Quickfix)
+| Keymap | Mode | Description |
+|--------|------|-------------|
+| `<leader>xx` | Normal | Toggle diagnostics (Trouble) |
+| `<leader>xX` | Normal | Toggle buffer diagnostics (Trouble) |
+| `<leader>cs` | Normal | Toggle symbols (Trouble) |
+| `<leader>cl` | Normal | Toggle LSP definitions/references (Trouble) |
+| `<leader>xL` | Normal | Toggle location list (Trouble) |
+| `<leader>xQ` | Normal | Toggle quickfix list (Trouble) |
+| `<leader>xj` | Normal | Toggle LSP definitions/references (Trouble) |
+
 ---
 
 ## 🎯 Project Navigation
 
-### Harpoon
-| Keymap | Mode | Description |
-|--------|------|-------------|
-| `<leader>ha` | Normal | Add file to Harpoon |
-| `<leader>hm` | Normal | Toggle Harpoon menu |
-| `<leader>h1` | Normal | Navigate to Harpoon file 1 |
-| `<leader>h2` | Normal | Navigate to Harpoon file 2 |
-| `<leader>h3` | Normal | Navigate to Harpoon file 3 |
-| `<leader>h4` | Normal | Navigate to Harpoon file 4 |
+> **Note**: Harpoon plugin is not currently configured in this distribution.
 
 ---
 
@@ -388,16 +387,16 @@ These commands are available via `:CommandName`:
 - **Git operations**: `<leader>g` prefix (git)
 - **Testing**: `<leader>t` prefix (test)
 - **Debugging**: `<leader>d` prefix (debug)
-- **AI/ChatGPT**: `<leader>c` prefix (chat/copilot)
-- **Harpoon**: `<leader>h` prefix (harpoon)
+- **AI/Avante**: `<leader>a` prefix (avante)
+- **Mercury**: `<leader>m` prefix (mercury) - work environment only
 - **Explorer**: `<leader>e` prefix (explorer)
 
 ### Suggested Workflow
 1. Use `<leader><leader>` for quick file switching
-2. Use `<leader>ha` to mark important files with Harpoon
-3. Use `<leader>gg` for git operations
-4. Use `<leader>tn` to run tests near cursor
-5. Use Copilot suggestions (`<C-j>`) for faster coding
+2. Use `<leader>gg` for git operations
+3. Use `<leader>tn` to run tests near cursor
+4. Use Copilot suggestions (`<C-j>`) for faster coding
+5. Use `<leader>aa` for AI assistance with Avante
 
 ---
 
