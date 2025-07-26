@@ -41,5 +41,9 @@ require("lazy").setup({
       hererocks = false,  -- prevents auto-installing hererocks
     },
   },
+  -- Disable documentation generation globally to prevent issues with local plugins
+  readme = {
+    enabled = false,
+  },
 })
 

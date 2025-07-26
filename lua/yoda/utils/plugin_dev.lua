@@ -37,6 +37,8 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
     -- Use local path for development
     spec.dir = vim.fn.expand(local_path)
     spec.disable_docs = true -- Disable documentation generation for local plugins
+    spec.readme = false -- Explicitly disable readme generation
+    spec.doc = false -- Explicitly disable doc generation
     if type(remote_spec) == "string" then
       spec.name = remote_spec
     elseif type(remote_spec) == "table" then
