@@ -32,6 +32,12 @@ local plugins = {
       require("pytest").setup()
     end,
   }),
+
+  -- Invoke - Custom task runner plugin
+  plugin_dev.local_or_remote_plugin("invoke", "jedi-knights/invoke.nvim", {
+    lazy = false,
+    priority = 1000,
+  }),
 }
 
 -- Remove debug prints
