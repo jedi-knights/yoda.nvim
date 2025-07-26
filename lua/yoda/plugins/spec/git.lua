@@ -41,8 +41,9 @@ local plugins = {
       end,
     },
     event = { "BufReadPre", "BufNewFile" },
-    config = function()
-      require("gitsigns").setup()
+    config = function(_, opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("gitsigns", opts)
 
       vim.keymap.set("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", {})
       vim.keymap.set("n", "<leader>gt", ":Gitsigns toggle_current_line_blame", {})

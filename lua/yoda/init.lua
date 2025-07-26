@@ -14,6 +14,10 @@ require("yoda.core.autocmds")
 -- Load plugins
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
+-- Load utilities for development
+pcall(require, "yoda.utils.plugin_validator")
+pcall(require, "yoda.utils.plugin_loader")
+
 -- Load colorscheme
 require("yoda.core.colorscheme")
 

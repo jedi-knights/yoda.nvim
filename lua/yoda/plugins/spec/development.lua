@@ -8,6 +8,10 @@ local plugins = {
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
+    config = function(_, opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("lazydev", opts)
+    end,
     opts = {
       library = {
         -- See the configuration section for more details

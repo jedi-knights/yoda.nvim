@@ -284,6 +284,179 @@ For Python development, ensure you have the Neovim provider:
 
 ---
 
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+#### Lazy.nvim Documentation Generation Error
+
+**Error**: `No such file or directory` when loading local plugins
+
+**Solution**: This is a known issue with Lazy.nvim trying to generate documentation for local plugins. Use these commands to fix:
+
+```vim
+:YodaFixPluginDev    " Fix plugin development issues
+:YodaCleanLazy       " Clean Lazy.nvim cache
+:YodaDebugLazy       " Debug Lazy.nvim status
+```
+
+**Manual Fix**:
+1. Run the fix script: `./scripts/fix_lazy_docs.sh`
+2. Or manually clean the Lazy.nvim cache: `rm -rf ~/.local/state/nvim/lazy/readme`
+3. Restart Neovim
+4. Run `:Lazy sync` to reload plugins
+
+#### Plugin Development Issues
+
+**Problem**: Local plugins not loading correctly
+
+**Solution**:
+1. Check your `plugin_dev.lua` configuration:
+   ```lua
+   -- ~/.config/nvim/plugin_dev.lua
+   return {
+     go_task = "~/src/github.com/jedi-knights/go-task.nvim",
+     pytest = "~/src/github.com/jedi-knights/pytest.nvim",
+     invoke = "~/src/github.com/jedi-knights/invoke.nvim",
+   }
+   ```
+
+2. Verify local paths exist:
+   ```vim
+   :PluginDevStatus    " Check plugin development status
+   :PluginDevDebug     " Debug plugin specifications
+   ```
+
+3. Clean and reload:
+   ```vim
+   :PluginDevCleanup   " Clean documentation cache
+   :PluginDevReload    " Reload plugins
+   ```
+
+#### Plugin Configuration Issues
+
+**Problem**: Plugin setup errors or missing configuration
+
+**Solution**:
+1. Validate plugin specifications:
+   ```vim
+   :YodaValidatePlugins " Check for configuration issues
+   :YodaFixPluginConfigs " Get fix suggestions
+   ```
+
+2. Common fixes:
+   - Add `config` function when using `opts`
+   - Ensure `config` function calls `setup()`
+   - Check plugin dependencies are correct
+
+3. Plugin configuration template:
+   ```lua
+   {
+     "author/plugin-name",
+     config = function(_, opts)
+       require("plugin-name").setup(opts)
+     end,
+     opts = {
+       -- your options here
+     },
+   }
+   ```
+
+#### Performance Issues
+
+**Slow startup**:
+```bash
+# Profile startup time
+nvim --startuptime startup.log +q
+# Check the log for slow plugins
+tail -n 20 startup.log
+```
+
+**High memory usage**:
+```vim
+:checkhealth lazy    " Check Lazy.nvim health
+:Lazy log           " View Lazy.nvim logs
+```
+
+#### LSP Issues
+
+**Language servers not working**:
+```vim
+:LspInfo            " Check LSP status
+:Mason              " Install/update language servers
+:checkhealth lsp    " Check LSP health
+```
+
+**Python LSP issues**:
+```bash
+# Ensure Python LSP is installed
+pip install python-lsp-server[all]
+# Or use Mason
+:MasonInstall python-lsp-server
+```
+
+#### AI Plugin Issues
+
+**Copilot not working**:
+1. Ensure you have a GitHub Copilot subscription
+2. Authenticate with GitHub: `:Copilot auth`
+3. Check status: `:Copilot status`
+
+**Mercury not loading**:
+- Mercury only loads in work environment (`YODA_ENV=work`)
+- Check environment: `echo $YODA_ENV`
+
+### Debugging Commands
+
+```vim
+:YodaDebugLazy      " Debug Lazy.nvim and plugins
+:YodaValidatePlugins " Validate all plugin specifications
+:YodaFixPluginConfigs " Check for plugin configuration issues
+:YodaCheckPlugins   " Check plugin availability
+:YodaPluginInfo     " Get detailed plugin information
+:checkhealth        " Run all health checks
+:Lazy log           " View Lazy.nvim logs
+:Lazy sync          " Sync all plugins
+:Lazy clean         " Clean unused plugins
+```
+
+### Environment Variables
+
+Set these in your shell profile for different environments:
+
+```bash
+# For work environment (enables Mercury)
+export YODA_ENV=work
+
+# For home environment
+export YODA_ENV=home
+```
+
+### Plugin Development
+
+**Adding local plugins**:
+1. Copy `plugin_dev.lua.example` to `~/.config/nvim/plugin_dev.lua`
+2. Add your local plugin paths
+3. Restart Neovim
+
+**Debugging local plugins**:
+```vim
+:PluginDevStatus    " Check local plugin status
+:PluginDevDebug     " Debug plugin specs
+:PluginDevCleanup   " Clean cache
+:PluginDevReload    " Reload plugins
+```
+
+### Getting Help
+
+1. **Check the logs**: `:Lazy log` and `:messages`
+2. **Run health checks**: `:checkhealth`
+3. **Debug specific issues**: Use the debugging commands above
+4. **Check documentation**: `:help yoda` (if available)
+5. **Report issues**: Create an issue on GitHub with logs
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.

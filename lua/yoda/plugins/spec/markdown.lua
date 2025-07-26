@@ -11,6 +11,10 @@ local plugins = {
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
+    config = function(_, opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("render-markdown", opts)
+    end,
     opts = {
       render_modes = { 'n', 'c', 't' }, -- render modes to use
     },
@@ -36,6 +40,10 @@ local plugins = {
 
       -- see below for full list of optional dependencies 👇
     },
+    config = function(_, opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("obsidian", opts)
+    end,
     opts = {
       workspaces = {
         {

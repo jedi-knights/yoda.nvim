@@ -132,7 +132,8 @@ local plugins = {
       },
     },
     config = function(_, opts)
-      require("noice").setup(opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("noice", opts)
     end,
   },
 
@@ -140,6 +141,10 @@ local plugins = {
   {
     "nvzone/showkeys",
     cmd = "ShowkeysToggle",
+    config = function(_, opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("showkeys", opts)
+    end,
     opts = {
       winopts = {
         focusable = false,
@@ -186,6 +191,10 @@ local plugins = {
     dependencies = {
       "nvim-tree/nvim-web-devicons", -- For file icons
     },
+    config = function(_, opts)
+      local plugin_loader = require("yoda.utils.plugin_loader")
+      plugin_loader.safe_plugin_setup("snacks", opts)
+    end,
     opts = {
       toggle = {
         which_key = true,

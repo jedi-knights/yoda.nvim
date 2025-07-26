@@ -45,5 +45,40 @@ require("lazy").setup({
   readme = {
     enabled = false,
   },
+  -- Add performance optimizations
+  performance = {
+    rtp = {
+      reset = false, -- Reset the runtime path to Vim default
+      paths = {}, -- Add any custom paths
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
+  -- Add better error handling
+  concurrency = 20, -- Limit the number of concurrent operations
+  git = {
+    timeout = 120, -- Git operations timeout
+  },
+  -- Add logging for debugging
+  log = {
+    level = "warn", -- Set to "debug" for more verbose output
+  },
+  -- Add error handling for plugin loading
+  ui = {
+    border = "rounded",
+    icons = {
+      loaded = "●",
+      not_loaded = "○",
+      error = "✗",
+    },
+  },
 })
 
