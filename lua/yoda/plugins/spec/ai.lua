@@ -1,9 +1,16 @@
 -- lua/yoda/plugins/spec/ai.lua
--- Consolidated AI plugin specifications
+-- Consolidated AI plugin specifications with DRY principles
 
 local plugin_dev = require("yoda.utils.plugin_dev")
 
-local plugins = {
+-- Helper function for DRY plugin configuration
+local function create_plugin_spec(name, remote_spec, opts)
+  opts = opts or {}
+  return plugin_dev.local_or_remote_plugin(name, remote_spec, opts)
+end
+
+-- Base AI plugin configurations
+local ai_plugins = {
   -- GitHub Copilot
   {
     "zbirenbaum/copilot.lua",
@@ -22,7 +29,7 @@ local plugins = {
             open = "<M-CR>"
           },
           layout = {
-            position = "bottom", -- | top | left | right
+            position = "bottom",
             ratio = 0.4
           },
         },
@@ -50,7 +57,7 @@ local plugins = {
           cvs = false,
           [".*"] = false,
         },
-        copilot_node_command = 'node', -- Node.js version must be > 18.x
+        copilot_node_command = 'node',
         server_opts_overrides = {},
       })
     end,
@@ -62,35 +69,44 @@ local plugins = {
     dependencies = {
       "nvim-lua/plenary.nvim",
     },
-    build = "npm install -g mcp-hub@latest",  -- Installs `mcp-hub` node binary globally
+    build = "npm install -g mcp-hub@latest",
     config = function()
       require("mcphub").setup()
     end,
   },
 }
 
--- Only add Mercury plugin if YODA_ENV == 'work'
-if vim.env.YODA_ENV == "work" then
-  local mercury_opts = {
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "johnseth97/codex.nvim", -- optional
-      "robitx/gp.nvim",       -- optional
-    },
-    config = function()
-      require("mercury").setup()
-    end,
-  }
-
-  local mercury_plugin = plugin_dev.local_or_remote_plugin(
-    "mercury",
-    "TheWeatherCompany/mercury.nvim",
-    mercury_opts
-  )
-
-  if mercury_plugin then
-    table.insert(plugins, mercury_plugin)
+-- Environment-specific AI plugins
+local function get_environment_plugins()
+  local env_plugins = {}
+  
+  -- Mercury plugin (work environment only)
+  if vim.env.YODA_ENV == "work" then
+    local mercury_spec = create_plugin_spec("mercury", "TheWeatherCompany/mercury.nvim", {
+      dependencies = {
+        "nvim-lua/plenary.nvim",
+        "johnseth97/codex.nvim",
+        "robitx/gp.nvim",
+      },
+      config = function()
+        require("mercury").setup()
+      end,
+    })
+    
+    if mercury_spec then
+      table.insert(env_plugins, mercury_spec)
+    end
   end
+  
+  return env_plugins
 end
 
-return plugins 
+-- Combine base and environment-specific plugins
+local function get_all_ai_plugins()
+  local all_plugins = vim.list_extend({}, ai_plugins)
+  local env_plugins = get_environment_plugins()
+  vim.list_extend(all_plugins, env_plugins)
+  return all_plugins
+end
+
+return get_all_ai_plugins() 

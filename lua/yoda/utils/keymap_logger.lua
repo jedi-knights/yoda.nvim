@@ -1,6 +1,9 @@
 local M = {}
 
-M.log = {}
+-- Initialize global keymap log if it doesn't exist
+if not _G.yoda_keymap_log then
+  _G.yoda_keymap_log = {}
+end
 
 --- Wrapped version of `vim.keymap.set` that tracks source file and line
 function M.set(mode, lhs, rhs, opts)
@@ -16,7 +19,7 @@ function M.set(mode, lhs, rhs, opts)
     source = info.short_src .. ":" .. info.currentline,
   }
 
-  table.insert(M.log, record)
+  table.insert(_G.yoda_keymap_log, record)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
@@ -25,7 +28,7 @@ function M.dump(mode_filter)
   local lines = {}
   local filtered = {}
 
-  for _, map in ipairs(M.log) do
+  for _, map in ipairs(_G.yoda_keymap_log) do
     if not mode_filter or map.mode == mode_filter then
       table.insert(filtered, map)
     end

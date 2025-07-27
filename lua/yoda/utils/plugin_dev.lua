@@ -60,21 +60,25 @@ function M.local_or_remote_plugin(name, remote_spec, opts)
         end
       end
       
-      -- Log local plugin loading for debugging
-      vim.schedule(function()
-        vim.notify(string.format("Loading %s from local path: %s", name, expanded_path), vim.log.levels.INFO, {
-          title = "Plugin Dev",
-          timeout = 2000
-        })
-      end)
+      -- Log local plugin loading for debugging (only if verbose mode is enabled)
+      if vim.g.yoda_config and vim.g.yoda_config.show_loading_messages then
+        vim.schedule(function()
+          vim.notify(string.format("Loading %s from local path: %s", name, expanded_path), vim.log.levels.INFO, {
+            title = "Plugin Dev",
+            timeout = 2000
+          })
+        end)
+      end
     else
       -- Local path doesn't exist, fall back to remote
-      vim.schedule(function()
-        vim.notify(string.format("Local path for %s not found: %s. Falling back to remote.", name, expanded_path), vim.log.levels.WARN, {
-          title = "Plugin Dev",
-          timeout = 3000
-        })
-      end)
+      if vim.g.yoda_config and vim.g.yoda_config.show_loading_messages then
+        vim.schedule(function()
+          vim.notify(string.format("Local path for %s not found: %s. Falling back to remote.", name, expanded_path), vim.log.levels.WARN, {
+            title = "Plugin Dev",
+            timeout = 3000
+          })
+        end)
+      end
       
       -- Use remote spec
       if type(remote_spec) == "string" then

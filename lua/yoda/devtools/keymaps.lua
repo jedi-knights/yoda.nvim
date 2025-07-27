@@ -1,9 +1,13 @@
-local klog = require("yoda.utils.keymap_logger")
 local M = {}
 
--- 🧾 Dump all tracked keymaps from kmap.set()
+-- Initialize global keymap log if it doesn't exist
+if not _G.yoda_keymap_log then
+  _G.yoda_keymap_log = {}
+end
+
+-- 🧾 Dump all tracked keymaps from vim.keymap.set()
 function M.dump_all_keymaps()
-  local log = vim.deepcopy(klog.log)
+  local log = vim.deepcopy(_G.yoda_keymap_log or {})
 
   -- Alphabetically sort by mode then lhs
   table.sort(log, function(a, b)
@@ -26,12 +30,13 @@ function M.dump_all_keymaps()
   vim.bo.filetype = "keymap-dump"
 end
 
--- ⚠️ Detect conflicts in tracked keymaps from kmap.set()
+-- ⚠️ Detect conflicts in tracked keymaps from vim.keymap.set()
 function M.find_conflicts()
   local seen = {}
   local conflicts = {}
+  local log = _G.yoda_keymap_log or {}
 
-  for _, map in ipairs(klog.log) do
+  for _, map in ipairs(log) do
     local key = map.mode .. ":" .. map.lhs
     if seen[key] then
       table.insert(conflicts, string.format("❌ Conflict: %s (%s)", map.lhs, map.mode))

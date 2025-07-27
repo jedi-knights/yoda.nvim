@@ -29,10 +29,14 @@ create_autocmd({"BufReadPre"}, {
             vim.notify("pytest.nvim setup_keymaps is missing", vim.log.levels.WARN)
           end
         else
-          vim.notify("pytest.nvim not loaded: pytest dependency not found", vim.log.levels.INFO)
+          if vim.g.yoda_config and vim.g.yoda_config.verbose_startup then
+            vim.notify("pytest.nvim not loaded: pytest dependency not found", vim.log.levels.INFO)
+          end
         end
       else
-        vim.notify("pytest.nvim is not loaded", vim.log.levels.WARN)
+        if vim.g.yoda_config and vim.g.yoda_config.verbose_startup then
+          vim.notify("pytest.nvim is not loaded", vim.log.levels.WARN)
+        end
       end
     end, 50) -- 50ms delay
   end,
@@ -55,7 +59,9 @@ create_autocmd("VimEnter", {
       vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
     end
     
-    -- Auto update dependencies on startup
+    -- Auto update dependencies on startup (DISABLED)
+    -- Uncomment the following block to re-enable auto-updates
+    --[[
     vim.defer_fn(function()
       local lazy = require("lazy")
       if lazy then
@@ -63,6 +69,7 @@ create_autocmd("VimEnter", {
         lazy.sync()
       end
     end, 1000) -- 1 second delay to ensure everything is loaded
+    --]]
   end,
 })
 

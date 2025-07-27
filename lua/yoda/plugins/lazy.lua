@@ -32,8 +32,8 @@ require("lazy").setup({
   },
   checker = { enabled = false }, -- Manually check for plugin updates
   change_detection = {
-    enabled = true,
-    notify = true, -- Get a notification when plugins are updated
+    enabled = false, -- Disable automatic change detection
+    notify = false, -- Disable notifications for plugin updates
   },
   dev = {
     rocks = {

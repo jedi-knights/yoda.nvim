@@ -80,6 +80,25 @@ nvim
 
 The first launch will automatically bootstrap all plugins via `lazy.nvim`.
 
+### Alternative Installation Methods
+
+#### Using Git with Shallow Clone (Recommended)
+```bash
+# Shallow clone for faster download
+git clone --depth=1 https://github.com/jedi-knights/yoda ~/.config/nvim
+```
+
+#### Manual Installation
+```bash
+# Create Neovim config directory
+mkdir -p ~/.config/nvim
+
+# Download and extract
+curl -L https://github.com/jedi-knights/yoda/archive/main.tar.gz | tar -xz
+mv yoda-main/* ~/.config/nvim/
+rm -rf yoda-main
+```
+
 ### Optional: Shell Aliases
 
 Add these to your `~/.zshrc` for convenience:
@@ -88,6 +107,41 @@ Add these to your `~/.zshrc` for convenience:
 alias vi=nvim
 alias vim=nvim
 ```
+
+---
+
+## ⚙️ Configuration
+
+Yoda.nvim provides several configuration options to customize your experience:
+
+### Startup Messages
+
+By default, Yoda.nvim minimizes startup messages for a cleaner experience. You can control this behavior:
+
+```lua
+-- In your init.lua or a separate config file
+vim.g.yoda_config = {
+  verbose_startup = false,           -- Show detailed startup messages
+  show_loading_messages = false,     -- Show plugin loading messages
+  show_environment_notification = true  -- Show environment mode notification
+}
+```
+
+### Environment Mode
+
+Set the `YODA_ENV` environment variable to enable environment-specific features:
+
+```bash
+# For home environment
+export YODA_ENV=home
+
+# For work environment  
+export YODA_ENV=work
+```
+
+### Noice Compatibility
+
+Yoda.nvim is optimized for compatibility with Noice.nvim. The configuration avoids options that conflict with Noice, such as `lazyredraw`. See [Noice Compatibility](docs/NOICE_COMPATIBILITY.md) for detailed information.
 
 ---
 
@@ -150,6 +204,25 @@ See [AVANTE_SETUP.md](docs/AVANTE_SETUP.md) for comprehensive setup instructions
 | `<leader>ac` | Open Avante Chat |
 | `<leader>am` | Open MCP Hub |
 | `<leader>qq` | Quit Neovim |
+
+### Update Commands
+
+> **Note**: Auto-updates are disabled by default for faster startup. Use manual commands when you want to update.
+
+| Command | Description |
+|---------|-------------|
+| `:YodaUpdate` | Manually check and update plugins |
+| `:YodaCheckUpdates` | Check for available updates without installing |
+| `:Lazy sync` | Standard Lazy.nvim sync command |
+| `:Lazy check` | Standard Lazy.nvim check command |
+
+### Startup Configuration Commands
+
+| Command | Description |
+|---------|-------------|
+| `:YodaVerboseOn` | Enable verbose startup messages |
+| `:YodaVerboseOff` | Disable verbose startup messages |
+| `:YodaShowConfig` | Show current Yoda configuration |
 
 ### LSP & Development
 
@@ -470,6 +543,75 @@ We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.
 
 ---
 
+## 🛠️ Development
+
+### Contributing
+
+We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
+
+#### Quick Guidelines
+
+- Use [Conventional Commits](https://www.conventionalcommits.org/) with Angular convention
+- Keep configurations modular and well-documented
+- Test your changes thoroughly
+- Be kind and constructive
+
+### Plugin Development
+
+Yoda supports local plugin development for rapid iteration:
+
+1. **Setup Local Development**:
+   ```bash
+   # Copy the example configuration
+   cp ~/.config/nvim/plugin_dev.lua.example ~/.config/nvim/plugin_dev.lua
+   
+   # Edit to add your local plugin paths
+   vim ~/.config/nvim/plugin_dev.lua
+   ```
+
+2. **Add Local Plugins**:
+   ```lua
+   -- ~/.config/nvim/plugin_dev.lua
+   return {
+     go_task = "~/src/github.com/jedi-knights/go-task.nvim",
+     pytest = "~/src/github.com/jedi-knights/pytest.nvim",
+     invoke = "~/src/github.com/jedi-knights/invoke.nvim",
+   }
+   ```
+
+3. **Development Commands**:
+   ```vim
+   :PluginDevStatus    " Check local plugin status
+   :PluginDevDebug     " Debug plugin specifications
+   :PluginDevCleanup   " Clean documentation cache
+   :PluginDevReload    " Reload plugins
+   ```
+
+### Performance Optimization
+
+#### Startup Time
+```bash
+# Profile startup time
+nvim --startuptime startup.log +q
+tail -n 20 startup.log
+```
+
+#### Memory Usage
+```vim
+:checkhealth lazy    " Check Lazy.nvim health
+:Lazy log           " View Lazy.nvim logs
+```
+
+### Testing
+
+```vim
+:YodaKeymapDump      " View all keymaps grouped by mode
+:YodaKeymapConflicts " Find conflicting mappings
+:YodaLoggedKeymaps   " View logged keymap usage
+```
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
@@ -487,6 +629,15 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
+## 📞 Contact & Support
+
+- **Maintainer**: Omar Crosby
+- **Repository**: [jedi-knights/yoda.nvim](https://github.com/jedi-knights/yoda.nvim)
+- **Issues**: [GitHub Issues](https://github.com/jedi-knights/yoda.nvim/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/jedi-knights/yoda.nvim/discussions)
+
+---
+
 > *"Train yourself to let go of everything you fear to lose." — Yoda*
 
 ---
@@ -496,8 +647,13 @@ This project is licensed under the [MIT License](LICENSE).
 Clone the repository and start exploring the power of modern Neovim development!
 
 ```bash
-git clone https://github.com/jedi-knights/yoda ~/.config/nvim
+# Quick start with shallow clone
+git clone --depth=1 https://github.com/jedi-knights/yoda ~/.config/nvim
 nvim
 ```
+
+---
+
+**Last Updated**: December 2024
 
 

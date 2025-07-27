@@ -1,40 +1,126 @@
--- lua/yoda/keymaps.lua
+-- lua/yoda/core/keymaps.lua
+-- Refactored keymaps with DRY principles and reduced cyclomatic complexity
 
-local kmap = require("yoda.utils.keymap_logger")
-local job_id = 0
+-- Helper function for DRY keymap registration with logging
+local function register_keymaps(mode, mappings)
+  for key, config in pairs(mappings) do
+    local rhs = config[1]
+    local opts = config[2] or {}
+    
+    -- Log the keymap for debugging purposes
+    local info = debug.getinfo(2, "Sl")
+    local log_record = {
+      mode = mode,
+      lhs = key,
+      rhs = (type(rhs) == "string") and rhs or "<function>",
+      desc = opts.desc or "",
+      source = info.short_src .. ":" .. info.currentline,
+    }
+    
+    -- Store in global log if available
+    if _G.yoda_keymap_log then
+      table.insert(_G.yoda_keymap_log, log_record)
+    end
+    
+    vim.keymap.set(mode, key, rhs, opts)
+  end
+end
 
--- general keymaps
+-- LSP keymaps using DRY pattern
+local lsp_keymaps = {
+  ["<leader>ld"] = { vim.lsp.buf.definition, { desc = "Go to Definition" } },
+  ["<leader>lD"] = { vim.lsp.buf.declaration, { desc = "Go to Declaration" } },
+  ["<leader>li"] = { vim.lsp.buf.implementation, { desc = "Go to Implementation" } },
+  ["<leader>lr"] = { vim.lsp.buf.references, { desc = "Find References" } },
+  ["<leader>lrn"] = { vim.lsp.buf.rename, { desc = "Rename Symbol" } },
+  ["<leader>la"] = { vim.lsp.buf.code_action, { desc = "Code Action" } },
+  ["<leader>ls"] = { vim.lsp.buf.document_symbol, { desc = "Document Symbols" } },
+  ["<leader>lw"] = { vim.lsp.buf.workspace_symbol, { desc = "Workspace Symbols" } },
+  ["<leader>lf"] = { 
+    function() vim.lsp.buf.format({ async = true }) end, 
+    { desc = "Format Buffer" } 
+  },
+}
 
--- LSP keymaps
-kmap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "Go to Definition" })
-kmap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "Go to Declaration" })
-kmap.set("n", "<leader>li", vim.lsp.buf.implementation, { desc = "Go to Implementation" })
-kmap.set("n", "<leader>lr", vim.lsp.buf.references, { desc = "Find References" })
-kmap.set("n", "<leader>lrn", vim.lsp.buf.rename, { desc = "Rename Symbol" })
-kmap.set("n", "<leader>la", vim.lsp.buf.code_action, { desc = "Code Action" })
-kmap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { desc = "Document Symbols" })
-kmap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, { desc = "Workspace Symbols" })
-kmap.set("n", "<leader>lf", function()
-  vim.lsp.buf.format({ async = true })
-end, { desc = "Format Buffer" })
+-- LSP diagnostics keymaps
+local lsp_diagnostic_keymaps = {
+  ["<leader>le"] = { vim.diagnostic.open_float, { desc = "Show Diagnostics" } },
+  ["<leader>lq"] = { vim.diagnostic.setloclist, { desc = "Set Loclist" } },
+  ["[d"] = { vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" } },
+  ["]d"] = { vim.diagnostic.goto_next, { desc = "Next Diagnostic" } },
+}
 
--- LSP diagnostics
-kmap.set("n", "<leader>le", vim.diagnostic.open_float, { desc = "Show Diagnostics" })
-kmap.set("n", "<leader>lq", vim.diagnostic.setloclist, { desc = "Set Loclist" })
-kmap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" })
-kmap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
+-- Disable arrow keys using DRY pattern
+local disabled_keys = {
+  ["<up>"] = { "<nop>", { desc = "disable up arrow" } },
+  ["<down>"] = { "<nop>", { desc = "disable down arrow" } },
+  ["<left>"] = { "<nop>", { desc = "disable left arrow" } },
+  ["<right>"] = { "<nop>", { desc = "disable right arrow" } },
+  ["<pageup>"] = { "<nop>", { desc = "disable page up" } },
+  ["<pagedown>"] = { "<nop>", { desc = "disable page down" } },
+}
 
+-- Window management keymaps
+local window_keymaps = {
+  ["<leader>|"] = { ":vsplit<cr>", { desc = "vertical split" } },
+  ["<leader>-"] = { ":split<cr>", { desc = "horizontal split" } },
+  ["<leader>se"] = { "<c-w>=", { desc = "equalize window sizes" } },
+}
 
--- DISABLE arrow keys
-kmap.set("n", "<up>", "<nop>", { desc = "disable up arrow" })
-kmap.set("n", "<down>", "<nop>", { desc = "disable down arrow" })
-kmap.set("n", "<left>", "<nop>", { desc = "disable left arrow" })
-kmap.set("n", "<right>", "<nop>", { desc = "disable right arrow" })
-kmap.set("n", "<pageup>", "<nop>", { desc = "disable page up" })
-kmap.set("n", "<pagedown>", "<nop>", { desc = "disable page down" })
+-- Test keymaps
+local test_keymaps = {
+  ["<leader>ta"] = { 
+    function() require("neotest").run.run(vim.loop.cwd()) end, 
+    { desc = "Run all tests in project" } 
+  },
+  ["<leader>tn"] = { 
+    function() require("neotest").run.run() end, 
+    { desc = "Run nearest test" } 
+  },
+  ["<leader>tf"] = { 
+    function() require("neotest").run.run(vim.fn.expand("%")) end, 
+    { desc = "Run tests in current file" } 
+  },
+  ["<leader>tl"] = { 
+    function() require("neotest").run.run_last() end, 
+    { desc = "Run last test" } 
+  },
+  ["<leader>ts"] = { 
+    function() require("neotest").summary.toggle() end, 
+    { desc = "Toggle test summary" } 
+  },
+  ["<leader>to"] = { 
+    function() require("neotest").output_panel.toggle() end, 
+    { desc = "Toggle output panel" } 
+  },
+  ["<leader>td"] = { 
+    function() require("neotest").run.run({ strategy = "dap" }) end, 
+    { desc = "Debug nearest test with DAP" } 
+  },
+  ["<leader>tv"] = { 
+    function() require("neotest").output.open({ enter = true }) end, 
+    { desc = "View test output in floating window" } 
+  },
+}
 
--- Trouble custom keymaps
-kmap.set("n", "<leader>xt", function()
+-- Visual mode keymaps
+local visual_keymaps = {
+  ["<leader>r"] = { ":s/", { desc = "Replace" } },
+  ["<leader>y"] = { '"+y', { desc = "Yank to clipboard" } },
+  ["<leader>d"] = { '"_d', { desc = "Delete to void register" } },
+  ["<leader>p"] = { "_dP", { desc = "Delete and paste over" } },
+}
+
+-- Register all keymaps using DRY pattern
+register_keymaps("n", lsp_keymaps)
+register_keymaps("n", lsp_diagnostic_keymaps)
+register_keymaps("n", disabled_keys)
+register_keymaps("n", window_keymaps)
+register_keymaps("n", test_keymaps)
+register_keymaps("v", visual_keymaps)
+
+-- Special keymaps that require custom logic
+vim.keymap.set("n", "<leader>xt", function()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local bufname = vim.api.nvim_buf_get_name(buf)
@@ -45,17 +131,16 @@ kmap.set("n", "<leader>xt", function()
   end
 end, { desc = "Focus Trouble window" })
 
-
 -- Reload neovim config
-kmap.set("n", "<leader><leader>r", function()
-  -- Unload your plugin/config namespace so it can be re-required
+vim.keymap.set("n", "<leader><leader>r", function()
+  -- Unload plugin/config namespace so it can be re-required
   for name, _ in pairs(package.loaded) do
-    if name:match("^yoda") then -- or your namespace prefix
+    if name:match("^yoda") then
       package.loaded[name] = nil
     end
   end
 
-  -- Reload your plugin spec file (if using `import = "yoda.plugins.spec"`)
+  -- Reload plugin spec file
   require("yoda")
 
   -- Defer notify so that `vim.notify` has a chance to be overridden again
@@ -64,10 +149,9 @@ kmap.set("n", "<leader><leader>r", function()
   end, 100)
 end, { desc = "Hot reload Yoda plugin config" })
 
+-- ShowKeys toggle with state management
 local showkeys_enabled = false
-
--- Toggle ShowKeys plugin
-kmap.set("n", "<leader>kk", function()
+vim.keymap.set("n", "<leader>kk", function()
   local ok, showkeys = pcall(require, "showkeys")
   if not ok then
     require("lazy").load({ plugins = { "showkeys" } })
@@ -76,132 +160,28 @@ kmap.set("n", "<leader>kk", function()
   if ok and showkeys then
     showkeys.toggle()
     showkeys_enabled = not showkeys_enabled
-
-    if showkeys_enabled then
-      vim.notify("✅ ShowKeys enabled", vim.log.levels.INFO)
-    else
-      vim.notify("🚫 ShowKeys disabled", vim.log.levels.INFO)
-    end
+    local status = showkeys_enabled and "✅ ShowKeys enabled" or "🚫 ShowKeys disabled"
+    vim.notify(status, vim.log.levels.INFO)
   else
     vim.notify("❌ Failed to load showkeys plugin", vim.log.levels.ERROR)
   end
 end, { desc = "Toggle ShowKeys" })
 
--- run tests
-kmap.set("n", "<leader>tt", function()
+-- Test picker
+vim.keymap.set("n", "<leader>tt", function()
   require("yoda.testpicker").run()
 end, { desc = "run tests with yoda" })
 
-
--- windows
--- split
-kmap.set("n", "<leader>|", ":vsplit<cr>", { desc = "vertical split" })
-kmap.set("n", "<leader>-", ":split<cr>", { desc = "horizontal split" })
-kmap.set("n", "<leader>se", "<c-w>=", { desc = "equalize window sizes" })
-kmap.set("n", "<leader>sx", ":close<cr>", { desc = "close current split" })
-
--- window navigation
-kmap.set("n", "<c-h>", "<c-w>h", { desc = "move to left window" })
-kmap.set("n", "<c-j>", "<c-w>j", { desc = "move to lower window" })
-kmap.set("n", "<c-k>", "<c-w>k", { desc = "move to upper window" })
-kmap.set("n", "<c-l>", "<c-w>l", { desc = "move to right window" })
-kmap.set("n", "<c-c>", "<c-w>c", { desc = "close window" })
-
--- tab navigation
-kmap.set("n", "<leader>tn", vim.cmd.tabnew, { desc = "new tab" })
-kmap.set("n", "<leader>tc", vim.cmd.tabclose, { desc = "close tab" })
-kmap.set("n", "<leader>tp", vim.cmd.tabprevious, { desc = "previous tab" })
-kmap.set("n", "<leader>tN", vim.cmd.tabnext, { desc = "next tab" })
-
--- buffer navigation
-kmap.set("n", "<s-left>", vim.cmd.bprevious, { desc = "previous buffer" })
-kmap.set("n", "<s-right>", vim.cmd.bnext, { desc = "next buffer" })
-kmap.set("n", "<s-down>", vim.cmd.buffers, { desc = "list buffers" })
-kmap.set("n", "<s-up>", ":buffer ", { desc = "switch to buffer" })
-kmap.set("n", "<s-del>", vim.cmd.bdelete, { desc = "delete buffer" })
-
--- window resizing
-kmap.set("n", "<m-left>", ":vertical resize -2<cr>", { desc = "shrink window width" })
-kmap.set("n", "<m-right>", ":vertical resize +2<cr>", { desc = "expand window width" })
-kmap.set("n", "<m-up>", ":resize -1<cr>", { desc = "shrink window height" })
-kmap.set("n", "<m-down>", ":resize +1<cr>", { desc = "expand window height" })
-
--- save/quit
-kmap.set("n", "<c-s>", ":w<cr>", { desc = "save file" })
-kmap.set("n", "<c-q>", ":wq<cr>", { desc = "save and quit" })
-kmap.set("n", "<c-x>", ":bd<cr>", { desc = "close buffer" })
-
--- visual mode improvements
--- kmap.set("v", "j", ":m '>+1<cr>gv=gv", { desc = "move selection down" })
--- kmap.set("v", "k", ":m '<-2<cr>gv=gv", { desc = "move selection up" })
--- kmap.set("x", "j", ":move '>+1<cr>gv-gv", { desc = "move block down" })
--- kmap.set("x", "k", ":move '<-2<cr>gv-gv", { desc = "move block up" })
-
--- exit terminal mode
--- kmap.set("t", "<esc>", "<c-\\><c-n>", { desc = "exit terminal mode" })
-
--- clipboard/yank
-kmap.set("n", "<leader>y", ":%y+<cr>", { desc = "yank buffer to system clipboard" })
-
--- disable macro recording
-kmap.set("n", "q", "<nop>", { desc = "disable q" })
-
--- fast mode exits
-kmap.set("i", "jk", "<esc>", { noremap = true, silent = true, desc = "exit insert mode" })
-kmap.set("v", "jk", "<esc>", { noremap = true, silent = true, desc = "exit visual mode" })
-
--- re-indent whole file
-kmap.set("n", "<leader>i", "gg=g", { desc = "re-indent entire file" })
-
--- buffer management
-kmap.set("n", "<leader>bq", function()
-  local api = vim.api
-  local cur_buf = api.nvim_get_current_buf()
-  local alt_buf = vim.fn.bufnr("#")
-  if vim.bo[alt_buf].filetype ~= "neo-tree" and vim.bo[alt_buf].buflisted then
-    api.nvim_set_current_buf(alt_buf)
-  else
-    vim.cmd("bnext")
-  end
-  vim.cmd("bd " .. cur_buf)
-end, { desc = "close buffer and switch" })
-
-kmap.set("n", "<leader>bo", function()
-  vim.cmd("%bd | e# | bd#")
-end, { desc = "close others" })
-kmap.set("n", "<leader>bd", ":bufdo bd<cr>", { desc = "delete all buffers" })
-
--- Toggle explorer
-local explorer_open = false
-
-
-kmap.set("n", "<leader>et", function()
-  local explorer = require("snacks.explorer")
-
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.bo[buf].filetype == "snacks-explorer" then
-      vim.api.nvim_win_close(win, true)
-      return
-    end
-  end
-
-  explorer.open()
-end, { desc = "Toggle Snacks Explorer" })
-
--- Focus explorer (if in split mode)
-kmap.set("n", "<leader>ef", function()
-  local candidates = { "snacks_picker_list", "snacks_picker_input", "snacks_layout_box" }
+-- Snacks explorer focus
+vim.keymap.set("n", "<leader>e", function()
   local found = false
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
-    local ft = vim.bo[buf].filetype
-    for _, match in ipairs(candidates) do
-      if ft == match then
-        vim.api.nvim_set_current_win(win)
-        found = true
-        return
-      end
+    local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+    if ft == "snacks-explorer" then
+      vim.api.nvim_set_current_win(win)
+      found = true
+      return
     end
   end
   -- If not found, open/toggle the Snacks Explorer
@@ -213,49 +193,27 @@ kmap.set("n", "<leader>ef", function()
   end
 end, { desc = "Focus or Open Snacks Explorer window" })
 
--- quit all
-kmap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })
+-- Quit all
+vim.keymap.set("n", "<leader>qq", ":qa<cr>", { desc = "quit neovim" })
 
--- copilot keymaps
+-- Copilot keymaps with proper error handling
 vim.api.nvim_create_autocmd("InsertEnter", {
   once = true,
   callback = function()
-    local kmap = require("yoda.utils.keymap_logger")
-
-    kmap.set("i", "<C-j>", function()
+    vim.keymap.set("i", "<C-j>", function()
       return vim.fn["copilot#Accept"]("")
-    end, {
-      expr = true,
-      silent = true,
-      replace_keycodes = false,
-      desc = "Copilot Accept",
-    })
-
-    --kmap.set("i", "<C-j>", 'copilot#Accept("<CR>")', {
-    --  expr = true,
-    --  silent = true,
-    --  desc = "Copilot Accept",
-    -- })
-
-    kmap.set("i", "<C-k>", 'copilot#Dismiss()', {
-      expr = true,
-      silent = true,
-      desc = "Copilot Dismiss",
-    })
-
-    kmap.set("i", "<C-Space>", 'copilot#Complete()', {
-      expr = true,
-      silent = true,
-      desc = "Copilot Complete",
-    })
+    end, { expr = true, silent = true, replace_keycodes = false, desc = "Copilot Accept" })
+    
+    vim.keymap.set("i", "<C-k>", 'copilot#Dismiss()', { expr = true, silent = true, desc = "Copilot Dismiss" })
+    
+    vim.keymap.set("i", "<C-Space>", 'copilot#Complete()', { expr = true, silent = true, desc = "Copilot Complete" })
   end,
 })
 
-kmap.set("n", "<leader>cp", function()
-  -- Ensure the plugin is loaded (if lazy-loaded)
+-- Copilot toggle
+vim.keymap.set("n", "<leader>cp", function()
   require("lazy").load({ plugins = { "copilot.vim" } })
-
-  -- Now it's safe to call VimL functions
+  
   local status_ok, is_enabled = pcall(vim.fn["copilot#IsEnabled"])
   if not status_ok then
     vim.notify("❌ Copilot is not available", vim.log.levels.ERROR)
@@ -271,11 +229,9 @@ kmap.set("n", "<leader>cp", function()
   end
 end, { desc = "Toggle Copilot" })
 
-
--- snacks terminal keymaps
-kmap.set("n", "<leader>vt", function()
+-- Terminal keymaps
+vim.keymap.set("n", "<leader>vt", function()
   local terminal = require("snacks.terminal")
-
   terminal.open({
     id = "myterm",
     cmd = { "/bin/zsh" },
@@ -294,7 +250,7 @@ kmap.set("n", "<leader>vt", function()
   })
 end, { desc = "Open terminal with auto-close" })
 
-kmap.set("n", "<leader>vr", function()
+vim.keymap.set("n", "<leader>vr", function()
   local function get_python()
     local cwd = vim.loop.cwd()
     local venv = cwd .. "/.venv/bin/python3"
@@ -321,94 +277,63 @@ kmap.set("n", "<leader>vr", function()
   })
 end, { desc = "Launch Python REPL in float" })
 
--- neotest keymaps
-kmap.set("n", "<leader>ta", function()
-  require("neotest").run.run(vim.loop.cwd())
-end, { desc = "Run all tests in project" })
+-- Coverage keymaps
+local coverage_keymaps = {
+  ["<leader>cv"] = { 
+    function() 
+      require("coverage").load()
+      require("coverage").show()
+    end, 
+    { desc = "Show coverage" } 
+  },
+  ["<leader>cx"] = { 
+    function() require("coverage").hide() end, 
+    { desc = "Hide code coverage" } 
+  },
+}
+register_keymaps("n", coverage_keymaps)
 
-kmap.set("n", "<leader>tn", function()
-  require("neotest").run.run()
-end, { desc = "Run nearest test" })
+-- Cargo keymaps
+local cargo_keymaps = {
+  ["<leader>cb"] = { "<cmd>!cargo build<CR>", { desc = "Cargo Build" } },
+  ["<leader>cr"] = { "<cmd>!cargo run<CR>", { desc = "Cargo Run" } },
+  ["<leader>ct"] = { "<cmd>!cargo test<CR>", { desc = "Cargo Test" } },
+}
+register_keymaps("n", cargo_keymaps)
 
-kmap.set("n", "<leader>tf", function()
-  require("neotest").run.run(vim.fn.expand("%"))
-end, { desc = "Run tests in current file" })
+-- AI keymaps
+local ai_keymaps = {
+  ["<leader>aa"] = { function() vim.cmd("AvanteAsk") end, { desc = "Ask Avante AI" } },
+  ["<leader>ac"] = { function() vim.cmd("AvanteChat") end, { desc = "Open Avante Chat" } },
+  ["<leader>am"] = { function() vim.cmd("AvanteMCP") end, { desc = "Open MCP Hub" } },
+}
+register_keymaps("n", ai_keymaps)
 
-kmap.set("n", "<leader>tl", function()
-  require("neotest").run.run_last()
-end, { desc = "Run last test" })
-
-kmap.set("n", "<leader>ts", function()
-  require("neotest").summary.toggle()
-end, { desc = "Toggle test summary" })
-
-kmap.set("n", "<leader>to", function()
-  require("neotest").output_panel.toggle()
-end, { desc = "Toggle output panel" })
-
-kmap.set("n", "<leader>td", function()
-  require("neotest").run.run({ strategy = "dap" })
-end, { desc = "Debug nearest test with DAP" })
-
-kmap.set("n", "<leader>tv", function()
-  require("neotest").output.open({ enter = true })
-end, { desc = "View test output in floating window" })
-
-
-kmap.set("n", "<leader>cv", function()
-  require("coverage").load()
-  require("coverage").show()
-end, { desc = "Show coverage" })
-
-kmap.set("n", "<leader>cx", function()
-  require("coverage").hide()
-end, { desc = "Hide code coverage" })
-
-vim.keymap.set("n", "<leader>cb", "<cmd>!cargo build<CR>", { desc = "Cargo Build" })
-vim.keymap.set("n", "<leader>cr", "<cmd>!cargo run<CR>", { desc = "Cargo Run" })
-vim.keymap.set("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo Test" })
-
-
--- VISUAL MODE
--- Replace
-kmap.set('v', '<leader>r', ':s/')
-
--- Yank selection to the clipboard
-kmap.set('v', '<leader>y', '"+y')
-
--- Delete selection to void register
-kmap.set('v', '<leader>d', '"_d')
-
--- Delete selection into the void register and then paste over it
-kmap.set('v', '<leader>p', '_dP')
-
--- Avante AI keymaps
-kmap.set("n", "<leader>aa", function()
-  vim.cmd("AvanteAsk")
-end, { desc = "Ask Avante AI" })
-
-kmap.set("n", "<leader>ac", function()
-  vim.cmd("AvanteChat")
-end, { desc = "Open Avante Chat" })
-
-kmap.set("n", "<leader>am", function()
-  vim.cmd("AvanteMCP")
-end, { desc = "Open MCP Hub" })
-
+-- Mercury keymaps (work environment only)
 if vim.env.YODA_ENV == "work" then
-  local ok, mercury = pcall(require, "mercury")
-  if ok and mercury.open then
-    vim.keymap.set("n", "<leader>m", mercury.open, { desc = "Open Mercury" })
-  else
-    vim.keymap.set("n", "<leader>m", ":Mercury<CR>", { desc = "Open Mercury" })
-  end
-
-  vim.keymap.set("n", "<leader>ma", function()
-    local ok, mercury_ui = pcall(require, "mercury.ui")
-    if ok and mercury_ui and mercury_ui.open_panel then
-      mercury_ui.open_panel()
-    else
-      vim.notify("Mercury Agentic Panel not available", vim.log.levels.ERROR)
-    end
-  end, { desc = "Open Mercury Agentic Panel" })
+  local mercury_keymaps = {
+    ["<leader>m"] = { 
+      function() 
+        local ok, mercury = pcall(require, "mercury")
+        if ok and mercury.open then
+          mercury.open()
+        else
+          vim.cmd(":Mercury<CR>")
+        end
+      end, 
+      { desc = "Open Mercury" } 
+    },
+    ["<leader>ma"] = { 
+      function()
+        local ok, mercury_ui = pcall(require, "mercury.ui")
+        if ok and mercury_ui and mercury_ui.open_panel then
+          mercury_ui.open_panel()
+        else
+          vim.notify("Mercury Agentic Panel not available", vim.log.levels.ERROR)
+        end
+      end, 
+      { desc = "Open Mercury Agentic Panel" } 
+    },
+  }
+  register_keymaps("n", mercury_keymaps)
 end

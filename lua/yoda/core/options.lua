@@ -1,74 +1,186 @@
 -- lua/yoda/core/options.lua
 
--- Set Neovim options
+-- Set leader key early
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+-- Yoda configuration options
+vim.g.yoda_config = vim.g.yoda_config or {}
+
+-- Startup message configuration
+vim.g.yoda_config.verbose_startup = vim.g.yoda_config.verbose_startup or false
+vim.g.yoda_config.show_loading_messages = vim.g.yoda_config.show_loading_messages or false
+vim.g.yoda_config.show_environment_notification = vim.g.yoda_config.show_environment_notification or true
+
+-- General options
 local opt = vim.opt
 
--- General
-opt.number = true                -- Show line numbers
-opt.relativenumber = true         -- Show relative line numbers
-opt.mouse = "a"                  -- Enable mouse support
-opt.clipboard = "unnamedplus"    -- Use system clipboard
-opt.swapfile = false             -- Don't use swapfile
-opt.backup = false               -- Don't create backup files
-opt.undofile = true              -- Enable persistent undo
-opt.updatetime = 300             -- Faster completion
-opt.colorcolumn = "80"           -- Set color column at 80 characters
+-- Line numbers
+opt.number = true
+opt.relativenumber = true
 
--- Indentation
-opt.tabstop = 4                  -- Number of spaces tabs count for
-opt.shiftwidth = 4               -- Size of an indent
-opt.expandtab = true             -- Convert tabs to spaces
-opt.smartindent = true           -- Smart autoindenting on new lines
-opt.softtabstop = 4              -- Number of spaces tabs count for when editing
-opt.smarttab = true              -- Insert spaces when pressing tab in insert mode
-opt.encoding = "utf-8"            -- Set encoding to UTF-8
-opt.visualbell = true            -- Visual bell instead of audible bell
+-- Indent
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.autoindent = true
+
+-- Search
+opt.ignorecase = true
+opt.smartcase = true
+
+-- Performance
+opt.updatetime = 300             -- Faster completion
+opt.timeoutlen = 300             -- Faster key sequence completion
 
 -- UI
-opt.cursorline = true            -- Highlight the current line
-opt.termguicolors = true         -- Enable 24-bit RGB colors in the terminal
-opt.signcolumn = "yes"           -- Always show the sign column
+opt.termguicolors = true         -- Enable true color support
+opt.background = "dark"          -- Dark background
+opt.signcolumn = "yes"           -- Always show sign column
+opt.cursorline = true            -- Highlight current line
+opt.cursorcolumn = false         -- Don't highlight current column
+opt.scrolloff = 8                -- Keep 8 lines above/below cursor
+opt.sidescrolloff = 8            -- Keep 8 columns left/right of cursor
 
--- Searching
-opt.ignorecase = true            -- Ignore case in search patterns
-opt.smartcase = true             -- Override ignorecase if search contains capitals
-opt.incsearch = true             -- Show search matches while typing
-opt.hlsearch = false             -- Don't Highlight matches after search
+-- Folding
+opt.foldmethod = "indent"
+opt.foldlevel = 99
+opt.foldnestmax = 10
 
--- Split windows
-opt.splitright = true            -- Vertical splits to the right
-opt.splitbelow = true            -- Horizontal splits below
+-- Backup
+opt.backup = false
+opt.writebackup = false
+opt.swapfile = false
 
--- Scrolling
-opt.scrolloff = 5                -- Minimum lines to keep above and below cursor
-opt.sidescrolloff = 8            -- Minimum columns to keep left and right of cursor
+-- Clipboard
+opt.clipboard = "unnamedplus"
 
-opt.fillchars = {
-    eob = " ",                   -- Empty lines at the end of a buffer
-    fold = " ",                 -- Folds
-    diff = "╱",                 -- Diff characters
-    msgsep = "─",               -- Message separator
-    vert = "│",                 -- Vertical line
-    horiz = "─",                -- Horizontal line
+-- Split
+opt.splitbelow = true
+opt.splitright = true
+
+-- Search
+opt.hlsearch = false
+opt.incsearch = true
+
+-- Other
+opt.mouse = "a"
+opt.showmode = false
+opt.showcmd = true
+opt.ruler = true
+opt.laststatus = 2
+opt.hidden = true
+opt.wildmenu = true
+opt.wildmode = "list:longest"
+opt.completeopt = "menuone,noselect"
+opt.inccommand = "nosplit"
+opt.ttyfast = true
+opt.virtualedit = "block"
+opt.undofile = true
+opt.undodir = vim.fn.stdpath("data") .. "/undodir"
+opt.spelllang = "en_us"
+opt.spell = false
+opt.spellcapcheck = ""
+opt.spellsuggest = "best,9"
+opt.spelloptions = "camel"
+opt.spellfile = vim.fn.stdpath("data") .. "/spell/en.utf-8.add"
+
+-- Filetype
+opt.fileencoding = "utf-8"
+opt.fileformat = "unix"
+opt.fileformats = "unix,dos,mac"
+
+-- Session
+opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
+-- Diff
+opt.diffopt = "filler,iwhite,algorithm:patience"
+
+-- Grep
+opt.grepprg = "rg --vimgrep --smart-case"
+opt.grepformat = "%f:%l:%c:%m"
+
+-- Tags
+opt.tags = "./tags;,tags"
+
+-- Match
+opt.matchtime = 2
+opt.matchpairs = "(:),{:},[:],<:>"
+
+-- Format
+opt.formatoptions = "jcroqlnt"
+opt.textwidth = 80
+opt.colorcolumn = "80"
+
+-- List
+opt.list = false
+opt.listchars = "tab:> ,trail:-,extends:>,precedes:<,nbsp:+"
+
+-- Fill
+opt.fillchars = "vert:│,fold: ,eob: ,diff: "
+
+-- Window
+opt.winminwidth = 5
+opt.winminheight = 1
+
+-- Pum
+opt.pumheight = 10
+opt.pumwidth = 10
+
+-- Preview
+opt.previewheight = 12
+
+-- Command
+opt.cmdheight = 1
+opt.cmdwinheight = 5
+
+-- Help
+opt.helpheight = 12
+
+-- History
+opt.history = 1000
+opt.shada = "!,'300,<50,@100,s10,h"
+
+-- Buffer
+opt.bufhidden = "hide"
+opt.buflisted = true
+
+-- Window
+opt.winblend = 0
+opt.pumblend = 0
+
+-- Terminal
+opt.termguicolors = true
+
+-- Neovim specific
+opt.inccommand = "nosplit"
+opt.completeopt = "menuone,noselect"
+opt.wildoptions = "pum"
+opt.pumblend = 0
+opt.winblend = 0
+
+-- Disable built-in plugins
+local disabled_built_ins = {
+  "netrw",
+  "netrwPlugin",
+  "netrwSettings",
+  "netrwFileHandlers",
+  "gzip",
+  "zip",
+  "zipPlugin",
+  "tar",
+  "tarPlugin",
+  "getscript",
+  "getscriptPlugin",
+  "vimball",
+  "vimballPlugin",
+  "2html_plugin",
+  "logiPat",
+  "rrhelper",
+  "spellfile_plugin",
+  "matchit"
 }
 
-
--- Disable some built-in providers if you want faster startup jk(optional early optimization)
-vim.g.loaded_python_provider = 0
-vim.g.loaded_ruby_provider = 0
-vim.g.loaded_perl_provider = 0
-vim.g.loaded_node_provider = 0
-
--- Set explicit Python path for better performance
-vim.g.python3_host_prog = "/opt/homebrew/opt/python@3.13/bin/python3"
-
-
-opt.list = true                -- Show whitespace characters
-opt.listchars = {
-    tab = ">-",
-    trail = "·",
-    extends = "»",
-    precedes = "«",
-    nbsp = "␣",
-    eol = "↲",
-}
+for _, plugin in pairs(disabled_built_ins) do
+  vim.g["loaded_" .. plugin] = 1
+end
