@@ -6,7 +6,7 @@ local plugins = {
   {
     "williamboman/mason.nvim",
     lazy = false,
-    -- Note: MasonUpdate build command disabled to avoid async issues
+    build = ":MasonUpdate", -- Auto-update Mason tools on install
     config = function()
       local mason_ok, mason = pcall(require, "mason")
       if mason_ok then
