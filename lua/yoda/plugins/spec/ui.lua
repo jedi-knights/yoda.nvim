@@ -88,7 +88,7 @@ local plugins = {
       require("mini.pairs").setup()
 
       -- UI replacements
-      require("mini.statusline").setup()
+      -- require("mini.statusline").setup() -- Disabled in favor of custom statusline
       require("mini.tabline").setup()
       require("mini.indentscope").setup({
         draw = {

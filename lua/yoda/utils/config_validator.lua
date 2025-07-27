@@ -3,192 +3,53 @@
 
 local M = {}
 
--- Validation rules for different configuration types
-local validation_rules = {
-  plugin_spec = {
-    required_fields = { "name" },
-    optional_fields = { "config", "opts", "dependencies", "lazy", "event", "cmd" },
-    field_types = {
-      name = "string",
-      config = "function",
-      opts = { "table", "function" },
-      dependencies = "table",
-      lazy = "boolean",
-      event = { "string", "table" },
-      cmd = { "string", "table" },
-    }
-  },
-  
-  keymap = {
-    required_fields = { "mode", "lhs", "rhs" },
-    optional_fields = { "opts", "desc" },
-    field_types = {
-      mode = "string",
-      lhs = "string",
-      rhs = { "string", "function" },
-      opts = "table",
-      desc = "string",
-    }
-  },
-  
-  autocmd = {
-    required_fields = { "event" },
-    optional_fields = { "pattern", "callback", "command", "desc" },
-    field_types = {
-      event = { "string", "table" },
-      pattern = { "string", "table" },
-      callback = "function",
-      command = "string",
-      desc = "string",
-    }
-  }
+-- Validation error types
+local ERROR_TYPES = {
+  MISSING_DEPENDENCY = "missing_dependency",
+  INVALID_CONFIG = "invalid_config",
+  ENVIRONMENT_MISMATCH = "environment_mismatch",
+  PLUGIN_CONFLICT = "plugin_conflict"
 }
-
--- Helper function to check if value is of expected type
-local function is_valid_type(value, expected_types)
-  if type(expected_types) == "string" then
-    return type(value) == expected_types
-  elseif type(expected_types) == "table" then
-    for _, expected_type in ipairs(expected_types) do
-      if type(value) == expected_type then
-        return true
-      end
-    end
-    return false
-  end
-  return false
-end
-
--- Validate plugin specification
-function M.validate_plugin_spec(plugin_spec)
-  local errors = {}
-  local warnings = {}
-  
-  -- Check if plugin_spec is a table
-  if type(plugin_spec) ~= "table" then
-    table.insert(errors, "Plugin spec must be a table")
-    return false, errors, warnings
-  end
-  
-  -- Check for required fields
-  local rules = validation_rules.plugin_spec
-  for _, field in ipairs(rules.required_fields) do
-    if not plugin_spec[field] then
-      table.insert(errors, string.format("Missing required field: %s", field))
-    end
-  end
-  
-  -- Check field types
-  for field, expected_types in pairs(rules.field_types) do
-    if plugin_spec[field] and not is_valid_type(plugin_spec[field], expected_types) then
-      table.insert(errors, string.format("Invalid type for field '%s': expected %s, got %s", 
-        field, type(expected_types) == "table" and table.concat(expected_types, " or ") or expected_types, 
-        type(plugin_spec[field])))
-    end
-  end
-  
-  -- Check for unknown fields
-  for field, _ in pairs(plugin_spec) do
-    local is_known = false
-    for _, known_field in ipairs(rules.required_fields) do
-      if field == known_field then
-        is_known = true
-        break
-      end
-    end
-    for _, known_field in ipairs(rules.optional_fields) do
-      if field == known_field then
-        is_known = true
-        break
-      end
-    end
-    if not is_known then
-      table.insert(warnings, string.format("Unknown field: %s", field))
-    end
-  end
-  
-  return #errors == 0, errors, warnings
-end
-
--- Validate keymap specification
-function M.validate_keymap_spec(keymap_spec)
-  local errors = {}
-  local warnings = {}
-  
-  if type(keymap_spec) ~= "table" then
-    table.insert(errors, "Keymap spec must be a table")
-    return false, errors, warnings
-  end
-  
-  local rules = validation_rules.keymap
-  for _, field in ipairs(rules.required_fields) do
-    if not keymap_spec[field] then
-      table.insert(errors, string.format("Missing required field: %s", field))
-    end
-  end
-  
-  for field, expected_types in pairs(rules.field_types) do
-    if keymap_spec[field] and not is_valid_type(keymap_spec[field], expected_types) then
-      table.insert(errors, string.format("Invalid type for field '%s': expected %s, got %s", 
-        field, type(expected_types) == "table" and table.concat(expected_types, " or ") or expected_types, 
-        type(keymap_spec[field])))
-    end
-  end
-  
-  return #errors == 0, errors, warnings
-end
-
--- Validate autocommand specification
-function M.validate_autocmd_spec(autocmd_spec)
-  local errors = {}
-  local warnings = {}
-  
-  if type(autocmd_spec) ~= "table" then
-    table.insert(errors, "Autocmd spec must be a table")
-    return false, errors, warnings
-  end
-  
-  local rules = validation_rules.autocmd
-  for _, field in ipairs(rules.required_fields) do
-    if not autocmd_spec[field] then
-      table.insert(errors, string.format("Missing required field: %s", field))
-    end
-  end
-  
-  for field, expected_types in pairs(rules.field_types) do
-    if autocmd_spec[field] and not is_valid_type(autocmd_spec[field], expected_types) then
-      table.insert(errors, string.format("Invalid type for field '%s': expected %s, got %s", 
-        field, type(expected_types) == "table" and table.concat(expected_types, " or ") or expected_types, 
-        type(autocmd_spec[field])))
-    end
-  end
-  
-  return #errors == 0, errors, warnings
-end
 
 -- Validate environment configuration
 function M.validate_environment_config()
   local errors = {}
   local warnings = {}
   
+  -- Check YODA_ENV environment variable
   local env = vim.env.YODA_ENV
-  if env and env ~= "home" and env ~= "work" then
-    table.insert(warnings, string.format("Unknown YODA_ENV value: %s (expected 'home' or 'work')", env))
+  if not env then
+    table.insert(warnings, "YODA_ENV not set, using default 'home' environment")
+  elseif env ~= "home" and env ~= "work" then
+    table.insert(errors, string.format("Invalid YODA_ENV value: %s (expected 'home' or 'work')", env))
   end
   
-  -- Check for required environment variables
-  if env == "work" then
-    local required_vars = { "CLAUDE_API_KEY", "OPENAI_API_KEY" }
-    local has_any = false
-    for _, var in ipairs(required_vars) do
-      if vim.env[var] then
-        has_any = true
-        break
-      end
+  -- Check yoda_config global variable
+  if not vim.g.yoda_config then
+    table.insert(warnings, "yoda_config not set, using default configuration")
+  else
+    -- Validate yoda_config structure
+    local config = vim.g.yoda_config
+    if type(config.verbose_startup) ~= "boolean" and config.verbose_startup ~= nil then
+      table.insert(errors, "yoda_config.verbose_startup must be a boolean")
     end
-    if not has_any then
-      table.insert(warnings, "Work environment detected but no AI API key found (CLAUDE_API_KEY or OPENAI_API_KEY)")
+    if type(config.show_loading_messages) ~= "boolean" and config.show_loading_messages ~= nil then
+      table.insert(errors, "yoda_config.show_loading_messages must be a boolean")
     end
+    if type(config.show_environment_notification) ~= "boolean" and config.show_environment_notification ~= nil then
+      table.insert(errors, "yoda_config.show_environment_notification must be a boolean")
+    end
+  end
+  
+  -- Check required Neovim version
+  local nvim_version = vim.version()
+  if nvim_version.major < 0 or nvim_version.minor < 9 then
+    table.insert(errors, "Yoda.nvim requires Neovim 0.9.0 or higher")
+  end
+  
+  -- Check required Lua version
+  if _VERSION < "Lua 5.1" then
+    table.insert(errors, "Yoda.nvim requires Lua 5.1 or higher")
   end
   
   return #errors == 0, errors, warnings
@@ -199,27 +60,73 @@ function M.validate_plugin_dependencies(plugin_specs)
   local errors = {}
   local warnings = {}
   
-  local plugin_names = {}
-  for _, spec in ipairs(plugin_specs) do
-    if spec[1] then
-      table.insert(plugin_names, spec[1])
-    end
-  end
-  
-  for _, spec in ipairs(plugin_specs) do
+  -- Check for missing dependencies
+  for plugin_name, spec in pairs(plugin_specs) do
     if spec.dependencies then
       for _, dep in ipairs(spec.dependencies) do
         local dep_name = type(dep) == "string" and dep or dep[1]
-        local found = false
-        for _, name in ipairs(plugin_names) do
-          if name == dep_name then
-            found = true
-            break
-          end
+        if not plugin_specs[dep_name] then
+          table.insert(errors, string.format("Plugin '%s' depends on missing plugin '%s'", plugin_name, dep_name))
         end
-        if not found then
-          table.insert(warnings, string.format("Plugin dependency not found: %s", dep_name))
+      end
+    end
+  end
+  
+  -- Check for circular dependencies
+  local visited = {}
+  local recursion_stack = {}
+  
+  local function has_circular_dependency(plugin_name)
+    if recursion_stack[plugin_name] then
+      return true
+    end
+    
+    if visited[plugin_name] then
+      return false
+    end
+    
+    visited[plugin_name] = true
+    recursion_stack[plugin_name] = true
+    
+    local spec = plugin_specs[plugin_name]
+    if spec and spec.dependencies then
+      for _, dep in ipairs(spec.dependencies) do
+        local dep_name = type(dep) == "string" and dep or dep[1]
+        if has_circular_dependency(dep_name) then
+          return true
         end
+      end
+    end
+    
+    recursion_stack[plugin_name] = false
+    return false
+  end
+  
+  for plugin_name, _ in pairs(plugin_specs) do
+    if has_circular_dependency(plugin_name) then
+      table.insert(errors, string.format("Circular dependency detected involving plugin '%s'", plugin_name))
+    end
+  end
+  
+  return #errors == 0, errors, warnings
+end
+
+-- Validate keymap configuration
+function M.validate_keymap_config()
+  local errors = {}
+  local warnings = {}
+  
+  -- Check for conflicting keymaps
+  if _G.yoda_keymap_log then
+    local keymap_counts = {}
+    for _, keymap in ipairs(_G.yoda_keymap_log) do
+      local key = keymap.mode .. keymap.lhs
+      keymap_counts[key] = (keymap_counts[key] or 0) + 1
+    end
+    
+    for key, count in pairs(keymap_counts) do
+      if count > 1 then
+        table.insert(warnings, string.format("Duplicate keymap detected: %s (%d times)", key, count))
       end
     end
   end
@@ -227,118 +134,66 @@ function M.validate_plugin_dependencies(plugin_specs)
   return #errors == 0, errors, warnings
 end
 
--- Comprehensive configuration validation
-function M.validate_configuration()
+-- Run comprehensive validation
+function M.run_validation()
   local all_errors = {}
   local all_warnings = {}
   
-  -- Validate environment
+  -- Validate environment configuration
   local env_ok, env_errors, env_warnings = M.validate_environment_config()
   if not env_ok then
     vim.list_extend(all_errors, env_errors)
   end
   vim.list_extend(all_warnings, env_warnings)
   
-  -- Validate plugin specifications
-  local plugin_specs = require("yoda.plugins.spec")
-  for category, plugins in pairs(plugin_specs) do
-    if type(plugins) == "table" then
-      for i, plugin in ipairs(plugins) do
-        local ok, errors, warnings = M.validate_plugin_spec(plugin)
-        if not ok then
-          for _, error in ipairs(errors) do
-            table.insert(all_errors, string.format("[%s][%d]: %s", category, i, error))
-          end
-        end
-        for _, warning in ipairs(warnings) do
-          table.insert(all_warnings, string.format("[%s][%d]: %s", category, i, warning))
-        end
-      end
+  -- Validate plugin dependencies (if plugin specs are available)
+  local lazy_ok, lazy = pcall(require, "lazy")
+  if lazy_ok then
+    local plugins = lazy.get_plugins()
+    local plugin_specs = {}
+    for _, plugin in ipairs(plugins) do
+      plugin_specs[plugin.name] = plugin
     end
-  end
-  
-  -- Validate plugin dependencies
-  local deps_ok, deps_errors, deps_warnings = M.validate_plugin_dependencies(plugin_specs)
-  if not deps_ok then
-    vim.list_extend(all_errors, deps_errors)
-  end
-  vim.list_extend(all_warnings, deps_warnings)
-  
-  return #all_errors == 0, all_errors, all_warnings
-end
-
--- Print validation results
-function M.print_validation_results()
-  local ok, errors, warnings = M.validate_configuration()
-  
-  if #errors > 0 then
-    vim.notify("Configuration validation errors:", vim.log.levels.ERROR)
-    for _, error in ipairs(errors) do
-      vim.notify("  " .. error, vim.log.levels.ERROR)
+    
+    local deps_ok, deps_errors, deps_warnings = M.validate_plugin_dependencies(plugin_specs)
+    if not deps_ok then
+      vim.list_extend(all_errors, deps_errors)
     end
+    vim.list_extend(all_warnings, deps_warnings)
   end
   
-  if #warnings > 0 then
-    vim.notify("Configuration validation warnings:", vim.log.levels.WARN)
-    for _, warning in ipairs(warnings) do
-      vim.notify("  " .. warning, vim.log.levels.WARN)
-    end
+  -- Validate keymap configuration
+  local keymap_ok, keymap_errors, keymap_warnings = M.validate_keymap_config()
+  if not keymap_ok then
+    vim.list_extend(all_errors, keymap_errors)
   end
+  vim.list_extend(all_warnings, keymap_warnings)
   
-  if ok then
-    vim.notify("✅ Configuration validation passed", vim.log.levels.INFO)
-  else
-    vim.notify("❌ Configuration validation failed", vim.log.levels.ERROR)
-  end
-  
-  return ok
-end
-
--- Register validation commands
-vim.api.nvim_create_user_command("YodaValidateConfig", function()
-  M.print_validation_results()
-end, { desc = "Validate Yoda configuration" })
-
-vim.api.nvim_create_user_command("YodaValidatePlugins", function()
-  local plugin_specs = require("yoda.plugins.spec")
-  local all_errors = {}
-  local all_warnings = {}
-  
-  for category, plugins in pairs(plugin_specs) do
-    if type(plugins) == "table" then
-      for i, plugin in ipairs(plugins) do
-        local ok, errors, warnings = M.validate_plugin_spec(plugin)
-        if not ok then
-          for _, error in ipairs(errors) do
-            table.insert(all_errors, string.format("[%s][%d]: %s", category, i, error))
-          end
-        end
-        for _, warning in ipairs(warnings) do
-          table.insert(all_warnings, string.format("[%s][%d]: %s", category, i, warning))
-        end
-      end
-    end
-  end
-  
+  -- Report results
   if #all_errors > 0 then
-    vim.notify("Plugin validation errors:", vim.log.levels.ERROR)
+    vim.notify("Configuration validation failed:", vim.log.levels.ERROR, { title = "Config Validator" })
     for _, error in ipairs(all_errors) do
-      vim.notify("  " .. error, vim.log.levels.ERROR)
+      vim.notify("  ❌ " .. error, vim.log.levels.ERROR)
     end
   end
   
   if #all_warnings > 0 then
-    vim.notify("Plugin validation warnings:", vim.log.levels.WARN)
+    vim.notify("Configuration warnings:", vim.log.levels.WARN, { title = "Config Validator" })
     for _, warning in ipairs(all_warnings) do
-      vim.notify("  " .. warning, vim.log.levels.WARN)
+      vim.notify("  ⚠️ " .. warning, vim.log.levels.WARN)
     end
   end
   
-  if #all_errors == 0 then
-    vim.notify("✅ Plugin validation passed", vim.log.levels.INFO)
-  else
-    vim.notify("❌ Plugin validation failed", vim.log.levels.ERROR)
+  if #all_errors == 0 and #all_warnings == 0 then
+    vim.notify("✅ Configuration validation passed", vim.log.levels.INFO, { title = "Config Validator" })
   end
-end, { desc = "Validate plugin specifications" })
+  
+  return #all_errors == 0, all_errors, all_warnings
+end
+
+-- Register validation commands
+vim.api.nvim_create_user_command("YodaValidateConfig", function()
+  M.run_validation()
+end, { desc = "Validate Yoda.nvim configuration" })
 
 return M 

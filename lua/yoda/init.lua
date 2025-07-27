@@ -23,6 +23,7 @@ pcall(require, "yoda.utils.plugin_loader")
 pcall(require, "yoda.utils.config_validator")
 pcall(require, "yoda.utils.performance_monitor")
 pcall(require, "yoda.utils.keymap_utils")
+pcall(require, "yoda.utils.tool_indicators")
 
 -- Load colorscheme
 require("yoda.core.colorscheme")
@@ -50,6 +51,13 @@ if vim.g.yoda_config and vim.g.yoda_config.show_environment_notification then
     else
       vim.notify(msg, vim.log.levels.INFO, { title = "Yoda Environment" })
     end
+    
+    -- Show development tool indicators after environment notification
+    vim.defer_fn(function()
+      local tool_indicators = require("yoda.utils.tool_indicators")
+      tool_indicators.show_startup_indicators()
+      tool_indicators.update_statusline()
+    end, 500) -- 500ms delay after environment notification
   end)
 end
 

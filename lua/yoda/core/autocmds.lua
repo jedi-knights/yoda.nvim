@@ -127,3 +127,23 @@ create_autocmd("FileType", {
     vim.opt_local.conceallevel = 2
   end,
 })
+
+-- Update tool indicators when directory changes
+vim.api.nvim_create_autocmd("DirChanged", {
+  callback = function()
+    vim.defer_fn(function()
+      local tool_indicators = require("yoda.utils.tool_indicators")
+      tool_indicators.update_statusline()
+    end, 100) -- Small delay to ensure directory change is complete
+  end,
+})
+
+-- Update tool indicators when entering a buffer
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    vim.defer_fn(function()
+      local tool_indicators = require("yoda.utils.tool_indicators")
+      tool_indicators.update_statusline()
+    end, 100)
+  end,
+})
