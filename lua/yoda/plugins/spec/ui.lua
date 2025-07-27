@@ -555,9 +555,7 @@ local plugins = {
       local builtin = require("telescope.builtin")
 
       -- General file finding
-      --keymap.set("n", "<leader>ff", builtin.find_files, opts)
-      --keymap.set("n", "<leader>fs", builtin.live_grep, opts)
-      --keymap.set("n", "<leader>fh", builtin.oldfiles, opts)
+      -- Note: These keymaps are handled elsewhere in the configuration
 
       -- Project/user-specific
       keymap.set("n", "<leader>uc", function()
