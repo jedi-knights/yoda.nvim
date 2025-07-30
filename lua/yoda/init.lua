@@ -22,6 +22,17 @@ pcall(require, "yoda.utils.plugin_validator")
 pcall(require, "yoda.utils.plugin_loader")
 pcall(require, "yoda.utils.config_validator")
 pcall(require, "yoda.utils.performance_monitor")
+pcall(require, "yoda.utils.startup_profiler")
+pcall(require, "yoda.utils.optimization_helper")
+pcall(require, "yoda.utils.error_recovery")
+pcall(require, "yoda.utils.enhanced_plugin_loader")
+pcall(require, "yoda.utils.interactive_help")
+pcall(require, "yoda.utils.feature_discovery")
+pcall(require, "yoda.utils.distribution_testing")
+pcall(require, "yoda.utils.automated_testing")
+pcall(require, "yoda.utils.interactive_docs")
+pcall(require, "yoda.utils.ai_development")
+pcall(require, "yoda.utils.ai_code_analysis")
 pcall(require, "yoda.utils.keymap_utils")
 pcall(require, "yoda.utils.tool_indicators")
 
@@ -108,11 +119,30 @@ Yoda Configuration:
 - Verbose Startup: %s
 - Show Loading Messages: %s
 - Show Environment Notification: %s
+- Enable Startup Profiling: %s
+- Show Startup Report: %s
+- Profiling Verbose: %s
 ]], 
     tostring(config.verbose_startup or false),
     tostring(config.show_loading_messages or false),
-    tostring(config.show_environment_notification or true)
+    tostring(config.show_environment_notification or true),
+    tostring(config.enable_startup_profiling or false),
+    tostring(config.show_startup_report or false),
+    tostring(config.profiling_verbose or false)
   )
   vim.notify(msg, vim.log.levels.INFO, { title = "Yoda.nvim Config" })
 end, { desc = "Show current Yoda configuration" })
+
+-- Startup profiling commands
+vim.api.nvim_create_user_command("YodaProfilingOn", function()
+  vim.g.yoda_config.enable_startup_profiling = true
+  vim.g.yoda_config.show_startup_report = true
+  vim.notify("Startup profiling enabled", vim.log.levels.INFO, { title = "Yoda.nvim" })
+end, { desc = "Enable startup profiling" })
+
+vim.api.nvim_create_user_command("YodaProfilingOff", function()
+  vim.g.yoda_config.enable_startup_profiling = false
+  vim.g.yoda_config.show_startup_report = false
+  vim.notify("Startup profiling disabled", vim.log.levels.INFO, { title = "Yoda.nvim" })
+end, { desc = "Disable startup profiling" })
 

@@ -12,6 +12,11 @@ vim.g.yoda_config.verbose_startup = vim.g.yoda_config.verbose_startup or false
 vim.g.yoda_config.show_loading_messages = vim.g.yoda_config.show_loading_messages or false
 vim.g.yoda_config.show_environment_notification = vim.g.yoda_config.show_environment_notification or true
 
+-- Startup profiling configuration
+vim.g.yoda_config.enable_startup_profiling = vim.g.yoda_config.enable_startup_profiling or true
+vim.g.yoda_config.show_startup_report = vim.g.yoda_config.show_startup_report or true
+vim.g.yoda_config.profiling_verbose = vim.g.yoda_config.profiling_verbose or true
+
 -- General options
 local opt = vim.opt
 

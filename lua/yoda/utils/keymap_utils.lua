@@ -27,6 +27,12 @@ function M.set(mode, lhs, rhs, opts)
   end
   
   vim.keymap.set(mode, lhs, rhs, opts)
+  
+  -- Trigger feature discovery event for keymap usage
+  vim.api.nvim_exec_autocmds("User", {
+    pattern = "YodaKeymapUsed",
+    data = lhs
+  })
 end
 
 --- Print keymap statistics
