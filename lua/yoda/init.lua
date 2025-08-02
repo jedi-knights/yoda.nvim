@@ -1,6 +1,9 @@
 -- Initialize global keymap log for tracking
 _G.yoda_keymap_log = {}
 
+-- Track startup time
+local startup_time = vim.loop.now()
+
 -- Load core settings
 require("yoda.core.options")
 
@@ -17,30 +20,48 @@ require("yoda.core.autocmds")
 -- Load plugins
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
--- Load utilities for development
-pcall(require, "yoda.utils.plugin_validator")
-pcall(require, "yoda.utils.plugin_loader")
-pcall(require, "yoda.utils.config_validator")
-pcall(require, "yoda.utils.performance_monitor")
-pcall(require, "yoda.utils.startup_profiler")
-pcall(require, "yoda.utils.optimization_helper")
-pcall(require, "yoda.utils.error_recovery")
-pcall(require, "yoda.utils.enhanced_plugin_loader")
-pcall(require, "yoda.utils.interactive_help")
-pcall(require, "yoda.utils.feature_discovery")
-pcall(require, "yoda.utils.distribution_testing")
-pcall(require, "yoda.utils.automated_testing")
-pcall(require, "yoda.utils.interactive_docs")
-pcall(require, "yoda.utils.ai_development")
-pcall(require, "yoda.utils.ai_code_analysis")
-pcall(require, "yoda.utils.keymap_utils")
-pcall(require, "yoda.utils.tool_indicators")
+-- Load utilities for development with enhanced error handling
+local utils_to_load = {
+  "yoda.utils.plugin_validator",
+  "yoda.utils.plugin_loader", 
+  "yoda.utils.config_validator",
+  "yoda.utils.performance_monitor",
+  "yoda.utils.startup_profiler",
+  "yoda.utils.optimization_helper",
+  "yoda.utils.error_recovery",
+  "yoda.utils.enhanced_plugin_loader",
+  "yoda.utils.interactive_help",
+  "yoda.utils.feature_discovery",
+  "yoda.utils.distribution_testing",
+  "yoda.utils.automated_testing",
+  "yoda.utils.interactive_docs",
+  "yoda.utils.ai_development",
+  "yoda.utils.ai_code_analysis",
+  "yoda.utils.keymap_utils",
+  "yoda.utils.tool_indicators",
+  "yoda.utils.health_checker"
+}
+
+for _, util in ipairs(utils_to_load) do
+  local ok, module = pcall(require, util)
+  if not ok then
+    -- Log the error but don't fail startup
+    vim.notify(string.format("Failed to load utility: %s", util), vim.log.levels.WARN)
+  end
+end
 
 -- Load colorscheme
 require("yoda.core.colorscheme")
 
 -- Load Plenary test keymaps
 require("yoda.core.plenary")
+
+-- Set startup time for performance monitoring
+local perf_ok, perf = pcall(require, "yoda.utils.performance_monitor")
+if perf_ok then
+  local total_time = vim.loop.now() - startup_time
+  perf.set_startup_time(total_time)
+end
 
 -- Show YODA_ENV mode notification on startup (only if enabled)
 if vim.g.yoda_config and vim.g.yoda_config.show_environment_notification then
@@ -72,6 +93,7 @@ if vim.g.yoda_config and vim.g.yoda_config.show_environment_notification then
   end)
 end
 
+-- Enhanced user commands
 vim.api.nvim_create_user_command("YodaKeymapDump", function()
   require("yoda.devtools.keymaps").dump_all_keymaps()
 end, {})
@@ -145,4 +167,58 @@ vim.api.nvim_create_user_command("YodaProfilingOff", function()
   vim.g.yoda_config.show_startup_report = false
   vim.notify("Startup profiling disabled", vim.log.levels.INFO, { title = "Yoda.nvim" })
 end, { desc = "Disable startup profiling" })
+
+-- Enhanced health and validation commands
+vim.api.nvim_create_user_command("YodaHealth", function()
+  local health_ok, health = pcall(require, "yoda.utils.health_checker")
+  if health_ok then
+    health.run_all_checks()
+  else
+    vim.notify("Health checker not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Run comprehensive Yoda.nvim health checks" })
+
+vim.api.nvim_create_user_command("YodaPerformance", function()
+  local perf_ok, perf = pcall(require, "yoda.utils.performance_monitor")
+  if perf_ok then
+    perf.analyze_performance()
+    perf.optimize_startup()
+    perf.check_plugin_performance()
+  else
+    vim.notify("Performance monitor not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Analyze Yoda.nvim performance" })
+
+vim.api.nvim_create_user_command("YodaValidatePlugins", function()
+  local validator_ok, validator = pcall(require, "yoda.utils.plugin_validator")
+  if validator_ok then
+    validator.generate_report()
+  else
+    vim.notify("Plugin validator not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Validate all Yoda.nvim plugins" })
+
+-- Error recovery commands
+vim.api.nvim_create_user_command("YodaErrorReport", function()
+  local error_ok, error_utils = pcall(require, "yoda.utils.error_recovery")
+  if error_ok then
+    local report = error_utils.get_error_report()
+    print(string.format("Total errors: %d", report.total_errors))
+    for i, error in ipairs(report.recent_errors) do
+      print(string.format("[%d] %s: %s", i, error.severity, error.message))
+    end
+  else
+    vim.notify("Error recovery not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Show Yoda.nvim error report" })
+
+vim.api.nvim_create_user_command("YodaClearErrors", function()
+  local error_ok, error_utils = pcall(require, "yoda.utils.error_recovery")
+  if error_ok then
+    error_utils.clear_error_log()
+    vim.notify("Error log cleared", vim.log.levels.INFO)
+  else
+    vim.notify("Error recovery not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Clear Yoda.nvim error log" })
 

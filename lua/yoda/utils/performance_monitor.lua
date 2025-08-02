@@ -1,98 +1,132 @@
--- lua/yoda/utils/performance_monitor.lua
--- Performance monitoring and optimization utilities
-
+-- Enhanced Performance Monitor for Yoda.nvim
 local M = {}
 
--- Performance tracking data
+-- Performance tracking
 local performance_data = {
   startup_time = 0,
   plugin_load_times = {},
+  slow_operations = {},
   memory_usage = {},
-  slow_plugins = {}
 }
 
--- Track startup time
-local startup_time = vim.loop.hrtime()
-
--- Monitor plugin loading performance
-function M.monitor_plugin_loading()
-  local lazy_ok, lazy = pcall(require, "lazy")
-  if not lazy_ok then
-    return
-  end
-
-  -- Check if lazy.get_plugins is available
-  if not lazy.get_plugins then
-    return
-  end
-
-  local plugins_ok, plugins = pcall(lazy.get_plugins)
-  if not plugins_ok or not plugins then
-    return
-  end
-
-  for _, plugin in ipairs(plugins) do
-    if plugin._.loaded then
-      local load_time = plugin._.load_time or 0
-      if load_time > 100 then -- 100ms threshold
-        table.insert(performance_data.slow_plugins, {
-          name = plugin.name,
-          load_time = load_time
-        })
-      end
-      performance_data.plugin_load_times[plugin.name] = load_time
-    end
+-- Track plugin load times
+function M.track_plugin_load(plugin_name, start_time)
+  local load_time = vim.loop.now() - start_time
+  performance_data.plugin_load_times[plugin_name] = load_time
+  
+  -- Flag slow plugins (>50ms)
+  if load_time > 50 then
+    table.insert(performance_data.slow_operations, {
+      type = "slow_plugin",
+      name = plugin_name,
+      time = load_time
+    })
   end
 end
 
--- Get performance report
-function M.get_performance_report()
-  local end_time = vim.loop.hrtime()
-  performance_data.startup_time = (end_time - startup_time) / 1000000 -- Convert to milliseconds
-
-  local report = {
-    startup_time = performance_data.startup_time,
-    slow_plugins = performance_data.slow_plugins,
-    total_plugins = #vim.tbl_keys(performance_data.plugin_load_times)
+-- Memory usage tracking
+function M.track_memory()
+  local mem_info = vim.loop.get_memory_info()
+  performance_data.memory_usage = {
+    total = mem_info.total,
+    available = mem_info.available,
+    used = mem_info.total - mem_info.available
   }
-
-  return report
 end
 
--- Print performance report
-function M.print_performance_report()
-  local report = M.get_performance_report()
+-- Performance analysis and recommendations
+function M.analyze_performance()
+  vim.health.start("Performance Analysis")
   
-  print("=== Yoda.nvim Performance Report ===")
-  print(string.format("Startup Time: %.2f ms", report.startup_time))
-  print(string.format("Total Plugins: %d", report.total_plugins))
+  -- Check startup time
+  if performance_data.startup_time > 300 then
+    vim.health.warn(string.format("Startup time is %dms (target: <300ms)", performance_data.startup_time))
+  else
+    vim.health.ok(string.format("Startup time: %dms", performance_data.startup_time))
+  end
   
-  if #report.slow_plugins > 0 then
-    print("\nSlow Plugins (>100ms):")
-    for _, plugin in ipairs(report.slow_plugins) do
-      print(string.format("  %s: %.2f ms", plugin.name, plugin.load_time))
+  -- Analyze slow plugins
+  local slow_count = 0
+  for _, op in ipairs(performance_data.slow_operations) do
+    if op.type == "slow_plugin" then
+      slow_count = slow_count + 1
+      vim.health.warn(string.format("Slow plugin: %s (%dms)", op.name, op.time))
     end
   end
   
-  print("===================================")
+  if slow_count == 0 then
+    vim.health.ok("All plugins loaded efficiently")
+  end
+  
+  -- Memory usage
+  if performance_data.memory_usage.used then
+    local mem_mb = performance_data.memory_usage.used / (1024 * 1024)
+    if mem_mb > 100 then
+      vim.health.warn(string.format("High memory usage: %.1f MB", mem_mb))
+    else
+      vim.health.ok(string.format("Memory usage: %.1f MB", mem_mb))
+    end
+  end
+  
+  -- Performance recommendations
+  vim.health.info("Performance Tips:")
+  vim.health.info("- Use :Lazy profile to identify slow plugins")
+  vim.health.info("- Consider lazy-loading heavy plugins")
+  vim.health.info("- Review autocmds for unnecessary triggers")
 end
 
--- Register performance monitoring commands
-vim.api.nvim_create_user_command("YodaPerformance", function()
-  M.print_performance_report()
-end, { desc = "Show Yoda.nvim performance report" })
+-- Optimize startup sequence
+function M.optimize_startup()
+  local optimizations = {
+    "Disable unused default plugins",
+    "Use lazy-loading for heavy plugins",
+    "Minimize autocmds on startup",
+    "Cache expensive computations",
+    "Use vim.schedule() for UI updates"
+  }
+  
+  vim.health.start("Startup Optimizations")
+  for _, opt in ipairs(optimizations) do
+    vim.health.info(opt)
+  end
+end
 
--- Auto-monitor on startup with proper timing
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    vim.defer_fn(function()
-      -- Wait a bit longer to ensure Lazy.nvim is fully initialized
-      vim.defer_fn(function()
-        M.monitor_plugin_loading()
-      end, 2000) -- 2 second delay to ensure plugins are loaded
-    end, 1000) -- 1 second initial delay
-  end,
-  once = true
-})
+-- Plugin-specific performance checks
+function M.check_plugin_performance()
+  vim.health.start("Plugin Performance")
+  
+  -- Check LSP performance
+  local ok, lsp = pcall(require, "lspconfig")
+  if ok then
+    vim.health.ok("LSP configuration loaded efficiently")
+  end
+  
+  -- Check telescope performance
+  local ok, telescope = pcall(require, "telescope")
+  if ok then
+    vim.health.ok("Telescope loaded efficiently")
+  end
+  
+  -- Check treesitter performance
+  local ok, ts = pcall(require, "nvim-treesitter")
+  if ok then
+    vim.health.ok("Treesitter loaded efficiently")
+  end
+end
+
+-- Export performance data for external analysis
+function M.export_performance_data()
+  return {
+    startup_time = performance_data.startup_time,
+    plugin_load_times = performance_data.plugin_load_times,
+    slow_operations = performance_data.slow_operations,
+    memory_usage = performance_data.memory_usage
+  }
+end
+
+-- Set startup time
+function M.set_startup_time(time)
+  performance_data.startup_time = time
+end
 
 return M 

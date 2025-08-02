@@ -1,249 +1,315 @@
--- lua/yoda/utils/plugin_validator.lua
--- Plugin validation utility for Yoda.nvim
-
+-- Comprehensive Plugin Validator for Yoda.nvim
 local M = {}
 
----
--- Validates plugin specifications for common issues
--- @param specs table Plugin specifications to validate
--- @return table Issues found
-function M.validate_plugin_specs(specs)
-  local issues = {}
-  
-  for i, spec in ipairs(specs) do
-    local plugin_name = spec[1] or "unknown"
-    
-    -- Check for missing config function when opts is present
-    if spec.opts and not spec.config then
-      table.insert(issues, {
-        type = "missing_config",
-        plugin = plugin_name,
-        index = i,
-        message = string.format("Plugin '%s' has opts but no config function", plugin_name)
-      })
-    end
-    
-    -- Check for missing setup call in config function
-    if spec.config and type(spec.config) == "function" then
-      -- This is a basic check - we can't easily parse the function body
-      -- but we can check if it's likely to call setup
-      local config_str = tostring(spec.config)
-      if not config_str:match("setup") then
-        table.insert(issues, {
-          type = "missing_setup",
-          plugin = plugin_name,
-          index = i,
-          message = string.format("Plugin '%s' config function may not call setup", plugin_name)
-        })
-      end
-    end
-    
-    -- Check for invalid plugin names
-    if type(plugin_name) ~= "string" or plugin_name == "" then
-      table.insert(issues, {
-        type = "invalid_name",
-        plugin = tostring(plugin_name),
-        index = i,
-        message = string.format("Invalid plugin name at index %d: %s", i, tostring(plugin_name))
-      })
-    end
-    
-    -- Check for missing dependencies
-    if spec.dependencies then
-      for j, dep in ipairs(spec.dependencies) do
-        if type(dep) ~= "string" or dep == "" then
-          table.insert(issues, {
-            type = "invalid_dependency",
-            plugin = plugin_name,
-            index = i,
-            dep_index = j,
-            message = string.format("Plugin '%s' has invalid dependency at index %d: %s", plugin_name, j, tostring(dep))
-          })
-        end
-      end
-    end
-  end
-  
-  return issues
-end
+-- Plugin validation data
+local validation_results = {}
+local compatibility_matrix = {}
 
----
--- Validates a single plugin specification
--- @param spec table Plugin specification to validate
--- @param index number Index of the plugin in the specs array
--- @return table Issues found
-function M.validate_plugin_spec(spec, index)
-  local issues = {}
-  local plugin_name = spec[1] or "unknown"
-  
-  -- Check for required fields
-  if not spec[1] then
-    table.insert(issues, {
-      type = "missing_name",
-      plugin = plugin_name,
-      index = index,
-      message = "Plugin specification missing name"
-    })
-  end
-  
-  -- Check for opts without config
-  if spec.opts and not spec.config then
-    table.insert(issues, {
-      type = "missing_config",
-      plugin = plugin_name,
-      index = index,
-      message = string.format("Plugin '%s' has opts but no config function", plugin_name)
-    })
-  end
-  
-  -- Check for config without opts (this might be intentional)
-  if spec.config and not spec.opts then
-    table.insert(issues, {
-      type = "missing_opts",
-      plugin = plugin_name,
-      index = index,
-      message = string.format("Plugin '%s' has config function but no opts (this may be intentional)", plugin_name)
-    })
-  end
-  
-  return issues
-end
-
----
--- Generates a fix suggestion for a plugin issue
--- @param issue table Issue to generate fix for
--- @return string Fix suggestion
-function M.generate_fix_suggestion(issue)
-  if issue.type == "missing_config" then
-    return string.format([[
-Add config function to plugin '%s':
-{
-  "%s",
-  config = function(_, opts)
-    require("%s").setup(opts)
-  end,
-  opts = {
-    -- your options here
+-- Plugin compatibility matrix
+local PLUGIN_COMPATIBILITY = {
+  ["lazy.nvim"] = {
+    min_nvim_version = "0.8.0",
+    dependencies = {},
+    conflicts = {}
   },
-}]], issue.plugin, issue.plugin, issue.plugin:match("([^/]+)$") or issue.plugin)
-  elseif issue.type == "missing_setup" then
-    return string.format([[
-Ensure config function calls setup for plugin '%s':
-config = function(_, opts)
-  require("%s").setup(opts)
-end]], issue.plugin, issue.plugin:match("([^/]+)$") or issue.plugin)
-  elseif issue.type == "invalid_name" then
-    return "Fix plugin name - should be a non-empty string"
-  elseif issue.type == "invalid_dependency" then
-    return "Fix dependency - should be a non-empty string"
+  ["telescope.nvim"] = {
+    min_nvim_version = "0.8.0",
+    dependencies = {"plenary.nvim"},
+    conflicts = {}
+  },
+  ["nvim-cmp"] = {
+    min_nvim_version = "0.8.0",
+    dependencies = {},
+    conflicts = {}
+  },
+  ["mason.nvim"] = {
+    min_nvim_version = "0.8.0",
+    dependencies = {},
+    conflicts = {}
+  },
+  ["nvim-treesitter"] = {
+    min_nvim_version = "0.8.0",
+    dependencies = {},
+    conflicts = {}
+  },
+  ["lspconfig"] = {
+    min_nvim_version = "0.8.0",
+    dependencies = {},
+    conflicts = {}
+  }
+}
+
+-- Check Neovim version compatibility
+function M.check_nvim_version(plugin_name)
+  local plugin_info = PLUGIN_COMPATIBILITY[plugin_name]
+  if not plugin_info then
+    return true -- Unknown plugin, assume compatible
+  end
+  
+  local required_version = plugin_info.min_nvim_version
+  local current_version = vim.version()
+  
+  -- Simple version comparison (major.minor.patch)
+  local function parse_version(version_str)
+    local major, minor, patch = version_str:match("(%d+)%.(%d+)%.(%d+)")
+    return {tonumber(major), tonumber(minor), tonumber(patch)}
+  end
+  
+  local required = parse_version(required_version)
+  local current = parse_version(current_version)
+  
+  for i = 1, 3 do
+    if current[i] > required[i] then
+      return true
+    elseif current[i] < required[i] then
+      return false
+    end
+  end
+  
+  return true
+end
+
+-- Check plugin dependencies
+function M.check_dependencies(plugin_name)
+  local plugin_info = PLUGIN_COMPATIBILITY[plugin_name]
+  if not plugin_info or not plugin_info.dependencies then
+    return true
+  end
+  
+  local missing_deps = {}
+  for _, dep in ipairs(plugin_info.dependencies) do
+    local ok, _ = pcall(require, dep)
+    if not ok then
+      table.insert(missing_deps, dep)
+    end
+  end
+  
+  return #missing_deps == 0, missing_deps
+end
+
+-- Check for plugin conflicts
+function M.check_conflicts(plugin_name)
+  local plugin_info = PLUGIN_COMPATIBILITY[plugin_name]
+  if not plugin_info or not plugin_info.conflicts then
+    return true
+  end
+  
+  local conflicts = {}
+  for _, conflict in ipairs(plugin_info.conflicts) do
+    local ok, _ = pcall(require, conflict)
+    if ok then
+      table.insert(conflicts, conflict)
+    end
+  end
+  
+  return #conflicts == 0, conflicts
+end
+
+-- Validate plugin configuration
+function M.validate_plugin_config(plugin_name, config)
+  local issues = {}
+  
+  -- Check for required configuration fields
+  local required_fields = {
+    ["telescope.nvim"] = {"defaults"},
+    ["nvim-cmp"] = {"sources"},
+    ["mason.nvim"] = {},
+    ["lspconfig"] = {}
+  }
+  
+  local required = required_fields[plugin_name] or {}
+  for _, field in ipairs(required) do
+    if not config or not config[field] then
+      table.insert(issues, string.format("Missing required field: %s", field))
+    end
+  end
+  
+  -- Plugin-specific validation
+  if plugin_name == "telescope.nvim" and config then
+    if config.defaults and config.defaults.mappings then
+      -- Check for common telescope mapping issues
+      local mappings = config.defaults.mappings
+      if mappings.i and mappings.i["<C-j>"] then
+        -- This might conflict with other plugins
+        table.insert(issues, "Telescope mapping <C-j> might conflict with other plugins")
+      end
+    end
+  end
+  
+  return #issues == 0, issues
+end
+
+-- Comprehensive plugin validation
+function M.validate_plugin(plugin_name, config)
+  local result = {
+    plugin = plugin_name,
+    valid = true,
+    issues = {},
+    warnings = {},
+    recommendations = {}
+  }
+  
+  -- Check Neovim version compatibility
+  if not M.check_nvim_version(plugin_name) then
+    result.valid = false
+    table.insert(result.issues, "Incompatible with current Neovim version")
+  end
+  
+  -- Check dependencies
+  local deps_ok, missing_deps = M.check_dependencies(plugin_name)
+  if not deps_ok then
+    result.valid = false
+    table.insert(result.issues, string.format("Missing dependencies: %s", table.concat(missing_deps, ", ")))
+  end
+  
+  -- Check conflicts
+  local conflicts_ok, conflicts = M.check_conflicts(plugin_name)
+  if not conflicts_ok then
+    table.insert(result.warnings, string.format("Potential conflicts: %s", table.concat(conflicts, ", ")))
+  end
+  
+  -- Validate configuration
+  local config_ok, config_issues = M.validate_plugin_config(plugin_name, config)
+  if not config_ok then
+    result.valid = false
+    for _, issue in ipairs(config_issues) do
+      table.insert(result.issues, issue)
+    end
+  end
+  
+  -- Performance recommendations
+  if plugin_name == "telescope.nvim" then
+    table.insert(result.recommendations, "Consider lazy-loading telescope for better startup performance")
+  elseif plugin_name == "nvim-treesitter" then
+    table.insert(result.recommendations, "Ensure only necessary parsers are installed")
+  end
+  
+  validation_results[plugin_name] = result
+  return result
+end
+
+-- Validate all loaded plugins
+function M.validate_all_plugins()
+  local lazy_ok, lazy = pcall(require, "lazy")
+  if not lazy_ok then
+    return {valid = false, issues = {"lazy.nvim not available"}}
+  end
+  
+  local plugins_ok, plugins = pcall(lazy.get_plugins)
+  if not plugins_ok then
+    return {valid = false, issues = {"Failed to get plugin list"}}
+  end
+  
+  local overall_result = {
+    valid = true,
+    plugins_validated = 0,
+    issues = {},
+    warnings = {},
+    recommendations = {}
+  }
+  
+  for _, plugin in ipairs(plugins) do
+    if plugin.name then
+      local result = M.validate_plugin(plugin.name, plugin.config)
+      overall_result.plugins_validated = overall_result.plugins_validated + 1
+      
+      if not result.valid then
+        overall_result.valid = false
+        for _, issue in ipairs(result.issues) do
+          table.insert(overall_result.issues, string.format("%s: %s", plugin.name, issue))
+        end
+      end
+      
+      for _, warning in ipairs(result.warnings) do
+        table.insert(overall_result.warnings, string.format("%s: %s", plugin.name, warning))
+      end
+      
+      for _, rec in ipairs(result.recommendations) do
+        table.insert(overall_result.recommendations, string.format("%s: %s", plugin.name, rec))
+      end
+    end
+  end
+  
+  return overall_result
+end
+
+-- Generate validation report
+function M.generate_report()
+  local report = M.validate_all_plugins()
+  
+  vim.health.start("Plugin Validation")
+  
+  if report.valid then
+    vim.health.ok(string.format("All %d plugins validated successfully", report.plugins_validated))
   else
-    return "Unknown issue type - manual review required"
+    vim.health.error(string.format("Found issues with %d plugins", #report.issues))
+    for _, issue in ipairs(report.issues) do
+      vim.health.error(issue)
+    end
+  end
+  
+  if #report.warnings > 0 then
+    vim.health.warn(string.format("Found %d warnings", #report.warnings))
+    for _, warning in ipairs(report.warnings) do
+      vim.health.warn(warning)
+    end
+  end
+  
+  if #report.recommendations > 0 then
+    vim.health.info(string.format("Found %d recommendations", #report.recommendations))
+    for _, rec in ipairs(report.recommendations) do
+      vim.health.info(rec)
+    end
   end
 end
 
----
--- Validates all plugin specifications in the Yoda configuration
--- @return table All issues found
-function M.validate_yoda_plugins()
-  local all_issues = {}
+-- Check for common plugin issues
+function M.check_common_issues()
+  local issues = {}
   
-  -- Try to load the main plugin spec first
-  local ok, all_plugins = pcall(require, "yoda.plugins.spec")
-  if ok and type(all_plugins) == "table" then
-    -- Validate all plugins at once
-    local issues = M.validate_plugin_specs(all_plugins)
-    for _, issue in ipairs(issues) do
-      issue.file = "yoda.plugins.spec"
-      table.insert(all_issues, issue)
-    end
-  else
-    -- Fallback: load individual spec files
-    local spec_files = {
-      "yoda.plugins.spec.core",
-      "yoda.plugins.spec.ui",
-      "yoda.plugins.spec.lsp",
-      "yoda.plugins.spec.completion",
-      "yoda.plugins.spec.ai",
-      "yoda.plugins.spec.testing",
-      "yoda.plugins.spec.git",
-      "yoda.plugins.spec.markdown",
-      "yoda.plugins.spec.dap",
-      "yoda.plugins.spec.db",
-      "yoda.plugins.spec.motion",
-      "yoda.plugins.spec.development",
-    }
-    
-    for _, spec_file in ipairs(spec_files) do
-      local ok, specs = pcall(require, spec_file)
-      if ok and type(specs) == "table" then
-        local issues = M.validate_plugin_specs(specs)
-        for _, issue in ipairs(issues) do
-          issue.file = spec_file
-          table.insert(all_issues, issue)
-        end
-      else
-        -- Don't treat missing spec files as errors - they might not exist
-        if not ok and not string.find(specs, "module.*not found") then
-          table.insert(all_issues, {
-            type = "load_error",
-            file = spec_file,
-            message = string.format("Failed to load %s: %s", spec_file, tostring(specs))
-          })
+  -- Check for duplicate plugins
+  local lazy_ok, lazy = pcall(require, "lazy")
+  if lazy_ok then
+    local plugins_ok, plugins = pcall(lazy.get_plugins)
+    if plugins_ok then
+      local plugin_names = {}
+      for _, plugin in ipairs(plugins) do
+        if plugin.name then
+          if plugin_names[plugin.name] then
+            table.insert(issues, string.format("Duplicate plugin: %s", plugin.name))
+          else
+            plugin_names[plugin.name] = true
+          end
         end
       end
     end
   end
   
-  return all_issues
-end
-
----
--- Reports plugin validation issues
--- @param issues table Issues to report
-function M.report_issues(issues)
-  if #issues == 0 then
-    vim.notify("✅ All plugin specifications are valid", vim.log.levels.INFO)
-    return
-  end
-  
-  local report = {"🔍 Plugin Validation Issues Found:"}
-  for i, issue in ipairs(issues) do
-    table.insert(report, string.format("%d. %s", i, issue.message))
-    if issue.file then
-      table.insert(report, string.format("   File: %s", issue.file))
+  -- Check for missing essential plugins
+  local essential_plugins = {"lazy", "mason", "lspconfig"}
+  for _, plugin in ipairs(essential_plugins) do
+    local ok, _ = pcall(require, plugin)
+    if not ok then
+      table.insert(issues, string.format("Missing essential plugin: %s", plugin))
     end
-    table.insert(report, string.format("   Fix: %s", M.generate_fix_suggestion(issue)))
-    table.insert(report, "")
   end
   
-  vim.notify(table.concat(report, "\n"), vim.log.levels.WARN, {
-    title = "Plugin Validation",
-    timeout = 10000
-  })
+  return issues
 end
 
--- User commands for plugin validation
+-- Register validation commands
 vim.api.nvim_create_user_command("YodaValidatePlugins", function()
-  local issues = M.validate_yoda_plugins()
-  M.report_issues(issues)
-end, {})
+  M.generate_report()
+end, { desc = "Validate all Yoda.nvim plugins" })
 
-vim.api.nvim_create_user_command("YodaFixPluginConfigs", function()
-  local issues = M.validate_yoda_plugins()
+vim.api.nvim_create_user_command("YodaPluginIssues", function()
+  local issues = M.check_common_issues()
   if #issues == 0 then
-    vim.notify("✅ No plugin configuration issues found", vim.log.levels.INFO)
-    return
+    vim.notify("No common plugin issues found", vim.log.levels.INFO)
+  else
+    vim.notify(string.format("Found %d issues: %s", #issues, table.concat(issues, ", ")), 
+      vim.log.levels.WARN)
   end
-  
-  local fix_count = 0
-  for _, issue in ipairs(issues) do
-    if issue.type == "missing_config" then
-      vim.notify(string.format("⚠️  Manual fix required for %s: Add config function", issue.plugin), vim.log.levels.WARN)
-      fix_count = fix_count + 1
-    end
-  end
-  
-  vim.notify(string.format("🔧 %d plugin configuration issues need manual fixes", fix_count), vim.log.levels.WARN)
-end, {})
+end, { desc = "Check for common plugin issues" })
 
 return M 
