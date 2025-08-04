@@ -21,8 +21,8 @@ Yoda.nvim supports a flexible, scalable system for local plugin development. Thi
    
    ```lua
    return {
-     -- Example: develop pytest.nvim locally
-     pytest = "/absolute/path/to/pytest.nvim",
+     -- Example: develop python.nvim locally (replaces pytest.nvim and invoke.nvim)
+     python = "/absolute/path/to/python.nvim",
      -- Example: develop go-task.nvim locally
      go_task = "/absolute/path/to/go-task.nvim",
      -- Add more plugins as needed
@@ -37,10 +37,16 @@ Yoda.nvim supports a flexible, scalable system for local plugin development. Thi
    local plugin_dev = require("yoda.utils.plugin_dev")
    
    local plugins = {
-     plugin_dev.local_or_remote_plugin("pytest", "jedi-knights/pytest.nvim", {
-       dependencies = { "folke/snacks.nvim" },
+     plugin_dev.local_or_remote_plugin("python", "jedi-knights/python.nvim", {
+       dependencies = { "nvim-lua/plenary.nvim", "folke/snacks.nvim" },
        config = function()
-         require("pytest").setup()
+         require("python").setup({
+           -- Enable all Python features
+           enable_virtual_env = true,
+           auto_detect_venv = true,
+           test_frameworks = { pytest = { enabled = true } },
+           task_runner = { enabled = true, invoke = { enabled = true } },
+         })
        end,
      }),
      -- Add more plugins as needed

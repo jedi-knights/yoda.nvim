@@ -5,10 +5,10 @@ local M = {}
 
 -- Tool detection functions
 local function detect_go_task()
-  -- Check if go-task.nvim plugin is loaded
-  local go_task_ok, go_task = pcall(require, "go_task")
-  if not go_task_ok then
-    return false, "go-task.nvim not available"
+  -- Check if go.nvim plugin is loaded (replaces go-task.nvim)
+  local go_ok, go = pcall(require, "go")
+  if not go_ok then
+    return false, "go.nvim not available"
   end
 
   -- Check if Taskfile.yml exists in current directory (primary requirement)
@@ -27,10 +27,10 @@ local function detect_go_task()
 end
 
 local function detect_invoke()
-  -- Check if invoke.nvim plugin is loaded
-  local invoke_ok, invoke = pcall(require, "invoke_nvim")
-  if not invoke_ok then
-    return false, "invoke.nvim not available"
+  -- Check if python.nvim plugin is loaded (replaces invoke.nvim)
+  local python_ok, python = pcall(require, "python")
+  if not python_ok then
+    return false, "python.nvim not available"
   end
 
   -- Check if tasks.py exists in current directory (primary requirement)

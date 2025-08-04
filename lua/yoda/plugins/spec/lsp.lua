@@ -25,11 +25,9 @@ local plugins = {
         mason_lspconfig.setup({
           ensure_installed = {
             "lua_ls",   -- Lua
-            "pyright",  -- Python
             "gopls",    -- Go
             "ts_ls",    -- JavaScript/TypeScript (correct, future-safe)
             --"eslint",   -- JavaScript/TypeScript (correct, future-safe)
-            "ruff",   -- Python
             --"rust-analyzer", -- Rust
           },
         })
@@ -48,7 +46,6 @@ local plugins = {
       if lspconfig_ok then
         local servers = {
           lua_ls = require("yoda.lsp.servers.lua_ls"),
-          pyright = require("yoda.lsp.servers.pyright"),
           gopls = require("yoda.lsp.servers.gopls"),
           eslint = require("yoda.lsp.servers.eslint"),
           ts_ls = require("yoda.lsp.servers.ts_ls"), -- ✅ updated here too
@@ -76,19 +73,11 @@ local plugins = {
         ensure_installed = {
           -- LSP servers
           "lua-language-server",
-          "pyright",
           "gopls",
           "typescript-language-server",
 
-          -- Linters
-          "pylint",
-          "ruff",
-          "mypy",
-
           -- Formatters
           "stylua",
-          "black",
-          "autoflake",
           "prettier",
 
           -- Debuggers
@@ -123,12 +112,6 @@ local plugins = {
           'eslint_d', -- ts/js linter
           'eslint',   -- ts/js linter
           'shfmt',
-          'ruff',
-          --'black',
-          'mypy',
-          'flake8',
-          'autoflake',
-          'pylint',
         },
         -- auto-install configured formatters & linters (with null-ls)
         automatic_installation = true,
@@ -141,18 +124,6 @@ local plugins = {
         formatting.stylua,
         formatting.shfmt.with { args = { '-i', '4' } },
         formatting.terraform_fmt,
-        require('none-ls.formatting.ruff').with { extra_args = { '--extend-select', 'I' } },
-        require 'none-ls.formatting.ruff_format',
-
-        -- Python formatting
-        formatting.black,
-        formatting.autoflake,
-        require('none-ls.formatting.ruff').with { extra_args =  { '--extend-select', 'I' } },
-        require('none-ls.formatting.ruff_format'),
-
-        -- Python diagnostics
-        diagnostics.mypy,
-        diagnostics.pylint,
       }
 
       local augroup = vim.api.nvim_create_augroup('LspFormatting', {})

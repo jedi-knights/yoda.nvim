@@ -10,6 +10,7 @@ local spec_files = {
   "yoda.plugins.spec.lsp",
   "yoda.plugins.spec.completion",
   "yoda.plugins.spec.ai",
+  "yoda.plugins.spec.python",
   "yoda.plugins.spec.testing",
   "yoda.plugins.spec.git",
   "yoda.plugins.spec.markdown",

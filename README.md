@@ -389,8 +389,7 @@ For Python development, ensure you have the Neovim provider:
    -- ~/.config/nvim/plugin_dev.lua
    return {
      go_task = "~/src/github.com/jedi-knights/go-task.nvim",
-     pytest = "~/src/github.com/jedi-knights/pytest.nvim",
-     invoke = "~/src/github.com/jedi-knights/invoke.nvim",
+     python = "~/src/github.com/jedi-knights/python.nvim",
    }
    ```
 
@@ -574,8 +573,7 @@ Yoda supports local plugin development for rapid iteration:
    -- ~/.config/nvim/plugin_dev.lua
    return {
      go_task = "~/src/github.com/jedi-knights/go-task.nvim",
-     pytest = "~/src/github.com/jedi-knights/pytest.nvim",
-     invoke = "~/src/github.com/jedi-knights/invoke.nvim",
+     python = "~/src/github.com/jedi-knights/python.nvim",
    }
    ```
 

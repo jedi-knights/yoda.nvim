@@ -21,7 +21,7 @@ The tool indicators system provides:
 ### Invoke (🐍)
 - **Detection**: Checks for `tasks.py` in current directory
 - **Icon**: 🐍
-- **Plugin**: invoke.nvim
+- **Plugin**: python.nvim (replaces invoke.nvim)
 - **Note**: Only shows when project file is present, not just when tool is installed
 
 ## Visual Indicators
@@ -134,6 +134,6 @@ No development tools detected
 ### Invoke Detection
 - **Required**: `tasks.py` in current directory
 - **Not required**: Global `invoke` command installation
-- **Plugin**: invoke.nvim must be loaded
+- **Plugin**: python.nvim must be loaded (replaces invoke.nvim)
 
 This ensures that indicators only appear when you're actually in a project that uses these tools, not just when the tools are installed globally on your system. 

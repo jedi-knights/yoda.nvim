@@ -98,9 +98,7 @@ end
 
 --- Register commands
 function M.setup()
-  vim.api.nvim_create_user_command("DeletePytestMarks", function()
-    vim.cmd([[g/@pytest\.mark/d]])
-  end, {})
+
 
   vim.api.nvim_create_user_command("FormatFeature", function()
     M.format_feature()

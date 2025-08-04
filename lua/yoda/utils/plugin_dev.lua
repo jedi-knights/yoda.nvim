@@ -24,7 +24,7 @@ end
 ---
 --- Returns a plugin spec for local or remote development.
 -- @param name (string) The plugin key (e.g., 'pytest', 'go_task')
--- @param remote_spec (string|table) The remote plugin spec (e.g., 'jedi-knights/pytest.nvim')
+-- @param remote_spec (string|table) The remote plugin spec (e.g., 'jedi-knights/python.nvim')
 -- @param opts (table) Additional plugin options (optional)
 -- @return table Plugin spec for Lazy.nvim
 function M.local_or_remote_plugin(name, remote_spec, opts)
@@ -133,13 +133,9 @@ function M.debug_plugin_specs()
   local go_task_spec = M.local_or_remote_plugin("go_task", "jedi-knights/go-task.nvim", { lazy = false })
   print("  go_task:", vim.inspect(go_task_spec))
   
-  -- Test invoke
-  local invoke_spec = M.local_or_remote_plugin("invoke", "jedi-knights/invoke.nvim", { lazy = false })
-  print("  invoke:", vim.inspect(invoke_spec))
-  
-  -- Test pytest
-  local pytest_spec = M.local_or_remote_plugin("pytest", "jedi-knights/pytest.nvim", {})
-  print("  pytest:", vim.inspect(pytest_spec))
+  -- Test python (replaces invoke and pytest)
+  local python_spec = M.local_or_remote_plugin("python", "jedi-knights/python.nvim", { lazy = false })
+  print("  python:", vim.inspect(python_spec))
 end
 
 ---

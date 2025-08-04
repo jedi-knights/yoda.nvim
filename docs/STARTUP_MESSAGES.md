@@ -70,7 +70,7 @@ Shows when local plugins are being loaded:
 
 ```
 Loading go_task from local path: /path/to/go-task.nvim
-Loading invoke from local path: /path/to/invoke.nvim
+Loading python from local path: /path/to/python.nvim
 ```
 
 **Control**: `show_loading_messages`
@@ -80,8 +80,8 @@ Loading invoke from local path: /path/to/invoke.nvim
 Shows detailed startup information:
 
 ```
-pytest.nvim not loaded: pytest dependency not found
-pytest.nvim is not loaded
+python.nvim not loaded: python dependency not found
+python.nvim is not loaded
 ```
 
 **Control**: `verbose_startup`

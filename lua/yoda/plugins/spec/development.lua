@@ -21,26 +21,136 @@ local plugins = {
     },
   },
 
-  -- Go Task - Custom task runner plugin
-  plugin_dev.local_or_remote_plugin("go_task", "jedi-knights/go-task.nvim", {
-    lazy = false,
-    priority = 1000,
-  }),
-
-  -- Pytest - Custom test runner plugin
-  plugin_dev.local_or_remote_plugin("pytest", "jedi-knights/pytest.nvim", {
+  -- Go.nvim - Enhanced Go development plugin (replaces go-task.nvim)
+  plugin_dev.local_or_remote_plugin("go", "jedi-knights/go.nvim", {
     dependencies = {
-      "folke/snacks.nvim", -- Required for pytest.nvim
+      "nvim-lua/plenary.nvim",
+      "folke/snacks.nvim",
     },
+    event = { "BufReadPre *.go", "BufNewFile *.go" },
     config = function()
-      require("pytest").setup()
+      require("go").setup({
+        -- Enable all Go features
+        enable_module_support = true,
+        auto_detect_modules = true,
+        enable_type_checking = true,
+        enable_auto_import = true,
+        
+        -- Task runner configuration (replaces go-task.nvim)
+        task_runner = {
+          enabled = true,
+          go_task = { enabled = true },
+          make = { enabled = true },
+          scripts = { enabled = true },
+        },
+        
+        -- Formatting and linting
+        formatters = {
+          gofmt = { enabled = true },
+          goimports = { enabled = true },
+          golines = { enabled = false },
+        },
+        
+        linters = {
+          golint = { enabled = true },
+          staticcheck = { enabled = true },
+          revive = { enabled = false },
+        },
+        
+        -- Testing
+        test_frameworks = {
+          go_test = { enabled = true },
+          testify = { enabled = true },
+          ginkgo = { enabled = false },
+        },
+        
+        -- Debugging and REPL
+        debugger = {
+          enabled = true,
+          adapter = "delve",
+          port = 2345,
+        },
+        
+        repl = {
+          enabled = true,
+          floating = true,
+          auto_import = true,
+        },
+        
+        -- Coverage
+        test_coverage = {
+          enabled = true,
+          tool = "go",
+          show_inline = true,
+        },
+      })
     end,
   }),
 
-  -- Invoke - Custom task runner plugin
-  plugin_dev.local_or_remote_plugin("invoke", "jedi-knights/invoke.nvim", {
-    lazy = false,
-    priority = 1000,
+  -- Python.nvim - Enhanced Python development plugin (replaces pytest.nvim and invoke.nvim)
+  plugin_dev.local_or_remote_plugin("python", "jedi-knights/python.nvim", {
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "folke/snacks.nvim",
+    },
+    event = { "BufReadPre *.py", "BufNewFile *.py" },
+    config = function()
+      require("python").setup({
+        -- Enable all Python features
+        enable_virtual_env = true,
+        auto_detect_venv = true,
+        enable_type_checking = true,
+        enable_auto_import = true,
+        
+        -- Testing configuration (replaces pytest.nvim)
+        test_frameworks = {
+          pytest = { enabled = true },
+          unittest = { enabled = true },
+          nose = { enabled = false },
+        },
+        
+        -- Task runner configuration (replaces invoke.nvim)
+        task_runner = {
+          enabled = true,
+          invoke = { enabled = true },
+          make = { enabled = true },
+          scripts = { enabled = true },
+        },
+        
+        -- Formatting and linting
+        formatters = {
+          black = { enabled = true, line_length = 88 },
+          isort = { enabled = true, profile = "black" },
+          autopep8 = { enabled = false },
+        },
+        
+        linters = {
+          flake8 = { enabled = true },
+          pylint = { enabled = false },
+          mypy = { enabled = true },
+        },
+        
+        -- Debugging and REPL
+        debugger = {
+          enabled = true,
+          adapter = "debugpy",
+          port = 5678,
+        },
+        
+        repl = {
+          enabled = true,
+          floating = true,
+          auto_import = true,
+        },
+        
+        -- Coverage
+        test_coverage = {
+          enabled = true,
+          tool = "coverage",
+          show_inline = true,
+        },
+      })
+    end,
   }),
 }
 
