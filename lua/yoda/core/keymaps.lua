@@ -111,6 +111,13 @@ local visual_keymaps = {
   ["<leader>p"] = { "_dP", { desc = "Delete and paste over" } },
 }
 
+-- Insert mode keymaps for exiting to normal mode
+local insert_keymaps = {
+  ["jk"] = { "<Esc>", { desc = "Exit to normal mode" } },
+  ["<leader>jj"] = { "<Esc>", { desc = "Exit to normal mode" } },
+  ["<leader>jk"] = { "<Esc>", { desc = "Exit to normal mode" } },
+}
+
 -- Register all keymaps using DRY pattern
 register_keymaps("n", lsp_keymaps)
 register_keymaps("n", lsp_diagnostic_keymaps)
@@ -118,6 +125,7 @@ register_keymaps("n", disabled_keys)
 register_keymaps("n", window_keymaps)
 register_keymaps("n", test_keymaps)
 register_keymaps("v", visual_keymaps)
+register_keymaps("i", insert_keymaps)
 
 -- Special keymaps that require custom logic
 vim.keymap.set("n", "<leader>xt", function()
