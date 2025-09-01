@@ -2,6 +2,16 @@
 -- Consolidated core plugin specifications
 
 local plugins = {
+  -- Impatient - Faster Lua module loading
+  {
+    "lewis6991/impatient.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("impatient").enable_profile()
+    end,
+  },
+
   -- Plenary - Lua utility library
   {
     "nvim-lua/plenary.nvim",

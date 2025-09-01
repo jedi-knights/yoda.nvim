@@ -490,21 +490,16 @@ local plugins = {
     },
   },
 
-  -- Telescope - Fuzzy finder
+  -- Telescope - Fuzzy finder (specialized use cases only)
   {
     "nvim-telescope/telescope.nvim",
-    lazy = false,
-    priority = 100,
+    lazy = true,
+    cmd = "Telescope",
     dependencies = {
       "nvim-lua/plenary.nvim",
       { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
       { "nvim-telescope/telescope-ui-select.nvim" },
-      { "nvim-telescope/telescope-file-browser.nvim" },
-      { "nvim-telescope/telescope-frecency.nvim" },
-      { "nvim-telescope/telescope-github.nvim" },
-      { "nvim-telescope/telescope-media-files.nvim" },
-      { "nvim-telescope/telescope-symbols.nvim" },
-      { "nvim-telescope/telescope-project.nvim" },
+      { "nvim-telescope/telescope-dap.nvim" },
     },
     config = function()
       local telescope = require("telescope")
@@ -542,22 +537,16 @@ local plugins = {
         },
       })
 
-      -- Load extensions
+      -- Load extensions (only essential ones)
       telescope.load_extension("fzf")
       telescope.load_extension("ui-select")
-      telescope.load_extension("file_browser")
-      telescope.load_extension("frecency")
-      telescope.load_extension("media_files")
-      telescope.load_extension("project")
+      telescope.load_extension("dap")
 
       local opts = { noremap = true, silent = true }
       local keymap = vim.keymap
       local builtin = require("telescope.builtin")
 
-      -- General file finding
-      -- Note: These keymaps are handled elsewhere in the configuration
-
-      -- Project/user-specific
+      -- Specialized Telescope keymaps (Snacks handles general file finding)
       keymap.set("n", "<leader>uc", function()
         builtin.find_files({ cwd = vim.fn.stdpath("config"), hidden = true, no_ignore = true })
       end, { desc = "Find User Config" })

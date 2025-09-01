@@ -5,7 +5,8 @@ local plugins = {
   -- Mason - LSP, DAP, and linter installer
   {
     "williamboman/mason.nvim",
-    lazy = false,
+    lazy = true,
+    event = "VeryLazy",
     build = ":MasonUpdate", -- Auto-update Mason tools on install
     config = function()
       local mason_ok, mason = pcall(require, "mason")
@@ -18,7 +19,9 @@ local plugins = {
   -- Mason LSP Config - Automatic LSP server installation
   {
     "williamboman/mason-lspconfig.nvim",
-    lazy = false,
+    lazy = true,
+    event = "VeryLazy",
+    dependencies = { "williamboman/mason.nvim" },
     config = function()
       local mason_lsp_ok, mason_lspconfig = pcall(require, "mason-lspconfig")
       if mason_lsp_ok then
@@ -27,8 +30,6 @@ local plugins = {
             "lua_ls",   -- Lua
             "gopls",    -- Go
             "ts_ls",    -- JavaScript/TypeScript (correct, future-safe)
-            --"eslint",   -- JavaScript/TypeScript (correct, future-safe)
-            --"rust-analyzer", -- Rust
           },
         })
       end
@@ -38,7 +39,9 @@ local plugins = {
   -- Nvim LSP Config - LSP client configurations
   {
     "neovim/nvim-lspconfig",
-    lazy = false,
+    lazy = true,
+    event = "VeryLazy",
+    dependencies = { "williamboman/mason-lspconfig.nvim" },
     config = function()
       local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
       local lsp = require("yoda.lsp")
@@ -47,8 +50,7 @@ local plugins = {
         local servers = {
           lua_ls = require("yoda.lsp.servers.lua_ls"),
           gopls = require("yoda.lsp.servers.gopls"),
-          eslint = require("yoda.lsp.servers.eslint"),
-          ts_ls = require("yoda.lsp.servers.ts_ls"), -- ✅ updated here too
+          ts_ls = require("yoda.lsp.servers.ts_ls"),
         }
 
         for name, opts in pairs(servers) do
@@ -67,7 +69,8 @@ local plugins = {
     dependencies = {
       "williamboman/mason.nvim",
     },
-    lazy = false,
+    lazy = true,
+    event = "VeryLazy",
     config = function()
       require("mason-tool-installer").setup({
         ensure_installed = {
@@ -83,7 +86,6 @@ local plugins = {
           -- Debuggers
           "debugpy",
           "delve",
-          "debugpy",
         },
         auto_update = false,  -- set to true if you want automatic updates
         run_on_start = true,  -- install tools on startup if they're missing
@@ -107,10 +109,8 @@ local plugins = {
       require('mason-null-ls').setup {
         ensure_installed = {
           'checkmake',
-          --'prettier', -- ts/js formatter
           'stylua',   -- lua formatter
           'eslint_d', -- ts/js linter
-          'eslint',   -- ts/js linter
           'shfmt',
         },
         -- auto-install configured formatters & linters (with null-ls)
@@ -120,16 +120,14 @@ local plugins = {
       local sources = {
         -- Shell and general
         diagnostics.checkmake,
-        formatting.prettier.with { filetypes = { 'html', 'json', 'yaml', 'markdown' } },
         formatting.stylua,
         formatting.shfmt.with { args = { '-i', '4' } },
-        formatting.terraform_fmt,
       }
 
       local augroup = vim.api.nvim_create_augroup('LspFormatting', {})
       null_ls.setup {
-        debug = true, -- Enable debug mode. Inspect logs with :NullLsLog.
-        log_level = "debug", -- Set log level to debug for more detailed logs
+        debug = false, -- Disable debug mode for better performance
+        log_level = "warn", -- Set log level to warn for better performance
         sources = sources,
         -- you can reuse a shared lspconfig on_attach callback here
         on_attach = function(client, bufnr)

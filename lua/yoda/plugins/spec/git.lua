@@ -2,13 +2,13 @@
 -- Consolidated git plugin specifications
 
 local plugins = {
-  -- Git Blame - Inline git blame information
-  {
-    "f-person/git-blame.nvim",
-    config = function()
-      vim.g.gitblame_enabled = 0
-    end,
-  },
+  -- Git Blame - Inline git blame information (disabled by default)
+  -- {
+  --   "f-person/git-blame.nvim",
+  --   config = function()
+  --     vim.g.gitblame_enabled = 0
+  --   end,
+  -- },
 
   -- Git Signs - Git integration for signs and highlights
   {
@@ -45,8 +45,7 @@ local plugins = {
       local plugin_loader = require("yoda.utils.plugin_loader")
       plugin_loader.safe_plugin_setup("gitsigns", opts)
 
-      vim.keymap.set("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", {})
-      vim.keymap.set("n", "<leader>gt", ":Gitsigns toggle_current_line_blame", {})
+      -- Keymaps are handled in the on_attach function above
     end,
   },
 
@@ -57,11 +56,6 @@ local plugins = {
     dependencies = {
       "nvim-lua/plenary.nvim",         -- required
       "sindrets/diffview.nvim",        -- optional - Diff integration
-
-      -- Only one of these is needed.
-      "nvim-telescope/telescope.nvim", -- optional
-      "ibhagwan/fzf-lua",              -- optional
-      "echasnovski/mini.pick",         -- optional
       "folke/snacks.nvim",             -- optional
     },
     config = function()
@@ -101,9 +95,6 @@ local plugins = {
         disable_insert_on_commit = false,
         integrations = {
           diffview = true,
-          telescope = true,
-          fzf = true,
-          mini = true,
           snacks = true,
         },
         event_handlers = {
