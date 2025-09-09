@@ -164,9 +164,6 @@ opt.wildoptions = "pum"
 opt.pumblend = 0
 opt.winblend = 0
 
--- Statusline with paths relative to current working directory
-opt.statusline = "%{fnamemodify(expand('%'), ':p:.')} %m%r%y %l:%c %p%%"
-
 -- Disable built-in plugins
 local disabled_built_ins = {
   "netrw",
