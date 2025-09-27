@@ -95,6 +95,22 @@ local plugins = {
           delay = 100,
           animation = require("mini.indentscope").gen_animation.none()
         },
+        -- Disable indentscope on dashboard and other special buffers
+        options = {
+          try_as_border = true,
+        },
+        symbol = "│",
+        -- Exclude certain filetypes from showing indentation guides
+        exclude = {
+          "dashboard",
+          "snacks-dashboard",
+          "help",
+          "lazy",
+          "mason",
+          "notify",
+          "toggleterm",
+          "lazyterm",
+        },
       })
     end,
   },
@@ -191,10 +207,6 @@ local plugins = {
     dependencies = {
       "nvim-tree/nvim-web-devicons", -- For file icons
     },
-    config = function(_, opts)
-      local plugin_loader = require("yoda.utils.plugin_loader")
-      plugin_loader.safe_plugin_setup("snacks", opts)
-    end,
     opts = {
       toggle = {
         which_key = true,
@@ -248,6 +260,12 @@ local plugins = {
       dashboard = {
         enabled = true,
         key = nil,        -- disables <g> for Snacks.dashboard
+        layout = {
+          position = "center",
+          width = 80,
+          height = 20,
+          border = "rounded",
+        },
         preset = {
           header = [[
 ██╗   ██╗ ██████╗ ██████╗  █████╗
@@ -285,7 +303,7 @@ local plugins = {
         enabled = true,
       },
       statuscolumn = {
-        enabled = true,
+        enabled = false, -- Disable Snacks statusline in favor of lualine
       },
       words = {
         enabled = true,
@@ -422,6 +440,22 @@ local plugins = {
         end,
         desc = "[E]xplorer",
       },
+      -- Focus Snacks explorer
+      {
+        "<leader>ef",
+        function()
+          Snacks.explorer.open()
+        end,
+        desc = "[E]xplorer [F]ocus",
+      },
+      -- Toggle Snacks explorer
+      {
+        "<leader>et",
+        function()
+          Snacks.explorer.open()
+        end,
+        desc = "[E]xplorer [T]oggle",
+      },
 
       {
         "<leader>n",
@@ -490,21 +524,16 @@ local plugins = {
     },
   },
 
-  -- Telescope - Fuzzy finder
+  -- Telescope - Fuzzy finder (specialized use cases only)
   {
     "nvim-telescope/telescope.nvim",
-    lazy = false,
-    priority = 100,
+    lazy = true,
+    cmd = "Telescope",
     dependencies = {
       "nvim-lua/plenary.nvim",
       { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
       { "nvim-telescope/telescope-ui-select.nvim" },
-      { "nvim-telescope/telescope-file-browser.nvim" },
-      { "nvim-telescope/telescope-frecency.nvim" },
-      { "nvim-telescope/telescope-github.nvim" },
-      { "nvim-telescope/telescope-media-files.nvim" },
-      { "nvim-telescope/telescope-symbols.nvim" },
-      { "nvim-telescope/telescope-project.nvim" },
+      { "nvim-telescope/telescope-dap.nvim" },
     },
     config = function()
       local telescope = require("telescope")
@@ -542,22 +571,16 @@ local plugins = {
         },
       })
 
-      -- Load extensions
+      -- Load extensions (only essential ones)
       telescope.load_extension("fzf")
       telescope.load_extension("ui-select")
-      telescope.load_extension("file_browser")
-      telescope.load_extension("frecency")
-      telescope.load_extension("media_files")
-      telescope.load_extension("project")
+      telescope.load_extension("dap")
 
       local opts = { noremap = true, silent = true }
       local keymap = vim.keymap
       local builtin = require("telescope.builtin")
 
-      -- General file finding
-      -- Note: These keymaps are handled elsewhere in the configuration
-
-      -- Project/user-specific
+      -- Specialized Telescope keymaps (Snacks handles general file finding)
       keymap.set("n", "<leader>uc", function()
         builtin.find_files({ cwd = vim.fn.stdpath("config"), hidden = true, no_ignore = true })
       end, { desc = "Find User Config" })
@@ -566,6 +589,52 @@ local plugins = {
         builtin.find_files({ cwd = vim.fn.stdpath("data") .. "/lazy", hidden = true, no_ignore = true })
       end, { desc = "Find Plugin Files" })
     end,
+  },
+
+  -- Lualine for statusline with mode indicator
+  {
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+      options = {
+        icons_enabled = true,
+        theme = "auto",
+        component_separators = { left = "", right = "" },
+        section_separators = { left = "", right = "" },
+        disabled_filetypes = {
+          statusline = {},
+          winbar = {},
+        },
+        ignore_focus = {},
+        always_divide_middle = true,
+        globalstatus = false,
+        refresh = {
+          statusline = 1000,
+          tabline = 1000,
+          winbar = 1000,
+        },
+      },
+      sections = {
+        lualine_a = { "mode" },
+        lualine_b = { "branch", "diff", "diagnostics" },
+        lualine_c = { "filename" },
+        lualine_x = { "encoding", "fileformat", "filetype" },
+        lualine_y = { "progress" },
+        lualine_z = { "location" },
+      },
+      inactive_sections = {
+        lualine_a = {},
+        lualine_b = {},
+        lualine_c = { "filename" },
+        lualine_x = { "location" },
+        lualine_y = {},
+        lualine_z = {},
+      },
+      tabline = {},
+      winbar = {},
+      inactive_winbar = {},
+      extensions = {},
+    },
   },
 }
 

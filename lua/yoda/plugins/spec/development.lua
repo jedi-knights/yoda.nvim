@@ -25,7 +25,6 @@ local plugins = {
   plugin_dev.local_or_remote_plugin("go", "jedi-knights/go.nvim", {
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "folke/snacks.nvim",
     },
     event = { "BufReadPre *.go", "BufNewFile *.go" },
     config = function()
@@ -91,7 +90,6 @@ local plugins = {
   plugin_dev.local_or_remote_plugin("python", "jedi-knights/python.nvim", {
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "folke/snacks.nvim",
     },
     event = { "BufReadPre *.py", "BufNewFile *.py" },
     config = function()

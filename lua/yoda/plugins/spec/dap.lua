@@ -5,20 +5,15 @@ local plugins = {
   -- Nvim DAP - Debug Adapter Protocol client
   {
     "mfussenegger/nvim-dap",
-    lazy = false,
+    lazy = true,
+    event = "VeryLazy",
     dependencies = {
       "rcarriga/nvim-dap-ui",
       "theHamsta/nvim-dap-virtual-text",
       "nvim-telescope/telescope-dap.nvim",
       "nvim-telescope/telescope.nvim",
-      "nvim-neotest/neotest",
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-plenary",
-      "nvim-neotest/neotest-go",
-      "nvim-neotest/nvim-nio",
       "leoluz/nvim-dap-go",
       "mfussenegger/nvim-dap-python",
-      "theHamsta/nvim-dap-virtual-text",
     },
     config = function()
       local dap = require("dap")

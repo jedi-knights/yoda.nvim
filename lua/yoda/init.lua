@@ -17,24 +17,30 @@ require("yoda.core.autocmds")
 -- Load plugins
 require("yoda.plugins.lazy") -- bootstrap lazy.nvim
 
--- Load utilities for development
-pcall(require, "yoda.utils.plugin_validator")
-pcall(require, "yoda.utils.plugin_loader")
-pcall(require, "yoda.utils.config_validator")
-pcall(require, "yoda.utils.performance_monitor")
-pcall(require, "yoda.utils.startup_profiler")
-pcall(require, "yoda.utils.optimization_helper")
-pcall(require, "yoda.utils.error_recovery")
-pcall(require, "yoda.utils.enhanced_plugin_loader")
-pcall(require, "yoda.utils.interactive_help")
-pcall(require, "yoda.utils.feature_discovery")
-pcall(require, "yoda.utils.distribution_testing")
-pcall(require, "yoda.utils.automated_testing")
-pcall(require, "yoda.utils.interactive_docs")
-pcall(require, "yoda.utils.ai_development")
-pcall(require, "yoda.utils.ai_code_analysis")
-pcall(require, "yoda.utils.keymap_utils")
-pcall(require, "yoda.utils.tool_indicators")
+-- Load error handler first
+local error_handler = require("yoda.utils.error_handler")
+
+-- Load utilities for development with error handling
+local utils_to_load = {
+  "yoda.utils.plugin_validator",
+  "yoda.utils.plugin_loader", 
+  "yoda.utils.config_validator",
+  "yoda.utils.performance_monitor",
+  "yoda.utils.startup_profiler",
+  "yoda.utils.optimization_helper",
+  "yoda.utils.error_recovery",
+  "yoda.utils.enhanced_plugin_loader",
+  "yoda.utils.interactive_help",
+  "yoda.utils.feature_discovery",
+  "yoda.utils.distribution_testing",
+  "yoda.utils.automated_testing",
+  "yoda.utils.keymap_utils",
+  "yoda.utils.tool_indicators",
+}
+
+for _, util in ipairs(utils_to_load) do
+  error_handler.safe_require(util)
+end
 
 -- Load colorscheme
 require("yoda.core.colorscheme")
