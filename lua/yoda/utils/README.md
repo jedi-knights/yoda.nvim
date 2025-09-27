@@ -61,12 +61,9 @@ return lsp.lua_settings({
   globals = { "vim", "describe", "it" },
 })
 
--- In your LSP setup
-require("lspconfig").lua_ls.setup({
-  on_attach = lsp.on_attach,
-  capabilities = lsp.capabilities(),
-  settings = lsp.lua_settings().settings,
-})
+-- In your LSP setup using the new vim.lsp.config API
+vim.lsp.config("lua_ls", lsp.lua_settings())
+vim.lsp.enable("lua_ls")
 ```
 
 ### **3. Window Utilities (`window.lua`)**

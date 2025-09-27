@@ -43,20 +43,20 @@ local plugins = {
     event = "VeryLazy",
     dependencies = { "williamboman/mason-lspconfig.nvim" },
     config = function()
-      -- Suppress deprecation warning for framework usage until vim.lsp.config is stable
-      local original_notify = vim.notify
-      vim.notify = function(msg, level, opts)
-        if type(msg) == "string" and msg:match("framework is deprecated") then
-          return -- Suppress the deprecation warning
-        end
-        return original_notify(msg, level, opts)
-      end
-
       -- Initialize lspconfig to add community configurations to Neovim's runtime path
       local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
       local lsp = require("yoda.lsp")
 
       if lspconfig_ok then
+        -- Define global LSP settings
+        vim.lsp.config("*", {
+          flags = {
+            debounce_text_changes = 150,
+          },
+          on_attach = lsp.on_attach,
+          capabilities = lsp.capabilities(),
+        })
+
         -- Server configurations
         local servers = {
           lua_ls = require("yoda.lsp.servers.lua_ls"),
@@ -64,18 +64,14 @@ local plugins = {
           ts_ls = require("yoda.lsp.servers.ts_ls"),
         }
 
-        -- Setup servers using the traditional API (still supported in 0.11+)
-        -- The vim.lsp.config API is not yet stable/available in all Neovim 0.11 builds
+        -- Configure and enable servers using the new vim.lsp.config API
         for name, opts in pairs(servers) do
-          lspconfig[name].setup(vim.tbl_deep_extend("force", {
-            on_attach = lsp.on_attach,
-            capabilities = lsp.capabilities(),
-          }, opts))
+          -- Configure server-specific settings
+          vim.lsp.config(name, opts)
+          -- Enable the server
+          vim.lsp.enable(name)
         end
       end
-
-      -- Restore original notify function
-      vim.notify = original_notify
     end,
   },
 
