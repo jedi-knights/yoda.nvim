@@ -141,12 +141,26 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 | `<M-[>` | Insert | Previous suggestion |
 | `<C-]>` | Insert | Dismiss suggestion |
 
-### Avante AI
+### Avante AI (Primary Agentic Workflow)
 | Keymap | Mode | Description |
 |--------|------|-------------|
 | `<leader>aa` | Normal | Ask Avante AI |
 | `<leader>ac` | Normal | Open Avante Chat |
 | `<leader>am` | Normal | Open MCP Hub |
+| `<leader>as` | Visual | Send selection to Avante AI |
+| `<leader>ax` | Normal | Close/stop Avante session |
+| `<leader>ad` | Normal | Show pending diff/patch |
+| `<leader>ay` | Normal | Accept AI patch |
+| `<leader>an` | Normal | Reject AI patch |
+
+### ClaudeCode (Secondary Native Protocol)
+| Keymap | Mode | Description |
+|--------|------|-------------|
+| `<leader>aS` | Visual | Send selection to ClaudeCode |
+| `<leader>aY` | Normal | Accept ClaudeCode diff |
+| `<leader>aN` | Normal | Reject ClaudeCode diff |
+| `<leader>aR` | Normal | Restart ClaudeCode |
+| `<leader>aC` | Normal | Clear ClaudeCode context |
 
 ### Mercury (Work Environment)
 | Keymap | Mode | Description |
@@ -368,6 +382,8 @@ These commands are available via `:CommandName`:
 
 | Command | Description |
 |---------|-------------|
+| `:AIHealth` | Check AI integration health status |
+| `:AIHelp` | Show AI integration help and usage |
 | `:YodaDiagnostics` | Run comprehensive LSP/AI diagnostics |
 | `:YodaKeymapDump` | Show all current keymaps grouped by mode |
 | `:YodaKeymapConflicts` | List conflicting keymap assignments |

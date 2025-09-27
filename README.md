@@ -191,6 +191,66 @@ See [AVANTE_SETUP.md](docs/AVANTE_SETUP.md) for comprehensive setup instructions
 
 ---
 
+## ⌨️ Quick Reference
+
+> **Most commonly used keymaps** - `<leader>` = `<Space>`
+
+### 🚀 Essential Navigation
+| Keymap | Description |
+|--------|-------------|
+| `<leader><leader>` | Smart file search (buffers + project) |
+| `<leader>e` | Toggle file explorer |
+| `<leader>/` | Search by grep |
+| `<leader>n` | Notification history |
+
+### 🤖 AI & Code Assistance
+| Keymap | Description |
+|--------|-------------|
+| `<leader>aa` | Ask Avante AI |
+| `<leader>ac` | Open Avante Chat / Launch ClaudeCode |
+| `<leader>am` | Open MCP Hub |
+| `<leader>as` | Send selection to AI (visual mode) |
+| `<leader>ay` | Accept AI patch |
+| `<leader>an` | Reject AI patch |
+| `<C-j>` | Accept Copilot suggestion (insert mode) |
+
+### 📝 LSP & Development
+| Keymap | Description |
+|--------|-------------|
+| `<leader>ld` | Go to definition |
+| `<leader>lr` | Find references |
+| `<leader>lf` | Format buffer |
+| `<leader>la` | Code action |
+| `<leader>le` | Show diagnostics |
+
+### 🧪 Testing & Debugging
+| Keymap | Description |
+|--------|-------------|
+| `<leader>tn` | Run nearest test |
+| `<leader>ta` | Run all tests |
+| `<leader>ts` | Toggle test summary |
+| `<leader>db` | Toggle breakpoint |
+| `<leader>dc` | Start debugging |
+
+### 🪟 Window Management
+| Keymap | Description |
+|--------|-------------|
+| `<leader>\|` | Vertical split |
+| `<leader>-` | Horizontal split |
+| `<leader>se` | Equalize window sizes |
+| `<C-h/j/k/l>` | Navigate between windows |
+
+### 🔧 System
+| Keymap | Description |
+|--------|-------------|
+| `<leader>vt` | Open terminal |
+| `<leader>qq` | Quit Neovim |
+| `<leader><leader>r` | Hot reload config |
+
+> 📚 **[Complete Keymap Reference](KEYMAPS.md)** - Full documentation of all available keymaps
+
+---
+
 ## ⌨️ Usage
 
 ### Essential Commands
@@ -250,7 +310,7 @@ See [AVANTE_SETUP.md](docs/AVANTE_SETUP.md) for comprehensive setup instructions
 | `<leader>\|/-` | Split windows |
 | `<leader>se` | Equalize windows |
 
-> **Note:** `<leader>` is set to `<space>`. See [KEYMAPS.md](docs/KEYMAPS.md) for the complete reference.
+> **Note:** `<leader>` is set to `<space>`. See [KEYMAPS.md](KEYMAPS.md) for the complete reference.
 
 ---
 

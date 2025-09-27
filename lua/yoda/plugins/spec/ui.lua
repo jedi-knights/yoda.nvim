@@ -52,7 +52,7 @@ local plugins = {
             color = "#427819",
             name = "Makefile"
           },
-          ["docs/KEYMAPS.md"] = {
+          ["KEYMAPS.md"] = {
             icon = "🗝️",
             color = "#519aba", 
             name = "Keymaps"
