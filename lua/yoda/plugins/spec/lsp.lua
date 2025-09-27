@@ -36,29 +36,29 @@ local plugins = {
     end,
   },
 
-  -- Nvim LSP Config - LSP client configurations
+  -- Nvim LSP Config - LSP client configurations (Updated for nvim-lspconfig v3.0.0)
   {
     "neovim/nvim-lspconfig",
     lazy = true,
     event = "VeryLazy",
     dependencies = { "williamboman/mason-lspconfig.nvim" },
     config = function()
-      local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
+      -- Use the new vim.lsp.config API instead of require('lspconfig')
       local lsp = require("yoda.lsp")
 
-      if lspconfig_ok then
-        local servers = {
-          lua_ls = require("yoda.lsp.servers.lua_ls"),
-          gopls = require("yoda.lsp.servers.gopls"),
-          ts_ls = require("yoda.lsp.servers.ts_ls"),
-        }
+      -- Server configurations
+      local servers = {
+        lua_ls = require("yoda.lsp.servers.lua_ls"),
+        gopls = require("yoda.lsp.servers.gopls"),
+        ts_ls = require("yoda.lsp.servers.ts_ls"),
+      }
 
-        for name, opts in pairs(servers) do
-          lspconfig[name].setup(vim.tbl_deep_extend("force", {
-            on_attach = lsp.on_attach,
-            capabilities = lsp.capabilities(),
-          }, opts))
-        end
+      -- Setup servers using the new API
+      for name, opts in pairs(servers) do
+        vim.lsp.config.setup(name, vim.tbl_deep_extend("force", {
+          on_attach = lsp.on_attach,
+          capabilities = lsp.capabilities(),
+        }, opts))
       end
     end,
   },
@@ -146,7 +146,7 @@ local plugins = {
     end,
   },
 
-  -- Rust Tools - Enhanced Rust development
+  -- Rust Tools - Enhanced Rust development (Updated for nvim-lspconfig v3.0.0)
   {
     "simrat39/rust-tools.nvim",
     ft = "rust", -- Lazy-load only when editing Rust files
@@ -157,6 +157,7 @@ local plugins = {
     },
     config = function()
       local rt = require("rust-tools")
+      local lsp = require("yoda.lsp")
 
       rt.setup({
         server = {
@@ -168,12 +169,17 @@ local plugins = {
               },
             },
           },
-          on_attach = function(_, bufnr)
+          on_attach = function(client, bufnr)
+            -- Use the enhanced on_attach from yoda.lsp
+            lsp.on_attach(client, bufnr)
+            
+            -- Add Rust-specific keymaps
             local bufmap = function(mode, lhs, rhs)
               vim.keymap.set(mode, lhs, rhs, { buffer = bufnr })
             end
             bufmap("n", "<leader>ca", rt.code_action_group.code_action_group)
           end,
+          capabilities = lsp.capabilities(),
         },
       })
     end,

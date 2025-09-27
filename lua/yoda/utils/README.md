@@ -62,7 +62,7 @@ return lsp.lua_settings({
 })
 
 -- In your LSP setup
-require("lspconfig").lua_ls.setup({
+vim.lsp.config.setup("lua_ls", {
   on_attach = lsp.on_attach,
   capabilities = lsp.capabilities(),
   settings = lsp.lua_settings().settings,
