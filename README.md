@@ -20,6 +20,11 @@
   <a href="#contributing">Contributing</a>
 </p>
 
+<p align="center">
+  <strong>🗝️ <a href="KEYMAPS.md">Complete Keymap Reference</a></strong> •
+  <strong>🤖 <a href="docs/AVANTE_SETUP.md">AI Setup Guide</a></strong>
+</p>
+
 ---
 
 ## ✨ Features
