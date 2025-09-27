@@ -36,22 +36,13 @@ local plugins = {
     end,
   },
 
-  -- Nvim LSP Config - LSP client configurations (Neovim 0.10+ compatible)
+  -- Nvim LSP Config - LSP client configurations (Neovim 0.11+ compatible)
   {
     "neovim/nvim-lspconfig",
     lazy = true,
     event = "VeryLazy",
     dependencies = { "williamboman/mason-lspconfig.nvim" },
     config = function()
-      -- Suppress deprecation warning temporarily until proper migration path is available
-      local original_notify = vim.notify
-      vim.notify = function(msg, level, opts)
-        if type(msg) == "string" and msg:match("framework is deprecated") then
-          return -- Suppress the deprecation warning
-        end
-        return original_notify(msg, level, opts)
-      end
-
       -- Initialize lspconfig to add community configurations to Neovim's runtime path
       local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
       local lsp = require("yoda.lsp")
@@ -64,17 +55,14 @@ local plugins = {
           ts_ls = require("yoda.lsp.servers.ts_ls"),
         }
 
-        -- Setup servers using the traditional API (still supported in 0.11+)
+        -- Setup servers using the new vim.lsp.config API (Neovim 0.11+)
         for name, opts in pairs(servers) do
-          lspconfig[name].setup(vim.tbl_deep_extend("force", {
+          vim.lsp.config.setup(name, vim.tbl_deep_extend("force", {
             on_attach = lsp.on_attach,
             capabilities = lsp.capabilities(),
           }, opts))
         end
       end
-
-      -- Restore original notify function
-      vim.notify = original_notify
     end,
   },
 
