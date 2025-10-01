@@ -20,12 +20,23 @@ create_autocmd("TermOpen", {
   end,
 })
 
--- Change to directory if opened with directory argument
+-- Change to directory if opened with directory argument and show dashboard
 create_autocmd("VimEnter", {
   group = augroup("YodaStartup", { clear = true }),
   callback = function()
+    -- Handle directory argument
     if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
       vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
+    end
+    
+    -- Show dashboard if no files were opened
+    if vim.fn.argc() == 0 then
+      vim.schedule(function()
+        local ok, snacks = pcall(require, "snacks")
+        if ok and snacks.dashboard then
+          snacks.dashboard()
+        end
+      end)
     end
     
     -- Auto update dependencies on startup (DISABLED)
@@ -114,5 +125,21 @@ vim.api.nvim_create_autocmd("BufEnter", {
       local tool_indicators = require("yoda.utils.tool_indicators")
       tool_indicators.update_statusline()
     end, 100)
+  end,
+})
+
+-- Snacks Explorer: Force normal mode
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("YodaSnacksExplorer", { clear = true }),
+  pattern = { "snacks_explorer", "snacks-explorer" },
+  callback = function()
+    -- Force normal mode immediately
+    vim.cmd("stopinsert")
+    -- Schedule another check to override any delayed inserts
+    vim.schedule(function()
+      if vim.fn.mode() ~= "n" then
+        vim.cmd("stopinsert")
+      end
+    end)
   end,
 })

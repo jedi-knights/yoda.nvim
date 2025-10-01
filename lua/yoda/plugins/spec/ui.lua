@@ -202,6 +202,7 @@ local plugins = {
   -- Snacks - Modern UI framework
   {
     "folke/snacks.nvim",
+    commit = "5e0e8698526f350f1280ad1ef7a8670f857c9445", -- Pin to working version
     lazy = false,
     priority = 1000,
     dependencies = {
@@ -229,6 +230,7 @@ local plugins = {
         show_hidden = true,
         ignore = {}, -- disables all default ignore patterns
         refresh_on_git = true,
+        autoinsert = false, -- Prevent entering insert mode
       },
       picker = {
         layout = {
