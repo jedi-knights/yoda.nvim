@@ -32,9 +32,9 @@ create_autocmd("VimEnter", {
     -- Show dashboard if no files were opened
     if vim.fn.argc() == 0 then
       vim.schedule(function()
-        local ok, snacks = pcall(require, "snacks")
-        if ok and snacks.dashboard then
-          snacks.dashboard()
+        local ok, alpha = pcall(require, "alpha")
+        if ok then
+          alpha.start()
         end
       end)
     end
@@ -108,25 +108,7 @@ create_autocmd("FileType", {
   end,
 })
 
--- Update tool indicators when directory changes
-vim.api.nvim_create_autocmd("DirChanged", {
-  callback = function()
-    vim.defer_fn(function()
-      local tool_indicators = require("yoda.utils.tool_indicators")
-      tool_indicators.update_statusline()
-    end, 100) -- Small delay to ensure directory change is complete
-  end,
-})
-
--- Update tool indicators when entering a buffer
-vim.api.nvim_create_autocmd("BufEnter", {
-  callback = function()
-    vim.defer_fn(function()
-      local tool_indicators = require("yoda.utils.tool_indicators")
-      tool_indicators.update_statusline()
-    end, 100)
-  end,
-})
+-- Tool indicators removed (simplified)
 
 -- Snacks Explorer: Force normal mode
 vim.api.nvim_create_autocmd("FileType", {

@@ -170,6 +170,146 @@ M.get_activate_script_path = function(venv_path)
   return nil
 end
 
+-- ============================================================================
+-- TEST PICKER FUNCTIONALITY
+-- ============================================================================
+
+--- Test picker for environment and region selection
+--- @param callback function
+M.test_picker = function(callback)
+  local Path = require("plenary.path")
+  local json = vim.json
+  
+  -- Pre-load the picker module to avoid delay during selection
+  local picker = require("snacks.picker")
+  
+  local log_path = "output.log"
+  local cache_file = vim.fn.stdpath("cache") .. "/yoda_testpicker_marker.json"
+  
+  local function parse_json_config(path)
+    local ok, content = pcall(Path.new(path).read, Path.new(path))
+    if not ok then return nil end
+    local ok_json, parsed = pcall(json.decode, content)
+    if not ok_json then return nil end
+    return parsed
+  end
+  
+  local function load_env_region()
+    local fallback = {
+      environments = { "qa", "prod" },
+      regions = { "auto", "use1", "usw2", "euw1", "apse1" },
+    }
+    
+    local file_path = "environments.json"
+    if vim.fn.filereadable(file_path) ~= 1 then
+      return fallback
+    end
+    
+    local config = parse_json_config(file_path)
+    return config or fallback
+  end
+  
+  local function load_marker()
+    local config = parse_json_config(cache_file)
+    return config or { environment = "qa", region = "auto" }
+  end
+  
+  local function save_marker(env, region)
+    local config = { environment = env, region = region }
+    local ok = pcall(function()
+      Path.new(cache_file):write(vim.json.encode(config), "w")
+    end)
+    if not ok then
+      vim.notify("Failed to save test picker marker", vim.log.levels.WARN)
+    end
+  end
+  
+  local env_region = load_env_region()
+  local marker = load_marker()
+  
+  -- Create picker items
+  local items = {}
+  for _, env in ipairs(env_region.environments) do
+    for _, region in ipairs(env_region.regions) do
+      local label = env .. " (" .. region .. ")"
+      local is_selected = env == marker.environment and region == marker.region
+      table.insert(items, {
+        label = label,
+        value = { environment = env, region = region },
+        selected = is_selected,
+      })
+    end
+  end
+  
+  -- Show picker
+  picker.show({
+    title = "Select Test Environment",
+    items = items,
+    on_select = function(item)
+      save_marker(item.value.environment, item.value.region)
+      callback(item.value)
+    end,
+  })
+end
+
+-- ============================================================================
+-- DIAGNOSTIC UTILITIES
+-- ============================================================================
+
+--- Check if LSP servers are running
+--- @return boolean
+M.check_lsp_status = function()
+  local clients = vim.lsp.get_active_clients()
+  if #clients == 0 then
+    vim.notify("❌ No LSP clients are currently active", vim.log.levels.WARN)
+    return false
+  else
+    vim.notify("✅ Active LSP clients:", vim.log.levels.INFO)
+    for _, client in ipairs(clients) do
+      vim.notify("  - " .. client.name, vim.log.levels.INFO)
+    end
+    return true
+  end
+end
+
+--- Check AI integration status
+--- @return boolean
+M.check_ai_status = function()
+  local ok, utils = pcall(require, "yoda.lib.utils")
+  if not ok then
+    vim.notify("❌ Yoda utils not available", vim.log.levels.ERROR)
+    return false
+  end
+  
+  local claude_available = utils.is_claude_available()
+  if claude_available then
+    local version, err = utils.get_claude_version()
+    if version then
+      vim.notify("✅ Claude CLI " .. version .. " available", vim.log.levels.INFO)
+    else
+      vim.notify("⚠️ Claude CLI available but version check failed: " .. (err or "unknown"), vim.log.levels.WARN)
+    end
+  else
+    vim.notify("❌ Claude CLI not available", vim.log.levels.WARN)
+  end
+  
+  return claude_available
+end
+
+--- Run comprehensive diagnostics
+M.run_diagnostics = function()
+  vim.notify("🔍 Running Yoda diagnostics...", vim.log.levels.INFO)
+  
+  -- Check LSP status
+  M.check_lsp_status()
+  
+  -- Check AI status
+  M.check_ai_status()
+  
+  -- Check plugin health
+  vim.cmd("checkhealth")
+end
+
 return M
 
 
