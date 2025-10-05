@@ -64,6 +64,75 @@ return {
     end,
   },
 
+  -- Alpha - Dashboard
+  {
+    "goolord/alpha-nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      local alpha = require("alpha")
+      local dashboard = require("alpha.themes.dashboard")
+      
+      -- Set header
+      dashboard.section.header.val = {
+        "                                                     ",
+        "  ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ",
+        "  ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ",
+        "  ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ",
+        "  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ",
+        "  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ",
+        "  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
+        "                                                     ",
+        "                 [ YODA.NVIM ]                      ",
+        "                                                     ",
+      }
+      
+      -- Set menu
+      dashboard.section.buttons.val = {
+        dashboard.button("e", "📁  Open Explorer", "<leader>e"),
+        dashboard.button("f", "🔍  Find Files", "<leader>ff"),
+        dashboard.button("g", "🔎  Find Text", "<leader>fg"),
+        dashboard.button("r", "📋  Recent Files", ":Telescope oldfiles<CR>"),
+        dashboard.button("s", "⚙️  Settings", ":e ~/.config/nvim/<CR>"),
+        dashboard.button("q", "❌  Quit", ":qa<CR>"),
+      }
+      
+      -- Set footer
+      dashboard.section.footer.val = "May the force be with you"
+      
+      -- Send config to alpha
+      alpha.setup(dashboard.opts)
+    end,
+  },
+
+  -- Noice - Enhanced UI components
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    },
+    config = function()
+      require("noice").setup({
+        lsp = {
+          override = {
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+            ["vim.lsp.util.stylize_markdown"] = true,
+            ["cmp.entry.get_documentation"] = true,
+          },
+        },
+        presets = {
+          bottom_search = true,
+          command_palette = true,
+          long_message_to_split = true,
+          inc_rename = false,
+          lsp_doc_border = false,
+        },
+      })
+    end,
+  },
+
   -- Devicons - File type icons
   {
     "nvim-tree/nvim-web-devicons",
@@ -373,6 +442,150 @@ return {
           map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>")
         end,
       })
+    end,
+  },
+
+  -- ============================================================================
+  -- TESTING & DEBUGGING
+  -- ============================================================================
+
+  -- Neogit - Git interface
+  {
+    "TimUntersberger/neogit",
+    lazy = true,
+    cmd = "Neogit",
+    dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("neogit").setup()
+    end,
+  },
+
+  -- Neotest - Testing framework
+  {
+    "nvim-neotest/neotest",
+    lazy = true,
+    cmd = { "Neotest", "NeotestRun", "NeotestSummary", "NeotestOutput" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "antoinemadec/FixCursorHold.nvim",
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-python")({
+            dap = { justMyCode = false },
+          }),
+        },
+      })
+    end,
+  },
+
+  -- Neotest Python adapter
+  {
+    "nvim-neotest/neotest-python",
+    lazy = true,
+    dependencies = { "nvim-neotest/neotest" },
+  },
+
+  -- DAP - Debug Adapter Protocol
+  {
+    "mfussenegger/nvim-dap",
+    lazy = true,
+    cmd = { "DapToggleBreakpoint", "DapContinue", "DapStepOver", "DapStepInto", "DapStepOut", "DapTerminate" },
+    dependencies = {
+      "rcarriga/nvim-dap-ui",
+    },
+  },
+
+  -- DAP UI
+  {
+    "rcarriga/nvim-dap-ui",
+    lazy = true,
+    dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
+    config = function()
+      require("dapui").setup()
+    end,
+  },
+
+  -- Coverage - Code coverage
+  {
+    "andythigpen/nvim-coverage",
+    lazy = true,
+    cmd = { "Coverage", "CoverageLoad", "CoverageShow", "CoverageHide" },
+    config = function()
+      require("coverage").setup()
+    end,
+  },
+
+  -- ============================================================================
+  -- AI INTEGRATION (ADDITIONAL)
+  -- ============================================================================
+
+  -- Mercury - AI integration (if available)
+  {
+    "yetone/mercury.nvim",
+    lazy = true,
+    cmd = { "Mercury", "MercuryOpen", "MercuryPanel" },
+    cond = function()
+      return vim.fn.executable("mercury") == 1 or vim.fn.filereadable(vim.fn.expand("~/.local/bin/mercury")) == 1
+    end,
+  },
+
+  -- Avante - Agentic AI capabilities
+  {
+    "yetone/avante.nvim",
+    lazy = true,
+    cmd = { "Avante", "AvanteOpen" },
+    cond = function()
+      return vim.fn.executable("avante") == 1 or vim.fn.filereadable(vim.fn.expand("~/.local/bin/avante")) == 1
+    end,
+  },
+
+  -- ============================================================================
+  -- UTILITIES
+  -- ============================================================================
+
+  -- Treesitter - Syntax highlighting
+  {
+    "nvim-treesitter/nvim-treesitter",
+    lazy = true,
+    event = "VeryLazy",
+    build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript" },
+        auto_install = true,
+        highlight = { enable = true },
+        indent = { enable = true },
+      })
+    end,
+  },
+
+  -- FixCursorHold - Fix for cursor hold events
+  {
+    "antoinemadec/FixCursorHold.nvim",
+    lazy = true,
+    event = "VeryLazy",
+    config = function()
+      vim.g.cursorhold_updatetime = 100
+    end,
+  },
+
+  -- Nvim NIO - Async library for Neovim
+  {
+    "nvim-neotest/nvim-nio",
+    lazy = true,
+    event = "VeryLazy",
+  },
+
+  -- Which-Key - Keymap helper
+  {
+    "folke/which-key.nvim",
+    lazy = true,
+    event = "VeryLazy",
+    config = function()
+      require("which-key").setup()
     end,
   },
 }
