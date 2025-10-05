@@ -54,6 +54,16 @@ return {
     priority = 1000,
   },
 
+  -- Snacks - Modern UI framework
+  {
+    "folke/snacks.nvim",
+    lazy = true,
+    cmd = { "SnacksExplorer", "SnacksPicker", "SnacksTerminal" },
+    config = function()
+      require("snacks").setup()
+    end,
+  },
+
   -- Devicons - File type icons
   {
     "nvim-tree/nvim-web-devicons",
@@ -112,10 +122,7 @@ return {
     event = "VeryLazy",
     dependencies = { "williamboman/mason-lspconfig.nvim" },
     config = function()
-      local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
-      if lspconfig_ok then
-        require("yoda.lsp")
-      end
+      require("yoda.lsp")
     end,
   },
 

@@ -1,10 +1,8 @@
 -- lua/yoda/lsp.lua
 -- LSP configuration
 
-local lspconfig = require("lspconfig")
-
 -- Lua LSP
-lspconfig.lua_ls.setup({
+vim.lsp.config.lua_ls = {
   settings = {
     Lua = {
       runtime = {
@@ -22,13 +20,18 @@ lspconfig.lua_ls.setup({
       },
     },
   },
-})
+}
 
 -- Go LSP
-lspconfig.gopls.setup({})
+vim.lsp.config.gopls = {}
 
 -- TypeScript/JavaScript LSP
-lspconfig.ts_ls.setup({})
+vim.lsp.config.ts_ls = {}
+
+-- Enable the language servers
+vim.lsp.enable('lua_ls')
+vim.lsp.enable('gopls')
+vim.lsp.enable('ts_ls')
 
 -- Setup keymaps for LSP
 local function on_attach(client, bufnr)
