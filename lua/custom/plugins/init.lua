@@ -100,6 +100,19 @@ return {
       -- Set footer
       dashboard.section.footer.val = "May the force be with you"
       
+      -- Configure alpha options
+      dashboard.opts.opts = {
+        redraw_on_resize = true,
+        layout = {
+          { type = "padding", val = 2 },
+          dashboard.section.header,
+          { type = "padding", val = 2 },
+          dashboard.section.buttons,
+          { type = "padding", val = 1 },
+          dashboard.section.footer,
+        },
+      }
+      
       -- Send config to alpha
       alpha.setup(dashboard.opts)
     end,

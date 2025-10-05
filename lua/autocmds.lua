@@ -5,6 +5,7 @@ local augroup = vim.api.nvim_create_augroup
 
 -- Helper to create autocommands with named groups
 local function create_autocmd(events, opts)
+  opts.group = opts.group or augroup("YodaAutocmd", { clear = true })
   autocmd(events, opts)
 end
 
@@ -31,12 +32,19 @@ create_autocmd("VimEnter", {
     
     -- Show dashboard if no files were opened
     if vim.fn.argc() == 0 then
-      vim.schedule(function()
-        local ok, alpha = pcall(require, "alpha")
-        if ok then
-          alpha.start()
+      -- Use a longer delay to ensure all plugins are loaded
+      vim.defer_fn(function()
+        -- Only show dashboard if we're in an empty buffer
+        local bufname = vim.api.nvim_buf_get_name(0)
+        if bufname == "" or bufname == "[No Name]" then
+          local ok, alpha = pcall(require, "alpha")
+          if ok then
+            alpha.start()
+            -- Ensure the dashboard buffer is properly displayed
+            vim.cmd("setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile")
+          end
         end
-      end)
+      end, 100)
     end
     
     -- Auto update dependencies on startup (DISABLED)
@@ -50,6 +58,32 @@ create_autocmd("VimEnter", {
       end
     end, 1000) -- 1 second delay to ensure everything is loaded
     --]]
+  end,
+})
+
+-- Prevent plugins from interfering with alpha dashboard
+create_autocmd("BufEnter", {
+  group = augroup("AlphaBuffer", { clear = true }),
+  callback = function()
+    -- Only run for the first buffer and when no files are open
+    if vim.fn.argc() ~= 0 then return end
+    
+    local bufname = vim.api.nvim_buf_get_name(0)
+    local filetype = vim.bo.filetype
+    
+    -- Only start alpha if we're in a truly empty buffer and not already in alpha
+    if (bufname == "" or bufname == "[No Name]") and filetype ~= "alpha" and filetype == "" then
+      local ok, alpha = pcall(require, "alpha")
+      if ok then
+        -- Use a small delay to prevent conflicts
+        vim.defer_fn(function()
+          -- Double-check conditions before starting
+          if vim.bo.filetype ~= "alpha" and vim.api.nvim_buf_get_name(0) == "" then
+            alpha.start()
+          end
+        end, 50)
+      end
+    end
   end,
 })
 
@@ -69,8 +103,9 @@ create_autocmd({ "FocusGained", "BufEnter" }, {
   group = augroup("YodaAutoRead", { clear = true }),
   desc = "Reload file changed outside",
   callback = function()
-    if vim.bo.modifiable and vim.bo.buftype == "" then
-      vim.cmd("checktime")
+    -- Additional safety checks
+    if vim.bo.modifiable and vim.bo.buftype == "" and vim.bo.readonly == false then
+      pcall(vim.cmd, "checktime")
     end
   end,
 })
@@ -111,9 +146,10 @@ create_autocmd("FileType", {
 -- Tool indicators removed (simplified)
 
 -- Snacks Explorer: Force normal mode
-vim.api.nvim_create_autocmd("FileType", {
+create_autocmd("FileType", {
   group = augroup("YodaSnacksExplorer", { clear = true }),
-  pattern = { "snacks_explorer", "snacks-explorer" },
+  pattern = "snacks-explorer", -- Use only the correct pattern
+  desc = "Force normal mode in snacks explorer",
   callback = function()
     -- Force normal mode immediately
     vim.cmd("stopinsert")
