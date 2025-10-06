@@ -61,9 +61,9 @@ local function create_plugin_spec(name, remote_spec, opts)
   return plugin_dev.local_or_remote_plugin(name, remote_spec, opts)
 end
 
-local mercury_spec = create_plugin_spec("mercury", "TheWeatherCompany/mercury.nvim", {
+local example_spec = create_plugin_spec("example", "author/example-plugin.nvim", {
   dependencies = { "nvim-lua/plenary.nvim" },
-  config = function() require("mercury").setup() end,
+  config = function() require("example").setup() end,
 })
 ```
 

@@ -63,11 +63,6 @@ Comprehensive overview of Yoda.nvim's features and capabilities.
 - **Context-aware recommendations** based on your code
 - **Seamless integration** with your workflow
 
-### Mercury Integration (Work Environment)
-- **Enterprise AI capabilities** for work environments
-- **Custom model support** with Mercury models
-- **Enhanced security** and compliance features
-- **Team collaboration** tools
 
 ### MCP Hub Integration
 - **External tool connectivity** through Model Context Protocol

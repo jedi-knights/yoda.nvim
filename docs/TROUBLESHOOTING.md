@@ -235,25 +235,6 @@ pip install python-lsp-server[all]
    :Copilot setup     " Run setup
    ```
 
-### Mercury Not Loading
-
-**Problem**: Mercury AI not available
-
-**Solutions**:
-1. **Check environment**:
-   ```bash
-   echo $YODA_ENV     # Should show "work"
-   ```
-
-2. **Set environment**:
-   ```bash
-   export YODA_ENV=work
-   ```
-
-3. **Verify Mercury installation**:
-   ```bash
-   which mercury       # Check if Mercury is installed
-   ```
 
 ## File Explorer Issues
 

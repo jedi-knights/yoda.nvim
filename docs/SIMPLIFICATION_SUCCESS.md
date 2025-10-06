@@ -320,7 +320,7 @@ return {
 
 ### All Features Still Work
 ✅ LSP with all language servers  
-✅ AI integration (Avante, Copilot, Mercury)  
+✅ AI integration (Avante, Copilot)  
 ✅ Git tools (Gitsigns, Neogit)  
 ✅ Testing (Neotest, DAP)  
 ✅ UI plugins (Snacks, Trouble, Noice)  

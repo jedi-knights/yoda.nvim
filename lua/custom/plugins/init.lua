@@ -535,15 +535,6 @@ return {
   -- AI INTEGRATION (ADDITIONAL)
   -- ============================================================================
 
-  -- Mercury - AI integration (if available)
-  {
-    "yetone/mercury.nvim",
-    lazy = true,
-    cmd = { "Mercury", "MercuryOpen", "MercuryPanel" },
-    cond = function()
-      return vim.fn.executable("mercury") == 1 or vim.fn.filereadable(vim.fn.expand("~/.local/bin/mercury")) == 1
-    end,
-  },
 
   -- Avante - Agentic AI capabilities
   {
@@ -599,6 +590,16 @@ return {
     event = "VeryLazy",
     config = function()
       require("which-key").setup()
+    end,
+  },
+
+  -- ShowKeys - Display keymaps
+  {
+    "anuvyklack/showkeys.nvim",
+    lazy = true,
+    cmd = "ShowKeys",
+    config = function()
+      require("showkeys").setup()
     end,
   },
 }

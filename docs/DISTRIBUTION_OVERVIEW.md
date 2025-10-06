@@ -13,7 +13,7 @@
 - Comprehensive plugin management with local/remote development support
 
 ✅ **Advanced Development Features**
-- **AI Integration**: Avante.nvim, Copilot, MCP Hub, Mercury (work environment)
+- **AI Integration**: Avante.nvim, Copilot, MCP Hub
 - **Testing Framework**: Neotest with coverage visualization
 - **LSP Setup**: Mason + lspconfig with proper file watching
 - **Development Tools**: Go Task, Invoke, Python REPL integration
@@ -80,7 +80,7 @@ end
 **Strengths:**
 - Organized by functionality (LSP, testing, AI, etc.)
 - Comprehensive logging for debugging
-- Environment-aware mappings (Mercury only at work)
+- Environment-aware configuration
 - Conflict detection and resolution
 
 ## 🚀 **Potential Improvements**

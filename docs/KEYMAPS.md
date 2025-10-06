@@ -162,11 +162,6 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 | `<leader>aR` | Normal | Restart ClaudeCode |
 | `<leader>aC` | Normal | Clear ClaudeCode context |
 
-### Mercury (Work Environment)
-| Keymap | Mode | Description |
-|--------|------|-------------|
-| `<leader>m` | Normal | Open Mercury |
-| `<leader>ma` | Normal | Open Mercury Agentic Panel |
 
 ---
 
@@ -404,7 +399,6 @@ These commands are available via `:CommandName`:
 - **Testing**: `<leader>t` prefix (test)
 - **Debugging**: `<leader>d` prefix (debug)
 - **AI/Avante**: `<leader>a` prefix (avante)
-- **Mercury**: `<leader>m` prefix (mercury) - work environment only
 - **Explorer**: `<leader>e` prefix (explorer)
 
 ### Suggested Workflow

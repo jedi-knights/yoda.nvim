@@ -45,7 +45,7 @@ Set environment-specific features:
 # For home environment
 export YODA_ENV=home
 
-# For work environment (enables Mercury AI)
+# For work environment
 export YODA_ENV=work
 ```
 
@@ -244,7 +244,6 @@ vim.g.yoda_config = {
 }
 
 -- Work-specific plugins and settings
--- Mercury AI integration, etc.
 ```
 
 ## Advanced Configuration

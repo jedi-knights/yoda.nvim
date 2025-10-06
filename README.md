@@ -134,7 +134,7 @@ Yoda.nvim uses a modular architecture:
 # For home environment
 export YODA_ENV=home
 
-# For work environment (enables Mercury AI)
+# For work environment
 export YODA_ENV=work
 ```
 

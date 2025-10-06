@@ -197,7 +197,7 @@ map("n", "<leader>am", "<cmd>AvanteMCP<cr>", { desc = "AI: Open MCP Hub" })
 
 -- Copilot
 map("n", "<leader>cp", function()
-  require("lazy").load({ plugins = { "copilot.vim" } })
+  require("lazy").load({ plugins = { "copilot.lua" } })
   
   local status_ok, is_enabled = pcall(vim.fn["copilot#IsEnabled"])
   if not status_ok then
@@ -227,26 +227,6 @@ vim.api.nvim_create_autocmd("InsertEnter", {
   end,
 })
 
--- Mercury (work environment only)
-if vim.env.YODA_ENV == "work" then
-  map("n", "<leader>m", function()
-    local ok, mercury = pcall(require, "mercury")
-    if ok and mercury.open then
-      mercury.open()
-    else
-      vim.cmd(":Mercury<CR>")
-    end
-  end, { desc = "AI: Open Mercury" })
-  
-  map("n", "<leader>ma", function()
-    local ok, mercury_ui = pcall(require, "mercury.ui")
-    if ok and mercury_ui and mercury_ui.open_panel then
-      mercury_ui.open_panel()
-    else
-      vim.notify("Mercury Agentic Panel not available", vim.log.levels.ERROR)
-    end
-  end, { desc = "AI: Open Mercury Agentic Panel" })
-end
 
 -- ============================================================================
 -- TERMINAL
