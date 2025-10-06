@@ -9,6 +9,36 @@ local function create_autocmd(events, opts)
   autocmd(events, opts)
 end
 
+-- Helper function to start alpha dashboard with proper configuration
+local function start_alpha_dashboard()
+  local ok, alpha = pcall(require, "alpha")
+  if not ok or not alpha or not alpha.start then
+    return false
+  end
+  
+  local dashboard_ok, dashboard = pcall(require, "alpha.themes.dashboard")
+  if not dashboard_ok or not dashboard then
+    return false
+  end
+  
+  -- Build the configuration
+  local alpha_config = {
+    redraw_on_resize = true,
+    layout = {
+      { type = "padding", val = 2 },
+      dashboard.section.header,
+      { type = "padding", val = 2 },
+      dashboard.section.buttons,
+      { type = "padding", val = 1 },
+      dashboard.section.footer,
+    },
+  }
+  
+  -- Start alpha with configuration
+  local config_ok, _ = pcall(alpha.start, alpha_config)
+  return config_ok
+end
+
 
 
 
@@ -37,14 +67,12 @@ create_autocmd("VimEnter", {
         -- Only show dashboard if we're in an empty buffer
         local bufname = vim.api.nvim_buf_get_name(0)
         if bufname == "" or bufname == "[No Name]" then
-          local ok, alpha = pcall(require, "alpha")
-          if ok then
-            alpha.start()
-            -- Ensure the dashboard buffer is properly displayed
-            vim.cmd("setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile")
+          local success = start_alpha_dashboard()
+          if not success then
+            vim.notify("Alpha dashboard failed to start", vim.log.levels.WARN)
           end
         end
-      end, 100)
+      end, 200) -- Increased delay to ensure plugin is fully loaded
     end
     
     -- Auto update dependencies on startup (DISABLED)
@@ -74,14 +102,17 @@ create_autocmd("BufEnter", {
     -- Only start alpha if we're in a truly empty buffer and not already in alpha
     if (bufname == "" or bufname == "[No Name]") and filetype ~= "alpha" and filetype == "" then
       local ok, alpha = pcall(require, "alpha")
-      if ok then
+      if ok and alpha and alpha.start then
         -- Use a small delay to prevent conflicts
         vim.defer_fn(function()
           -- Double-check conditions before starting
           if vim.bo.filetype ~= "alpha" and vim.api.nvim_buf_get_name(0) == "" then
-            alpha.start()
+            local success = start_alpha_dashboard()
+            if not success then
+              vim.notify("Alpha dashboard failed to start", vim.log.levels.WARN)
+            end
           end
-        end, 50)
+        end, 100) -- Increased delay for better reliability
       end
     end
   end,

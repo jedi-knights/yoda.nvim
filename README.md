@@ -37,6 +37,7 @@ Yoda.nvim is a modern Neovim distribution that provides:
 - **🎨 Beautiful modern UI** with TokyoNight theme and enhanced components
 - **⚡ Fast performance** with lazy-loading and optimized startup
 - **🛠️ Comprehensive tooling** for LSP, testing, debugging, and Git integration
+- **⌨️ Smart keymap discovery** with Which-Key and multiple keystroke display options
 
 ## 🚀 Quick Start
 
@@ -82,6 +83,14 @@ That's it! The first launch will automatically bootstrap all plugins.
 | `<leader>gr` | Find references |
 | `<leader>ca` | Code actions |
 | `<leader>ta` | Run tests |
+
+### ⌨️ Keymap Discovery & Display
+| Keymap | Description |
+|--------|-------------|
+| `<leader>k` | Show available keymaps (custom display) |
+| `<leader>d` | Toggle real-time keystroke display (Keys.nvim) |
+| `<leader>s` | Toggle screenkey display (floating window) |
+| `<leader>h` | Toggle showkeys display (minimal screencaster) |
 
 ### 🪟 Window Management
 | Keymap | Description |
@@ -177,6 +186,10 @@ We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.
 - [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - Beautiful theme
 - [folke/snacks.nvim](https://github.com/folke/snacks.nvim) - Modern UI framework
 - [yetone/avante.nvim](https://github.com/yetone/avante.nvim) - Agentic AI capabilities
+- [folke/which-key.nvim](https://github.com/folke/which-key.nvim) - Keymap discovery
+- [tamton-aquib/keys.nvim](https://github.com/tamton-aquib/keys.nvim) - Real-time keystroke display
+- [NStefan002/screenkey.nvim](https://github.com/NStefan002/screenkey.nvim) - Floating keystroke display
+- [nvzone/showkeys](https://github.com/nvzone/showkeys) - Minimal keys screencaster
 
 ---
 

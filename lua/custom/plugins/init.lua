@@ -101,7 +101,7 @@ return {
       dashboard.section.footer.val = "May the force be with you"
       
       -- Configure alpha options
-      dashboard.opts.opts = {
+      local alpha_config = {
         redraw_on_resize = true,
         layout = {
           { type = "padding", val = 2 },
@@ -114,7 +114,7 @@ return {
       }
       
       -- Send config to alpha
-      alpha.setup(dashboard.opts)
+      alpha.setup(alpha_config)
     end,
   },
 
@@ -593,13 +593,34 @@ return {
     end,
   },
 
-  -- ShowKeys - Display keymaps
+  -- Keys.nvim - Real-time keystroke display (showkeys alternative)
   {
-    "anuvyklack/showkeys.nvim",
+    "tamton-aquib/keys.nvim",
     lazy = true,
-    cmd = "ShowKeys",
+    cmd = { "KeysToggle", "KeysStart", "KeysStop" },
+    config = function()
+      require("keys").setup()
+    end,
+  },
+
+  -- Screenkey.nvim - Display keystrokes in floating window
+  {
+    "NStefan002/screenkey.nvim",
+    lazy = true,
+    cmd = { "Screenkey", "ScreenkeyToggle", "ScreenkeyStart", "ScreenkeyStop" },
+    config = function()
+      require("screenkey").setup()
+    end,
+  },
+
+  -- Showkeys - Minimal keys screencaster for Neovim
+  {
+    "nvzone/showkeys",
+    lazy = true,
+    cmd = { "Showkeys", "ShowkeysToggle", "ShowkeysStart", "ShowkeysStop" },
     config = function()
       require("showkeys").setup()
     end,
   },
+
 }

@@ -312,22 +312,92 @@ map("n", "<leader><leader>r", function()
   end, 100)
 end, { desc = "Util: Hot reload Yoda config" })
 
-map("n", "<leader>kk", function()
-  local showkeys_enabled = false
-  local ok, showkeys = pcall(require, "showkeys")
-  if not ok then
-    require("lazy").load({ plugins = { "showkeys" } })
-    ok, showkeys = pcall(require, "showkeys")
-  end
-  if ok and showkeys then
-    showkeys.toggle()
-    showkeys_enabled = not showkeys_enabled
-    local status = showkeys_enabled and "✅ ShowKeys enabled" or "🚫 ShowKeys disabled"
-    vim.notify(status, vim.log.levels.INFO)
+map("n", "<leader>k", function()
+  -- Show keymaps in a temporary buffer
+  local keymaps = {}
+  
+  -- Get all normal mode keymaps that start with leader
+  local leader = vim.g.mapleader or " "
+  local mode = "n"
+  
+  -- Try to get keymaps using vim.api
+  local success, result = pcall(function()
+    return vim.api.nvim_get_keymap(mode)
+  end)
+  
+  if success then
+    for _, keymap in ipairs(result) do
+      if keymap.lhs and keymap.lhs:sub(1, #leader) == leader then
+        local desc = keymap.desc or keymap.rhs or "No description"
+        table.insert(keymaps, keymap.lhs .. " → " .. desc)
+      end
+    end
+    
+    if #keymaps > 0 then
+      -- Create a temporary buffer to show keymaps
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, keymaps)
+      vim.api.nvim_open_win(buf, true, {
+        relative = "editor",
+        width = 60,
+        height = math.min(#keymaps + 2, 20),
+        col = 10,
+        row = 5,
+        border = "single",
+        title = "Leader Keymaps (Normal Mode)",
+        title_pos = "center",
+      })
+      
+      -- Close buffer when leaving window
+      vim.api.nvim_create_autocmd("BufLeave", {
+        buffer = buf,
+        callback = function()
+          vim.api.nvim_buf_delete(buf, { force = true })
+        end,
+      })
+    else
+      vim.notify("No leader keymaps found in normal mode", vim.log.levels.INFO)
+    end
   else
-    vim.notify("❌ Failed to load showkeys plugin", vim.log.levels.ERROR)
+    vim.notify("❌ Failed to get keymaps", vim.log.levels.ERROR)
   end
-end, { desc = "Util: Toggle ShowKeys" })
+end, { desc = "Util: Show leader keymaps in normal mode" })
+
+-- Toggle real-time keystroke display (Keys.nvim)
+map("n", "<leader>d", function()
+  local success = pcall(vim.cmd, "KeysToggle")
+  if not success then
+    -- Try alternative command
+    local alt_success = pcall(vim.cmd, "Keys toggle")
+    if not alt_success then
+      vim.notify("❌ Failed to toggle Keys.nvim - plugin may not be loaded", vim.log.levels.ERROR)
+    end
+  end
+end, { desc = "Util: Toggle real-time keystroke display (Keys.nvim)" })
+
+-- Toggle screenkey display
+map("n", "<leader>s", function()
+  local success = pcall(vim.cmd, "Screenkey toggle")
+  if not success then
+    -- Try alternative command
+    local alt_success = pcall(vim.cmd, "ScreenkeyToggle")
+    if not alt_success then
+      vim.notify("❌ Failed to toggle Screenkey - plugin may not be loaded", vim.log.levels.ERROR)
+    end
+  end
+end, { desc = "Util: Toggle screenkey display" })
+
+-- Toggle showkeys display
+map("n", "<leader>h", function()
+  local success = pcall(vim.cmd, "Showkeys toggle")
+  if not success then
+    -- Try alternative command
+    local alt_success = pcall(vim.cmd, "ShowkeysToggle")
+    if not alt_success then
+      vim.notify("❌ Failed to toggle Showkeys - plugin may not be loaded", vim.log.levels.ERROR)
+    end
+  end
+end, { desc = "Util: Toggle showkeys display" })
 
 -- ============================================================================
 -- VISUAL MODE
