@@ -88,10 +88,8 @@ That's it! The first launch will automatically bootstrap all plugins.
 ### ⌨️ Keymap Discovery & Display
 | Keymap | Description |
 |--------|-------------|
-| `<leader>k` | Show available keymaps (custom display) |
-| `<leader>d` | Toggle real-time keystroke display (Keys.nvim) |
-| `<leader>s` | Toggle screenkey display (floating window) |
-| `<leader>h` | Toggle showkeys display (minimal screencaster) |
+| `<leader>kk` | Show available keymaps (custom display) |
+| `<leader>sk` | Toggle showkeys display (minimal screencaster) |
 
 ### 🪟 Window Management
 | Keymap | Description |

@@ -328,7 +328,7 @@ map("n", "<leader><leader>r", function()
   end, 100)
 end, { desc = "Util: Hot reload Yoda config" })
 
-map("n", "<leader>k", function()
+map("n", "<leader>kk", function()
   -- Show keymaps in a temporary buffer
   local keymaps = {}
   
@@ -379,41 +379,18 @@ map("n", "<leader>k", function()
   end
 end, { desc = "Util: Show leader keymaps in normal mode" })
 
--- Toggle real-time keystroke display (Keys.nvim)
-map("n", "<leader>d", function()
-  local success = pcall(vim.cmd, "KeysToggle")
-  if not success then
-    -- Try alternative command
-    local alt_success = pcall(vim.cmd, "Keys toggle")
-    if not alt_success then
-      vim.notify("❌ Failed to toggle Keys.nvim - plugin may not be loaded", vim.log.levels.ERROR)
-    end
-  end
-end, { desc = "Util: Toggle real-time keystroke display (Keys.nvim)" })
-
--- Toggle screenkey display
-map("n", "<leader>s", function()
-  local success = pcall(vim.cmd, "Screenkey toggle")
-  if not success then
-    -- Try alternative command
-    local alt_success = pcall(vim.cmd, "ScreenkeyToggle")
-    if not alt_success then
-      vim.notify("❌ Failed to toggle Screenkey - plugin may not be loaded", vim.log.levels.ERROR)
-    end
-  end
-end, { desc = "Util: Toggle screenkey display" })
-
 -- Toggle showkeys display
-map("n", "<leader>h", function()
-  local success = pcall(vim.cmd, "Showkeys toggle")
+map("n", "<leader>sk", function()
+  local success = pcall(vim.cmd, "ShowkeysToggle")
   if not success then
     -- Try alternative command
-    local alt_success = pcall(vim.cmd, "ShowkeysToggle")
+    local alt_success = pcall(vim.cmd, "Showkeys")
     if not alt_success then
       vim.notify("❌ Failed to toggle Showkeys - plugin may not be loaded", vim.log.levels.ERROR)
     end
   end
 end, { desc = "Util: Toggle showkeys display" })
+
 
 -- ============================================================================
 -- VISUAL MODE
