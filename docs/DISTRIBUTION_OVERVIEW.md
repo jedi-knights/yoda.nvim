@@ -26,7 +26,7 @@
 
 ✅ **Developer-Friendly Features**
 - Hot reload capability (`<leader><leader>r`)
-- Plugin development utilities (`plugin_dev.lua`)
+- Standard Neovim plugin development practices
 - Comprehensive health checks and diagnostics
 - Tool detection and visual indicators
 
@@ -35,9 +35,9 @@
 ### **Plugin Management Excellence**
 
 ```lua
--- Your plugin_dev.lua system is particularly impressive
+-- Standard plugin development approach
 local function create_plugin_spec(name, remote_spec, opts)
-  return plugin_dev.local_or_remote_plugin(name, remote_spec, opts)
+  return vim.tbl_extend("force", remote_spec, opts)
 end
 ```
 
@@ -141,7 +141,11 @@ end
 ```lua
 -- Add distribution testing
 vim.api.nvim_create_user_command("YodaTest", function()
-  require("yoda.testpicker").run_distribution_tests()
+  require("yoda.functions").test_picker(function(selection)
+    vim.env.TEST_ENVIRONMENT = selection.environment
+    vim.env.TEST_REGION = selection.region
+    require("neotest").run.run(vim.loop.cwd())
+  end)
 end, { desc = "Run distribution tests" })
 ```
 

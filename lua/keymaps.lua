@@ -146,8 +146,30 @@ map("n", "<leader>tv", function()
 end, { desc = "Test: View test output" })
 
 map("n", "<leader>tt", function()
-  require("yoda.testpicker").run()
-end, { desc = "Test: Run with yoda picker" })
+  require("yoda.functions").test_picker(function(selection)
+    local env = selection.environment
+    local region = selection.region
+    
+    -- Set environment variables for the session
+    vim.env.TEST_ENVIRONMENT = env
+    vim.env.TEST_REGION = region
+    
+    -- Notify user and run tests
+    vim.notify(string.format("Running tests in %s (%s)", env, region), vim.log.levels.INFO)
+    
+    -- Run neotest with the selected environment
+    local neotest_ok, neotest = pcall(require, "neotest")
+    if neotest_ok then
+      neotest.run.run()
+    end
+  end)
+end, { desc = "Test: Run with test picker" })
+
+map("n", "<leader>tS", function()
+  local env = vim.env.TEST_ENVIRONMENT or "qa"
+  local region = vim.env.TEST_REGION or "auto"
+  vim.notify(string.format("Current test environment: %s (%s)", env, region), vim.log.levels.INFO)
+end, { desc = "Test: Show environment status" })
 
 -- ============================================================================
 -- DEBUGGING (DAP)

@@ -1,9 +1,0 @@
-return {
-  -- Example: develop python.nvim locally (replaces pytest.nvim and invoke.nvim)
-  python = "~/src/github.com/jedi-knights/python.nvim",
-  -- Example: develop go.nvim locally (replaces go-task.nvim)
-  go = "~/src/github.com/jedi-knights/go.nvim",
-  -- Example: develop custom plugins locally
-  -- custom_plugin = "~/src/github.com/your-org/your-plugin.nvim",
-  -- Add more plugins as needed
-}
