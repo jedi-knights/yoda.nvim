@@ -505,9 +505,6 @@ return {
     dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons" },
     config = function()
       require("neogit").setup({
-        integrations = {
-          diffview = true,
-        },
         disable_signs = false,
         disable_context_highlighting = false,
         disable_commit_confirmation = false,
@@ -531,62 +528,36 @@ return {
         },
         sections = {
           untracked = {
-            folded = false
+            folded = false,
+            hidden = false
           },
           unstaged = {
-            folded = false
+            folded = false,
+            hidden = false
           },
           staged = {
-            folded = false
+            folded = false,
+            hidden = false
           },
           stashes = {
-            folded = true
+            folded = true,
+            hidden = false
           },
           unpulled = {
-            folded = true
+            folded = true,
+            hidden = false
           },
           unmerged = {
-            folded = false
+            folded = false,
+            hidden = false
           },
           recent = {
-            folded = true
+            folded = true,
+            hidden = false
           },
         },
-        mappings = {
-          status = {
-            ["q"] = "Close",
-            ["I"] = "InitRepo",
-            ["1"] = "Depth1",
-            ["2"] = "Depth2",
-            ["3"] = "Depth3",
-            ["4"] = "Depth4",
-            ["<tab>"] = "Toggle",
-            ["x"] = "Discard",
-            ["s"] = "Stage",
-            ["S"] = "StageUnstaged",
-            ["<c-s>"] = "StageAll",
-            ["u"] = "Unstage",
-            ["U"] = "UnstageStaged",
-            ["$"] = "CommandHistory",
-            ["<c-r>"] = "RefreshBuffer",
-            ["<enter>"] = "GoToFile",
-            ["<c-v>"] = "VSplitOpen",
-            ["<c-x>"] = "SplitOpen",
-            ["<c-t>"] = "TabOpen",
-            ["?"] = "HelpPopup",
-            ["D"] = "DiffPopup",
-            ["p"] = "PullPopup",
-            ["r"] = "RebasePopup",
-            ["m"] = "MergePopup",
-            ["P"] = "PushPopup",
-            ["c"] = "CommitPopup",
-            ["L"] = "LogPopup",
-            ["v"] = "DiscardPopup",
-            ["Z"] = "StashPopup",
-            ["A"] = "CherryPickPopup",
-            ["b"] = "BranchPopup"
-          }
-        }
+        -- Use default mappings to avoid configuration errors
+        -- Custom mappings can be added later once we know the correct command names
       })
     end,
   },
