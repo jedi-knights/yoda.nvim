@@ -65,8 +65,9 @@ That's it! The first launch will automatically bootstrap all plugins.
 | Keymap | Description |
 |--------|-------------|
 | `<leader>e` | Toggle file explorer |
-| `<leader>ff` | Find files |
-| `<leader>fg` | Search in files |
+| `<leader>ff` | Find files (Telescope) |
+| `<leader>fg` | Search in files (Telescope) |
+| `<leader>fr` | Recent files (Telescope) |
 | `<leader><leader>` | Smart file search |
 
 ### 🤖 AI Features

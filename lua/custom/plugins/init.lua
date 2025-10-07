@@ -76,14 +76,13 @@ return {
       -- Set header
       dashboard.section.header.val = {
         "                                                     ",
-        "  ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ",
-        "  ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ",
-        "  ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ",
-        "  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ",
-        "  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ",
-        "  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
+        "        ██╗   ██╗ ██████╗ ██████╗  █████╗            ",
+        "        ╚██╗ ██╔╝██╔═══██╗██╔══██╗██╔══██╗           ",
+        "         ╚████╔╝ ██║   ██║██║  ██║███████║           ",
+        "          ╚██╔╝  ██║   ██║██║  ██║██╔══██║           ",
+        "           ██║   ╚██████╔╝██████╔╝██║  ██║           ",
+        "           ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝           ",
         "                                                     ",
-        "                 [ YODA.NVIM ]                      ",
         "                                                     ",
       }
       
@@ -93,7 +92,7 @@ return {
         dashboard.button("f", "🔍  Find Files", "<leader>ff"),
         dashboard.button("g", "🔎  Find Text", "<leader>fg"),
         dashboard.button("r", "📋  Recent Files", ":Telescope oldfiles<CR>"),
-        dashboard.button("s", "⚙️  Settings", ":e ~/.config/nvim/<CR>"),
+        dashboard.button("l", "🔧  Lazy", ":Lazy<CR>"),
         dashboard.button("q", "❌  Quit", ":qa<CR>"),
       }
       
@@ -104,12 +103,26 @@ return {
       local alpha_config = {
         redraw_on_resize = true,
         layout = {
-          { type = "padding", val = 2 },
+          { type = "padding", val = 10 },
           dashboard.section.header,
           { type = "padding", val = 2 },
           dashboard.section.buttons,
           { type = "padding", val = 1 },
           dashboard.section.footer,
+          { type = "padding", val = 2 },
+        },
+        opts = {
+          margin = 5,
+          setup = function()
+            vim.api.nvim_set_option_value("laststatus", 0, { scope = "local" })
+            vim.api.nvim_set_option_value("showtabline", 0, { scope = "local" })
+            vim.api.nvim_set_option_value("ruler", false, { scope = "local" })
+            vim.api.nvim_set_option_value("showcmd", false, { scope = "local" })
+            vim.api.nvim_set_option_value("cmdheight", 0, { scope = "local" })
+            vim.api.nvim_set_option_value("laststatus", 0, { scope = "local" })
+            vim.api.nvim_set_option_value("number", false, { scope = "local" })
+            vim.api.nvim_set_option_value("relativenumber", false, { scope = "local" })
+          end,
         },
       }
       

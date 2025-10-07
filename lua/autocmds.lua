@@ -162,33 +162,27 @@ create_autocmd("VimResized", {
   command = "tabdo wincmd =",
 })
 
--- Markdown settings
+-- Filetype-specific settings
 create_autocmd("FileType", {
-  group = augroup("YodaMarkdown", { clear = true }),
-  pattern = "markdown",
-  desc = "Enable wrap, spell, conceal for markdown",
+  group = augroup("YodaFileTypes", { clear = true }),
+  desc = "Apply filetype-specific settings",
   callback = function()
-    vim.opt_local.wrap = true
-    vim.opt_local.spell = true
-    vim.opt_local.conceallevel = 2
-  end,
-})
-
--- Tool indicators removed (simplified)
-
--- Snacks Explorer: Force normal mode
-create_autocmd("FileType", {
-  group = augroup("YodaSnacksExplorer", { clear = true }),
-  pattern = "snacks-explorer", -- Use only the correct pattern
-  desc = "Force normal mode in snacks explorer",
-  callback = function()
-    -- Force normal mode immediately
-    vim.cmd("stopinsert")
-    -- Schedule another check to override any delayed inserts
-    vim.schedule(function()
-      if vim.fn.mode() ~= "n" then
-        vim.cmd("stopinsert")
-      end
-    end)
+    local filetype = vim.bo.filetype
+    
+    if filetype == "markdown" then
+      -- Markdown settings
+      vim.opt_local.wrap = true
+      vim.opt_local.spell = true
+      vim.opt_local.conceallevel = 2
+    elseif filetype == "snacks-explorer" then
+      -- Snacks Explorer: Force normal mode
+      vim.cmd("stopinsert")
+      -- Schedule another check to override any delayed inserts
+      vim.schedule(function()
+        if vim.fn.mode() ~= "n" then
+          vim.cmd("stopinsert")
+        end
+      end)
+    end
   end,
 })

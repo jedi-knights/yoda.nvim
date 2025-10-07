@@ -54,6 +54,22 @@ map("n", "<leader>-", ":split<cr>", { desc = "Window: Horizontal split" })
 map("n", "<leader>ws", "<c-w>=", { desc = "Window: Equalize sizes" })
 
 -- ============================================================================
+-- FILE FINDING & NAVIGATION
+-- ============================================================================
+
+map("n", "<leader>ff", function()
+  vim.cmd("Telescope find_files")
+end, { desc = "Find Files" })
+
+map("n", "<leader>fg", function()
+  vim.cmd("Telescope live_grep")
+end, { desc = "Find Text" })
+
+map("n", "<leader>fr", function()
+  vim.cmd("Telescope oldfiles")
+end, { desc = "Recent Files" })
+
+-- ============================================================================
 -- LSP
 -- ============================================================================
 
