@@ -158,7 +158,6 @@ end
 -- AI provider configuration
 local AI_PROVIDERS = {
   AVANTE = "avante",
-  MERCURY = "mercury",
   COPILOT = "copilot",
   CUSTOM = "custom"
 }
@@ -180,18 +179,6 @@ function M.init_ai_providers()
     }
   end
   
-  -- Initialize Mercury
-  local mercury_ok = pcall(require, "mercury")
-  if mercury_ok then
-    M.providers[AI_PROVIDERS.MERCURY] = {
-      name = "Mercury AI",
-      available = true,
-      features = {"chat", "code_generation", "debugging", "refactoring"},
-      generate = function(prompt, context)
-        return M.generate_with_mercury(prompt, context)
-      end
-    }
-  end
 end
 ```
 
@@ -388,7 +375,7 @@ local CONTEXT_TYPES = {
 vim.g.yoda_config = {
   -- AI provider settings
   ai_provider = "avante",
-  ai_fallback_provider = "mercury",
+  ai_fallback_provider = "avante",
   
   -- Feature settings
   enable_ai_code_generation = true,

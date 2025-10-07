@@ -1,7 +1,9 @@
-local M = {}
+-- ============================================================================
+-- FEATURE FILE FORMATTING COMMANDS
+-- ============================================================================
 
 --- Trim trailing whitespace from all lines
-function M.trim_trailing_whitespace()
+local function trim_trailing_whitespace()
   vim.cmd([[%s/\s\+$//e]])
 end
 
@@ -54,7 +56,7 @@ local function format_example_block(raw_lines)
 end
 
 --- Fix all Examples blocks in the current buffer
-function M.fix_feature_examples()
+local function fix_feature_examples()
   local bufnr = vim.api.nvim_get_current_buf()
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
@@ -91,30 +93,83 @@ function M.fix_feature_examples()
 end
 
 --- Format the current feature file
-function M.format_feature()
-  M.fix_feature_examples()
-  M.trim_trailing_whitespace()
+local function format_feature()
+  fix_feature_examples()
+  trim_trailing_whitespace()
 end
 
---- Register commands
-function M.setup()
+-- ============================================================================
+-- COMMAND REGISTRATION
+-- ============================================================================
 
+-- Add debugging and troubleshooting commands
+vim.api.nvim_create_user_command("YodaDebugLazy", function()
+  -- Check Lazy.nvim status
+  print("=== Lazy.nvim Debug Information ===")
+  print("Lazy.nvim path:", vim.fn.stdpath("data") .. "/lazy/lazy.nvim")
+  print("Plugin state path:", vim.fn.stdpath("state") .. "/lazy")
+  
+  -- Check if Lazy.nvim is loaded
+  local ok, lazy = pcall(require, "lazy")
+  if ok then
+    print("Lazy.nvim loaded successfully")
+    
+    -- Check plugin status
+    local plugins = lazy.get_plugins()
+    print("Total plugins:", #plugins)
+    
+    -- Check for problematic plugins
+    for _, plugin in ipairs(plugins) do
+      if plugin._.loaded and plugin._.load_error then
+        print("Plugin with error:", plugin.name, "-", plugin._.load_error)
+      end
+    end
+  else
+    print("Lazy.nvim failed to load:", lazy)
+  end
+end, { desc = "Debug Lazy.nvim plugin manager" })
 
-  vim.api.nvim_create_user_command("FormatFeature", function()
-    M.format_feature()
-  end, {})
+vim.api.nvim_create_user_command("YodaCleanLazy", function()
+  -- Clean up Lazy.nvim cache and state
+  local lazy_state = vim.fn.stdpath("state") .. "/lazy"
   
-  vim.api.nvim_create_user_command("YodaDiagnostics", function()
-    require("yoda.diagnostics").run_diagnostics()
-  end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" })
+  print("Cleaning Lazy.nvim cache...")
   
-  vim.api.nvim_create_user_command("CleanDuplicateParsers", function()
-    require("yoda.utils.treesitter_cleanup").cleanup_duplicate_parsers()
-  end, { desc = "Clean up duplicate TreeSitter parsers" })
+  -- Clean readme directory
+  local readme_dir = lazy_state .. "/readme"
+  if vim.fn.isdirectory(readme_dir) == 1 then
+    vim.fn.delete(readme_dir, "rf")
+    print("Cleaned readme directory")
+  end
   
-  vim.api.nvim_create_user_command("IconDiagnostics", function()
-    require("yoda.utils.icon_diagnostics").run_diagnostics()
-  end, { desc = "Run diagnostics for icon display issues" })
-end
+  -- Clean lock file
+  local lock_file = lazy_state .. "/lock.json"
+  if vim.fn.filereadable(lock_file) == 1 then
+    vim.fn.delete(lock_file)
+    print("Cleaned lock file")
+  end
+  
+  -- Clean cache directory
+  local cache_dir = lazy_state .. "/cache"
+  if vim.fn.isdirectory(cache_dir) == 1 then
+    vim.fn.delete(cache_dir, "rf")
+    print("Cleaned cache directory")
+  end
+  
+  print("Lazy.nvim cache cleaned. Restart Neovim to reload plugins.")
+end, { desc = "Clean Lazy.nvim cache and state" })
 
-return M
+-- Feature file formatting commands
+vim.api.nvim_create_user_command("FormatFeature", function()
+  format_feature()
+end, { desc = "Format Gherkin feature file" })
+
+-- Diagnostic commands
+vim.api.nvim_create_user_command("YodaDiagnostics", function()
+  local ok, functions = pcall(require, "yoda.functions")
+  if ok and functions.run_diagnostics then
+    functions.run_diagnostics()
+  else
+    vim.notify("Diagnostics not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" }) 
