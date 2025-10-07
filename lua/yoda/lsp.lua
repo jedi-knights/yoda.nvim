@@ -28,6 +28,9 @@ vim.lsp.config.gopls = {}
 -- TypeScript/JavaScript LSP
 vim.lsp.config.ts_ls = {}
 
+-- Disable stylua as LSP server (it's a formatter, not a language server)
+-- stylua is not enabled as an LSP server
+
 -- Enable the language servers
 vim.lsp.enable('lua_ls')
 vim.lsp.enable('gopls')
