@@ -1,91 +1,78 @@
-# Local Plugin Development in Yoda.nvim
+# Local Plugin Development
 
-Yoda.nvim supports a flexible, scalable system for local plugin development. This enhancement allows you to seamlessly switch between developing plugins locally and using their remote (GitHub) versions, all controlled from a single configuration file.
+This guide explains how to develop plugins locally with Yoda.nvim.
 
----
+## Current Status
 
-## How It Works
+**Note**: The local plugin development system has been simplified. You can now develop plugins locally using standard Neovim plugin development practices.
 
-- Yoda.nvim looks for a file named `plugin_dev.lua` at the root of your configuration directory.
-- This file maps plugin names to absolute paths of your local plugin clones.
-- A helper function (`plugin_dev.local_or_remote_plugin`) is used in your plugin specs to automatically select the local or remote version based on this config.
-- If the config file or a specific path is missing, Yoda.nvim safely falls back to using the remote (GitHub) version of the plugin.
+## How to Develop Plugins Locally
 
----
+### Method 1: Direct Path in Plugin Specs
 
-## Setting Up Local Plugin Development
+Add local plugin paths directly in your plugin specifications:
 
-1. **Create the Config File**
-   
-   At the root of your Yoda.nvim config, create a file named `plugin_dev.lua`:
-   
-   ```lua
-   return {
-     -- Example: develop python.nvim locally (replaces pytest.nvim and invoke.nvim)
-     python = "/absolute/path/to/python.nvim",
-     -- Example: develop go-task.nvim locally
-     go_task = "/absolute/path/to/go-task.nvim",
-     -- Add more plugins as needed
-   }
-   ```
+```lua
+-- In lua/custom/plugins/init.lua
+{
+  "/path/to/your/local-plugin",
+  config = function()
+    require("your-plugin").setup({
+      -- your config
+    })
+  end,
+}
+```
 
-2. **Update Your Plugin Specs**
-   
-   In your plugin spec files (e.g., `lua/yoda/plugins/spec/development.lua`), use the helper:
-   
-   ```lua
-   local plugin_dev = require("yoda.utils.plugin_dev")
-   
-   local plugins = {
-     plugin_dev.local_or_remote_plugin("python", "jedi-knights/python.nvim", {
-       dependencies = { "nvim-lua/plenary.nvim", "folke/snacks.nvim" },
-       config = function()
-         require("python").setup({
-           -- Enable all Python features
-           enable_virtual_env = true,
-           auto_detect_venv = true,
-           test_frameworks = { pytest = { enabled = true } },
-           task_runner = { enabled = true, invoke = { enabled = true } },
-         })
-       end,
-     }),
-     -- Add more plugins as needed
-   }
-   ```
+### Method 2: Symlink Development
 
-3. **Control Local vs. Remote**
-   
-   - To develop a plugin locally, add its path to `plugin_dev.lua`.
-   - To use the remote version, remove or comment out its entry.
-   - No code changes are needed in your plugin specs.
+1. Clone your plugin to a development directory:
+```bash
+git clone https://github.com/your-org/your-plugin.git ~/dev/your-plugin
+```
 
----
+2. Create a symlink in your Neovim config:
+```bash
+ln -s ~/dev/your-plugin ~/.config/nvim/lua/your-plugin
+```
 
-## What Happens If `plugin_dev.lua` Is Missing?
+3. Use it in your plugin specs:
+```lua
+{
+  "your-plugin",
+  config = function()
+    require("your-plugin").setup({})
+  end,
+}
+```
 
-- If the config file does not exist, Yoda.nvim will automatically use the remote (GitHub) versions for all plugins.
-- This makes the system portable and safe to use on any machine, even if you haven't set up local plugin development.
+### Method 3: Packer-style Development
 
----
+Use Lazy.nvim's development features:
 
-## Benefits
+```lua
+{
+  "your-org/your-plugin",
+  dev = true,  -- Enable development mode
+  config = function()
+    require("your-plugin").setup({})
+  end,
+}
+```
 
-- **Centralized control:** Manage all local/remote plugin development from one file.
-- **No repeated logic:** The helper function keeps your plugin specs DRY and clean.
-- **Portable:** Works seamlessly across machines and for all contributors.
-- **Scalable:** Add as many plugins as you want to develop locally.
-- **Safe fallback:** No errors if the config or a path is missing—just uses the remote version.
+## Benefits of This Approach
 
----
+- ✅ **Simpler**: No complex plugin development system
+- ✅ **Standard**: Uses standard Neovim plugin development practices  
+- ✅ **Flexible**: Multiple approaches to choose from
+- ✅ **Maintainable**: Less custom code to maintain
 
-## Example Workflow
+## Development Workflow
 
-1. Clone a plugin you want to develop locally.
-2. Add its path to `plugin_dev.lua`.
-3. Restart Neovim or reload your config.
-4. Yoda.nvim will now use your local version for development.
-5. Remove the entry to switch back to the remote version.
+1. **Create/Clone** your plugin locally
+2. **Add** it to your plugin specs using one of the methods above
+3. **Develop** with live reloading (if supported by your plugin)
+4. **Test** your changes in Neovim
+5. **Publish** when ready
 
----
-
-For questions or advanced usage, see the source in `lua/yoda/utils/plugin_dev.lua` or ask in the project discussions! 
+This approach is more straightforward and follows Neovim community standards!
