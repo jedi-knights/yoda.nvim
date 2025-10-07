@@ -118,7 +118,6 @@ Each tutorial step can have different actions:
 #### **AI Features**
 - Avante AI integration
 - GitHub Copilot
-- Mercury (work environment)
 
 #### **Development Tools**
 - LSP features
