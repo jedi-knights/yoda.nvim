@@ -133,23 +133,41 @@ function M.get_claude_path()
   -- Common locations where Claude CLI might be installed
   local common_paths = {
     -- System PATH
-    function() return vim.fn.exepath("claude") end,
-    
+    function()
+      return vim.fn.exepath("claude")
+    end,
+
     -- User local binaries
-    function() return vim.fn.expand("~/.local/bin/claude") end,
-    function() return vim.fn.expand("~/.bun/bin/claude") end,
-    function() return vim.fn.expand("~/.npm-global/bin/claude") end,
-    
+    function()
+      return vim.fn.expand("~/.local/bin/claude")
+    end,
+    function()
+      return vim.fn.expand("~/.bun/bin/claude")
+    end,
+    function()
+      return vim.fn.expand("~/.npm-global/bin/claude")
+    end,
+
     -- Homebrew on macOS
-    function() return "/opt/homebrew/bin/claude" end,
-    function() return "/usr/local/bin/claude" end,
-    
+    function()
+      return "/opt/homebrew/bin/claude"
+    end,
+    function()
+      return "/usr/local/bin/claude"
+    end,
+
     -- Node.js global packages
-    function() return vim.fn.expand("~/node_modules/.bin/claude") end,
-    
+    function()
+      return vim.fn.expand("~/node_modules/.bin/claude")
+    end,
+
     -- Windows paths (if needed)
-    function() return vim.fn.expand("~/AppData/Roaming/npm/claude.cmd") end,
-    function() return vim.fn.expand("~/AppData/Roaming/npm/claude") end,
+    function()
+      return vim.fn.expand("~/AppData/Roaming/npm/claude.cmd")
+    end,
+    function()
+      return vim.fn.expand("~/AppData/Roaming/npm/claude")
+    end,
   }
 
   -- Check if a path exists and is executable
@@ -165,7 +183,7 @@ function M.get_claude_path()
   if is_executable(path) then
     return path
   end
-  
+
   -- Try common installation paths
   for _, path_func in ipairs(common_paths) do
     local ok, candidate_path = pcall(path_func)
@@ -173,7 +191,7 @@ function M.get_claude_path()
       return candidate_path
     end
   end
-  
+
   return nil
 end
 
@@ -190,15 +208,15 @@ function M.get_claude_version()
   if not claude_path then
     return nil, "Claude CLI not found"
   end
-  
+
   local ok, result = pcall(function()
     return vim.fn.system({ claude_path, "--version" }):gsub("^%s*(.-)%s*$", "%1")
   end)
-  
+
   if not ok then
     return nil, "Failed to get version"
   end
-  
+
   return result, nil
 end
 
