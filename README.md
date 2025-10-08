@@ -73,11 +73,26 @@ That's it! The first launch will automatically bootstrap all plugins.
 | `<leader><leader>` | Smart file search |
 
 ### 🤖 AI Features
+
+#### GitHub Copilot (Code Completion)
 | Keymap | Description |
 |--------|-------------|
-| `<leader>aa` | Ask AI assistant |
-| `<leader>ac` | Open AI chat |
-| `<leader>as` | Send selection to AI |
+| `Alt+l` | Accept Copilot suggestion |
+| `Alt+]` | Next suggestion |
+| `Alt+[` | Previous suggestion |
+| `Ctrl+]` | Dismiss suggestion |
+| `<leader>cp` | Toggle Copilot on/off |
+
+#### OpenCode (AI Assistant)
+| Keymap | Description |
+|--------|-------------|
+| `<leader>oa` | Ask about current selection/cursor |
+| `<leader>oe` | Explain current code |
+| `<leader>os` | Select from prompt library |
+| `<leader>o+` | Add context to prompt |
+| `<leader>ot` | Toggle OpenCode terminal |
+| `<leader>on` | New OpenCode session |
+| `<leader>oi` | Interrupt current session |
 
 ### 🛠️ Development
 | Keymap | Description |
@@ -109,7 +124,7 @@ That's it! The first launch will automatically bootstrap all plugins.
 
 ### Configuration
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Customize your setup
-- **[AI Setup Guide](docs/AI_SETUP.md)** - Configure Copilot, Avante, and OpenCode
+- **[AI Setup Guide](docs/AI_SETUP.md)** - Configure Copilot and OpenCode
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[Performance Guide](docs/PERFORMANCE_GUIDE.md)** - Optimize startup and runtime
 
@@ -161,6 +176,63 @@ vim.g.yoda_config = {
 }
 ```
 
+## 🤖 AI Usage Examples
+
+### GitHub Copilot Workflow
+
+**Real-time code completion while typing:**
+1. Start typing code in insert mode
+2. Wait for gray suggestion to appear
+3. Press `Alt+l` to accept, or `Alt+]`/`Alt+[` to cycle through options
+4. Press `Ctrl+]` to dismiss if not needed
+
+**Toggle Copilot:**
+```vim
+<leader>cp         " Toggle Copilot on/off
+:Copilot status    " Check current status
+:Copilot setup     " Authenticate with GitHub
+```
+
+### OpenCode Workflow
+
+**Ask about code:**
+```vim
+" 1. Select code in visual mode or position cursor
+" 2. Press <leader>oa to ask about it
+" OpenCode: "What does @this code do?"
+
+" Or explain it
+<leader>oe         " Explain current selection/cursor
+```
+
+**Use prompt library:**
+```vim
+<leader>os         " Opens prompt selector with options:
+                   " - Ask...
+                   " - Explain this
+                   " - Optimize this
+                   " - Document this
+                   " - Add tests for this
+                   " - Review buffer
+                   " - Review git diff
+                   " - Explain diagnostics
+```
+
+**Build complex prompts with context:**
+```vim
+" 1. Select function A, press <leader>o+ (adds @this to prompt)
+" 2. Navigate to function B, press <leader>o+ again
+" 3. Type your question: "How do these functions work together?"
+" 4. Submit to get context-aware answer
+```
+
+**OpenCode placeholders:**
+- `@buffer` - Current buffer content
+- `@this` - Current selection or cursor position
+- `@visible` - Currently visible text
+- `@diagnostics` - Current errors/warnings
+- `@diff` - Git changes
+
 ## 🛠️ Plugin Management
 
 ```vim
@@ -190,10 +262,9 @@ We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.
 - [folke/lazy.nvim](https://github.com/folke/lazy.nvim) - Fast plugin manager
 - [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - Beautiful theme
 - [folke/snacks.nvim](https://github.com/folke/snacks.nvim) - Modern UI framework
-- [yetone/avante.nvim](https://github.com/yetone/avante.nvim) - Agentic AI capabilities
+- [zbirenbaum/copilot.lua](https://github.com/zbirenbaum/copilot.lua) - GitHub Copilot integration
+- [NickvanDyke/opencode.nvim](https://github.com/NickvanDyke/opencode.nvim) - AI assistant integration
 - [folke/which-key.nvim](https://github.com/folke/which-key.nvim) - Keymap discovery
-- [tamton-aquib/keys.nvim](https://github.com/tamton-aquib/keys.nvim) - Real-time keystroke display
-- [NStefan002/screenkey.nvim](https://github.com/NStefan002/screenkey.nvim) - Floating keystroke display
 - [nvzone/showkeys](https://github.com/nvzone/showkeys) - Minimal keys screencaster
 
 ---
