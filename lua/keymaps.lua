@@ -330,26 +330,34 @@ map("n", "<leader>ct", function()
 end, { desc = "Copilot: Toggle/Dismiss" })
 
 -- Copilot insert mode keymaps (leader-based)
+-- Load when entering insert mode
 vim.api.nvim_create_autocmd("InsertEnter", {
   once = true,
   callback = function()
+    local ok, copilot_suggestion = pcall(require, "copilot.suggestion")
+    if not ok then
+      return
+    end
+    
     -- Accept suggestion
     map("i", "<leader>a", function()
-      return vim.fn["copilot#Accept"]("")
-    end, { expr = true, silent = true, replace_keycodes = false, desc = "Copilot: Accept" })
+      copilot_suggestion.accept()
+    end, { silent = true, desc = "Copilot: Accept" })
     
     -- Next suggestion
     map("i", "<leader>n", function()
-      return vim.fn.eval('copilot#Next()')
-    end, { expr = true, silent = true, desc = "Copilot: Next" })
+      copilot_suggestion.next()
+    end, { silent = true, desc = "Copilot: Next" })
     
     -- Previous suggestion  
     map("i", "<leader>p", function()
-      return vim.fn.eval('copilot#Previous()')
-    end, { expr = true, silent = true, desc = "Copilot: Previous" })
+      copilot_suggestion.prev()
+    end, { silent = true, desc = "Copilot: Previous" })
     
     -- Dismiss suggestion
-    map("i", "<leader>d", 'copilot#Dismiss()', { expr = true, silent = true, desc = "Copilot: Dismiss" })
+    map("i", "<leader>d", function()
+      copilot_suggestion.dismiss()
+    end, { silent = true, desc = "Copilot: Dismiss" })
   end,
 })
 
