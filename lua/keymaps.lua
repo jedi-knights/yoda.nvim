@@ -309,7 +309,7 @@ map("n", "<S-C-d>", function()
 end, { desc = "OpenCode: Messages half page down" })
 
 -- Copilot
-map("n", "<leader>cp", function()
+map("n", "<leader>ct", function()
   require("lazy").load({ plugins = { "copilot.lua" } })
   
   local status_ok, is_enabled = pcall(vim.fn["copilot#IsEnabled"])
@@ -325,18 +325,29 @@ map("n", "<leader>cp", function()
     vim.cmd("Copilot enable")
     vim.notify("✅ Copilot enabled", vim.log.levels.INFO)
   end
-end, { desc = "AI: Toggle Copilot" })
+end, { desc = "Copilot: Toggle" })
 
--- Copilot insert mode keymaps (lazy-loaded)
+-- Copilot insert mode keymaps (leader-based)
 vim.api.nvim_create_autocmd("InsertEnter", {
   once = true,
   callback = function()
-    map("i", "<C-j>", function()
+    -- Accept suggestion
+    map("i", "<leader>a", function()
       return vim.fn["copilot#Accept"]("")
     end, { expr = true, silent = true, replace_keycodes = false, desc = "Copilot: Accept" })
     
-    map("i", "<C-k>", 'copilot#Dismiss()', { expr = true, silent = true, desc = "Copilot: Dismiss" })
-    map("i", "<C-Space>", 'copilot#Complete()', { expr = true, silent = true, desc = "Copilot: Complete" })
+    -- Next suggestion
+    map("i", "<leader>n", function()
+      return vim.fn.eval('copilot#Next()')
+    end, { expr = true, silent = true, desc = "Copilot: Next" })
+    
+    -- Previous suggestion  
+    map("i", "<leader>p", function()
+      return vim.fn.eval('copilot#Previous()')
+    end, { expr = true, silent = true, desc = "Copilot: Previous" })
+    
+    -- Dismiss suggestion
+    map("i", "<leader>d", 'copilot#Dismiss()', { expr = true, silent = true, desc = "Copilot: Dismiss" })
   end,
 })
 
