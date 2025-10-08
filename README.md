@@ -75,13 +75,13 @@ That's it! The first launch will automatically bootstrap all plugins.
 ### 🤖 AI Features
 
 #### GitHub Copilot (Code Completion)
-| Keymap | Description |
-|--------|-------------|
-| `Alt+l` | Accept Copilot suggestion |
-| `Alt+]` | Next suggestion |
-| `Alt+[` | Previous suggestion |
-| `Ctrl+]` | Dismiss suggestion |
-| `<leader>cp` | Toggle Copilot on/off |
+| Keymap | Mode | Description |
+|--------|------|-------------|
+| `<leader>a` | Insert | Accept Copilot suggestion |
+| `<leader>n` | Insert | Next suggestion |
+| `<leader>p` | Insert | Previous suggestion |
+| `<leader>d` | Insert | Dismiss suggestion |
+| `<leader>ct` | Normal | Toggle Copilot on/off |
 
 #### OpenCode (AI Assistant)
 | Keymap | Description |
@@ -183,12 +183,14 @@ vim.g.yoda_config = {
 **Real-time code completion while typing:**
 1. Start typing code in insert mode
 2. Wait for gray suggestion to appear
-3. Press `Alt+l` to accept, or `Alt+]`/`Alt+[` to cycle through options
-4. Press `Ctrl+]` to dismiss if not needed
+3. While in insert mode, press:
+   - `<leader>a` to accept
+   - `<leader>n` / `<leader>p` to cycle through options
+   - `<leader>d` to dismiss if not needed
 
-**Toggle Copilot:**
+**Toggle and manage Copilot:**
 ```vim
-<leader>cp         " Toggle Copilot on/off
+<leader>ct         " Toggle Copilot on/off (normal mode)
 :Copilot status    " Check current status
 :Copilot setup     " Authenticate with GitHub
 ```
