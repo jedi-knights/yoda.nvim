@@ -633,14 +633,22 @@ return {
   -- AI INTEGRATION (ADDITIONAL)
   -- ============================================================================
 
-
-  -- Avante - Agentic AI capabilities
+  -- OpenCode - AI assistant integration
   {
-    "yetone/avante.nvim",
+    "NickvanDyke/opencode.nvim",
     lazy = true,
-    cmd = { "Avante", "AvanteOpen" },
-    cond = function()
-      return vim.fn.executable("avante") == 1 or vim.fn.filereadable(vim.fn.expand("~/.local/bin/avante")) == 1
+    cmd = { "OpencodePrompt", "OpencodeAsk", "OpencodeSelect", "OpencodeToggle" },
+    dependencies = {
+      "folke/snacks.nvim", -- Required for toggle functionality
+    },
+    config = function()
+      vim.g.opencode_opts = {
+        -- Auto-reload buffers edited by opencode
+        auto_reload = true,
+      }
+      
+      -- Required for auto_reload
+      vim.opt.autoread = true
     end,
   },
 
