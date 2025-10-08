@@ -342,16 +342,6 @@ return {
     end,
   },
 
-  -- Claude Code CLI integration (if available)
-  {
-    "anthropics/claude-code-cli",
-    lazy = true,
-    cmd = "claude",
-    cond = function()
-      return vim.fn.executable("claude") == 1
-    end,
-  },
-
   -- ============================================================================
   -- DEVELOPMENT TOOLS
   -- ============================================================================
