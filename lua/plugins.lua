@@ -89,7 +89,7 @@ return {
     config = function()
       local alpha = require("alpha")
       local dashboard = require("alpha.themes.dashboard")
-      
+
       -- Set header
       dashboard.section.header.val = {
         "                                                     ",
@@ -102,7 +102,7 @@ return {
         "                                                     ",
         "                                                     ",
       }
-      
+
       -- Set menu
       dashboard.section.buttons.val = {
         dashboard.button("e", "📁  Open Explorer", "<leader>eo"),
@@ -112,10 +112,10 @@ return {
         dashboard.button("l", "🔧  Lazy", ":Lazy<CR>"),
         dashboard.button("q", "❌  Quit", ":qa<CR>"),
       }
-      
+
       -- Set footer
       dashboard.section.footer.val = "May the force be with you"
-      
+
       -- Configure alpha options
       local alpha_config = {
         redraw_on_resize = true,
@@ -142,7 +142,7 @@ return {
           end,
         },
       }
-      
+
       -- Send config to alpha
       alpha.setup(alpha_config)
     end,
@@ -325,11 +325,11 @@ return {
           auto_trigger = false,
           debounce = 75,
           keymap = {
-            accept = false,  -- Disable built-in, we use custom keymaps
+            accept = false, -- Disable built-in, we use custom keymaps
             accept_word = false,
             accept_line = false,
-            next = false,    -- Disable built-in, we use custom keymaps
-            prev = false,    -- Disable built-in, we use custom keymaps
+            next = false, -- Disable built-in, we use custom keymaps
+            prev = false, -- Disable built-in, we use custom keymaps
             dismiss = false, -- Disable built-in, we use custom keymaps
           },
         },
@@ -426,7 +426,7 @@ return {
         },
         on_attach = function(bufnr)
           local gs = package.loaded.gitsigns
-          
+
           -- Refresh git signs after git operations
           vim.api.nvim_create_autocmd("User", {
             pattern = "NeogitStatusRefreshed",
@@ -434,14 +434,14 @@ return {
               gs.refresh()
             end,
           })
-          
+
           vim.api.nvim_create_autocmd("User", {
             pattern = "NeogitCommitComplete",
             callback = function()
               gs.refresh()
             end,
           })
-          
+
           vim.api.nvim_create_autocmd("User", {
             pattern = "NeogitPushComplete",
             callback = function()
@@ -528,39 +528,39 @@ return {
         signs = {
           hunk = { "", "" },
           item = { ">", "v" },
-          section = { ">", "v" }
+          section = { ">", "v" },
         },
         integrations = {
-          diffview = true
+          diffview = true,
         },
         sections = {
           untracked = {
             folded = false,
-            hidden = false
+            hidden = false,
           },
           unstaged = {
             folded = false,
-            hidden = false
+            hidden = false,
           },
           staged = {
             folded = false,
-            hidden = false
+            hidden = false,
           },
           stashes = {
             folded = true,
-            hidden = false
+            hidden = false,
           },
           unpulled = {
             folded = true,
-            hidden = false
+            hidden = false,
           },
           unmerged = {
             folded = false,
-            hidden = false
+            hidden = false,
           },
           recent = {
             folded = true,
-            hidden = false
+            hidden = false,
           },
         },
         -- Use default mappings to avoid configuration errors
@@ -644,7 +644,7 @@ return {
         -- Auto-reload buffers edited by opencode
         auto_reload = true,
       }
-      
+
       -- Required for auto_reload
       vim.opt.autoread = true
     end,
@@ -697,8 +697,6 @@ return {
     end,
   },
 
-
-
   -- Showkeys - Minimal keys screencaster for Neovim
   {
     "nvzone/showkeys",
@@ -715,5 +713,4 @@ return {
       })
     end,
   },
-
 }

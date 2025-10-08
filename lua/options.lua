@@ -69,7 +69,7 @@ vim.opt.wildmode = "longest:full,full"
 vim.opt.laststatus = 3
 vim.opt.showcmd = true
 vim.opt.cmdheight = 1
-vim.opt.showtabline = 2  -- Always show bufferline/tabline
+vim.opt.showtabline = 2 -- Always show bufferline/tabline
 
 -- ============================================================================
 -- BACKUP
@@ -98,14 +98,15 @@ vim.opt.foldenable = false
 -- ============================================================================
 
 -- Configuration for Yoda.nvim
-vim.g.yoda_config = vim.g.yoda_config or {
-  verbose_startup = false,
-  show_loading_messages = false,
-  show_environment_notification = true,
-  enable_startup_profiling = false,
-  show_startup_report = false,
-  profiling_verbose = false,
-}
+vim.g.yoda_config = vim.g.yoda_config
+  or {
+    verbose_startup = false,
+    show_loading_messages = false,
+    show_environment_notification = true,
+    enable_startup_profiling = false,
+    show_startup_report = false,
+    profiling_verbose = false,
+  }
 
 -- Suppress LSP deprecation warning
 vim.g.lspconfig_deprecation_warning = false

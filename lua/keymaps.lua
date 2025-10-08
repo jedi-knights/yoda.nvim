@@ -192,14 +192,14 @@ map("n", "<leader>tt", function()
   require("yoda.functions").test_picker(function(selection)
     local env = selection.environment
     local region = selection.region
-    
+
     -- Set environment variables for the session
     vim.env.TEST_ENVIRONMENT = env
     vim.env.TEST_REGION = region
-    
+
     -- Notify user and run tests
     vim.notify(string.format("Running tests in %s (%s)", env, region), vim.log.levels.INFO)
-    
+
     -- Run neotest with the selected environment
     local neotest_ok, neotest = pcall(require, "neotest")
     if neotest_ok then
@@ -312,7 +312,7 @@ end, { desc = "OpenCode: Messages half page down" })
 map("n", "<leader>ct", function()
   -- Load copilot if not already loaded
   require("lazy").load({ plugins = { "copilot.lua" } })
-  
+
   -- Get copilot.suggestion module
   local ok, copilot_suggestion = pcall(require, "copilot.suggestion")
   if not ok then
@@ -338,29 +338,28 @@ vim.api.nvim_create_autocmd("InsertEnter", {
     if not ok then
       return
     end
-    
+
     -- Accept suggestion
     map("i", "<leader>a", function()
       copilot_suggestion.accept()
     end, { silent = true, desc = "Copilot: Accept" })
-    
+
     -- Next suggestion
     map("i", "<leader>n", function()
       copilot_suggestion.next()
     end, { silent = true, desc = "Copilot: Next" })
-    
-    -- Previous suggestion  
+
+    -- Previous suggestion
     map("i", "<leader>p", function()
       copilot_suggestion.prev()
     end, { silent = true, desc = "Copilot: Previous" })
-    
+
     -- Dismiss suggestion
     map("i", "<leader>d", function()
       copilot_suggestion.dismiss()
     end, { silent = true, desc = "Copilot: Dismiss" })
   end,
 })
-
 
 -- ============================================================================
 -- TERMINAL
@@ -451,16 +450,16 @@ end, { desc = "Util: Hot reload Yoda config" })
 map("n", "<leader>kk", function()
   -- Show keymaps in a temporary buffer
   local keymaps = {}
-  
+
   -- Get all normal mode keymaps that start with leader
   local leader = vim.g.mapleader or " "
   local mode = "n"
-  
+
   -- Try to get keymaps using vim.api
   local success, result = pcall(function()
     return vim.api.nvim_get_keymap(mode)
   end)
-  
+
   if success then
     for _, keymap in ipairs(result) do
       if keymap.lhs and keymap.lhs:sub(1, #leader) == leader then
@@ -468,7 +467,7 @@ map("n", "<leader>kk", function()
         table.insert(keymaps, keymap.lhs .. " → " .. desc)
       end
     end
-    
+
     if #keymaps > 0 then
       -- Create a temporary buffer to show keymaps
       local buf = vim.api.nvim_create_buf(false, true)
@@ -483,7 +482,7 @@ map("n", "<leader>kk", function()
         title = "Leader Keymaps (Normal Mode)",
         title_pos = "center",
       })
-      
+
       -- Close buffer when leaving window
       vim.api.nvim_create_autocmd("BufLeave", {
         buffer = buf,
@@ -510,7 +509,6 @@ map("n", "<leader>sk", function()
     end
   end
 end, { desc = "Util: Toggle showkeys display" })
-
 
 -- ============================================================================
 -- VISUAL MODE
@@ -550,20 +548,17 @@ end
 -- Dump all tracked keymaps from vim.keymap.set()
 map("n", "<leader>kd", function()
   local log = vim.deepcopy(_G.yoda_keymap_log or {})
-  
+
   -- Alphabetically sort by mode then lhs
   table.sort(log, function(a, b)
     return a.lhs == b.lhs and a.mode < b.mode or a.lhs < b.lhs
   end)
-  
+
   local lines = {}
   for _, map in ipairs(log) do
-    table.insert(lines, string.format(
-      "%s %s → %s [%s] (%s)",
-      map.mode, map.lhs, map.rhs, map.desc or "", map.source
-    ))
+    table.insert(lines, string.format("%s %s → %s [%s] (%s)", map.mode, map.lhs, map.rhs, map.desc or "", map.source))
   end
-  
+
   vim.cmd("new")
   vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
   vim.bo.buftype = "nofile"
@@ -577,7 +572,7 @@ map("n", "<leader>kc", function()
   local seen = {}
   local conflicts = {}
   local log = _G.yoda_keymap_log or {}
-  
+
   for _, map in ipairs(log) do
     local key = map.mode .. ":" .. map.lhs
     if seen[key] then
@@ -586,7 +581,7 @@ map("n", "<leader>kc", function()
       seen[key] = true
     end
   end
-  
+
   if #conflicts == 0 then
     vim.notify("✅ No keymap conflicts detected!", vim.log.levels.INFO)
   else
@@ -598,4 +593,3 @@ map("n", "<leader>kc", function()
     vim.bo.filetype = "keymap-conflicts"
   end
 end, { desc = "DevTools: Find Keymap Conflicts" })
-
