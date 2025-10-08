@@ -2,35 +2,92 @@
 
 Welcome to the Yoda.nvim documentation hub!
 
-## 📚 Quick Access
+## 🚀 Quick Start
 
-- **[🗝️ Keymaps Reference](KEYMAPS.md)** - Complete keymap documentation
-- **[🤖 AI Setup Guide](AVANTE_SETUP.md)** - Agentic AI workflow setup
-- **[📖 Contributing Guide](../CONTRIBUTING.md)** - How to contribute to Yoda.nvim
-- **[🐛 Error Recovery](ERROR_RECOVERY.md)** - Troubleshooting guide
+- **[Installation Guide](INSTALLATION.md)** - Get up and running
+- **[Getting Started](GETTING_STARTED.md)** - Learn the basics
+- **[Keymap Reference](KEYMAPS.md)** - Essential keyboard shortcuts
 
-## 🚀 Getting Started
+## 🤖 AI Integration
 
-1. **Installation**: See the main [README](../README.md) for installation instructions
-2. **Keymaps**: Check out the [Keymaps Reference](KEYMAPS.md) for essential commands
-3. **AI Setup**: Follow the [AI Setup Guide](AVANTE_SETUP.md) for agentic workflows
+- **[AI Setup Guide](AI_SETUP.md)** - Configure Copilot, Avante, and OpenCode
+- **[AI Development](AI_DEVELOPMENT.md)** - Vision and development roadmap
 
-## 📁 Documentation Structure
+## ⚙️ Configuration
+
+- **[Configuration Guide](CONFIGURATION.md)** - Customize your setup
+- **[Features Overview](FEATURES.md)** - Complete feature list
+- **[Auto-Update Config](AUTO_UPDATE_CONFIG.md)** - Automatic configuration updates
+
+## 🛠️ Development
+
+- **[Plugin Development](PLUGIN.md)** - Create custom plugins
+- **[Local Plugin Development](local_plugin_development.md)** - Working with local plugins
+- **[Distribution Overview](DISTRIBUTION_OVERVIEW.md)** - Architecture and design
+
+## 📚 Advanced Topics
 
 ### Core Guides
 - [LSP Guide](overview/LSP.md) - Language Server Protocol setup
-- [Debugging Guide](overview/DEBUGGING.md) - Debug your code with DAP
+- [Debugging Guide](overview/DEBUGGING.md) - Debug with DAP
+- [DAP (Debug Adapter Protocol)](overview/DAP.md) - Advanced debugging
 - [Functions Guide](overview/FUNCTIONS.md) - Custom functions and utilities
 
-### Advanced Features
-- [DAP (Debug Adapter Protocol)](overview/DAP.md) - Advanced debugging
-- [Harpoon Usage](overview/HARPOON.md) - Quick file navigation
-- [ChatGPT Integration](overview/CHATGPT.md) - AI assistance
+### Learning Resources
+- [Interactive Tutorials](INTERACTIVE_TUTORIALS.md) - Hands-on learning
+- [Vim Cheatsheet](overview/vim-cheatsheet.md) - Quick reference
 
-### Development
-- [Plugin Development](PLUGIN.md) - Plugin development guide
-- [Local Plugin Development](local_plugin_development.md) - Working with local plugins
+### Specialized Guides
+- [Warp Icon Setup](guides/WARP_ICON_SETUP.md) - Terminal icon configuration
+- [Tool Indicators](guides/TOOL_INDICATORS.md) - Status indicators
+- [Noice Compatibility](guides/NOICE_COMPATIBILITY.md) - UI framework integration
+
+## 🔧 Troubleshooting
+
+- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Error Recovery](ERROR_RECOVERY.md)** - Advanced recovery techniques
+- **[Performance Guide](PERFORMANCE_GUIDE.md)** - Optimize startup and runtime
+
+## 📖 Additional Resources
+
+- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute
+- **[Architecture Decision Records](adr/)** - Design decisions and rationale
 
 ---
 
-> **Quick Tip**: Bookmark this page for easy access to all Yoda.nvim documentation!
+## 📁 Documentation Structure
+
+```
+docs/
+├── index.md                     # This file
+├── INSTALLATION.md              # Installation guide
+├── GETTING_STARTED.md           # Beginner tutorial
+├── KEYMAPS.md                   # Keymap reference
+├── CONFIGURATION.md             # Configuration guide
+├── AI_SETUP.md                  # AI integration setup
+├── TROUBLESHOOTING.md           # Problem solving
+├── PERFORMANCE_GUIDE.md         # Performance optimization
+├── guides/                      # Specialized guides
+│   ├── WARP_ICON_SETUP.md
+│   ├── TOOL_INDICATORS.md
+│   └── NOICE_COMPATIBILITY.md
+├── overview/                    # Deep dive guides
+│   ├── LSP.md
+│   ├── DEBUGGING.md
+│   ├── DAP.md
+│   ├── FUNCTIONS.md
+│   └── vim-cheatsheet.md
+└── adr/                         # Architecture decisions
+    ├── 0001-create-custom-neovim-distribution.md
+    ├── 0002-adopt-conventional-commits.md
+    ├── 0003-use-lazy-package-manager.md
+    ├── 0004-use-tokyonight-colorscheme.md
+    ├── 0005-use-nvim-tree.md
+    └── 0006-use-editorconfig-plugin.md
+```
+
+---
+
+> **Quick Tip**: Use `<leader>?` in Neovim to discover available keymaps and commands!
+
+**Need help?** Start with [GETTING_STARTED.md](GETTING_STARTED.md) or check [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

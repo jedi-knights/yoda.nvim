@@ -22,7 +22,7 @@
 
 <p align="center">
   <strong>🚀 <a href="docs/INSTALLATION.md">Quick Install</a></strong> •
-  <strong>🤖 <a href="docs/AVANTE_SETUP.md">AI Setup</a></strong> •
+  <strong>🤖 <a href="docs/AI_SETUP.md">AI Setup</a></strong> •
   <strong>📚 <a href="docs/KEYMAPS.md">Keymap Reference</a></strong>
 </p>
 
@@ -109,8 +109,9 @@ That's it! The first launch will automatically bootstrap all plugins.
 
 ### Configuration
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Customize your setup
-- **[AI Setup Guide](docs/AVANTE_SETUP.md)** - Configure AI features
+- **[AI Setup Guide](docs/AI_SETUP.md)** - Configure Copilot, Avante, and OpenCode
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Performance Guide](docs/PERFORMANCE_GUIDE.md)** - Optimize startup and runtime
 
 ### Advanced Topics
 - **[LSP Guide](docs/overview/LSP.md)** - Language Server Protocol setup
@@ -128,13 +129,16 @@ Yoda.nvim uses a modular architecture:
 │   ├── options.lua          # Neovim options
 │   ├── keymaps.lua          # Key mappings
 │   ├── autocmds.lua         # Auto-commands
-│   ├── yoda/
-│   │   ├── colorscheme.lua  # Theme settings
-│   │   ├── lsp.lua          # LSP configuration
-│   │   └── functions.lua    # Custom functions
-│   └── custom/
-│       └── plugins/
-│           └── init.lua     # Plugin specifications
+│   ├── plugins.lua          # Plugin specifications
+│   ├── lazy-plugins.lua     # Lazy.nvim setup
+│   ├── lazy-bootstrap.lua   # Lazy.nvim bootstrap
+│   └── yoda/
+│       ├── colorscheme.lua  # Theme settings
+│       ├── lsp.lua          # LSP configuration
+│       ├── functions.lua    # Custom functions
+│       ├── commands.lua     # Custom commands
+│       ├── plenary.lua      # Test utilities
+│       └── utils.lua        # Utility functions
 ```
 
 ## ⚙️ Quick Configuration
