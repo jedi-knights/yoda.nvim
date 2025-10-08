@@ -58,14 +58,22 @@ return {
   {
     "folke/snacks.nvim",
     lazy = false,
+    priority = 1000,
     config = function()
       require("snacks").setup({
+        -- Bufferline - Show open buffers as tabs
+        bufferline = {
+          enabled = true,
+        },
+        -- Explorer
         explorer = {
           enabled = true,
         },
+        -- Picker
         picker = {
           enabled = true,
         },
+        -- Terminal
         terminal = {
           enabled = true,
         },
