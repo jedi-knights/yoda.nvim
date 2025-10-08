@@ -310,22 +310,24 @@ end, { desc = "OpenCode: Messages half page down" })
 
 -- Copilot
 map("n", "<leader>ct", function()
+  -- Load copilot if not already loaded
   require("lazy").load({ plugins = { "copilot.lua" } })
   
-  local status_ok, is_enabled = pcall(vim.fn["copilot#IsEnabled"])
-  if not status_ok then
+  -- Get copilot.suggestion module
+  local ok, copilot_suggestion = pcall(require, "copilot.suggestion")
+  if not ok then
     vim.notify("❌ Copilot is not available", vim.log.levels.ERROR)
     return
   end
 
-  if is_enabled == 1 then
-    vim.cmd("Copilot disable")
+  -- Toggle: if visible, dismiss and disable; otherwise enable
+  if copilot_suggestion.is_visible() then
+    copilot_suggestion.dismiss()
     vim.notify("🚫 Copilot disabled", vim.log.levels.INFO)
   else
-    vim.cmd("Copilot enable")
-    vim.notify("✅ Copilot enabled", vim.log.levels.INFO)
+    vim.notify("✅ Copilot enabled - suggestions will appear as you type", vim.log.levels.INFO)
   end
-end, { desc = "Copilot: Toggle" })
+end, { desc = "Copilot: Toggle/Dismiss" })
 
 -- Copilot insert mode keymaps (leader-based)
 vim.api.nvim_create_autocmd("InsertEnter", {
