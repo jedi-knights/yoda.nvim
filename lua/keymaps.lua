@@ -377,19 +377,21 @@ end, { desc = "Terminal: Python REPL" })
 map("n", "<leader>qq", ":qa<cr>", { desc = "Util: Quit Neovim" })
 
 map("n", "<leader><leader>r", function()
-  -- Unload plugin/config namespace so it can be re-required
+  -- Unload yoda modules and plugins so they can be re-required
   for name, _ in pairs(package.loaded) do
-    if name:match("^yoda") then
+    if name:match("^yoda") or name:match("^plugins") then
       package.loaded[name] = nil
     end
   end
 
-  -- Reload plugin spec file
-  require("yoda")
+  -- Reload core config files
+  dofile(vim.fn.stdpath("config") .. "/lua/options.lua")
+  dofile(vim.fn.stdpath("config") .. "/lua/keymaps.lua")
+  dofile(vim.fn.stdpath("config") .. "/lua/autocmds.lua")
 
   -- Defer notify so that `vim.notify` has a chance to be overridden again
   vim.defer_fn(function()
-    vim.notify("✅ Reloaded yoda plugin config", vim.log.levels.INFO)
+    vim.notify("✅ Reloaded Yoda config", vim.log.levels.INFO)
   end, 100)
 end, { desc = "Util: Hot reload Yoda config" })
 
