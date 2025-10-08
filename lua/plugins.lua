@@ -132,11 +132,11 @@ return {
           margin = 5,
           setup = function()
             vim.api.nvim_set_option_value("laststatus", 0, { scope = "local" })
-            vim.api.nvim_set_option_value("showtabline", 0, { scope = "local" })
+            -- Don't hide tabline on dashboard - we want bufferline visible
+            -- vim.api.nvim_set_option_value("showtabline", 0, { scope = "local" })
             vim.api.nvim_set_option_value("ruler", false, { scope = "local" })
             vim.api.nvim_set_option_value("showcmd", false, { scope = "local" })
             vim.api.nvim_set_option_value("cmdheight", 0, { scope = "local" })
-            vim.api.nvim_set_option_value("laststatus", 0, { scope = "local" })
             vim.api.nvim_set_option_value("number", false, { scope = "local" })
             vim.api.nvim_set_option_value("relativenumber", false, { scope = "local" })
           end,

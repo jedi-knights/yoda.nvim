@@ -63,12 +63,13 @@ vim.opt.completeopt = { "menu", "menuone", "noselect" }
 vim.opt.wildmode = "longest:full,full"
 
 -- ============================================================================
--- STATUS LINE
+-- STATUS LINE & TABLINE
 -- ============================================================================
 
 vim.opt.laststatus = 3
 vim.opt.showcmd = true
 vim.opt.cmdheight = 1
+vim.opt.showtabline = 2  -- Always show bufferline/tabline
 
 -- ============================================================================
 -- BACKUP
