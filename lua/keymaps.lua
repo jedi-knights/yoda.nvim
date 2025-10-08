@@ -271,10 +271,42 @@ map("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo: Test" })
 -- AI & COPILOT
 -- ============================================================================
 
--- Avante AI
-map("n", "<leader>aa", "<cmd>AvanteAsk<cr>", { desc = "AI: Ask Avante" })
-map("n", "<leader>ac", "<cmd>AvanteChat<cr>", { desc = "AI: Open Avante Chat" })
-map("n", "<leader>am", "<cmd>AvanteMCP<cr>", { desc = "AI: Open MCP Hub" })
+-- OpenCode AI Assistant
+map({ "n", "x" }, "<leader>oa", function()
+  require("opencode").ask("@this: ", { submit = true })
+end, { desc = "OpenCode: Ask about this" })
+
+map({ "n", "x" }, "<leader>o+", function()
+  require("opencode").prompt("@this")
+end, { desc = "OpenCode: Add this to prompt" })
+
+map({ "n", "x" }, "<leader>oe", function()
+  require("opencode").prompt("Explain @this and its context", { submit = true })
+end, { desc = "OpenCode: Explain this" })
+
+map({ "n", "x" }, "<leader>os", function()
+  require("opencode").select()
+end, { desc = "OpenCode: Select prompt" })
+
+map("n", "<leader>ot", function()
+  require("opencode").toggle()
+end, { desc = "OpenCode: Toggle embedded" })
+
+map("n", "<leader>on", function()
+  require("opencode").command("session_new")
+end, { desc = "OpenCode: New session" })
+
+map("n", "<leader>oi", function()
+  require("opencode").command("session_interrupt")
+end, { desc = "OpenCode: Interrupt session" })
+
+map("n", "<S-C-u>", function()
+  require("opencode").command("messages_half_page_up")
+end, { desc = "OpenCode: Messages half page up" })
+
+map("n", "<S-C-d>", function()
+  require("opencode").command("messages_half_page_down")
+end, { desc = "OpenCode: Messages half page down" })
 
 -- Copilot
 map("n", "<leader>cp", function()
