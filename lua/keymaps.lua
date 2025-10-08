@@ -15,24 +15,67 @@ end
 -- EXPLORER
 -- ============================================================================
 
--- Smart explorer focus: focuses if open, opens if not found
-map("n", "<leader>e", function()
+-- Utility function to check if snacks explorer is open and return window info
+local function get_snacks_explorer_win()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.api.nvim_buf_get_option(buf, "filetype")
-    if ft == "snacks-explorer" then
-      vim.api.nvim_set_current_win(win)
-      return
+    local buf_name = vim.api.nvim_buf_get_name(buf)
+    -- Check for snacks explorer by filetype (snacks creates multiple windows)
+    if ft:match("snacks_") or ft == "snacks" or buf_name:match("snacks") then
+      return win, buf
     end
   end
-  -- If not found, open the Snacks Explorer
-  local ok, explorer = pcall(require, "snacks.explorer")
-  if ok and explorer and explorer.open then
-    explorer.open()
-  else
+  return nil, nil
+end
+
+-- Open explorer only if it's closed
+map("n", "<leader>eo", function()
+  local win, _ = get_snacks_explorer_win()
+  if win then
+    vim.notify("Snacks Explorer is already open", vim.log.levels.INFO)
+    return
+  end
+  -- Open Snacks Explorer using the API
+  local success = pcall(function()
+    require("snacks").explorer.open()
+  end)
+  if not success then
     vim.notify("Snacks Explorer could not be opened", vim.log.levels.ERROR)
   end
-end, { desc = "Explorer: Focus or Open" })
+end, { desc = "Explorer: Open (only if closed)" })
+
+-- Focus on explorer if it's open but not focused
+map("n", "<leader>ef", function()
+  local win, _ = get_snacks_explorer_win()
+  if win then
+    vim.api.nvim_set_current_win(win)
+  else
+    vim.notify("Snacks Explorer is not open. Use <leader>eo to open it.", vim.log.levels.INFO)
+  end
+end, { desc = "Explorer: Focus (if open)" })
+
+-- Close explorer if it's open
+map("n", "<leader>ec", function()
+  local win, _ = get_snacks_explorer_win()
+  if win then
+    -- Close all snacks windows (snacks explorer creates multiple windows)
+    local snacks_wins = {}
+    for _, w in ipairs(vim.api.nvim_list_wins()) do
+      local buf = vim.api.nvim_win_get_buf(w)
+      local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+      if ft:match("snacks_") or ft == "snacks" then
+        table.insert(snacks_wins, w)
+      end
+    end
+    -- Close all snacks windows
+    for _, w in ipairs(snacks_wins) do
+      vim.api.nvim_win_close(w, true)
+    end
+  else
+    vim.notify("Snacks Explorer is not open", vim.log.levels.INFO)
+  end
+end, { desc = "Explorer: Close (if open)" })
 
 -- ============================================================================
 -- WINDOW MANAGEMENT

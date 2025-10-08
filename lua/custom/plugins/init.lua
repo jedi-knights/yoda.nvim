@@ -57,10 +57,19 @@ return {
   -- Snacks - Modern UI framework
   {
     "folke/snacks.nvim",
-    lazy = true,
-    cmd = { "SnacksExplorer", "SnacksPicker", "SnacksTerminal" },
+    lazy = false,
     config = function()
-      require("snacks").setup()
+      require("snacks").setup({
+        explorer = {
+          enabled = true,
+        },
+        picker = {
+          enabled = true,
+        },
+        terminal = {
+          enabled = true,
+        },
+      })
     end,
   },
 
@@ -88,7 +97,7 @@ return {
       
       -- Set menu
       dashboard.section.buttons.val = {
-        dashboard.button("e", "📁  Open Explorer", "<leader>e"),
+        dashboard.button("e", "📁  Open Explorer", "<leader>eo"),
         dashboard.button("f", "🔍  Find Files", "<leader>ff"),
         dashboard.button("g", "🔎  Find Text", "<leader>fg"),
         dashboard.button("r", "📋  Recent Files", ":Telescope oldfiles<CR>"),
