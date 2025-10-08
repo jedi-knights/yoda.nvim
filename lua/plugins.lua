@@ -1,5 +1,5 @@
--- lua/custom/plugins/init.lua
--- All plugin specifications in one place (kickstart-modular style)
+-- lua/plugins.lua
+-- All plugin specifications in one place
 
 return {
   -- ============================================================================

@@ -2,8 +2,8 @@
 -- Setup lazy.nvim with plugins
 
 require("lazy").setup({
-  -- Import plugins from custom directory
-  { import = "custom.plugins" },
+  -- Import plugins
+  { import = "plugins" },
 }, {
   defaults = {
     lazy = true,
