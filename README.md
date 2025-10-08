@@ -33,7 +33,7 @@
 Yoda.nvim is a modern Neovim distribution that provides:
 
 - **🎯 Beginner-friendly setup** with sensible defaults and guided onboarding
-- **🤖 AI-powered development** with Avante integration and GitHub Copilot
+- **🤖 AI-powered development** with GitHub Copilot and OpenCode integration
 - **🎨 Beautiful modern UI** with TokyoNight theme and enhanced components
 - **⚡ Fast performance** with lazy-loading and optimized startup
 - **🛠️ Comprehensive tooling** for LSP, testing, debugging, and Git integration
