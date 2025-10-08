@@ -64,7 +64,9 @@ That's it! The first launch will automatically bootstrap all plugins.
 ### 🚀 Navigation
 | Keymap | Description |
 |--------|-------------|
-| `<leader>e` | Toggle file explorer |
+| `<leader>eo` | Open Snacks Explorer (only if closed) |
+| `<leader>ef` | Focus Snacks Explorer (if open) |
+| `<leader>ec` | Close Snacks Explorer (if open) |
 | `<leader>ff` | Find files (Telescope) |
 | `<leader>fg` | Search in files (Telescope) |
 | `<leader>fr` | Recent files (Telescope) |
