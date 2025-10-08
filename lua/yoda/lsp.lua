@@ -32,9 +32,9 @@ vim.lsp.config.ts_ls = {}
 -- stylua is not enabled as an LSP server
 
 -- Enable the language servers
-vim.lsp.enable('lua_ls')
-vim.lsp.enable('gopls')
-vim.lsp.enable('ts_ls')
+vim.lsp.enable("lua_ls")
+vim.lsp.enable("gopls")
+vim.lsp.enable("ts_ls")
 
 -- Setup keymaps for LSP
 local function on_attach(client, bufnr)

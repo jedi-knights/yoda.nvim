@@ -15,12 +15,12 @@ local function start_alpha_dashboard()
   if not ok or not alpha or not alpha.start then
     return false
   end
-  
+
   local dashboard_ok, dashboard = pcall(require, "alpha.themes.dashboard")
   if not dashboard_ok or not dashboard then
     return false
   end
-  
+
   -- Build the configuration
   local alpha_config = {
     redraw_on_resize = true,
@@ -33,14 +33,11 @@ local function start_alpha_dashboard()
       dashboard.section.footer,
     },
   }
-  
+
   -- Start alpha with configuration
   local config_ok, _ = pcall(alpha.start, alpha_config)
   return config_ok
 end
-
-
-
 
 -- Terminal: Hide line numbers (local to buffer)
 create_autocmd("TermOpen", {
@@ -59,7 +56,7 @@ create_autocmd("VimEnter", {
     if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
       vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
     end
-    
+
     -- Show dashboard if no files were opened
     if vim.fn.argc() == 0 then
       -- Use a longer delay to ensure all plugins are loaded
@@ -74,7 +71,7 @@ create_autocmd("VimEnter", {
         end
       end, 200) -- Increased delay to ensure plugin is fully loaded
     end
-    
+
     -- Auto update dependencies on startup (DISABLED)
     -- Uncomment the following block to re-enable auto-updates
     --[[
@@ -94,11 +91,13 @@ create_autocmd("BufEnter", {
   group = augroup("AlphaBuffer", { clear = true }),
   callback = function()
     -- Only run for the first buffer and when no files are open
-    if vim.fn.argc() ~= 0 then return end
-    
+    if vim.fn.argc() ~= 0 then
+      return
+    end
+
     local bufname = vim.api.nvim_buf_get_name(0)
     local filetype = vim.bo.filetype
-    
+
     -- Only start alpha if we're in a truly empty buffer and not already in alpha
     if (bufname == "" or bufname == "[No Name]") and filetype ~= "alpha" and filetype == "" then
       local ok, alpha = pcall(require, "alpha")
@@ -146,7 +145,9 @@ create_autocmd("BufReadPost", {
   group = augroup("YodaRestoreCursor", { clear = true }),
   desc = "Restore cursor position",
   callback = function()
-    if vim.bo.buftype ~= "" then return end
+    if vim.bo.buftype ~= "" then
+      return
+    end
     local mark = vim.api.nvim_buf_get_mark(0, '"')
     local lcount = vim.api.nvim_buf_line_count(0)
     if mark[1] > 0 and mark[1] <= lcount then
@@ -168,7 +169,7 @@ create_autocmd("FileType", {
   desc = "Apply filetype-specific settings",
   callback = function()
     local filetype = vim.bo.filetype
-    
+
     if filetype == "markdown" then
       -- Markdown settings
       vim.opt_local.wrap = true

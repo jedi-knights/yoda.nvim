@@ -179,41 +179,45 @@ end
 M.test_picker = function(callback)
   local Path = require("plenary.path")
   local json = vim.json
-  
+
   -- Pre-load the picker module to avoid delay during selection
   local picker = require("snacks.picker")
-  
+
   local log_path = "output.log"
   local cache_file = vim.fn.stdpath("cache") .. "/yoda_testpicker_marker.json"
-  
+
   local function parse_json_config(path)
     local ok, content = pcall(Path.new(path).read, Path.new(path))
-    if not ok then return nil end
+    if not ok then
+      return nil
+    end
     local ok_json, parsed = pcall(json.decode, content)
-    if not ok_json then return nil end
+    if not ok_json then
+      return nil
+    end
     return parsed
   end
-  
+
   local function load_env_region()
     local fallback = {
       environments = { "qa", "prod" },
       regions = { "auto", "use1", "usw2", "euw1", "apse1" },
     }
-    
+
     local file_path = "environments.json"
     if vim.fn.filereadable(file_path) ~= 1 then
       return fallback
     end
-    
+
     local config = parse_json_config(file_path)
     return config or fallback
   end
-  
+
   local function load_marker()
     local config = parse_json_config(cache_file)
     return config or { environment = "qa", region = "auto" }
   end
-  
+
   local function save_marker(env, region)
     local config = { environment = env, region = region }
     local ok = pcall(function()
@@ -223,10 +227,10 @@ M.test_picker = function(callback)
       vim.notify("Failed to save test picker marker", vim.log.levels.WARN)
     end
   end
-  
+
   local env_region = load_env_region()
   local marker = load_marker()
-  
+
   -- Create picker items
   local items = {}
   for _, env in ipairs(env_region.environments) do
@@ -240,7 +244,7 @@ M.test_picker = function(callback)
       })
     end
   end
-  
+
   -- Show picker
   picker.show({
     title = "Select Test Environment",
@@ -280,7 +284,7 @@ M.check_ai_status = function()
     vim.notify("❌ Yoda utils not available", vim.log.levels.ERROR)
     return false
   end
-  
+
   local claude_available = utils.is_claude_available()
   if claude_available then
     local version, err = utils.get_claude_version()
@@ -292,24 +296,22 @@ M.check_ai_status = function()
   else
     vim.notify("❌ Claude CLI not available", vim.log.levels.WARN)
   end
-  
+
   return claude_available
 end
 
 --- Run comprehensive diagnostics
 M.run_diagnostics = function()
   vim.notify("🔍 Running Yoda diagnostics...", vim.log.levels.INFO)
-  
+
   -- Check LSP status
   M.check_lsp_status()
-  
+
   -- Check AI status
   M.check_ai_status()
-  
+
   -- Check plugin health
   vim.cmd("checkhealth")
 end
 
 return M
-
-

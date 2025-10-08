@@ -108,16 +108,16 @@ vim.api.nvim_create_user_command("YodaDebugLazy", function()
   print("=== Lazy.nvim Debug Information ===")
   print("Lazy.nvim path:", vim.fn.stdpath("data") .. "/lazy/lazy.nvim")
   print("Plugin state path:", vim.fn.stdpath("state") .. "/lazy")
-  
+
   -- Check if Lazy.nvim is loaded
   local ok, lazy = pcall(require, "lazy")
   if ok then
     print("Lazy.nvim loaded successfully")
-    
+
     -- Check plugin status
     local plugins = lazy.get_plugins()
     print("Total plugins:", #plugins)
-    
+
     -- Check for problematic plugins
     for _, plugin in ipairs(plugins) do
       if plugin._.loaded and plugin._.load_error then
@@ -132,30 +132,30 @@ end, { desc = "Debug Lazy.nvim plugin manager" })
 vim.api.nvim_create_user_command("YodaCleanLazy", function()
   -- Clean up Lazy.nvim cache and state
   local lazy_state = vim.fn.stdpath("state") .. "/lazy"
-  
+
   print("Cleaning Lazy.nvim cache...")
-  
+
   -- Clean readme directory
   local readme_dir = lazy_state .. "/readme"
   if vim.fn.isdirectory(readme_dir) == 1 then
     vim.fn.delete(readme_dir, "rf")
     print("Cleaned readme directory")
   end
-  
+
   -- Clean lock file
   local lock_file = lazy_state .. "/lock.json"
   if vim.fn.filereadable(lock_file) == 1 then
     vim.fn.delete(lock_file)
     print("Cleaned lock file")
   end
-  
+
   -- Clean cache directory
   local cache_dir = lazy_state .. "/cache"
   if vim.fn.isdirectory(cache_dir) == 1 then
     vim.fn.delete(cache_dir, "rf")
     print("Cleaned cache directory")
   end
-  
+
   print("Lazy.nvim cache cleaned. Restart Neovim to reload plugins.")
 end, { desc = "Clean Lazy.nvim cache and state" })
 
@@ -172,4 +172,4 @@ vim.api.nvim_create_user_command("YodaDiagnostics", function()
   else
     vim.notify("Diagnostics not available", vim.log.levels.ERROR)
   end
-end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" }) 
+end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" })
