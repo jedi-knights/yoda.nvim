@@ -317,12 +317,12 @@ return {
           auto_trigger = false,
           debounce = 75,
           keymap = {
-            accept = "<M-l>",
+            accept = false,  -- Disable built-in, we use custom keymaps
             accept_word = false,
             accept_line = false,
-            next = "<M-]>",
-            prev = "<M-[>",
-            dismiss = "<C-]>",
+            next = false,    -- Disable built-in, we use custom keymaps
+            prev = false,    -- Disable built-in, we use custom keymaps
+            dismiss = false, -- Disable built-in, we use custom keymaps
           },
         },
         filetypes = {
