@@ -3,6 +3,121 @@
 
 local M = {}
 
+-- ============================================================================
+-- Constants
+-- ============================================================================
+
+local TERMINAL_CONFIG = {
+  WIDTH = 0.9,
+  HEIGHT = 0.85,
+  BORDER = "rounded",
+  TITLE_POS = "center",
+}
+
+local SHELL_TYPES = {
+  BASH = "bash",
+  ZSH = "zsh",
+}
+
+local ACTIVATE_PATHS = {
+  UNIX = "/bin/activate",
+  WINDOWS = "/Scripts/activate",
+}
+
+local FILE_PATHS = {
+  ENVIRONMENTS_JSON = "environments.json",
+  OUTPUT_LOG = "output.log",
+  TESTPICKER_CACHE = "/yoda_testpicker_marker.json",
+}
+
+local FALLBACK_CONFIG = {
+  ENVIRONMENTS = { "qa", "prod" },
+  REGIONS = { "auto", "use1", "usw2", "euw1", "apse1" },
+  MARKER = { environment = "qa", region = "auto" },
+}
+
+-- ============================================================================
+-- Helper Functions
+-- ============================================================================
+
+--- Create terminal configuration with modifiable buffer setup
+--- @param shell_cmd table Shell command and arguments
+--- @param title string Terminal window title
+--- @return table Terminal configuration
+local function create_terminal_config(shell_cmd, title)
+  return {
+    cmd = shell_cmd,
+    win = M.make_terminal_win_opts(title),
+    start_insert = true,
+    auto_insert = true,
+    on_open = function(term)
+      vim.opt_local.modifiable = true
+      vim.opt_local.readonly = false
+    end,
+  }
+end
+
+--- Determine shell type from shell path
+--- @param shell string Shell executable path
+--- @return string|nil Shell type (bash/zsh) or nil for unknown
+local function get_shell_type(shell)
+  if shell:match(SHELL_TYPES.BASH) then
+    return SHELL_TYPES.BASH
+  elseif shell:match(SHELL_TYPES.ZSH) then
+    return SHELL_TYPES.ZSH
+  end
+  return nil
+end
+
+--- Log debug message with consistent format
+--- @param message string Debug message
+--- @param level string Log level (default: INFO)
+local function debug_log(message, level)
+  level = level or vim.log.levels.INFO
+  vim.notify(message, level, { title = "Terminal Debug" })
+end
+
+--- Check if system is Windows
+--- @return boolean True if Windows
+local function is_windows()
+  return vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
+end
+
+--- Get activate script path for virtual environment
+--- @param venv_path string Virtual environment directory path
+--- @return string Activate script path
+local function get_activate_script_path(venv_path)
+  local activate_subpath = is_windows() and ACTIVATE_PATHS.WINDOWS or ACTIVATE_PATHS.UNIX
+  return venv_path .. activate_subpath
+end
+
+--- Create temporary file safely
+--- @param content string File content
+--- @return string|nil Temporary file path or nil on failure
+local function create_temp_file(content)
+  local temp_path = vim.fn.tempname()
+  local file = io.open(temp_path, "w")
+  if not file then
+    debug_log("Failed to create temporary file: " .. temp_path, vim.log.levels.ERROR)
+    return nil
+  end
+  file:write(content)
+  file:close()
+  return temp_path
+end
+
+--- Create temporary directory safely
+--- @return string|nil Temporary directory path or nil on failure
+local function create_temp_directory()
+  local temp_path = vim.fn.tempname()
+  local success = vim.fn.mkdir(temp_path)
+  if success ~= 1 then
+    debug_log("Failed to create temporary directory: " .. temp_path, vim.log.levels.ERROR)
+    return nil
+  end
+  return temp_path
+end
+
 ---
 --- Scans all directories in the project root for Python virtual environments.
 --
@@ -71,82 +186,137 @@ M.make_terminal_win_opts = function(title)
   return {
     relative = "editor",
     position = "float",
-    width = 0.9,
-    height = 0.85,
-    border = "rounded",
+    width = TERMINAL_CONFIG.WIDTH,
+    height = TERMINAL_CONFIG.HEIGHT,
+    border = TERMINAL_CONFIG.BORDER,
     title = title,
-    title_pos = "center",
+    title_pos = TERMINAL_CONFIG.TITLE_POS,
   }
 end
 
-local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
-  local tmpdir, rcfile, env, args
-  if shell_type == "bash" then
-    rcfile = vim.fn.tempname()
-    local f = io.open(rcfile, "w")
-    f:write("source " .. venv_activate .. "\nexec bash -i\n")
-    f:close()
-    args = { shell, "--rcfile", rcfile, "-i" }
-    env = nil
-  elseif shell_type == "zsh" then
-    tmpdir = vim.fn.tempname()
-    vim.fn.mkdir(tmpdir)
-    rcfile = tmpdir .. "/.zshrc"
-    local f = io.open(rcfile, "w")
-    f:write("source " .. venv_activate .. "\n")
-    f:write("[ -f ~/.zshrc ] && source ~/.zshrc\n")
-    f:close()
-    args = { shell }
-    env = { ZDOTDIR = tmpdir }
-  else
-    args = { shell, "-i" }
-    env = nil
+--- Create bash configuration for virtual environment
+--- @param venv_activate string Virtual environment activation script path
+--- @return table|nil Shell arguments and environment, or nil on failure
+local function create_bash_config(venv_activate)
+  local rcfile_content = "source " .. venv_activate .. "\nexec bash -i\n"
+  local rcfile = create_temp_file(rcfile_content)
+  if not rcfile then
+    return nil
   end
-  require("snacks.terminal").open(args, {
-    env = env,
-    win = M.make_terminal_win_opts(win_title),
-    start_insert = true,
-    auto_insert = true,
-  })
+  
+  return {
+    args = { os.getenv("SHELL") or vim.o.shell, "--rcfile", rcfile, "-i" },
+    env = nil
+  }
+end
+
+--- Create zsh configuration for virtual environment
+--- @param venv_activate string Virtual environment activation script path
+--- @return table|nil Shell arguments and environment, or nil on failure
+local function create_zsh_config(venv_activate)
+  local tmpdir = create_temp_directory()
+  if not tmpdir then
+    return nil
+  end
+  
+  local rcfile = tmpdir .. "/.zshrc"
+  local rcfile_content = "source " .. venv_activate .. "\n[ -f ~/.zshrc ] && source ~/.zshrc\n"
+  local file = io.open(rcfile, "w")
+  if not file then
+    debug_log("Failed to create temporary zsh rcfile: " .. rcfile, vim.log.levels.ERROR)
+    return nil
+  end
+  file:write(rcfile_content)
+  file:close()
+  
+  return {
+    args = { os.getenv("SHELL") or vim.o.shell },
+    env = { ZDOTDIR = tmpdir }
+  }
+end
+
+--- Open shell with virtual environment activation
+--- @param shell string Shell executable path
+--- @param venv_activate string Virtual environment activation script path
+--- @param shell_type string Shell type (bash/zsh)
+--- @param win_title string Terminal window title
+local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
+  debug_log("Opening " .. shell_type .. " with venv: " .. venv_activate)
+  
+  local config
+  if shell_type == SHELL_TYPES.BASH then
+    config = create_bash_config(venv_activate)
+  elseif shell_type == SHELL_TYPES.ZSH then
+    config = create_zsh_config(venv_activate)
+  else
+    config = { args = { shell, "-i" }, env = nil }
+  end
+  
+  if not config then
+    debug_log("Failed to create shell configuration", vim.log.levels.ERROR)
+    return
+  end
+  
+  debug_log("Executing: " .. table.concat(config.args, " "))
+  
+  local terminal_config = create_terminal_config(config.args, win_title)
+  terminal_config.env = config.env
+  
+  require("snacks.terminal").open(terminal_config.cmd, terminal_config)
+end
+
+--- Open terminal with virtual environment
+--- @param shell string Shell executable path
+--- @param venv string Virtual environment path
+--- @return boolean Success status
+local function open_terminal_with_venv(shell, venv)
+  local venv_activate = M.get_activate_script_path(venv)
+  if not venv_activate then
+    debug_log("No activate script found for " .. venv, vim.log.levels.WARN)
+    return false
+  end
+  
+  debug_log("Using venv: " .. venv .. " with activate script: " .. venv_activate)
+  
+  local shell_type = get_shell_type(shell)
+  if shell_type then
+    local title = shell_type == SHELL_TYPES.BASH and "Bash Python Environment" or "Zshell Python Environment"
+    open_shell_with_venv(shell, venv_activate, shell_type, title)
+    return true
+  else
+    debug_log("Unknown shell type, using fallback: " .. shell, vim.log.levels.WARN)
+    local snacks_terminal = require("snacks.terminal")
+    snacks_terminal.open({ shell, "-i" }, create_terminal_config({ shell, "-i" }, " Simple Terminal Fallback "))
+    return true
+  end
+end
+
+--- Open simple terminal without virtual environment
+--- @param shell string Shell executable path
+local function open_simple_terminal(shell)
+  debug_log("Opening simple terminal with shell: " .. shell)
+  
+  local snacks_terminal = require("snacks.terminal")
+  local shell_type = get_shell_type(shell)
+  
+  if shell_type then
+    snacks_terminal.open({ shell, "-i" }, create_terminal_config({ shell, "-i" }, " Simple Terminal "))
+  else
+    snacks_terminal.open({ shell }, create_terminal_config({ shell }, " Simple Terminal "))
+  end
 end
 
 M.open_floating_terminal = function()
   M.select_virtual_env(function(venv)
-    local snacks_terminal = require("snacks.terminal")
     local shell = os.getenv("SHELL") or vim.o.shell
+    debug_log("Using shell: " .. shell)
+    
     if venv then
-      local venv_activate = M.get_activate_script_path(venv)
-      if venv_activate then
-        if shell:match("bash") then
-          open_shell_with_venv(shell, venv_activate, "bash", "Bash Python Environment")
-        elseif shell:match("zsh") then
-          open_shell_with_venv(shell, venv_activate, "zsh", "Zshell Python Environment")
-        else
-          -- fallback: just open the shell interactively if possible
-          -- this should never happen
-          snacks_terminal.open({ shell, "-i" }, {
-            win = M.make_terminal_win_opts(" Simple Terminal Fallback "),
-            start_insert = true,
-            auto_insert = true,
-          })
-        end
-        return
+      if not open_terminal_with_venv(shell, venv) then
+        open_simple_terminal(shell)
       end
-      print("No activate script found for " .. venv)
-    end
-    -- Open simple terminal (interactive if possible)
-    if shell:match("bash") or shell:match("zsh") then
-      snacks_terminal.open({ shell, "-i" }, {
-        win = M.make_terminal_win_opts(" Simple Terminal "),
-        start_insert = true,
-        auto_insert = true,
-      })
     else
-      snacks_terminal.open({ shell }, {
-        win = M.make_terminal_win_opts(" Simple Terminal "),
-        start_insert = true,
-        auto_insert = true,
-      })
+      open_simple_terminal(shell)
     end
   end)
 end
@@ -157,13 +327,7 @@ end
 -- @param venv_path string The absolute path to the virtual environment directory.
 -- @return string|nil The path to the activate script, or nil if not found.
 M.get_activate_script_path = function(venv_path)
-  local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
-  local activate_path
-  if is_windows then
-    activate_path = venv_path .. "/Scripts/activate"
-  else
-    activate_path = venv_path .. "/bin/activate"
-  end
+  local activate_path = get_activate_script_path(venv_path)
   if vim.fn.filereadable(activate_path) == 1 then
     return activate_path
   end
@@ -174,64 +338,74 @@ end
 -- TEST PICKER FUNCTIONALITY
 -- ============================================================================
 
---- Test picker for environment and region selection
---- @param callback function
-M.test_picker = function(callback)
+--- Parse JSON configuration file
+--- @param path string File path
+--- @return table|nil Parsed configuration or nil on failure
+local function parse_json_config(path)
   local Path = require("plenary.path")
   local json = vim.json
-
-  -- Pre-load the picker module to avoid delay during selection
-  local picker = require("snacks.picker")
-
-  local log_path = "output.log"
-  local cache_file = vim.fn.stdpath("cache") .. "/yoda_testpicker_marker.json"
-
-  local function parse_json_config(path)
-    local ok, content = pcall(Path.new(path).read, Path.new(path))
-    if not ok then
-      return nil
-    end
-    local ok_json, parsed = pcall(json.decode, content)
-    if not ok_json then
-      return nil
-    end
-    return parsed
+  
+  local ok, content = pcall(Path.new(path).read, Path.new(path))
+  if not ok then
+    return nil
   end
+  
+  local ok_json, parsed = pcall(json.decode, content)
+  if not ok_json then
+    return nil
+  end
+  
+  return parsed
+end
 
-  local function load_env_region()
-    local fallback = {
-      environments = { "qa", "prod" },
-      regions = { "auto", "use1", "usw2", "euw1", "apse1" },
+--- Load environment and region configuration
+--- @return table Configuration with environments and regions
+local function load_env_region_config()
+  local file_path = FILE_PATHS.ENVIRONMENTS_JSON
+  if vim.fn.filereadable(file_path) ~= 1 then
+    return {
+      environments = FALLBACK_CONFIG.ENVIRONMENTS,
+      regions = FALLBACK_CONFIG.REGIONS,
     }
-
-    local file_path = "environments.json"
-    if vim.fn.filereadable(file_path) ~= 1 then
-      return fallback
-    end
-
-    local config = parse_json_config(file_path)
-    return config or fallback
   end
 
-  local function load_marker()
-    local config = parse_json_config(cache_file)
-    return config or { environment = "qa", region = "auto" }
+  local config = parse_json_config(file_path)
+  return config or {
+    environments = FALLBACK_CONFIG.ENVIRONMENTS,
+    regions = FALLBACK_CONFIG.REGIONS,
+  }
+end
+
+--- Load cached marker configuration
+--- @return table Cached marker configuration
+local function load_cached_marker()
+  local cache_file = vim.fn.stdpath("cache") .. FILE_PATHS.TESTPICKER_CACHE
+  local config = parse_json_config(cache_file)
+  return config or FALLBACK_CONFIG.MARKER
+end
+
+--- Save marker configuration to cache
+--- @param env string Environment name
+--- @param region string Region name
+local function save_cached_marker(env, region)
+  local cache_file = vim.fn.stdpath("cache") .. FILE_PATHS.TESTPICKER_CACHE
+  local config = { environment = env, region = region }
+  
+  local Path = require("plenary.path")
+  local ok = pcall(function()
+    Path.new(cache_file):write(vim.json.encode(config), "w")
+  end)
+  
+  if not ok then
+    vim.notify("Failed to save test picker marker", vim.log.levels.WARN)
   end
+end
 
-  local function save_marker(env, region)
-    local config = { environment = env, region = region }
-    local ok = pcall(function()
-      Path.new(cache_file):write(vim.json.encode(config), "w")
-    end)
-    if not ok then
-      vim.notify("Failed to save test picker marker", vim.log.levels.WARN)
-    end
-  end
-
-  local env_region = load_env_region()
-  local marker = load_marker()
-
-  -- Create picker items
+--- Generate picker items from configuration
+--- @param env_region table Environment and region configuration
+--- @param marker table Cached marker configuration
+--- @return table Picker items
+local function generate_picker_items(env_region, marker)
   local items = {}
   for _, env in ipairs(env_region.environments) do
     for _, region in ipairs(env_region.regions) do
@@ -244,13 +418,23 @@ M.test_picker = function(callback)
       })
     end
   end
+  return items
+end
 
-  -- Show picker
+--- Test picker for environment and region selection
+--- @param callback function
+M.test_picker = function(callback)
+  local picker = require("snacks.picker")
+  
+  local env_region = load_env_region_config()
+  local marker = load_cached_marker()
+  local items = generate_picker_items(env_region, marker)
+
   picker.show({
     title = "Select Test Environment",
     items = items,
     on_select = function(item)
-      save_marker(item.value.environment, item.value.region)
+      save_cached_marker(item.value.environment, item.value.region)
       callback(item.value)
     end,
   })
