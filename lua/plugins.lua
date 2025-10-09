@@ -543,6 +543,26 @@ return {
     end,
   },
 
+  -- Diffview - Git diff viewer
+  {
+    "sindrets/diffview.nvim",
+    lazy = true,
+    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewRefresh" },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("diffview").setup({
+        view = {
+          default = {
+            layout = "diff2_horizontal",
+          },
+          merge_tool = {
+            layout = "diff3_horizontal",
+          },
+        },
+      })
+    end,
+  },
+
   -- ============================================================================
   -- TESTING & DEBUGGING
   -- ============================================================================
@@ -552,7 +572,11 @@ return {
     "TimUntersberger/neogit",
     lazy = true,
     cmd = "Neogit",
-    dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons" },
+    dependencies = { 
+      "nvim-lua/plenary.nvim", 
+      "nvim-tree/nvim-web-devicons",
+      "sindrets/diffview.nvim"  -- Required for neogit diff integration
+    },
     config = function()
       require("neogit").setup({
         disable_signs = false,
@@ -748,11 +772,14 @@ return {
     config = function()
       require("showkeys").setup({
         -- Default configuration
-        timeout = 1000,
+        timeout = 5, -- in secs
+        maxkeys = 5,              -- Show up to 5 keystrokes at a time
+        show_count = true,
         show_all_keys = false,
         show_key_sequence = true,
         show_leader = true,
         show_which_key = true,
+        position = "top-center",
       })
     end,
   },
