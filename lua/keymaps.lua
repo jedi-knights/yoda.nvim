@@ -449,6 +449,16 @@ end, { desc = "Terminal: Python REPL" })
 
 map("n", "<leader>qq", ":qa<cr>", { desc = "Util: Quit Neovim" })
 
+map("n", "<leader>d", function()
+  local ok, alpha = pcall(require, "alpha")
+  if ok and alpha and alpha.start then
+    alpha.start()
+    vim.notify("Dashboard opened", vim.log.levels.INFO)
+  else
+    vim.notify("Failed to open dashboard - alpha plugin not available", vim.log.levels.ERROR)
+  end
+end, { desc = "Util: Open dashboard" })
+
 map("n", "<leader><leader>r", function()
   -- Unload yoda modules and plugins so they can be re-required
   for name, _ in pairs(package.loaded) do
