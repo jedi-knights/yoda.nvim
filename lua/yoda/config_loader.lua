@@ -39,8 +39,12 @@ end
 --- @return table, string Configuration data and source type
 function M.load_env_region()
   local fallback = {
-    environments = { "qa", "prod" },
-    regions = { "auto", "use1", "usw2", "euw1", "apse1" },
+    -- Nested structure matching YAML parser output
+    environments = {
+      qa = { "auto", "use1" },
+      fastly = { "auto" },
+      prod = { "auto", "use1", "usw2", "euw1", "apse1" },
+    },
   }
 
   -- First try to load environments.json

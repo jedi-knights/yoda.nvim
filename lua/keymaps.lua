@@ -211,21 +211,100 @@ end, { desc = "Test: View test output" })
 
 map("n", "<leader>tt", function()
   require("yoda.functions").test_picker(function(selection)
+    if not selection then
+      vim.notify("Test picker cancelled", vim.log.levels.INFO)
+      return
+    end
+    
     local env = selection.environment
     local region = selection.region
+    local markers = selection.markers
+    local open_allure = selection.open_allure
 
     -- Set environment variables for the session
     vim.env.TEST_ENVIRONMENT = env
     vim.env.TEST_REGION = region
+    vim.env.TEST_MARKERS = markers
+    vim.env.TEST_OPEN_ALLURE = open_allure and "true" or "false"
 
-    -- Notify user and run tests
-    vim.notify(string.format("Running tests in %s (%s)", env, region), vim.log.levels.INFO)
+    -- Notify user about the selection
+    vim.notify(string.format("Running tests in %s (%s) with markers: %s", env, region, markers), vim.log.levels.INFO)
 
-    -- Run neotest with the selected environment
-    local neotest_ok, neotest = pcall(require, "neotest")
-    if neotest_ok then
-      neotest.run.run()
+    -- Check for virtual environment and build pytest command
+    local venvs = require("yoda.functions").find_virtual_envs()
+    local python_cmd = "python"
+    local pytest_cmd = "pytest"
+    
+    if #venvs > 0 then
+      -- Found virtual environments, use the first one
+      local venv = venvs[1]
+      local activate_script = require("yoda.functions").get_activate_script_path(venv)
+      
+      if activate_script then
+        -- Use virtual environment's Python and pytest
+        python_cmd = venv .. "/bin/python"
+        pytest_cmd = venv .. "/bin/pytest"
+        
+        vim.notify(string.format("Using virtual environment: %s", venv), vim.log.levels.INFO)
+      end
+    else
+      vim.notify("No virtual environment found, using system Python", vim.log.levels.WARN)
     end
+
+    -- Build pytest command with environment configuration
+    local pytest_args = {
+      "--tb=short",
+      "-v"
+    }
+    
+    -- Add markers if specified
+    if markers and markers ~= "" then
+      table.insert(pytest_args, "-m")
+      table.insert(pytest_args, markers)
+    end
+    
+    -- Add allure report if requested
+    if open_allure then
+      table.insert(pytest_args, "--alluredir=allure-results")
+    end
+    
+    -- Run pytest with environment configuration
+    local cmd = { pytest_cmd, unpack(pytest_args) }
+    local cmd_str = table.concat(cmd, " ")
+    
+    vim.notify(string.format("Running: %s", cmd_str), vim.log.levels.INFO)
+    
+    -- Prepare environment variables for the terminal
+    local terminal_env = {
+      TEST_ENVIRONMENT = env,
+      TEST_REGION = region,
+      TEST_MARKERS = markers,
+      TEST_OPEN_ALLURE = open_allure and "true" or "false",
+    }
+    
+    -- Add virtual environment variables if using venv
+    if #venvs > 0 then
+      local venv = venvs[1]
+      local activate_script = require("yoda.functions").get_activate_script_path(venv)
+      if activate_script then
+        terminal_env.VIRTUAL_ENV = venv
+        terminal_env.PATH = venv .. "/bin:" .. (os.getenv("PATH") or "")
+      end
+    end
+    
+    -- Execute pytest command in a terminal with environment variables
+    local snacks_terminal = require("snacks.terminal")
+    snacks_terminal.open(cmd, {
+      cmd = cmd,
+      env = terminal_env,
+      win = require("yoda.functions").make_terminal_win_opts("Pytest Test Runner"),
+      start_insert = false,
+      auto_insert = false,
+      on_open = function(term)
+        vim.opt_local.modifiable = true
+        vim.opt_local.readonly = false
+      end,
+    })
   end)
 end, { desc = "Test: Run with test picker" })
 
