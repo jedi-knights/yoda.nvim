@@ -31,9 +31,18 @@ local FILE_PATHS = {
 }
 
 local FALLBACK_CONFIG = {
-  ENVIRONMENTS = { "qa", "prod" },
-  REGIONS = { "auto", "use1", "usw2", "euw1", "apse1" },
-  MARKER = { environment = "qa", region = "auto" },
+  -- Nested structure matching YAML parser output
+  ENVIRONMENTS = {
+    qa = { "auto", "use1" },
+    fastly = { "auto" },
+    prod = { "auto", "use1", "usw2", "euw1", "apse1" },
+  },
+  MARKER = { 
+    environment = "qa", 
+    region = "auto",
+    markers = "bdd",
+    open_allure = false
+  },
 }
 
 -- ============================================================================
@@ -365,14 +374,12 @@ local function load_env_region_config()
   if vim.fn.filereadable(file_path) ~= 1 then
     return {
       environments = FALLBACK_CONFIG.ENVIRONMENTS,
-      regions = FALLBACK_CONFIG.REGIONS,
     }
   end
 
   local config = parse_json_config(file_path)
   return config or {
     environments = FALLBACK_CONFIG.ENVIRONMENTS,
-    regions = FALLBACK_CONFIG.REGIONS,
   }
 end
 
@@ -384,12 +391,20 @@ local function load_cached_marker()
   return config or FALLBACK_CONFIG.MARKER
 end
 
---- Save marker configuration to cache
+--- Save complete test picker configuration to cache
 --- @param env string Environment name
 --- @param region string Region name
-local function save_cached_marker(env, region)
+--- @param markers string|table Selected markers
+--- @param open_allure boolean Allure preference
+local function save_cached_marker(env, region, markers, open_allure)
   local cache_file = vim.fn.stdpath("cache") .. FILE_PATHS.TESTPICKER_CACHE
-  local config = { environment = env, region = region }
+  local config = { 
+    environment = env, 
+    region = region,
+    markers = markers,
+    open_allure = open_allure,
+    timestamp = os.time()
+  }
   
   local Path = require("plenary.path")
   local ok = pcall(function()
@@ -397,47 +412,158 @@ local function save_cached_marker(env, region)
   end)
   
   if not ok then
-    vim.notify("Failed to save test picker marker", vim.log.levels.WARN)
+    vim.notify("Failed to save test picker cache", vim.log.levels.WARN)
   end
 end
 
 --- Generate picker items from configuration
 --- @param env_region table Environment and region configuration
 --- @param marker table Cached marker configuration
---- @return table Picker items
+--- @return table, table Picker items (strings) and lookup table
 local function generate_picker_items(env_region, marker)
   local items = {}
-  for _, env in ipairs(env_region.environments) do
-    for _, region in ipairs(env_region.regions) do
-      local label = env .. " (" .. region .. ")"
-      local is_selected = env == marker.environment and region == marker.region
-      table.insert(items, {
-        label = label,
-        value = { environment = env, region = region },
-        selected = is_selected,
-      })
+  local lookup = {}
+  
+  -- Define the correct environment order (matching ingress mapping document)
+  local env_order = { "qa", "fastly", "prod" }
+  
+  -- Handle nested structure (from YAML parser)
+  if env_region.environments and type(env_region.environments) == "table" and env_region.environments.qa then
+    -- Nested structure: {qa = {"auto", "use1"}, fastly = {"auto"}, prod = {...}}
+    -- Process environments in the correct order - show only environments
+    for _, env_name in ipairs(env_order) do
+      local regions = env_region.environments[env_name]
+      if regions then
+        table.insert(items, env_name)
+        lookup[env_name] = { 
+          environment = env_name, 
+          regions = regions,
+          type = "environment"
+        }
+      end
+    end
+  else
+    -- Flat structure: {environments = {"qa", "prod"}, regions = {"auto", "use1"}}
+    -- Use the defined order for environments - show only environments
+    for _, env in ipairs(env_order) do
+      -- Check if this environment exists in the config
+      local env_exists = false
+      for _, config_env in ipairs(env_region.environments or {}) do
+        if config_env == env then
+          env_exists = true
+          break
+        end
+      end
+      
+      if env_exists then
+        table.insert(items, env)
+        lookup[env] = { 
+          environment = env, 
+          regions = env_region.regions or {},
+          type = "environment"
+        }
+      end
     end
   end
-  return items
+  
+  return items, lookup
 end
 
---- Test picker for environment and region selection
+--- Load markers with fallback to defaults
+--- @return table Available markers
+local function load_markers()
+  local config_loader = require("yoda.config_loader")
+  local markers = config_loader.load_pytest_markers("pytest.ini")
+  return markers or {
+    "bdd",           -- Default BDD tests
+    "unit",          -- Unit tests
+    "functional",    -- Functional tests
+    "smoke",         -- Smoke tests
+    "critical",      -- Critical path tests
+    "performance",   -- Performance tests
+    "regression",    -- Regression tests
+    "integration",   -- Integration tests
+  }
+end
+
+--- Test picker for environment, region, markers, and Allure selection
 --- @param callback function
 M.test_picker = function(callback)
   local picker = require("snacks.picker")
   
   local env_region = load_env_region_config()
-  local marker = load_cached_marker()
-  local items = generate_picker_items(env_region, marker)
+  local cached = load_cached_marker()
+  local items, lookup = generate_picker_items(env_region, cached)
 
-  picker.show({
-    title = "Select Test Environment",
-    items = items,
-    on_select = function(item)
-      save_cached_marker(item.value.environment, item.value.region)
-      callback(item.value)
-    end,
-  })
+  -- Step 1: Select environment (with cached default)
+  local default_env = cached.environment
+  picker.select(items, {
+    prompt = "Select Environment",
+    default = default_env,
+  }, function(selected_env)
+    if not selected_env then
+      callback(nil)
+      return
+    end
+    
+    local env_data = lookup[selected_env]
+    if not env_data or not env_data.regions then
+      callback(nil)
+      return
+    end
+    
+    -- Step 2: Select region for the chosen environment (with cached default)
+    local default_region = (selected_env == cached.environment) and cached.region or nil
+    picker.select(env_data.regions, {
+      prompt = "Select Region for " .. selected_env,
+      default = default_region,
+    }, function(selected_region)
+      if not selected_region then
+        callback(nil)
+        return
+      end
+      
+      -- Step 3: Select markers (with cached default)
+      local markers = load_markers()
+      local default_marker = cached.markers
+      picker.select(markers, {
+        prompt = "Select Test Markers",
+        default = default_marker,
+      }, function(selected_markers)
+        if not selected_markers then
+          callback(nil)
+          return
+        end
+        
+        -- Step 4: Select Allure preference (with cached default)
+        local allure_options = {
+          "Yes, open Allure report",
+          "No, skip Allure report"
+        }
+        local default_allure = cached.open_allure and "Yes, open Allure report" or "No, skip Allure report"
+        picker.select(allure_options, {
+          prompt = "Generate Allure Report?",
+          default = default_allure,
+        }, function(allure_choice)
+          if allure_choice == nil then
+            callback(nil)
+            return
+          end
+          
+          local open_allure = allure_choice == "Yes, open Allure report"
+          
+          -- Save complete selection to cache
+          save_cached_marker(selected_env, selected_region, selected_markers, open_allure)
+          callback({
+            environment = selected_env,
+            region = selected_region,
+            markers = selected_markers,
+            open_allure = open_allure
+          })
+        end)
+      end)
+    end)
+  end)
 end
 
 -- ============================================================================
