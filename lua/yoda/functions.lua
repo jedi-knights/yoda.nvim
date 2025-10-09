@@ -469,21 +469,30 @@ local function generate_picker_items(env_region, marker)
   return items, lookup
 end
 
---- Load markers with fallback to defaults
+--- Load markers from pytest.ini with fallback to defaults
 --- @return table Available markers
 local function load_markers()
   local config_loader = require("yoda.config_loader")
   local markers = config_loader.load_pytest_markers("pytest.ini")
-  return markers or {
-    "bdd",           -- Default BDD tests
-    "unit",          -- Unit tests
-    "functional",    -- Functional tests
-    "smoke",         -- Smoke tests
-    "critical",      -- Critical path tests
-    "performance",   -- Performance tests
-    "regression",    -- Regression tests
-    "integration",   -- Integration tests
-  }
+  
+  if markers then
+    return markers
+  else
+    return {
+      "bdd",           -- Default BDD tests
+      "unit",          -- Unit tests
+      "functional",    -- Functional tests
+      "smoke",         -- Smoke tests
+      "critical",      -- Critical path tests
+      "performance",   -- Performance tests
+      "regression",    -- Regression tests
+      "integration",   -- Integration tests
+      "location",      -- Location-based tests
+      "api",           -- API tests
+      "ui",            -- UI tests
+      "slow",          -- Slow running tests
+    }
+  end
 end
 
 --- Test picker for environment, region, markers, and Allure selection
@@ -497,9 +506,22 @@ M.test_picker = function(callback)
 
   -- Step 1: Select environment (with cached default)
   local default_env = cached.environment
-  picker.select(items, {
+  
+  -- Reorder environments to show cached default first (snacks.picker limitation)
+  local reordered_items = {}
+  if default_env then
+    table.insert(reordered_items, default_env)
+    for _, item in ipairs(items) do
+      if item ~= default_env then
+        table.insert(reordered_items, item)
+      end
+    end
+  else
+    reordered_items = items
+  end
+  
+  picker.select(reordered_items, {
     prompt = "Select Environment",
-    default = default_env,
   }, function(selected_env)
     if not selected_env then
       callback(nil)
@@ -514,9 +536,22 @@ M.test_picker = function(callback)
     
     -- Step 2: Select region for the chosen environment (with cached default)
     local default_region = (selected_env == cached.environment) and cached.region or nil
-    picker.select(env_data.regions, {
+    
+    -- Reorder regions to show cached default first (snacks.picker limitation)
+    local reordered_regions = {}
+    if default_region then
+      table.insert(reordered_regions, default_region)
+      for _, region in ipairs(env_data.regions) do
+        if region ~= default_region then
+          table.insert(reordered_regions, region)
+        end
+      end
+    else
+      reordered_regions = env_data.regions
+    end
+    
+    picker.select(reordered_regions, {
       prompt = "Select Region for " .. selected_env,
-      default = default_region,
     }, function(selected_region)
       if not selected_region then
         callback(nil)
@@ -526,9 +561,36 @@ M.test_picker = function(callback)
       -- Step 3: Select markers (with cached default)
       local markers = load_markers()
       local default_marker = cached.markers
-      picker.select(markers, {
+      
+      -- Check if cached marker exists in available markers
+      local marker_exists = false
+      for _, marker in ipairs(markers) do
+        if marker == default_marker then
+          marker_exists = true
+          break
+        end
+      end
+      
+      -- Only use default if it exists in the markers list
+      if not marker_exists then
+        default_marker = nil
+      end
+      
+      -- Reorder markers to show cached default first (snacks.picker limitation)
+      local reordered_markers = {}
+      if default_marker then
+        table.insert(reordered_markers, default_marker)
+        for _, marker in ipairs(markers) do
+          if marker ~= default_marker then
+            table.insert(reordered_markers, marker)
+          end
+        end
+      else
+        reordered_markers = markers
+      end
+      
+      picker.select(reordered_markers, {
         prompt = "Select Test Markers",
-        default = default_marker,
       }, function(selected_markers)
         if not selected_markers then
           callback(nil)
@@ -541,9 +603,22 @@ M.test_picker = function(callback)
           "No, skip Allure report"
         }
         local default_allure = cached.open_allure and "Yes, open Allure report" or "No, skip Allure report"
-        picker.select(allure_options, {
+        
+        -- Reorder allure options to show cached default first (snacks.picker limitation)
+        local reordered_allure = {}
+        if default_allure then
+          table.insert(reordered_allure, default_allure)
+          for _, option in ipairs(allure_options) do
+            if option ~= default_allure then
+              table.insert(reordered_allure, option)
+            end
+          end
+        else
+          reordered_allure = allure_options
+        end
+        
+        picker.select(reordered_allure, {
           prompt = "Generate Allure Report?",
-          default = default_allure,
         }, function(allure_choice)
           if allure_choice == nil then
             callback(nil)
