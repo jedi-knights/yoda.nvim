@@ -77,6 +77,27 @@ map("n", "<leader>ec", function()
   end
 end, { desc = "Explorer: Close (if open)" })
 
+-- Show explorer help/keybindings
+map("n", "<leader>e?", function()
+  local help_text = {
+    "Snacks Explorer Keybindings:",
+    "",
+    "<leader>eo - Open explorer",
+    "<leader>ef - Focus explorer", 
+    "<leader>ec - Close explorer",
+    "",
+    "In Explorer:",
+    "H - Toggle hidden files",
+    "I - Toggle ignored files", 
+    "h - Close directory",
+    "l - Open directory/file",
+    "",
+    "Note: Hidden files are shown by default due to show_hidden=true setting"
+  }
+  
+  vim.notify(table.concat(help_text, "\n"), vim.log.levels.INFO, { title = "Snacks Explorer Help" })
+end, { desc = "Explorer: Show help" })
+
 -- ============================================================================
 -- WINDOW MANAGEMENT
 -- ============================================================================
