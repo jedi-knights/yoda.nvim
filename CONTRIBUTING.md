@@ -397,7 +397,7 @@ Your PR will automatically run:
 - [Getting Started](docs/GETTING_STARTED.md) - User guide
 
 ### Development
-- [Testing Setup](TESTING_SETUP.md) - Test infrastructure
+- [Testing Guide](docs/TESTING_GUIDE.md) - Test infrastructure and guide
 - [Makefile](Makefile) - Development commands
 - [Test Helpers](tests/helpers.lua) - Testing utilities
 
