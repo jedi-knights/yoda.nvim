@@ -127,6 +127,7 @@ end
 function M.set_backend(backend_name)
   if backends[backend_name] then
     backend = backend_name
+    initialized = true  -- Mark as initialized to prevent re-detection
   else
     error("Unknown backend: " .. backend_name)
   end
