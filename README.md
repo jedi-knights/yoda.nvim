@@ -86,6 +86,7 @@ That's it! The first launch will automatically bootstrap all plugins.
 #### OpenCode (AI Assistant)
 | Keymap | Description |
 |--------|-------------|
+| `<leader>ai` | Toggle OpenCode and enter insert mode (ready to type) |
 | `<leader>oa` | Ask about current selection/cursor |
 | `<leader>oe` | Explain current code |
 | `<leader>os` | Select from prompt library |
@@ -196,6 +197,11 @@ vim.g.yoda_config = {
 ```
 
 ### OpenCode Workflow
+
+**Quick toggle with auto-insert:**
+```vim
+<leader>ai         " Opens OpenCode and drops you into insert mode - ready to type!
+```
 
 **Ask about code:**
 ```vim

@@ -3,25 +3,32 @@
 
 local M = {}
 
---- Load JSON configuration file
+--- Load JSON configuration file (uses consolidated core/io module)
 --- @param path string Path to JSON file
 --- @return table|nil Parsed JSON data
 function M.load_json_config(path)
-  local Path = require("plenary.path")
-  local ok, content = pcall(Path.new(path).read, Path.new(path))
-  if not ok then
+  -- Input validation for perfect assertiveness
+  if type(path) ~= "string" or path == "" then
+    vim.notify(
+      "load_json_config: path must be a non-empty string",
+      vim.log.levels.ERROR,
+      { title = "Config Loader Error" }
+    )
     return nil
   end
   
-  local ok_json, parsed = pcall(vim.json.decode, content)
-  return ok_json and parsed or nil
+  local io = require("yoda.core.io")
+  local ok, data = io.parse_json_file(path)
+  return ok and data or nil
 end
 
 --- Load ingress mapping configuration
 --- @return table|nil Parsed environment mapping
 function M.load_ingress_mapping()
   local yaml_path = "ingress-mapping.yaml"
-  if vim.fn.filereadable(yaml_path) ~= 1 then
+  local io = require("yoda.core.io")
+  
+  if not io.is_file(yaml_path) then
     return nil
   end
 
@@ -38,18 +45,17 @@ end
 --- Load environment and region configuration
 --- @return table, string Configuration data and source type
 function M.load_env_region()
+  -- Use testing defaults (user-overridable for OCP)
+  local defaults = require("yoda.testing.defaults")
   local fallback = {
-    -- Nested structure matching YAML parser output
-    environments = {
-      qa = { "auto", "use1" },
-      fastly = { "auto" },
-      prod = { "auto", "use1", "usw2", "euw1", "apse1" },
-    },
+    environments = defaults.get_environments(),
   }
 
   -- First try to load environments.json
   local file_path = "environments.json"
-  if vim.fn.filereadable(file_path) == 1 then
+  local io = require("yoda.core.io")
+  
+  if io.is_file(file_path) then
     local config = M.load_json_config(file_path)
     if config then
       return config, "json"
@@ -69,13 +75,17 @@ end
 --- @param cache_file string Path to cache file
 --- @return table Default marker configuration
 function M.load_marker(cache_file)
+  -- Input validation
+  if type(cache_file) ~= "string" or cache_file == "" then
+    local defaults = require("yoda.testing.defaults")
+    return defaults.get_marker_defaults()
+  end
+  
   local config = M.load_json_config(cache_file)
-  return config or { 
-    environment = "qa", 
-    region = "auto", 
-    markers = "bdd",
-    open_allure = false
-  }
+  
+  -- Use testing defaults for fallback (OCP - user-overridable!)
+  local defaults = require("yoda.testing.defaults")
+  return config or defaults.get_marker_defaults()
 end
 
 --- Parse pytest.ini file to extract markers

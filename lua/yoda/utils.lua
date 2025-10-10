@@ -1,17 +1,34 @@
--- lua/yoda/lib/utils.lua
--- Only truly reusable functions (kickstart-style minimal utilities)
+-- lua/yoda/utils.lua
+-- Consolidated utilities with delegation to focused core modules
+-- This module serves as the main entry point for utilities
 
 local M = {}
 
 -- ============================================================================
--- UTILITY FUNCTIONS
+-- CORE MODULE IMPORTS
+-- ============================================================================
+
+-- Import focused core modules
+local string_utils = require("yoda.core.string")
+local table_utils = require("yoda.core.table")
+local io_utils = require("yoda.core.io")
+local platform_utils = require("yoda.core.platform")
+
+-- Export core modules for direct access
+M.string = string_utils
+M.table = table_utils
+M.io = io_utils
+M.platform = platform_utils
+
+-- ============================================================================
+-- STRING UTILITIES (delegated to core/string.lua)
 -- ============================================================================
 
 --- Trim whitespace from string
 --- @param str string
 --- @return string
 function M.trim(str)
-  return str:match("^%s*(.-)%s*$")
+  return string_utils.trim(str)
 end
 
 --- Check if a string starts with a prefix
@@ -19,7 +36,7 @@ end
 --- @param prefix string
 --- @return boolean
 function M.starts_with(str, prefix)
-  return str:sub(1, #prefix) == prefix
+  return string_utils.starts_with(str, prefix)
 end
 
 --- Check if a string ends with a suffix
@@ -27,197 +44,152 @@ end
 --- @param suffix string
 --- @return boolean
 function M.ends_with(str, suffix)
-  return str:sub(-#suffix) == suffix
+  return string_utils.ends_with(str, suffix)
 end
 
 --- Get the file extension from a path
 --- @param path string
 --- @return string
 function M.get_extension(path)
-  return path:match("^.+(%..+)$")
+  return string_utils.get_extension(path)
 end
+
+-- ============================================================================
+-- FILE UTILITIES (delegated to core/io.lua)
+-- ============================================================================
 
 --- Check if a file exists
 --- @param path string
 --- @return boolean
 function M.file_exists(path)
-  local f = io.open(path, "r")
-  if f then
-    f:close()
-    return true
-  end
-  return false
+  return io_utils.file_exists(path)
 end
 
---- Safe require with error handling
---- @param module string
---- @return boolean, any
-function M.safe_require(module)
-  return pcall(require, module)
-end
+-- ============================================================================
+-- TABLE UTILITIES (delegated to core/table.lua)
+-- ============================================================================
 
 --- Create a table with default values
 --- @param defaults table
 --- @param overrides table
 --- @return table
 function M.merge_tables(defaults, overrides)
-  local result = {}
-  for k, v in pairs(defaults) do
-    result[k] = v
-  end
-  for k, v in pairs(overrides or {}) do
-    result[k] = v
-  end
-  return result
+  return table_utils.merge(defaults, overrides)
 end
 
 --- Deep copy a table
 --- @param orig table
 --- @return table
 function M.deep_copy(orig)
-  local copy
-  if type(orig) == "table" then
-    copy = {}
-    for key, value in next, orig, nil do
-      copy[M.deep_copy(key)] = M.deep_copy(value)
-    end
-    setmetatable(copy, M.deep_copy(getmetatable(orig)))
-  else
-    copy = orig
-  end
-  return copy
+  return table_utils.deep_copy(orig)
 end
+
+-- ============================================================================
+-- MODULE LOADING
+-- ============================================================================
+
+--- Safe require with error handling
+--- @param module string Module name
+--- @param opts table|nil Options {silent, notify, fallback}
+--- @return boolean success
+--- @return any module or fallback
+function M.safe_require(module, opts)
+  opts = opts or {}
+  local ok, result = pcall(require, module)
+  
+  if not ok then
+    if opts.notify ~= false and not opts.silent then
+      M.notify(
+        string.format("Failed to load %s", module),
+        "error",
+        { title = "Module Error" }
+      )
+    end
+    return false, opts.fallback or result
+  end
+  
+  return true, result
+end
+
+-- ============================================================================
+-- ENVIRONMENT (delegated to environment module for single source of truth)
+-- ============================================================================
 
 --- Check if running in work environment
 --- @return boolean
 function M.is_work_env()
-  return vim.env.YODA_ENV == "work"
+  return require("yoda.environment").get_mode() == "work"
 end
 
 --- Check if running in home environment
 --- @return boolean
 function M.is_home_env()
-  return vim.env.YODA_ENV == "home"
+  return require("yoda.environment").get_mode() == "home"
 end
 
 --- Get current environment
 --- @return string
 function M.get_env()
-  return vim.env.YODA_ENV or "unknown"
+  return require("yoda.environment").get_mode()
 end
 
---- Notify with consistent formatting
+-- ============================================================================
+-- NOTIFICATION (uses adapter for DIP)
+-- ============================================================================
+
+--- Smart notify with automatic backend detection (uses adapter for DIP)
+--- Supports noice, snacks, or native vim.notify
+--- @param msg string Message to display
+--- @param level string|number Log level ("info", "warn", "error" or vim.log.levels.*)
+--- @param opts table|nil Options (title, timeout, etc.)
+function M.notify(msg, level, opts)
+  local ok, adapter = pcall(require, "yoda.adapters.notification")
+  if not ok then
+    -- Fallback to native vim.notify if adapter fails to load
+    local numeric_level = type(level) == "string" and vim.log.levels.INFO or level
+    vim.notify(msg, numeric_level, opts)
+    return
+  end
+  
+  adapter.notify(msg, level, opts)
+end
+
+--- Alias for notify (backwards compatibility)
 --- @param msg string
 --- @param level string|number
 --- @param opts table
-function M.notify(msg, level, opts)
-  opts = opts or {}
-  vim.notify(msg, level, opts)
+function M.smart_notify(msg, level, opts)
+  return M.notify(msg, level, opts)
 end
 
 --- Log debug information (only in verbose mode)
 --- @param msg string
 function M.debug(msg)
   if vim.g.yoda_config and vim.g.yoda_config.verbose_startup then
-    vim.notify("[DEBUG] " .. msg, vim.log.levels.DEBUG)
+    M.notify("[DEBUG] " .. msg, "debug")
   end
 end
 
 -- ============================================================================
--- AI INTEGRATION UTILITIES
+-- AI CLI UTILITIES (delegated to diagnostics/ai_cli.lua for perfect SRP)
 -- ============================================================================
 
---- Claude CLI binary auto-discovery helper
+--- Get Claude CLI path
 --- @return string|nil
 function M.get_claude_path()
-  -- Common locations where Claude CLI might be installed
-  local common_paths = {
-    -- System PATH
-    function()
-      return vim.fn.exepath("claude")
-    end,
-
-    -- User local binaries
-    function()
-      return vim.fn.expand("~/.local/bin/claude")
-    end,
-    function()
-      return vim.fn.expand("~/.bun/bin/claude")
-    end,
-    function()
-      return vim.fn.expand("~/.npm-global/bin/claude")
-    end,
-
-    -- Homebrew on macOS
-    function()
-      return "/opt/homebrew/bin/claude"
-    end,
-    function()
-      return "/usr/local/bin/claude"
-    end,
-
-    -- Node.js global packages
-    function()
-      return vim.fn.expand("~/node_modules/.bin/claude")
-    end,
-
-    -- Windows paths (if needed)
-    function()
-      return vim.fn.expand("~/AppData/Roaming/npm/claude.cmd")
-    end,
-    function()
-      return vim.fn.expand("~/AppData/Roaming/npm/claude")
-    end,
-  }
-
-  -- Check if a path exists and is executable
-  local function is_executable(path)
-    if not path or path == "" then
-      return false
-    end
-    return vim.fn.executable(path) == 1
-  end
-
-  -- First, try to find in PATH
-  local path = vim.fn.exepath("claude")
-  if is_executable(path) then
-    return path
-  end
-
-  -- Try common installation paths
-  for _, path_func in ipairs(common_paths) do
-    local ok, candidate_path = pcall(path_func)
-    if ok and candidate_path and is_executable(candidate_path) then
-      return candidate_path
-    end
-  end
-
-  return nil
+  return require("yoda.diagnostics.ai_cli").get_claude_path()
 end
 
 --- Check if Claude CLI is available
 --- @return boolean
 function M.is_claude_available()
-  return M.get_claude_path() ~= nil
+  return require("yoda.diagnostics.ai_cli").is_claude_available()
 end
 
---- Get version of Claude CLI (if available)
+--- Get version of Claude CLI
 --- @return string|nil, string|nil
 function M.get_claude_version()
-  local claude_path = M.get_claude_path()
-  if not claude_path then
-    return nil, "Claude CLI not found"
-  end
-
-  local ok, result = pcall(function()
-    return vim.fn.system({ claude_path, "--version" }):gsub("^%s*(.-)%s*$", "%1")
-  end)
-
-  if not ok then
-    return nil, "Failed to get version"
-  end
-
-  return result, nil
+  return require("yoda.diagnostics.ai_cli").get_claude_version()
 end
 
 return M
