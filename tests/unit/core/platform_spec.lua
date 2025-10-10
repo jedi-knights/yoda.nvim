@@ -255,4 +255,3 @@ describe("core.platform", function()
     end)
   end)
 end)
-

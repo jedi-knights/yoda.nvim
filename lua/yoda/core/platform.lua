@@ -53,7 +53,7 @@ end
 --- @param ... string Path components
 --- @return string Joined path
 function M.join_path(...)
-  local parts = {...}
+  local parts = { ... }
   local sep = M.get_path_sep()
   return table.concat(parts, sep)
 end
@@ -70,4 +70,3 @@ function M.normalize_path(path)
 end
 
 return M
-

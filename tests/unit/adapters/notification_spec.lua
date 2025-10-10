@@ -28,7 +28,7 @@ describe("adapters.notification", function()
   describe("detect_backend()", function()
     it("prefers user-configured backend", function()
       vim.g.yoda_notify_backend = "native"
-      
+
       local backend = notification.get_backend()
       assert.equals("native", backend)
     end)
@@ -66,10 +66,10 @@ describe("adapters.notification", function()
       }
 
       local backend1 = notification.get_backend()
-      
+
       -- Remove noice
       package.loaded["noice"] = nil
-      
+
       -- Should still return noice (cached)
       local backend2 = notification.get_backend()
       assert.equals(backend1, backend2)
@@ -113,7 +113,7 @@ describe("adapters.notification", function()
       package.loaded["noice"] = {
         notify = function() end,
       }
-      
+
       assert.equals("noice", notification.get_backend())
     end)
   end)
@@ -121,7 +121,7 @@ describe("adapters.notification", function()
   describe("notify()", function()
     it("calls native vim.notify with correct parameters", function()
       notification.set_backend("native")
-      
+
       local called = false
       local captured_msg, captured_level
       vim.notify = function(msg, level, opts)
@@ -131,7 +131,7 @@ describe("adapters.notification", function()
       end
 
       notification.notify("Test message", "info")
-      
+
       assert.is_true(called)
       assert.equals("Test message", captured_msg)
       assert.equals(vim.log.levels.INFO, captured_level)
@@ -139,7 +139,7 @@ describe("adapters.notification", function()
 
     it("calls snacks notify with string level", function()
       notification.set_backend("snacks")
-      
+
       local called = false
       local captured_msg, captured_level
       package.loaded["snacks"] = {
@@ -151,7 +151,7 @@ describe("adapters.notification", function()
       }
 
       notification.notify("Test message", vim.log.levels.WARN)
-      
+
       assert.is_true(called)
       assert.equals("Test message", captured_msg)
       assert.equals("warn", captured_level) -- Converted to string
@@ -159,7 +159,7 @@ describe("adapters.notification", function()
 
     it("calls noice notify with string level", function()
       notification.set_backend("noice")
-      
+
       local called = false
       local captured_level
       package.loaded["noice"] = {
@@ -170,7 +170,7 @@ describe("adapters.notification", function()
       }
 
       notification.notify("Test", vim.log.levels.ERROR)
-      
+
       assert.is_true(called)
       assert.equals("error", captured_level)
     end)
@@ -189,7 +189,7 @@ describe("adapters.notification", function()
 
     it("defaults level to info", function()
       notification.set_backend("native")
-      
+
       local captured_level
       vim.notify = function(msg, level, opts)
         captured_level = level
@@ -201,7 +201,7 @@ describe("adapters.notification", function()
 
     it("defaults opts to empty table", function()
       notification.set_backend("native")
-      
+
       local captured_opts
       vim.notify = function(msg, level, opts)
         captured_opts = opts
@@ -213,7 +213,7 @@ describe("adapters.notification", function()
 
     it("falls back to native on backend error", function()
       notification.set_backend("noice")
-      
+
       package.loaded["noice"] = {
         notify = function()
           error("Noice failed")
@@ -231,21 +231,21 @@ describe("adapters.notification", function()
 
     it("passes options through to backend", function()
       notification.set_backend("native")
-      
+
       local captured_opts
       vim.notify = function(msg, level, opts)
         captured_opts = opts
       end
 
       notification.notify("Test", "info", { title = "My Title", timeout = 5000 })
-      
+
       assert.equals("My Title", captured_opts.title)
       assert.equals(5000, captured_opts.timeout)
     end)
 
     it("converts string levels to numbers for native", function()
       notification.set_backend("native")
-      
+
       local levels_tested = {}
       vim.notify = function(msg, level, opts)
         table.insert(levels_tested, level)
@@ -255,7 +255,7 @@ describe("adapters.notification", function()
       notification.notify("Test", "warn")
       notification.notify("Test", "info")
       notification.notify("Test", "debug")
-      
+
       assert.equals(vim.log.levels.ERROR, levels_tested[1])
       assert.equals(vim.log.levels.WARN, levels_tested[2])
       assert.equals(vim.log.levels.INFO, levels_tested[3])
@@ -264,7 +264,7 @@ describe("adapters.notification", function()
 
     it("converts numeric levels to strings for snacks", function()
       notification.set_backend("snacks")
-      
+
       local levels_tested = {}
       package.loaded["snacks"] = {
         notify = function(msg, level, opts)
@@ -275,7 +275,7 @@ describe("adapters.notification", function()
       notification.notify("Test", vim.log.levels.ERROR)
       notification.notify("Test", vim.log.levels.WARN)
       notification.notify("Test", vim.log.levels.INFO)
-      
+
       assert.equals("error", levels_tested[1])
       assert.equals("warn", levels_tested[2])
       assert.equals("info", levels_tested[3])
@@ -283,7 +283,7 @@ describe("adapters.notification", function()
 
     it("handles unknown string level gracefully", function()
       notification.set_backend("native")
-      
+
       local captured_level
       vim.notify = function(msg, level, opts)
         captured_level = level
@@ -295,7 +295,7 @@ describe("adapters.notification", function()
 
     it("handles case-insensitive string levels", function()
       notification.set_backend("native")
-      
+
       local captured_level
       vim.notify = function(msg, level, opts)
         captured_level = level
@@ -306,4 +306,3 @@ describe("adapters.notification", function()
     end)
   end)
 end)
-

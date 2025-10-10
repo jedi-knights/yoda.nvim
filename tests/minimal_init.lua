@@ -65,4 +65,3 @@ require("lazy").setup({
     border = "rounded",
   },
 })
-

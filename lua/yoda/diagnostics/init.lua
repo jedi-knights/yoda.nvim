@@ -18,13 +18,13 @@ M.ai = require("yoda.diagnostics.ai")
 --- Run comprehensive diagnostics
 function M.run_all()
   vim.notify("🔍 Running Yoda diagnostics...", vim.log.levels.INFO)
-  
+
   -- Check LSP status
   M.lsp.check_status()
-  
+
   -- Check AI status
   M.ai.check_status()
-  
+
   -- Check plugin health
   vim.cmd("checkhealth")
 end
@@ -33,7 +33,7 @@ end
 function M.quick_check()
   local lsp_ok = M.lsp.check_status()
   local ai_status = M.ai.check_status()
-  
+
   return {
     lsp_active = lsp_ok,
     ai = ai_status,
@@ -41,5 +41,3 @@ function M.quick_check()
 end
 
 return M
-
-

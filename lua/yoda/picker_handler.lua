@@ -8,19 +8,19 @@ local M = {}
 -- ============================================================================
 
 local DEFAULT_MARKERS = {
-  "bdd",           -- Default BDD tests
-  "unit",          -- Unit tests
-  "functional",    -- Functional tests
-  "smoke",         -- Smoke tests
-  "critical",      -- Critical path tests
-  "performance",   -- Performance tests
-  "regression",    -- Regression tests
-  "integration",   -- Integration tests
+  "bdd", -- Default BDD tests
+  "unit", -- Unit tests
+  "functional", -- Functional tests
+  "smoke", -- Smoke tests
+  "critical", -- Critical path tests
+  "performance", -- Performance tests
+  "regression", -- Regression tests
+  "integration", -- Integration tests
 }
 
 local ALLURE_OPTIONS = {
   "Yes, open Allure report",
-  "No, skip Allure report"
+  "No, skip Allure report",
 }
 
 local CACHE_FILE_PATH = vim.fn.stdpath("cache") .. "/yoda_testpicker_marker.json"
@@ -104,7 +104,7 @@ local function select_region(env_region, selected_env, callback)
   local config_loader = require("yoda.config_loader")
   local cached_config = config_loader.load_marker(CACHE_FILE_PATH)
   local default_region = cached_config.region or nil
-  
+
   local reordered_regions = {}
   if default_region then
     table.insert(reordered_regions, default_region)
@@ -117,8 +117,8 @@ local function select_region(env_region, selected_env, callback)
     reordered_regions = regions
   end
 
-  safe_picker_select(reordered_regions, { 
-    prompt = "Select Region for " .. selected_env .. ":" 
+  safe_picker_select(reordered_regions, {
+    prompt = "Select Region for " .. selected_env .. ":",
   }, function(selected_region)
     if not selected_region then
       callback(nil)
@@ -135,7 +135,7 @@ local function select_markers(callback)
   local cached_config = config_loader.load_marker(CACHE_FILE_PATH)
   local markers = load_markers()
   local default_markers = cached_config.markers or "bdd"
-  
+
   -- Check if cached marker exists in available markers
   local marker_exists = false
   for _, marker in ipairs(markers) do
@@ -144,12 +144,12 @@ local function select_markers(callback)
       break
     end
   end
-  
+
   -- Only use default if it exists in the markers list
   if not marker_exists then
     default_markers = nil
   end
-  
+
   -- Reorder markers to show cached default first (snacks.picker limitation)
   local reordered_markers = {}
   if default_markers then
@@ -162,9 +162,9 @@ local function select_markers(callback)
   else
     reordered_markers = markers
   end
-  
-  safe_picker_select(reordered_markers, { 
-    prompt = "Select Test Markers"
+
+  safe_picker_select(reordered_markers, {
+    prompt = "Select Test Markers",
   }, function(selected_markers)
     if not selected_markers then
       callback(nil)
@@ -181,7 +181,7 @@ local function select_allure_preference(callback)
   local cached_config = config_loader.load_marker(CACHE_FILE_PATH)
   local default_allure = cached_config.open_allure or false
   local default_allure_text = default_allure and ALLURE_OPTIONS[1] or ALLURE_OPTIONS[2]
-  
+
   -- Reorder allure options to show cached default first (snacks.picker limitation)
   local reordered_allure = {}
   if default_allure_text then
@@ -194,9 +194,9 @@ local function select_allure_preference(callback)
   else
     reordered_allure = ALLURE_OPTIONS
   end
-  
-  safe_picker_select(reordered_allure, { 
-    prompt = "Generate Allure Report?"
+
+  safe_picker_select(reordered_allure, {
+    prompt = "Generate Allure Report?",
   }, function(selected_allure)
     if not selected_allure then
       callback(nil)
@@ -213,12 +213,12 @@ end
 function M.handle_yaml_selection(env_region, callback)
   -- Step 1: Select environment
   local env_names = extract_env_names(env_region)
-  
+
   -- Load cached config and reorder environments to show cached default first (snacks.picker limitation)
   local config_loader = require("yoda.config_loader")
   local cached_config = config_loader.load_marker(CACHE_FILE_PATH)
   local default_env = cached_config.environment or nil
-  
+
   local reordered_env_names = {}
   if default_env then
     table.insert(reordered_env_names, default_env)
@@ -230,7 +230,7 @@ function M.handle_yaml_selection(env_region, callback)
   else
     reordered_env_names = env_names
   end
-  
+
   safe_picker_select(reordered_env_names, { prompt = "Select Environment:" }, function(selected_env)
     if not selected_env then
       callback(nil)
@@ -261,12 +261,12 @@ function M.handle_yaml_selection(env_region, callback)
           -- Save selections to cache
           local config_loader = require("yoda.config_loader")
           config_loader.save_marker(CACHE_FILE_PATH, selected_env, selected_region, markers_to_use, open_allure)
-          
-          callback({ 
-            environment = selected_env, 
+
+          callback({
+            environment = selected_env,
             region = selected_region,
             markers = markers_to_use,
-            open_allure = open_allure
+            open_allure = open_allure,
           })
         end)
       end)
@@ -293,18 +293,18 @@ end
 --- @param callback function Callback function
 function M.handle_json_selection(env_region, callback)
   local items = generate_env_region_labels(env_region)
-  
+
   -- Load cached config and reorder items to show cached default first (snacks.picker limitation)
   local config_loader = require("yoda.config_loader")
   local cached_config = config_loader.load_marker(CACHE_FILE_PATH)
   local default_env = cached_config.environment or nil
   local default_region = cached_config.region or nil
   local default_label = nil
-  
+
   if default_env and default_region then
     default_label = default_env .. " (" .. default_region .. ")"
   end
-  
+
   local reordered_items = {}
   if default_label then
     table.insert(reordered_items, default_label)
@@ -316,13 +316,13 @@ function M.handle_json_selection(env_region, callback)
   else
     reordered_items = items
   end
-  
+
   safe_picker_select(reordered_items, { prompt = "Select Test Environment:" }, function(choice)
     if not choice then
       callback(nil)
       return
     end
-    
+
     -- Parse the selected label back to env and region
     local env, region = parse_env_region_label(choice)
     if env and region then

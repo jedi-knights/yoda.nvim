@@ -77,4 +77,3 @@ function M.get_extension(path)
 end
 
 return M
-

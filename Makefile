@@ -37,11 +37,11 @@ test-unit:
 test-integration:
 	nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/integration')" -c "quitall!"
 
-# Lint code with stylua
+# Lint code with stylua (excluding files with goto labels)
 lint:
-	stylua --check lua/ tests/
+	@find lua tests -name "*.lua" ! -name "yaml_parser.lua" ! -name "config_loader.lua" -type f | xargs stylua --check
 
-# Format code with stylua
+# Format code with stylua (excluding files with goto labels)  
 format:
-	stylua lua/ tests/
+	@find lua tests -name "*.lua" ! -name "yaml_parser.lua" ! -name "config_loader.lua" -type f | xargs stylua
 

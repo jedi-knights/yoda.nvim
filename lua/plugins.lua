@@ -63,7 +63,7 @@ return {
       require("snacks").setup({
         explorer = {
           enabled = true,
-          show_hidden = true,  -- Show hidden files and folders by default
+          show_hidden = true, -- Show hidden files and folders by default
         },
         picker = {
           enabled = true,
@@ -572,10 +572,10 @@ return {
     "TimUntersberger/neogit",
     lazy = true,
     cmd = "Neogit",
-    dependencies = { 
-      "nvim-lua/plenary.nvim", 
+    dependencies = {
+      "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons",
-      "sindrets/diffview.nvim"  -- Required for neogit diff integration
+      "sindrets/diffview.nvim", -- Required for neogit diff integration
     },
     config = function()
       require("neogit").setup({
@@ -773,7 +773,7 @@ return {
       require("showkeys").setup({
         -- Default configuration
         timeout = 5, -- in secs
-        maxkeys = 5,              -- Show up to 5 keystrokes at a time
+        maxkeys = 5, -- Show up to 5 keystrokes at a time
         show_count = true,
         show_all_keys = false,
         show_key_sequence = true,

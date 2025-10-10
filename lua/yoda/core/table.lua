@@ -15,7 +15,7 @@ function M.merge(defaults, overrides)
   if type(defaults) ~= "table" then
     defaults = {}
   end
-  
+
   local result = {}
   for k, v in pairs(defaults) do
     result[k] = v
@@ -33,13 +33,13 @@ function M.deep_copy(orig)
   if type(orig) ~= "table" then
     return orig
   end
-  
+
   local copy = {}
   for key, value in next, orig, nil do
     copy[M.deep_copy(key)] = M.deep_copy(value)
   end
   setmetatable(copy, M.deep_copy(getmetatable(orig)))
-  
+
   return copy
 end
 
@@ -60,7 +60,7 @@ function M.size(tbl)
   if type(tbl) ~= "table" then
     return 0
   end
-  
+
   local count = 0
   for _ in pairs(tbl) do
     count = count + 1
@@ -76,7 +76,7 @@ function M.contains(tbl, value)
   if type(tbl) ~= "table" then
     return false
   end
-  
+
   for _, v in pairs(tbl) do
     if v == value then
       return true
@@ -86,4 +86,3 @@ function M.contains(tbl, value)
 end
 
 return M
-

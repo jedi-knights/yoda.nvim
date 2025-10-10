@@ -465,9 +465,9 @@ markers =
 
     it("uses default markers when nil", function()
       local saved_data = nil
-      
+
       vim.json.encode = function(data)
-        saved_data = data  -- Capture before write is called
+        saved_data = data -- Capture before write is called
         return "{}"
       end
 
@@ -529,7 +529,7 @@ markers =
       end
 
       config_loader.save_marker("/cache/marker.json", "prod", "use1", "unit,integration", true)
-      
+
       assert.equals("prod", saved_data.environment)
       assert.equals("use1", saved_data.region)
       assert.equals("unit,integration", saved_data.markers)
@@ -537,4 +537,3 @@ markers =
     end)
   end)
 end)
-

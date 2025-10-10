@@ -477,4 +477,3 @@ describe("core.io", function()
     end)
   end)
 end)
-

@@ -64,7 +64,7 @@ describe("diagnostics.lsp", function()
     it("handles clients without names", function()
       vim.lsp.get_active_clients = function()
         return {
-          { id = 1 },  -- No name field
+          { id = 1 }, -- No name field
           { name = "lua_ls" },
         }
       end
@@ -129,7 +129,7 @@ describe("diagnostics.lsp", function()
 
     it("notifies with INFO level when clients active", function()
       vim.lsp.get_active_clients = function()
-        return {{ name = "test" }}
+        return { { name = "test" } }
       end
 
       local level_used = nil
@@ -158,7 +158,7 @@ describe("diagnostics.lsp", function()
       lsp.check_status()
       -- Should have header + 3 client names
       assert.is_true(#notified >= 4)
-      
+
       local all_msgs = table.concat(notified, " ")
       assert.matches("lua_ls", all_msgs)
       assert.matches("gopls", all_msgs)
@@ -166,4 +166,3 @@ describe("diagnostics.lsp", function()
     end)
   end)
 end)
-

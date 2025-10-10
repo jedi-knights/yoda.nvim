@@ -96,18 +96,14 @@ end
 function M.safe_require(module, opts)
   opts = opts or {}
   local ok, result = pcall(require, module)
-  
+
   if not ok then
     if opts.notify ~= false and not opts.silent then
-      M.notify(
-        string.format("Failed to load %s", module),
-        "error",
-        { title = "Module Error" }
-      )
+      M.notify(string.format("Failed to load %s", module), "error", { title = "Module Error" })
     end
     return false, opts.fallback or result
   end
-  
+
   return true, result
 end
 
@@ -150,7 +146,7 @@ function M.notify(msg, level, opts)
     vim.notify(msg, numeric_level, opts)
     return
   end
-  
+
   adapter.notify(msg, level, opts)
 end
 

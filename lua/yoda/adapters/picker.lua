@@ -19,14 +19,14 @@ local function detect_backend()
   if backend and initialized then
     return backend
   end
-  
+
   -- Check user preference first
   if vim.g.yoda_picker_backend then
     backend = vim.g.yoda_picker_backend
     initialized = true
     return backend
   end
-  
+
   -- Auto-detect: Try snacks first
   local ok, snacks = pcall(require, "snacks")
   if ok and snacks.picker then
@@ -34,7 +34,7 @@ local function detect_backend()
     initialized = true
     return backend
   end
-  
+
   -- Try telescope
   local ok_telescope, telescope = pcall(require, "telescope")
   if ok_telescope then
@@ -42,7 +42,7 @@ local function detect_backend()
     initialized = true
     return backend
   end
-  
+
   -- Fallback to native
   backend = "native"
   initialized = true
@@ -60,7 +60,7 @@ local backends = {
       snacks.picker.select(items, opts, callback)
     end,
   },
-  
+
   telescope = {
     select = function(items, opts, callback)
       -- Use vim.ui.select which telescope should override
@@ -68,7 +68,7 @@ local backends = {
       vim.ui.select(items, opts, callback)
     end,
   },
-  
+
   native = {
     select = function(items, opts, callback)
       vim.ui.select(items, opts, callback)
@@ -94,24 +94,18 @@ end
 function M.select(items, opts, callback)
   -- Input validation (assertive programming)
   if type(items) ~= "table" then
-    vim.notify(
-      "picker.select: items must be a table, got " .. type(items),
-      vim.log.levels.ERROR,
-      { title = "Picker Error" }
-    )
-    if callback then callback(nil) end
+    vim.notify("picker.select: items must be a table, got " .. type(items), vim.log.levels.ERROR, { title = "Picker Error" })
+    if callback then
+      callback(nil)
+    end
     return
   end
-  
+
   if type(callback) ~= "function" then
-    vim.notify(
-      "picker.select: callback must be a function, got " .. type(callback),
-      vim.log.levels.ERROR,
-      { title = "Picker Error" }
-    )
+    vim.notify("picker.select: callback must be a function, got " .. type(callback), vim.log.levels.ERROR, { title = "Picker Error" })
     return
   end
-  
+
   local picker = M.create()
   picker.select(items, opts, callback)
 end
@@ -127,7 +121,7 @@ end
 function M.set_backend(backend_name)
   if backends[backend_name] then
     backend = backend_name
-    initialized = true  -- Mark as initialized to prevent re-detection
+    initialized = true -- Mark as initialized to prevent re-detection
   else
     error("Unknown backend: " .. backend_name)
   end
@@ -140,5 +134,3 @@ function M.reset_backend()
 end
 
 return M
-
-

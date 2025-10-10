@@ -83,18 +83,18 @@ map("n", "<leader>e?", function()
     "Snacks Explorer Keybindings:",
     "",
     "<leader>eo - Open explorer",
-    "<leader>ef - Focus explorer", 
+    "<leader>ef - Focus explorer",
     "<leader>ec - Close explorer",
     "",
     "In Explorer:",
     "H - Toggle hidden files",
-    "I - Toggle ignored files", 
+    "I - Toggle ignored files",
     "h - Close directory",
     "l - Open directory/file",
     "",
-    "Note: Hidden files are shown by default due to show_hidden=true setting"
+    "Note: Hidden files are shown by default due to show_hidden=true setting",
   }
-  
+
   vim.notify(table.concat(help_text, "\n"), vim.log.levels.INFO, { title = "Snacks Explorer Help" })
 end, { desc = "Explorer: Show help" })
 
@@ -215,7 +215,7 @@ map("n", "<leader>tt", function()
       vim.notify("Test picker cancelled", vim.log.levels.INFO)
       return
     end
-    
+
     local env = selection.environment
     local region = selection.region
     local markers = selection.markers
@@ -234,17 +234,17 @@ map("n", "<leader>tt", function()
     local venvs = require("yoda.terminal.venv").find_virtual_envs()
     local python_cmd = "python"
     local pytest_cmd = "pytest"
-    
+
     if #venvs > 0 then
       -- Found virtual environments, use the first one
       local venv = venvs[1]
       local activate_script = require("yoda.terminal.venv").get_activate_script_path(venv)
-      
+
       if activate_script then
         -- Use virtual environment's Python and pytest
         python_cmd = venv .. "/bin/python"
         pytest_cmd = venv .. "/bin/pytest"
-        
+
         vim.notify(string.format("Using virtual environment: %s", venv), vim.log.levels.INFO)
       end
     else
@@ -254,26 +254,26 @@ map("n", "<leader>tt", function()
     -- Build pytest command with environment configuration
     local pytest_args = {
       "--tb=short",
-      "-v"
+      "-v",
     }
-    
+
     -- Add markers if specified
     if markers and markers ~= "" then
       table.insert(pytest_args, "-m")
       table.insert(pytest_args, markers)
     end
-    
+
     -- Add allure report if requested
     if open_allure then
       table.insert(pytest_args, "--alluredir=allure-results")
     end
-    
+
     -- Run pytest with environment configuration
     local cmd = { pytest_cmd, unpack(pytest_args) }
     local cmd_str = table.concat(cmd, " ")
-    
+
     vim.notify(string.format("Running: %s", cmd_str), vim.log.levels.INFO)
-    
+
     -- Prepare environment variables for the terminal
     local terminal_env = {
       TEST_ENVIRONMENT = env,
@@ -281,7 +281,7 @@ map("n", "<leader>tt", function()
       TEST_MARKERS = markers,
       TEST_OPEN_ALLURE = open_allure and "true" or "false",
     }
-    
+
     -- Add virtual environment variables if using venv
     if #venvs > 0 then
       local venv = venvs[1]
@@ -291,7 +291,7 @@ map("n", "<leader>tt", function()
         terminal_env.PATH = venv .. "/bin:" .. (os.getenv("PATH") or "")
       end
     end
-    
+
     -- Execute pytest command in a terminal with environment variables
     local snacks_terminal = require("snacks.terminal")
     snacks_terminal.open(cmd, {
@@ -372,7 +372,7 @@ map("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo: Test" })
 -- ============================================================================
 
 -- Constants for AI features
-local OPENCODE_STARTUP_DELAY_MS = 100  -- Wait for OpenCode window to initialize
+local OPENCODE_STARTUP_DELAY_MS = 100 -- Wait for OpenCode window to initialize
 
 -- Import window utilities for perfect encapsulation (no duplication!)
 local win_utils = require("yoda.window_utils")

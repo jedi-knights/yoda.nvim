@@ -59,14 +59,14 @@ function M.read_file(path)
   if not M.is_file(path) then
     return false, "File not found: " .. path
   end
-  
+
   local Path = require("plenary.path")
   local ok, content = pcall(Path.new(path).read, Path.new(path))
-  
+
   if not ok then
     return false, "Failed to read file: " .. content
   end
-  
+
   return true, content
 end
 
@@ -81,14 +81,14 @@ end
 function M.parse_json_file(path)
   local ok, content = M.read_file(path)
   if not ok then
-    return false, content  -- content is error message
+    return false, content -- content is error message
   end
-  
+
   local ok_json, parsed = pcall(vim.json.decode, content)
   if not ok_json then
     return false, "Invalid JSON: " .. parsed
   end
-  
+
   return true, parsed
 end
 
@@ -101,21 +101,21 @@ function M.write_json_file(path, data)
   if type(data) ~= "table" then
     return false, "Data must be a table"
   end
-  
+
   local ok, json_str = pcall(vim.json.encode, data)
   if not ok then
     return false, "Failed to encode JSON: " .. json_str
   end
-  
+
   local Path = require("plenary.path")
   local ok_write, err = pcall(function()
     Path.new(path):write(json_str, "w")
   end)
-  
+
   if not ok_write then
     return false, "Failed to write file: " .. err
   end
-  
+
   return true, nil
 end
 
@@ -131,14 +131,14 @@ function M.create_temp_file(content)
   if type(content) ~= "string" then
     return nil, "Content must be a string"
   end
-  
+
   local temp_path = vim.fn.tempname()
   local file = io.open(temp_path, "w")
-  
+
   if not file then
     return nil, "Failed to create temporary file: " .. temp_path
   end
-  
+
   file:write(content)
   file:close()
   return temp_path, nil
@@ -150,13 +150,12 @@ end
 function M.create_temp_dir()
   local temp_path = vim.fn.tempname()
   local success = vim.fn.mkdir(temp_path)
-  
+
   if success ~= 1 then
     return nil, "Failed to create temporary directory: " .. temp_path
   end
-  
+
   return temp_path, nil
 end
 
 return M
-
