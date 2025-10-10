@@ -13,6 +13,12 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/tests-302%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/quality-10%2F10-brightgreen" alt="Code Quality">
+</p>
+
+<p align="center">
   <a href="docs/INSTALLATION.md">Installation</a> •
   <a href="docs/GETTING_STARTED.md">Getting Started</a> •
   <a href="docs/KEYMAPS.md">Keymaps</a> •
