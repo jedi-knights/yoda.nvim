@@ -36,6 +36,10 @@ function M.ends_with(str, suffix)
   if type(str) ~= "string" or type(suffix) ~= "string" then
     return false
   end
+  -- Handle empty suffix edge case
+  if suffix == "" then
+    return true
+  end
   return str:sub(-#suffix) == suffix
 end
 
@@ -63,12 +67,13 @@ end
 
 --- Get file extension from path
 --- @param path string File path
---- @return string|nil Extension (including dot) or nil
+--- @return string Extension without dot, or empty string
 function M.get_extension(path)
   if type(path) ~= "string" then
-    return nil
+    return ""
   end
-  return path:match("^.+(%..+)$")
+  local ext = path:match("^.+%.(.+)$")
+  return ext or ""
 end
 
 return M
