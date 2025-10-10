@@ -81,7 +81,7 @@ nvim .
 | `<leader>as` | Send selection to AI |
 
 ### Setup AI Features
-See [AI Setup Guide](AVANTE_SETUP.md) for detailed configuration.
+See [AI Setup Guide](AI_SETUP.md) for detailed configuration.
 
 ## Testing & Debugging
 
@@ -147,7 +147,7 @@ See [AI Setup Guide](AVANTE_SETUP.md) for detailed configuration.
 ### Advanced Topics
 - **[Debugging Guide](overview/DEBUGGING.md)** - Debug with DAP
 - **[Plugin Development](PLUGIN.md)** - Create custom plugins
-- **[AI Integration](AVANTE_SETUP.md)** - AI-powered development
+- **[AI Integration](AI_SETUP.md)** - AI-powered development
 
 ## Getting Help
 
@@ -159,7 +159,7 @@ See [AI Setup Guide](AVANTE_SETUP.md) for detailed configuration.
 ```
 
 ### Common Issues
-- **Slow startup**: See [Performance Guide](PERFORMANCE.md)
+- **Slow startup**: See [Performance Guide](PERFORMANCE_GUIDE.md)
 - **Plugin errors**: See [Troubleshooting Guide](TROUBLESHOOTING.md)
 - **LSP issues**: See [LSP Guide](overview/LSP.md)
 
@@ -172,4 +172,4 @@ See [AI Setup Guide](AVANTE_SETUP.md) for detailed configuration.
 
 ---
 
-**Ready for more?** Check out the [Complete Keymaps Reference](KEYMAPS.md) or [AI Setup Guide](AVANTE_SETUP.md).
+**Ready for more?** Check out the [Complete Keymaps Reference](KEYMAPS.md) or [AI Setup Guide](AI_SETUP.md).

@@ -103,7 +103,7 @@ nvim --version
 
 - **[Getting Started Guide](GETTING_STARTED.md)** - Learn the basics
 - **[Keymaps Reference](KEYMAPS.md)** - Essential shortcuts
-- **[AI Setup Guide](AVANTE_SETUP.md)** - Configure AI features
+- **[AI Setup Guide](AI_SETUP.md)** - Configure AI features
 - **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues and solutions
 
 ## Uninstallation

@@ -361,5 +361,5 @@ AI capabilities integrate seamlessly with:
 
 ---
 
-**Need more help?** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) or [ERROR_RECOVERY.md](ERROR_RECOVERY.md).
+**Need more help?** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
 
