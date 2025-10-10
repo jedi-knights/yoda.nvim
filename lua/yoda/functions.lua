@@ -4,7 +4,7 @@
 --   - require("yoda.terminal") for terminal operations
 --   - require("yoda.diagnostics") for LSP/AI diagnostics
 --   - require("yoda.testing") for test operations (coming soon)
--- 
+--
 -- This file maintains backwards compatibility but will show deprecation warnings
 
 local M = {}
@@ -60,11 +60,11 @@ local FALLBACK_CONFIG = {
     fastly = { "auto" },
     prod = { "auto", "use1", "usw2", "euw1", "apse1" },
   },
-  MARKER = { 
-    environment = "qa", 
+  MARKER = {
+    environment = "qa",
     region = "auto",
     markers = "bdd",
-    open_allure = false
+    open_allure = false,
   },
 }
 
@@ -235,10 +235,10 @@ local function create_bash_config(venv_activate)
   if not rcfile then
     return nil
   end
-  
+
   return {
     args = { os.getenv("SHELL") or vim.o.shell, "--rcfile", rcfile, "-i" },
-    env = nil
+    env = nil,
   }
 end
 
@@ -250,7 +250,7 @@ local function create_zsh_config(venv_activate)
   if not tmpdir then
     return nil
   end
-  
+
   local rcfile = tmpdir .. "/.zshrc"
   local rcfile_content = "source " .. venv_activate .. "\n[ -f ~/.zshrc ] && source ~/.zshrc\n"
   local file = io.open(rcfile, "w")
@@ -260,10 +260,10 @@ local function create_zsh_config(venv_activate)
   end
   file:write(rcfile_content)
   file:close()
-  
+
   return {
     args = { os.getenv("SHELL") or vim.o.shell },
-    env = { ZDOTDIR = tmpdir }
+    env = { ZDOTDIR = tmpdir },
   }
 end
 
@@ -274,7 +274,7 @@ end
 --- @param win_title string Terminal window title
 local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
   debug_log("Opening " .. shell_type .. " with venv: " .. venv_activate)
-  
+
   local config
   if shell_type == SHELL_TYPES.BASH then
     config = create_bash_config(venv_activate)
@@ -283,17 +283,17 @@ local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
   else
     config = { args = { shell, "-i" }, env = nil }
   end
-  
+
   if not config then
     debug_log("Failed to create shell configuration", vim.log.levels.ERROR)
     return
   end
-  
+
   debug_log("Executing: " .. table.concat(config.args, " "))
-  
+
   local terminal_config = create_terminal_config(config.args, win_title)
   terminal_config.env = config.env
-  
+
   require("snacks.terminal").open(terminal_config.cmd, terminal_config)
 end
 
@@ -307,9 +307,9 @@ local function open_terminal_with_venv(shell, venv)
     debug_log("No activate script found for " .. venv, vim.log.levels.WARN)
     return false
   end
-  
+
   debug_log("Using venv: " .. venv .. " with activate script: " .. venv_activate)
-  
+
   local shell_type = get_shell_type(shell)
   if shell_type then
     local title = shell_type == SHELL_TYPES.BASH and "Bash Python Environment" or "Zshell Python Environment"
@@ -327,10 +327,10 @@ end
 --- @param shell string Shell executable path
 local function open_simple_terminal(shell)
   debug_log("Opening simple terminal with shell: " .. shell)
-  
+
   local snacks_terminal = require("snacks.terminal")
   local shell_type = get_shell_type(shell)
-  
+
   if shell_type then
     snacks_terminal.open({ shell, "-i" }, create_terminal_config({ shell, "-i" }, " Simple Terminal "))
   else
@@ -342,7 +342,7 @@ M.open_floating_terminal = function()
   M.select_virtual_env(function(venv)
     local shell = os.getenv("SHELL") or vim.o.shell
     debug_log("Using shell: " .. shell)
-    
+
     if venv then
       if not open_terminal_with_venv(shell, venv) then
         open_simple_terminal(shell)
@@ -376,17 +376,17 @@ end
 local function parse_json_config(path)
   local Path = require("plenary.path")
   local json = vim.json
-  
+
   local ok, content = pcall(Path.new(path).read, Path.new(path))
   if not ok then
     return nil
   end
-  
+
   local ok_json, parsed = pcall(json.decode, content)
   if not ok_json then
     return nil
   end
-  
+
   return parsed
 end
 
@@ -421,19 +421,19 @@ end
 --- @param open_allure boolean Allure preference
 local function save_cached_marker(env, region, markers, open_allure)
   local cache_file = vim.fn.stdpath("cache") .. FILE_PATHS.TESTPICKER_CACHE
-  local config = { 
-    environment = env, 
+  local config = {
+    environment = env,
     region = region,
     markers = markers,
     open_allure = open_allure,
-    timestamp = os.time()
+    timestamp = os.time(),
   }
-  
+
   local Path = require("plenary.path")
   local ok = pcall(function()
     Path.new(cache_file):write(vim.json.encode(config), "w")
   end)
-  
+
   if not ok then
     vim.notify("Failed to save test picker cache", vim.log.levels.WARN)
   end
@@ -446,10 +446,10 @@ end
 local function generate_picker_items(env_region, marker)
   local items = {}
   local lookup = {}
-  
+
   -- Define the correct environment order (matching ingress mapping document)
   local env_order = { "qa", "fastly", "prod" }
-  
+
   -- Handle nested structure (from YAML parser)
   if env_region.environments and type(env_region.environments) == "table" and env_region.environments.qa then
     -- Nested structure: {qa = {"auto", "use1"}, fastly = {"auto"}, prod = {...}}
@@ -458,10 +458,10 @@ local function generate_picker_items(env_region, marker)
       local regions = env_region.environments[env_name]
       if regions then
         table.insert(items, env_name)
-        lookup[env_name] = { 
-          environment = env_name, 
+        lookup[env_name] = {
+          environment = env_name,
           regions = regions,
-          type = "environment"
+          type = "environment",
         }
       end
     end
@@ -477,18 +477,18 @@ local function generate_picker_items(env_region, marker)
           break
         end
       end
-      
+
       if env_exists then
         table.insert(items, env)
-        lookup[env] = { 
-          environment = env, 
+        lookup[env] = {
+          environment = env,
           regions = env_region.regions or {},
-          type = "environment"
+          type = "environment",
         }
       end
     end
   end
-  
+
   return items, lookup
 end
 
@@ -497,23 +497,23 @@ end
 local function load_markers()
   local config_loader = require("yoda.config_loader")
   local markers = config_loader.load_pytest_markers("pytest.ini")
-  
+
   if markers then
     return markers
   else
     return {
-      "bdd",           -- Default BDD tests
-      "unit",          -- Unit tests
-      "functional",    -- Functional tests
-      "smoke",         -- Smoke tests
-      "critical",      -- Critical path tests
-      "performance",   -- Performance tests
-      "regression",    -- Regression tests
-      "integration",   -- Integration tests
-      "location",      -- Location-based tests
-      "api",           -- API tests
-      "ui",            -- UI tests
-      "slow",          -- Slow running tests
+      "bdd", -- Default BDD tests
+      "unit", -- Unit tests
+      "functional", -- Functional tests
+      "smoke", -- Smoke tests
+      "critical", -- Critical path tests
+      "performance", -- Performance tests
+      "regression", -- Regression tests
+      "integration", -- Integration tests
+      "location", -- Location-based tests
+      "api", -- API tests
+      "ui", -- UI tests
+      "slow", -- Slow running tests
     }
   end
 end
@@ -522,14 +522,14 @@ end
 --- @param callback function
 M.test_picker = function(callback)
   local picker = require("snacks.picker")
-  
+
   local env_region = load_env_region_config()
   local cached = load_cached_marker()
   local items, lookup = generate_picker_items(env_region, cached)
 
   -- Step 1: Select environment (with cached default)
   local default_env = cached.environment
-  
+
   -- Reorder environments to show cached default first (snacks.picker limitation)
   local reordered_items = {}
   if default_env then
@@ -542,7 +542,7 @@ M.test_picker = function(callback)
   else
     reordered_items = items
   end
-  
+
   picker.select(reordered_items, {
     prompt = "Select Environment",
   }, function(selected_env)
@@ -550,16 +550,16 @@ M.test_picker = function(callback)
       callback(nil)
       return
     end
-    
+
     local env_data = lookup[selected_env]
     if not env_data or not env_data.regions then
       callback(nil)
       return
     end
-    
+
     -- Step 2: Select region for the chosen environment (with cached default)
     local default_region = (selected_env == cached.environment) and cached.region or nil
-    
+
     -- Reorder regions to show cached default first (snacks.picker limitation)
     local reordered_regions = {}
     if default_region then
@@ -572,7 +572,7 @@ M.test_picker = function(callback)
     else
       reordered_regions = env_data.regions
     end
-    
+
     picker.select(reordered_regions, {
       prompt = "Select Region for " .. selected_env,
     }, function(selected_region)
@@ -580,11 +580,11 @@ M.test_picker = function(callback)
         callback(nil)
         return
       end
-      
+
       -- Step 3: Select markers (with cached default)
       local markers = load_markers()
       local default_marker = cached.markers
-      
+
       -- Check if cached marker exists in available markers
       local marker_exists = false
       for _, marker in ipairs(markers) do
@@ -593,12 +593,12 @@ M.test_picker = function(callback)
           break
         end
       end
-      
+
       -- Only use default if it exists in the markers list
       if not marker_exists then
         default_marker = nil
       end
-      
+
       -- Reorder markers to show cached default first (snacks.picker limitation)
       local reordered_markers = {}
       if default_marker then
@@ -611,7 +611,7 @@ M.test_picker = function(callback)
       else
         reordered_markers = markers
       end
-      
+
       picker.select(reordered_markers, {
         prompt = "Select Test Markers",
       }, function(selected_markers)
@@ -619,14 +619,14 @@ M.test_picker = function(callback)
           callback(nil)
           return
         end
-        
+
         -- Step 4: Select Allure preference (with cached default)
         local allure_options = {
           "Yes, open Allure report",
-          "No, skip Allure report"
+          "No, skip Allure report",
         }
         local default_allure = cached.open_allure and "Yes, open Allure report" or "No, skip Allure report"
-        
+
         -- Reorder allure options to show cached default first (snacks.picker limitation)
         local reordered_allure = {}
         if default_allure then
@@ -639,7 +639,7 @@ M.test_picker = function(callback)
         else
           reordered_allure = allure_options
         end
-        
+
         picker.select(reordered_allure, {
           prompt = "Generate Allure Report?",
         }, function(allure_choice)
@@ -647,16 +647,16 @@ M.test_picker = function(callback)
             callback(nil)
             return
           end
-          
+
           local open_allure = allure_choice == "Yes, open Allure report"
-          
+
           -- Save complete selection to cache
           save_cached_marker(selected_env, selected_region, selected_markers, open_allure)
           callback({
             environment = selected_env,
             region = selected_region,
             markers = selected_markers,
-            open_allure = open_allure
+            open_allure = open_allure,
           })
         end)
       end)

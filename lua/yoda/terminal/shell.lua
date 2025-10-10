@@ -39,12 +39,12 @@ end
 function M.open_simple(opts)
   opts = opts or {}
   local config = require("yoda.terminal.config")
-  
+
   local shell = opts.cmd or { M.get_default(), "-i" }
   local title = opts.title or " Terminal "
-  
+
   local term_config = config.make_config(shell, title, opts)
-  
+
   -- Try snacks terminal (preferred)
   local ok, snacks = pcall(require, "snacks")
   if ok and snacks.terminal then
@@ -58,4 +58,3 @@ function M.open_simple(opts)
 end
 
 return M
-

@@ -19,14 +19,14 @@ local function detect_backend()
   if backend and initialized then
     return backend
   end
-  
+
   -- Check user preference first
   if vim.g.yoda_notify_backend then
     backend = vim.g.yoda_notify_backend
     initialized = true
     return backend
   end
-  
+
   -- Auto-detect: Try noice first (most feature-rich)
   local ok, noice = pcall(require, "noice")
   if ok and noice.notify then
@@ -34,7 +34,7 @@ local function detect_backend()
     initialized = true
     return backend
   end
-  
+
   -- Try snacks (middle ground)
   local ok_snacks, snacks = pcall(require, "snacks")
   if ok_snacks and snacks.notify then
@@ -42,7 +42,7 @@ local function detect_backend()
     initialized = true
     return backend
   end
-  
+
   -- Fallback to native
   backend = "native"
   initialized = true
@@ -60,7 +60,7 @@ local function normalize_level_to_number(level)
   if type(level) == "number" then
     return level
   end
-  
+
   local levels = {
     error = vim.log.levels.ERROR,
     warn = vim.log.levels.WARN,
@@ -68,7 +68,7 @@ local function normalize_level_to_number(level)
     debug = vim.log.levels.DEBUG,
     trace = vim.log.levels.TRACE,
   }
-  
+
   return levels[level:lower()] or vim.log.levels.INFO
 end
 
@@ -79,7 +79,7 @@ local function normalize_level_to_string(level)
   if type(level) == "string" then
     return level:lower()
   end
-  
+
   local levels = {
     [vim.log.levels.ERROR] = "error",
     [vim.log.levels.WARN] = "warn",
@@ -87,7 +87,7 @@ local function normalize_level_to_string(level)
     [vim.log.levels.DEBUG] = "debug",
     [vim.log.levels.TRACE] = "trace",
   }
-  
+
   return levels[level] or "info"
 end
 
@@ -101,13 +101,13 @@ local backends = {
     local string_level = normalize_level_to_string(level)
     noice.notify(msg, string_level, opts)
   end,
-  
+
   snacks = function(msg, level, opts)
     local snacks = require("snacks")
     local string_level = normalize_level_to_string(level)
     snacks.notify(msg, string_level, opts)
   end,
-  
+
   native = function(msg, level, opts)
     local numeric_level = normalize_level_to_number(level)
     vim.notify(msg, numeric_level, opts)
@@ -128,13 +128,13 @@ function M.notify(msg, level, opts)
     print("ERROR: notification.notify() msg must be a string, got " .. type(msg))
     return
   end
-  
+
   opts = opts or {}
   level = level or "info"
-  
+
   local backend_name = detect_backend()
   local notify_fn = backends[backend_name]
-  
+
   if notify_fn then
     local ok, err = pcall(notify_fn, msg, level, opts)
     if not ok then
@@ -158,7 +158,7 @@ end
 function M.set_backend(backend_name)
   if backends[backend_name] then
     backend = backend_name
-    initialized = true  -- Mark as initialized to prevent re-detection
+    initialized = true -- Mark as initialized to prevent re-detection
   else
     error("Unknown backend: " .. backend_name)
   end
@@ -171,5 +171,3 @@ function M.reset_backend()
 end
 
 return M
-
-

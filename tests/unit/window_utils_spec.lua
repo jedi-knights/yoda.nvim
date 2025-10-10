@@ -496,4 +496,3 @@ describe("window_utils", function()
     end)
   end)
 end)
-

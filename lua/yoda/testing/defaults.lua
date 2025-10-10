@@ -17,18 +17,18 @@ M.ENVIRONMENTS = {
 M.ENVIRONMENT_ORDER = { "qa", "fastly", "prod" }
 
 M.MARKERS = {
-  "bdd",           -- Default BDD tests
-  "unit",          -- Unit tests
-  "functional",    -- Functional tests
-  "smoke",         -- Smoke tests
-  "critical",      -- Critical path tests
-  "performance",   -- Performance tests
-  "regression",    -- Regression tests
-  "integration",   -- Integration tests
-  "location",      -- Location-based tests
-  "api",           -- API tests
-  "ui",            -- UI tests
-  "slow",          -- Slow running tests
+  "bdd", -- Default BDD tests
+  "unit", -- Unit tests
+  "functional", -- Functional tests
+  "smoke", -- Smoke tests
+  "critical", -- Critical path tests
+  "performance", -- Performance tests
+  "regression", -- Regression tests
+  "integration", -- Integration tests
+  "location", -- Location-based tests
+  "api", -- API tests
+  "ui", -- UI tests
+  "slow", -- Slow running tests
 }
 
 M.MARKER_DEFAULTS = {
@@ -54,7 +54,7 @@ function M.get_config()
       marker_defaults = M.MARKER_DEFAULTS,
     }, vim.g.yoda_test_config)
   end
-  
+
   return {
     environments = M.ENVIRONMENTS,
     environment_order = M.ENVIRONMENT_ORDER,
@@ -92,4 +92,3 @@ function M.get_marker_defaults()
 end
 
 return M
-

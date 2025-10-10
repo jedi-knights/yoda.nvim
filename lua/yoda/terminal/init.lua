@@ -21,7 +21,7 @@ M.venv = require("yoda.terminal.venv")
 function M.open_floating(opts)
   opts = opts or {}
   local notify = require("yoda.utils").notify
-  
+
   -- If venv_path provided, use it directly
   if opts.venv_path then
     local activate_script = M.venv.get_activate_script_path(opts.venv_path)
@@ -35,7 +35,7 @@ function M.open_floating(opts)
     end
     return
   end
-  
+
   -- Auto-detect venv and prompt user
   M.venv.select_virtual_env(function(venv)
     if venv then
@@ -60,4 +60,3 @@ M.get_activate_script_path = M.venv.get_activate_script_path
 M.make_terminal_win_opts = M.config.make_win_opts
 
 return M
-

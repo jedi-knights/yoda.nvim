@@ -9,9 +9,9 @@ local augroup = vim.api.nvim_create_augroup
 -- ============================================================================
 
 local DELAYS = {
-  ALPHA_STARTUP = 200,      -- Delay for alpha dashboard on startup
+  ALPHA_STARTUP = 200, -- Delay for alpha dashboard on startup
   ALPHA_BUFFER_CHECK = 100, -- Delay before checking alpha conditions
-  YANK_HIGHLIGHT = 50,      -- Duration for yank highlight
+  YANK_HIGHLIGHT = 50, -- Duration for yank highlight
 }
 
 local THRESHOLDS = {
@@ -56,12 +56,12 @@ end
 local function is_buffer_empty(bufnr)
   bufnr = bufnr or 0
   local bufname = vim.api.nvim_buf_get_name(bufnr)
-  
+
   -- Don't consider scratch buffers as "empty" for alpha purposes
   if is_scratch_buffer(bufname) then
     return false
   end
-  
+
   return is_empty_buffer_name(bufname)
 end
 
@@ -191,9 +191,7 @@ end
 --- Check if buffer can be reloaded safely
 --- @return boolean
 local function can_reload_buffer()
-  return vim.bo.modifiable
-    and vim.bo.buftype == ""
-    and not vim.bo.readonly
+  return vim.bo.modifiable and vim.bo.buftype == "" and not vim.bo.readonly
 end
 
 -- ============================================================================

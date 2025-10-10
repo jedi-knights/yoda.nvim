@@ -28,7 +28,7 @@ describe("adapters.picker", function()
   describe("detect_backend()", function()
     it("prefers user-configured backend", function()
       vim.g.yoda_picker_backend = "native"
-      
+
       local backend = picker.get_backend()
       assert.equals("native", backend)
     end)
@@ -65,10 +65,10 @@ describe("adapters.picker", function()
       }
 
       local backend1 = picker.get_backend()
-      
+
       -- Remove snacks
       package.loaded["snacks"] = nil
-      
+
       -- Should still return snacks (cached)
       local backend2 = picker.get_backend()
       assert.equals(backend1, backend2)
@@ -112,7 +112,7 @@ describe("adapters.picker", function()
       package.loaded["snacks"] = {
         picker = { select = function() end },
       }
-      
+
       assert.equals("snacks", picker.get_backend())
     end)
   end)
@@ -120,7 +120,7 @@ describe("adapters.picker", function()
   describe("create()", function()
     it("returns snacks implementation", function()
       picker.set_backend("snacks")
-      
+
       local impl = picker.create()
       assert.is_not_nil(impl)
       assert.is_function(impl.select)
@@ -128,7 +128,7 @@ describe("adapters.picker", function()
 
     it("returns telescope implementation", function()
       picker.set_backend("telescope")
-      
+
       local impl = picker.create()
       assert.is_not_nil(impl)
       assert.is_function(impl.select)
@@ -136,7 +136,7 @@ describe("adapters.picker", function()
 
     it("returns native implementation", function()
       picker.set_backend("native")
-      
+
       local impl = picker.create()
       assert.is_not_nil(impl)
       assert.is_function(impl.select)
@@ -146,7 +146,7 @@ describe("adapters.picker", function()
   describe("select()", function()
     it("calls native vim.ui.select with correct parameters", function()
       picker.set_backend("native")
-      
+
       local called = false
       local captured_items, captured_opts, captured_callback
       vim.ui.select = function(items, opts, callback)
@@ -159,7 +159,7 @@ describe("adapters.picker", function()
       local items = { "a", "b", "c" }
       local callback_fn = function() end
       picker.select(items, { prompt = "Choose:" }, callback_fn)
-      
+
       assert.is_true(called)
       assert.same(items, captured_items)
       assert.equals("Choose:", captured_opts.prompt)
@@ -168,7 +168,7 @@ describe("adapters.picker", function()
 
     it("calls snacks picker with items", function()
       picker.set_backend("snacks")
-      
+
       local called = false
       local captured_items
       package.loaded["snacks"] = {
@@ -181,7 +181,7 @@ describe("adapters.picker", function()
       }
 
       picker.select({ "a", "b" }, {}, function() end)
-      
+
       assert.is_true(called)
       assert.same({ "a", "b" }, captured_items)
     end)
@@ -199,7 +199,7 @@ describe("adapters.picker", function()
         callback_called = true
         assert.is_nil(selection)
       end)
-      
+
       assert.is_true(notified)
       assert.is_true(callback_called) -- Callback invoked with nil
     end)
@@ -218,7 +218,7 @@ describe("adapters.picker", function()
 
     it("calls callback with selection", function()
       picker.set_backend("native")
-      
+
       local selected = nil
       vim.ui.select = function(items, opts, callback)
         callback(items[2]) -- Select second item
@@ -227,13 +227,13 @@ describe("adapters.picker", function()
       picker.select({ "a", "b", "c" }, {}, function(item)
         selected = item
       end)
-      
+
       assert.equals("b", selected)
     end)
 
     it("handles callback with nil selection (cancelled)", function()
       picker.set_backend("native")
-      
+
       local callback_called = false
       local selected = "initial"
       vim.ui.select = function(items, opts, callback)
@@ -244,24 +244,28 @@ describe("adapters.picker", function()
         callback_called = true
         selected = item
       end)
-      
+
       assert.is_true(callback_called)
       assert.is_nil(selected)
     end)
 
     it("passes options through to backend", function()
       picker.set_backend("native")
-      
+
       local captured_opts
       vim.ui.select = function(items, opts, callback)
         captured_opts = opts
       end
 
-      picker.select({ "a" }, { prompt = "Test", format_item = function(x) return x end }, function() end)
-      
+      picker.select({ "a" }, {
+        prompt = "Test",
+        format_item = function(x)
+          return x
+        end,
+      }, function() end)
+
       assert.equals("Test", captured_opts.prompt)
       assert.is_function(captured_opts.format_item)
     end)
   end)
 end)
-

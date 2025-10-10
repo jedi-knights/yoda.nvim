@@ -30,7 +30,7 @@ function M.get_activate_script_path(venv_path)
   local subpath = platform.is_windows() and ACTIVATE_PATHS.WINDOWS or ACTIVATE_PATHS.UNIX
   local activate_path = venv_path .. subpath
   local io = require("yoda.core.io")
-  
+
   if io.is_file(activate_path) then
     return activate_path
   end
@@ -62,7 +62,7 @@ end
 function M.select_virtual_env(callback)
   local venvs = M.find_virtual_envs()
   local notify = require("yoda.utils").notify
-  
+
   if #venvs == 0 then
     notify("No Python virtual environments found in project root.", "warn", { title = "Virtualenv" })
     callback(nil)
@@ -78,4 +78,3 @@ function M.select_virtual_env(callback)
 end
 
 return M
-

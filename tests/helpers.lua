@@ -126,11 +126,7 @@ end
 function M.assert_called(spy_data, expected_count)
   assert(spy_data.called, "Expected function to be called")
   if expected_count then
-    assert.equals(
-      expected_count,
-      spy_data.call_count,
-      string.format("Expected %d calls, got %d", expected_count, spy_data.call_count)
-    )
+    assert.equals(expected_count, spy_data.call_count, string.format("Expected %d calls, got %d", expected_count, spy_data.call_count))
   end
 end
 
@@ -169,4 +165,3 @@ function M.cleanup_temp_file(path)
 end
 
 return M
-

@@ -113,7 +113,7 @@ describe("diagnostics.ai", function()
 
       local status = ai.check_status()
       assert.is_true(status.claude_available)
-      
+
       local all_msgs = table.concat(notified, " ")
       assert.matches("Claude CLI", all_msgs)
       assert.matches("1.0.0", all_msgs)
@@ -139,7 +139,7 @@ describe("diagnostics.ai", function()
 
       local status = ai.check_status()
       assert.is_false(status.claude_available)
-      
+
       local all_msgs = table.concat(notified, " ")
       assert.matches("not available", all_msgs)
     end)
@@ -151,7 +151,7 @@ describe("diagnostics.ai", function()
         end,
       }
 
-      package.loaded["copilot"] = {}  -- Mock copilot
+      package.loaded["copilot"] = {} -- Mock copilot
       package.loaded["opencode"] = nil
 
       local notified = {}
@@ -161,7 +161,7 @@ describe("diagnostics.ai", function()
 
       local status = ai.check_status()
       assert.is_true(status.copilot_available)
-      
+
       local all_msgs = table.concat(notified, " ")
       assert.matches("Copilot", all_msgs)
     end)
@@ -174,7 +174,7 @@ describe("diagnostics.ai", function()
       }
 
       package.loaded["copilot"] = nil
-      package.loaded["opencode"] = {}  -- Mock opencode
+      package.loaded["opencode"] = {} -- Mock opencode
 
       local notified = {}
       vim.notify = function(msg)
@@ -183,7 +183,7 @@ describe("diagnostics.ai", function()
 
       local status = ai.check_status()
       assert.is_true(status.opencode_available)
-      
+
       local all_msgs = table.concat(notified, " ")
       assert.matches("OpenCode", all_msgs)
     end)
@@ -211,4 +211,3 @@ describe("diagnostics.ai", function()
     end)
   end)
 end)
-

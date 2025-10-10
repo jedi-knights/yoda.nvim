@@ -7,7 +7,7 @@ local M = {}
 --- @return boolean True if any LSP clients are active
 function M.check_status()
   local clients = vim.lsp.get_active_clients()
-  
+
   if #clients == 0 then
     vim.notify("❌ No LSP clients are currently active", vim.log.levels.WARN)
     return false
@@ -38,5 +38,3 @@ function M.get_client_names()
 end
 
 return M
-
-

@@ -8,7 +8,7 @@ local M = {}
 -- ============================================================================
 
 -- Terminal window dimensions (percentages of screen size)
-local TERMINAL_WIDTH_PERCENT = 0.9   -- Use 90% of screen width for better readability
+local TERMINAL_WIDTH_PERCENT = 0.9 -- Use 90% of screen width for better readability
 local TERMINAL_HEIGHT_PERCENT = 0.85 -- Use 85% of screen height for comfortable viewing
 local DEFAULT_BORDER_STYLE = "rounded"
 local DEFAULT_TITLE_POSITION = "center"
@@ -31,20 +31,16 @@ M.DEFAULTS = {
 function M.make_win_opts(title, overrides)
   -- Input validation for perfect assertiveness
   if type(title) ~= "string" then
-    vim.notify(
-      "make_win_opts: title must be a string, got " .. type(title),
-      vim.log.levels.WARN,
-      { title = "Terminal Config Warning" }
-    )
-    title = " Terminal "  -- Fallback to default
+    vim.notify("make_win_opts: title must be a string, got " .. type(title), vim.log.levels.WARN, { title = "Terminal Config Warning" })
+    title = " Terminal " -- Fallback to default
   end
-  
+
   if title == "" then
-    title = " Terminal "  -- Empty title fallback
+    title = " Terminal " -- Empty title fallback
   end
-  
+
   overrides = overrides or {}
-  
+
   return {
     relative = "editor",
     position = "float",
@@ -64,16 +60,12 @@ end
 function M.make_config(cmd, title, opts)
   -- Input validation for perfect assertiveness
   if type(cmd) ~= "table" then
-    vim.notify(
-      "make_config: cmd must be a table, got " .. type(cmd),
-      vim.log.levels.ERROR,
-      { title = "Terminal Config Error" }
-    )
-    cmd = { vim.o.shell }  -- Fallback
+    vim.notify("make_config: cmd must be a table, got " .. type(cmd), vim.log.levels.ERROR, { title = "Terminal Config Error" })
+    cmd = { vim.o.shell } -- Fallback
   end
-  
+
   opts = opts or {}
-  
+
   return {
     cmd = cmd,
     win = M.make_win_opts(title, opts.win or {}),
@@ -89,5 +81,3 @@ function M.make_config(cmd, title, opts)
 end
 
 return M
-
-

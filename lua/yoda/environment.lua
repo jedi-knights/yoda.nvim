@@ -7,7 +7,7 @@ local M = {}
 -- Constants
 -- ============================================================================
 
-local NOTIFICATION_TIMEOUT_MS = 2000  -- Display environment notification for 2 seconds
+local NOTIFICATION_TIMEOUT_MS = 2000 -- Display environment notification for 2 seconds
 
 --- Show environment notification on startup
 --- Displays which mode Yoda is running in (Home/Work)
@@ -20,7 +20,7 @@ M.show_notification = function()
     local env = vim.env.YODA_ENV or ""
     local env_label = "Unknown"
     local icon = ""
-    
+
     if env == "home" then
       env_label = "Home"
       icon = ""
@@ -28,9 +28,9 @@ M.show_notification = function()
       env_label = "Work"
       icon = "󰒱"
     end
-    
+
     local msg = string.format("%s  Yoda is in %s mode", icon, env_label)
-    
+
     -- Use notification adapter for DIP
     local notify = require("yoda.utils").notify
     notify(msg, "info", { title = "Yoda Environment", timeout = NOTIFICATION_TIMEOUT_MS })
@@ -48,4 +48,3 @@ M.get_mode = function()
 end
 
 return M
-

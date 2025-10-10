@@ -46,14 +46,14 @@ describe("environment", function()
     end)
 
     it("is case sensitive", function()
-      vim.env.YODA_ENV = "HOME"  -- Uppercase
+      vim.env.YODA_ENV = "HOME" -- Uppercase
       assert.equals("unknown", environment.get_mode())
     end)
   end)
 
   describe("show_notification()", function()
     it("does not notify when config disabled", function()
-      vim.g.yoda_config = nil  -- No config
+      vim.g.yoda_config = nil -- No config
       vim.env.YODA_ENV = "home"
 
       local scheduled_fn = nil
@@ -88,7 +88,7 @@ describe("environment", function()
 
       local notified = false
       local captured_msg = nil
-      
+
       package.loaded["yoda.utils"] = {
         notify = function(msg, level, opts)
           notified = true
@@ -113,7 +113,7 @@ describe("environment", function()
       vim.env.YODA_ENV = "work"
 
       local captured_msg = nil
-      
+
       package.loaded["yoda.utils"] = {
         notify = function(msg, level, opts)
           captured_msg = msg
@@ -136,7 +136,7 @@ describe("environment", function()
       vim.env.YODA_ENV = "home"
 
       local captured_opts = nil
-      
+
       package.loaded["yoda.utils"] = {
         notify = function(msg, level, opts)
           captured_opts = opts
@@ -159,7 +159,7 @@ describe("environment", function()
       vim.env.YODA_ENV = "home"
 
       local captured_level = nil
-      
+
       package.loaded["yoda.utils"] = {
         notify = function(msg, level, opts)
           captured_level = level
@@ -190,4 +190,3 @@ describe("environment", function()
     end)
   end)
 end)
-
