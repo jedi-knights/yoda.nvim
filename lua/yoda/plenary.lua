@@ -1,38 +1,76 @@
-local test_harness = require("plenary.test_harness")
-local Path = require("plenary.path")
+-- Test runner for Yoda.nvim
+-- Prefers snacks.nvim test harness, falls back to plenary
+local M = {}
 
--- Helper to run all tests in the "tests" directory
-local function run_all_tests()
-  test_harness.test_directory("tests", {
-    minimal_init = "./tests/minimal_init.lua", -- optional
-  })
+-- Try to load test harness (prefer snacks, fallback to plenary)
+local function get_test_harness()
+  -- Try snacks first (preferred)
+  local snacks_ok = pcall(require, "snacks")
+  if snacks_ok then
+    return "snacks"
+  end
+
+  -- Fallback to plenary
+  local plenary_ok = pcall(require, "plenary.test_harness")
+  if plenary_ok then
+    return "plenary"
+  end
+
+  return nil
 end
 
--- Helper to run tests only in the currently open file
-local function run_current_file()
-  local file = vim.api.nvim_buf_get_name(0)
-  if not Path:new(file):exists() then
-    vim.notify("Current file does not exist on disk", vim.log.levels.WARN)
-    return
+-- Run all tests in the "tests" directory
+function M.run_all_tests()
+  local harness = get_test_harness()
+
+  if harness == "snacks" then
+    vim.cmd("SnacksTest tests/")
+  elseif harness == "plenary" then
+    local test_harness = require("plenary.test_harness")
+    test_harness.test_directory("tests", {
+      minimal_init = "./tests/minimal_init.lua",
+    })
+  else
+    vim.notify("No test harness found. Install snacks.nvim or plenary.nvim", vim.log.levels.ERROR)
   end
-  test_harness.test_directory(file, {
-    minimal_init = "./tests/minimal_init.lua", -- optional
-  })
+end
+
+-- Run tests in the currently open file
+function M.run_current_file()
+  local harness = get_test_harness()
+  local file = vim.api.nvim_buf_get_name(0)
+
+  if harness == "snacks" then
+    vim.cmd("SnacksTest " .. file)
+  elseif harness == "plenary" then
+    local Path = require("plenary.path")
+    if not Path:new(file):exists() then
+      vim.notify("Current file does not exist on disk", vim.log.levels.WARN)
+      return
+    end
+    local test_harness = require("plenary.test_harness")
+    test_harness.test_directory(file, {
+      minimal_init = "./tests/minimal_init.lua",
+    })
+  else
+    vim.notify("No test harness found. Install snacks.nvim or plenary.nvim", vim.log.levels.ERROR)
+  end
+end
+
+-- Watch mode (auto-run on save)
+function M.watch_tests()
+  local harness = get_test_harness()
+
+  if harness == "snacks" then
+    vim.cmd("SnacksTestWatch tests/")
+  else
+    vim.notify("Watch mode requires snacks.nvim", vim.log.levels.ERROR)
+  end
 end
 
 -- Register keymaps
-vim.keymap.set("n", "<leader>pt", run_current_file, { desc = "Run Plenary Tests: Current File" })
-vim.keymap.set("n", "<leader>pa", run_all_tests, { desc = "Run Plenary Tests: All in ./tests" })
+vim.keymap.set("n", "<leader>tt", M.run_current_file, { desc = "Test: Run current file" })
+vim.keymap.set("n", "<leader>ta", M.run_all_tests, { desc = "Test: Run all tests" })
+vim.keymap.set("n", "<leader>tw", M.watch_tests, { desc = "Test: Watch mode" })
 
--- Optional: register with which-key if you're using it
---local wk_ok, wk = pcall(require, "which-key")
--- if wk_ok then
---   wk.register({
---     t = {
---       name = "+tests",
---       t = "Run Current Plenary Test File",
---       a = "Run All Plenary Tests",
---     },
---   }, { prefix = "<leader>" })
--- end
---
+return M

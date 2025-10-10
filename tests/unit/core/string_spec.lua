@@ -1,0 +1,162 @@
+-- Tests for core/string.lua
+local str = require("yoda.core.string")
+
+describe("core.string", function()
+  describe("trim()", function()
+    it("removes leading whitespace", function()
+      assert.equals("hello", str.trim("  hello"))
+      assert.equals("hello", str.trim("\t\thello"))
+      assert.equals("hello", str.trim("\n\nhello"))
+    end)
+
+    it("removes trailing whitespace", function()
+      assert.equals("hello", str.trim("hello  "))
+      assert.equals("hello", str.trim("hello\t\t"))
+      assert.equals("hello", str.trim("hello\n\n"))
+    end)
+
+    it("removes both leading and trailing whitespace", function()
+      assert.equals("hello", str.trim("  hello  "))
+      assert.equals("hello world", str.trim("  hello world  "))
+    end)
+
+    it("handles empty string", function()
+      assert.equals("", str.trim(""))
+      assert.equals("", str.trim("   "))
+    end)
+
+    it("handles nil input", function()
+      assert.equals("", str.trim(nil))
+    end)
+
+    it("preserves internal whitespace", function()
+      assert.equals("hello world", str.trim("  hello world  "))
+      assert.equals("hello  world", str.trim("  hello  world  "))
+    end)
+  end)
+
+  describe("starts_with()", function()
+    it("returns true when string starts with prefix", function()
+      assert.is_true(str.starts_with("hello world", "hello"))
+      assert.is_true(str.starts_with("hello", "h"))
+      assert.is_true(str.starts_with("hello", "hello"))
+    end)
+
+    it("returns false when string does not start with prefix", function()
+      assert.is_false(str.starts_with("hello world", "world"))
+      assert.is_false(str.starts_with("hello", "x"))
+    end)
+
+    it("handles empty prefix", function()
+      assert.is_true(str.starts_with("hello", ""))
+    end)
+
+    it("handles empty string", function()
+      assert.is_false(str.starts_with("", "hello"))
+      assert.is_true(str.starts_with("", ""))
+    end)
+
+    it("is case sensitive", function()
+      assert.is_false(str.starts_with("Hello", "hello"))
+      assert.is_true(str.starts_with("hello", "hello"))
+    end)
+  end)
+
+  describe("ends_with()", function()
+    it("returns true when string ends with suffix", function()
+      assert.is_true(str.ends_with("hello world", "world"))
+      assert.is_true(str.ends_with("hello", "o"))
+      assert.is_true(str.ends_with("hello", "hello"))
+    end)
+
+    it("returns false when string does not end with suffix", function()
+      assert.is_false(str.ends_with("hello world", "hello"))
+      assert.is_false(str.ends_with("hello", "x"))
+    end)
+
+    it("handles empty suffix", function()
+      assert.is_true(str.ends_with("hello", ""))
+    end)
+
+    it("handles empty string", function()
+      assert.is_false(str.ends_with("", "hello"))
+      assert.is_true(str.ends_with("", ""))
+    end)
+
+    it("is case sensitive", function()
+      assert.is_false(str.ends_with("hello", "LO"))
+      assert.is_true(str.ends_with("hello", "lo"))
+    end)
+  end)
+
+  describe("split()", function()
+    it("splits string by delimiter", function()
+      local result = str.split("a,b,c", ",")
+      assert.same({ "a", "b", "c" }, result)
+    end)
+
+    it("handles single element", function()
+      local result = str.split("hello", ",")
+      assert.same({ "hello" }, result)
+    end)
+
+    it("handles empty string", function()
+      local result = str.split("", ",")
+      assert.same({ "" }, result)
+    end)
+
+    it("handles multiple character delimiter", function()
+      local result = str.split("a::b::c", "::")
+      assert.same({ "a", "b", "c" }, result)
+    end)
+
+    it("preserves empty parts", function()
+      local result = str.split("a,,c", ",")
+      assert.same({ "a", "", "c" }, result)
+    end)
+  end)
+
+  describe("get_extension()", function()
+    it("returns file extension", function()
+      assert.equals("lua", str.get_extension("file.lua"))
+      assert.equals("md", str.get_extension("README.md"))
+      assert.equals("txt", str.get_extension("/path/to/file.txt"))
+    end)
+
+    it("handles multiple dots", function()
+      assert.equals("gz", str.get_extension("file.tar.gz"))
+    end)
+
+    it("handles no extension", function()
+      assert.equals("", str.get_extension("file"))
+      assert.equals("", str.get_extension("/path/to/file"))
+    end)
+
+    it("handles hidden files", function()
+      assert.equals("", str.get_extension(".gitignore"))
+      assert.equals("lua", str.get_extension(".config.lua"))
+    end)
+  end)
+
+  describe("is_blank()", function()
+    it("returns true for empty string", function()
+      assert.is_true(str.is_blank(""))
+    end)
+
+    it("returns true for whitespace only", function()
+      assert.is_true(str.is_blank("   "))
+      assert.is_true(str.is_blank("\t\t"))
+      assert.is_true(str.is_blank("\n\n"))
+    end)
+
+    it("returns true for nil", function()
+      assert.is_true(str.is_blank(nil))
+    end)
+
+    it("returns false for non-empty string", function()
+      assert.is_false(str.is_blank("hello"))
+      assert.is_false(str.is_blank("  hello  "))
+    end)
+  end)
+end)
+
