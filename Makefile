@@ -16,7 +16,14 @@ help:
 
 # Run all tests
 test:
-	nvim --headless -u tests/minimal_init.lua -c "luafile tests/run_all.lua"
+	@echo "Running all tests..."
+	@nvim --headless -u tests/minimal_init.lua -c "luafile tests/run_all.lua" 2>&1 | tee /tmp/yoda_test_output.txt
+	@echo ""
+	@echo "================================================================================"
+	@echo "AGGREGATE TEST RESULTS"
+	@echo "================================================================================"
+	@./scripts/test_summary.sh /tmp/yoda_test_output.txt
+	@echo "================================================================================"
 
 # Watch mode (requires snacks.nvim in Neovim session)
 test-watch:
