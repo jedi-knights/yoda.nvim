@@ -1,7 +1,30 @@
--- lua/yoda/core/functions.lua
--- Utility functions for Neovim configuration
+-- lua/yoda/functions.lua
+-- DEPRECATED: This module is being refactored for better SOLID compliance
+-- New code should use the focused modules instead:
+--   - require("yoda.terminal") for terminal operations
+--   - require("yoda.diagnostics") for LSP/AI diagnostics
+--   - require("yoda.testing") for test operations (coming soon)
+-- 
+-- This file maintains backwards compatibility but will show deprecation warnings
 
 local M = {}
+
+-- ============================================================================
+-- DEPRECATION WARNING
+-- ============================================================================
+
+local shown_warnings = {}
+
+local function show_deprecation_warning(old_function, new_module)
+  if not shown_warnings[old_function] then
+    vim.notify(
+      string.format("DEPRECATED: yoda.functions.%s() - Use %s instead", old_function, new_module),
+      vim.log.levels.WARN,
+      { title = "Yoda Deprecation Warning" }
+    )
+    shown_warnings[old_function] = true
+  end
+end
 
 -- ============================================================================
 -- Constants
@@ -686,17 +709,52 @@ M.check_ai_status = function()
 end
 
 --- Run comprehensive diagnostics
+--- @deprecated Use require("yoda.diagnostics").run_all() instead
 M.run_diagnostics = function()
-  vim.notify("🔍 Running Yoda diagnostics...", vim.log.levels.INFO)
+  show_deprecation_warning("run_diagnostics", "require('yoda.diagnostics').run_all()")
+  return require("yoda.diagnostics").run_all()
+end
 
-  -- Check LSP status
-  M.check_lsp_status()
+--- Check LSP status (wrapper for backwards compatibility)
+--- @deprecated Use require("yoda.diagnostics.lsp").check_status() instead
+M.check_lsp_status = function()
+  show_deprecation_warning("check_lsp_status", "require('yoda.diagnostics.lsp').check_status()")
+  return require("yoda.diagnostics.lsp").check_status()
+end
 
-  -- Check AI status
-  M.check_ai_status()
+--- Check AI status (wrapper for backwards compatibility)
+--- @deprecated Use require("yoda.diagnostics.ai").check_status() instead
+M.check_ai_status = function()
+  show_deprecation_warning("check_ai_status", "require('yoda.diagnostics.ai').check_status()")
+  return require("yoda.diagnostics.ai").check_status()
+end
 
-  -- Check plugin health
-  vim.cmd("checkhealth")
+--- Open floating terminal (wrapper for backwards compatibility)
+--- @deprecated Use require("yoda.terminal").open_floating() instead
+M.open_floating_terminal = function()
+  show_deprecation_warning("open_floating_terminal", "require('yoda.terminal').open_floating()")
+  return require("yoda.terminal").open_floating()
+end
+
+--- Find virtual environments (wrapper for backwards compatibility)
+--- @deprecated Use require("yoda.terminal.venv").find_virtual_envs() instead
+M.find_virtual_envs = function()
+  show_deprecation_warning("find_virtual_envs", "require('yoda.terminal.venv').find_virtual_envs()")
+  return require("yoda.terminal.venv").find_virtual_envs()
+end
+
+--- Get activate script path (wrapper for backwards compatibility)
+--- @deprecated Use require("yoda.terminal.venv").get_activate_script_path() instead
+M.get_activate_script_path = function(venv_path)
+  show_deprecation_warning("get_activate_script_path", "require('yoda.terminal.venv').get_activate_script_path()")
+  return require("yoda.terminal.venv").get_activate_script_path(venv_path)
+end
+
+--- Make terminal window options (wrapper for backwards compatibility)
+--- @deprecated Use require("yoda.terminal.config").make_win_opts() instead
+M.make_terminal_win_opts = function(title, overrides)
+  show_deprecation_warning("make_terminal_win_opts", "require('yoda.terminal.config').make_win_opts()")
+  return require("yoda.terminal.config").make_win_opts(title, overrides)
 end
 
 return M

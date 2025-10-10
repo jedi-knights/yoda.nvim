@@ -231,14 +231,14 @@ map("n", "<leader>tt", function()
     vim.notify(string.format("Running tests in %s (%s) with markers: %s", env, region, markers), vim.log.levels.INFO)
 
     -- Check for virtual environment and build pytest command
-    local venvs = require("yoda.functions").find_virtual_envs()
+    local venvs = require("yoda.terminal.venv").find_virtual_envs()
     local python_cmd = "python"
     local pytest_cmd = "pytest"
     
     if #venvs > 0 then
       -- Found virtual environments, use the first one
       local venv = venvs[1]
-      local activate_script = require("yoda.functions").get_activate_script_path(venv)
+      local activate_script = require("yoda.terminal.venv").get_activate_script_path(venv)
       
       if activate_script then
         -- Use virtual environment's Python and pytest
@@ -285,7 +285,7 @@ map("n", "<leader>tt", function()
     -- Add virtual environment variables if using venv
     if #venvs > 0 then
       local venv = venvs[1]
-      local activate_script = require("yoda.functions").get_activate_script_path(venv)
+      local activate_script = require("yoda.terminal.venv").get_activate_script_path(venv)
       if activate_script then
         terminal_env.VIRTUAL_ENV = venv
         terminal_env.PATH = venv .. "/bin:" .. (os.getenv("PATH") or "")
@@ -297,7 +297,7 @@ map("n", "<leader>tt", function()
     snacks_terminal.open(cmd, {
       cmd = cmd,
       env = terminal_env,
-      win = require("yoda.functions").make_terminal_win_opts("Pytest Test Runner"),
+      win = require("yoda.terminal.config").make_win_opts("Pytest Test Runner"),
       start_insert = false,
       auto_insert = false,
       on_open = function(term)
@@ -371,7 +371,35 @@ map("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo: Test" })
 -- AI & COPILOT
 -- ============================================================================
 
--- OpenCode AI Assistant
+-- Constants for AI features
+local OPENCODE_STARTUP_DELAY_MS = 100  -- Wait for OpenCode window to initialize
+
+-- Import window utilities for perfect encapsulation (no duplication!)
+local win_utils = require("yoda.window_utils")
+
+-- OpenCode AI Assistant - Smart toggle with focus and insert mode
+map("n", "<leader>ai", function()
+  local win, _ = win_utils.find_opencode()
+  if win then
+    -- If OpenCode is open, focus on it and enter insert mode
+    vim.api.nvim_set_current_win(win)
+    vim.schedule(function()
+      vim.cmd("startinsert")
+    end)
+  else
+    -- If not open, toggle it to open
+    require("opencode").toggle()
+    -- Wait for window to open, then enter insert mode
+    vim.defer_fn(function()
+      local new_win, _ = win_utils.find_opencode()
+      if new_win then
+        vim.api.nvim_set_current_win(new_win)
+        vim.cmd("startinsert")
+      end
+    end, OPENCODE_STARTUP_DELAY_MS)
+  end
+end, { desc = "AI: Toggle/Focus OpenCode (insert mode)" })
+
 map({ "n", "x" }, "<leader>oa", function()
   require("opencode").ask("@this: ", { submit = true })
 end, { desc = "OpenCode: Ask about this" })
@@ -465,13 +493,9 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 -- TERMINAL
 -- ============================================================================
 
+-- Terminal keymaps (refactored to use new terminal module for better SRP)
 map("n", "<leader>.", function()
-  local ok, functions = pcall(require, "yoda.functions")
-  if ok and functions.open_floating_terminal then
-    functions.open_floating_terminal()
-  else
-    vim.notify("Floating terminal function not available", vim.log.levels.ERROR)
-  end
+  require("yoda.terminal").open_floating()
 end, { desc = "Terminal: Open floating terminal with venv detection" })
 
 map("n", "<leader>vt", function()

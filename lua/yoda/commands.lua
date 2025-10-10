@@ -164,12 +164,11 @@ vim.api.nvim_create_user_command("FormatFeature", function()
   format_feature()
 end, { desc = "Format Gherkin feature file" })
 
--- Diagnostic commands
+-- Diagnostic commands (refactored to use new diagnostics module for better SRP)
 vim.api.nvim_create_user_command("YodaDiagnostics", function()
-  local ok, functions = pcall(require, "yoda.functions")
-  if ok and functions.run_diagnostics then
-    functions.run_diagnostics()
-  else
-    vim.notify("Diagnostics not available", vim.log.levels.ERROR)
-  end
+  require("yoda.diagnostics").run_all()
 end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" })
+
+vim.api.nvim_create_user_command("YodaAICheck", function()
+  require("yoda.diagnostics.ai").display_detailed_check()
+end, { desc = "Check AI API configuration and diagnose issues" })
