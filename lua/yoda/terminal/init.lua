@@ -11,6 +11,7 @@ local M = {}
 M.config = require("yoda.terminal.config")
 M.shell = require("yoda.terminal.shell")
 M.venv = require("yoda.terminal.venv")
+M.builder = require("yoda.terminal.builder")
 
 -- ============================================================================
 -- Public API
