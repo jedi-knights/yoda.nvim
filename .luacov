@@ -1,0 +1,60 @@
+-- LuaCov configuration for Yoda.nvim
+return {
+  -- Filename to store stats
+  statsfile = "luacov.stats.out",
+  
+  -- Filename to store report
+  reportfile = "luacov.report.out",
+  
+  -- Enable/disable modules
+  modules = {
+    -- Include patterns (what to measure)
+    include = {
+      "^lua/yoda/",  -- All yoda modules
+    },
+    
+    -- Exclude patterns (what NOT to measure)
+    exclude = {
+      -- Test files
+      "^tests/",
+      "spec$",
+      "_spec$",
+      
+      -- External dependencies
+      "^lazy%-",
+      "^plugins",
+      "^lua/lazy",
+      
+      -- Top-level config files (already simple)
+      "^init$",
+      "^lua/autocmds$",
+      "^lua/keymaps$",
+      "^lua/options$",
+      "^lua/plugins$",
+      "^lua/lazy%-",
+      
+      -- Deprecated modules (not worth testing)
+      "deprecated",
+      
+      -- Parser with goto (stylua incompatible, complex)
+      "yaml_parser",
+    },
+  },
+  
+  -- Patterns for files to include/exclude (legacy format)
+  include = {},
+  exclude = {},
+  
+  -- Run reporter automatically
+  runreport = false,
+  
+  -- Delete stats file before run
+  deletestats = false,
+  
+  -- Coverage summary at the end
+  summary = true,
+  
+  -- Reporter to use
+  reporter = "default",
+}
+

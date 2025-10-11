@@ -40,3 +40,7 @@ output.log
 node_modules/
 
 /plugin_dev.lua
+
+# LuaCov coverage files
+luacov.*.out
+*.luacov
