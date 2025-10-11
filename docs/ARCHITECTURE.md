@@ -373,8 +373,29 @@ notification.set_backend("native")  -- Force backend for testing
 
 ---
 
+## 💉 Dependency Injection (New!)
+
+Yoda.nvim now supports **lightweight dependency injection** for improved testability and explicit dependency management.
+
+**Container**: `lua/yoda/container.lua` - Service registry with composition root  
+**Example**: `terminal/venv_di.lua` - DI-enabled module
+
+**Benefits:**
+- ✅ Explicit dependencies (visible in `.new(deps)` signature)
+- ✅ Easy testing (inject fakes instead of mocking `package.loaded`)
+- ✅ Loose coupling (caller controls dependencies)
+- ✅ Gradual adoption (opt-in per module)
+
+**See**: [DEPENDENCY_INJECTION.md](DEPENDENCY_INJECTION.md) for complete guide
+
+**Status**: Infrastructure ready, pattern demonstrated, gradual adoption ongoing
+
+---
+
 ## 📖 Further Reading
 
+- **DEPENDENCY_INJECTION.md** - Lightweight DI guide with examples
+- **DESIGN_PATTERNS.md** - Gang of Four patterns used
 - **STANDARDS_QUICK_REFERENCE.md** - All code standards quick lookup (SOLID, DRY, CLEAN, Complexity)
 - **START_HERE.md** - Getting started with the codebase
 - **GETTING_STARTED.md** - User getting started guide

@@ -190,4 +190,3 @@ function M.resolve_many(names)
 end
 
 return M
-

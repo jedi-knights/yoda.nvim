@@ -28,10 +28,9 @@ function M.new(deps)
   assert(type(deps.picker) == "table", "deps.picker required")
 
   -- Optional dependency (uses vim.notify as fallback)
-  local notify = deps.notify
-    or function(msg, level)
-      vim.notify(msg, level or vim.log.levels.INFO)
-    end
+  local notify = deps.notify or function(msg, level)
+    vim.notify(msg, level or vim.log.levels.INFO)
+  end
 
   -- Create instance with injected dependencies
   local instance = {}
@@ -106,4 +105,3 @@ function M.new(deps)
 end
 
 return M
-
