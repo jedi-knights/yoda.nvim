@@ -71,19 +71,23 @@ function M.bootstrap()
   -- ============================================================================
 
   M.register("core.io", function()
-    return require("yoda.core.io")
+    local IO = require("yoda.core.io_di")
+    return IO.new({})
   end)
 
   M.register("core.platform", function()
-    return require("yoda.core.platform")
+    local Platform = require("yoda.core.platform_di")
+    return Platform.new({})
   end)
 
   M.register("core.string", function()
-    return require("yoda.core.string")
+    local String = require("yoda.core.string_di")
+    return String.new({})
   end)
 
   M.register("core.table", function()
-    return require("yoda.core.table")
+    local Table = require("yoda.core.table_di")
+    return Table.new({})
   end)
 
   -- ============================================================================
@@ -91,11 +95,13 @@ function M.bootstrap()
   -- ============================================================================
 
   M.register("adapters.notification", function()
-    return require("yoda.adapters.notification")
+    local Notification = require("yoda.adapters.notification_di")
+    return Notification.new({})
   end)
 
   M.register("adapters.picker", function()
-    return require("yoda.adapters.picker")
+    local Picker = require("yoda.adapters.picker_di")
+    return Picker.new({})
   end)
 
   M.register("window_utils", function()
@@ -121,9 +127,12 @@ function M.bootstrap()
   end)
 
   M.register("terminal.venv", function()
-    local Venv = require("yoda.terminal.venv")
-    -- Dependencies: platform, io, picker (currently using require internally)
-    return Venv
+    local Venv = require("yoda.terminal.venv_di")
+    return Venv.new({
+      platform = M.resolve("core.platform"),
+      io = M.resolve("core.io"),
+      picker = M.resolve("adapters.picker"),
+    })
   end)
 
   M.register("terminal.builder", function()
