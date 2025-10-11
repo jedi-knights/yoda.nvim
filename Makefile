@@ -52,7 +52,17 @@ format:
 coverage:
 	@echo "Running tests with coverage..."
 	@rm -f luacov.*.out
-	@eval $$(luarocks path); nvim --headless -u tests/minimal_init.lua -c "luafile tests/run_all.lua" 2>&1 | tee /tmp/yoda_test_output.txt
+	@export PATH="$$HOME/.luarocks/bin:$$PATH"; \
+	eval $$(luarocks path); \
+	if command -v nlua >/dev/null 2>&1; then \
+		echo "Using nlua for coverage collection..."; \
+		nlua tests/run_all_nlua.lua 2>&1 | tee /tmp/yoda_test_output.txt; \
+	else \
+		echo "⚠️  nlua not found - coverage collection disabled"; \
+		echo "   Install with: luarocks install --local nlua"; \
+		echo "   Then add ~/.luarocks/bin to PATH"; \
+		nvim --headless -u tests/minimal_init.lua -c "luafile tests/run_all.lua" 2>&1 | tee /tmp/yoda_test_output.txt; \
+	fi
 	@echo ""
 	@echo "================================================================================"
 	@echo "AGGREGATE TEST RESULTS"
@@ -62,7 +72,7 @@ coverage:
 	@if [ -f luacov.stats.out ]; then \
 		echo ""; \
 		echo "✅ Coverage data collected: luacov.stats.out"; \
-		echo "Run 'make coverage-report' to generate report"; \
+		echo "   Run 'make coverage-report' to generate report"; \
 	fi
 
 # Generate coverage report

@@ -136,5 +136,13 @@ The test suite is comprehensive enough that we have high confidence in coverage 
 - `Makefile` targets: `coverage`, `coverage-report`, `clean`
 - Updated `.gitignore` for coverage files
 
-**Status:** ✅ Infrastructure ready, pending Neovim/Lua integration
+**Status:** ✅ nlua integration complete, LuaCov has Lua 5.1/5.4 compatibility issue
+
+**Update:** nlua is now integrated and runs tests successfully. However, LuaCov (installed for Lua 5.4) has compatibility issues with LuaJIT/Lua 5.1. Tests run 410/410 passing, but coverage data collection is blocked by runtime errors in LuaCov's string handling.
+
+**Current State:**
+- ✅ nlua installed and working
+- ✅ Tests run faster with nlua than `nvim --headless`
+- ❌ LuaCov fails with: `attempt to call method 'gsub' (a nil value)`
+- ✅ Manual coverage estimates remain reliable (~95%)
 
