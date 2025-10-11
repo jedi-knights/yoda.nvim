@@ -119,11 +119,18 @@ function M.bootstrap()
   end)
 
   M.register("terminal.config", function()
-    return require("yoda.terminal.config")
+    local Config = require("yoda.terminal.config_di")
+    return Config.new({
+      notify = M.resolve("adapters.notification").notify,
+    })
   end)
 
   M.register("terminal.shell", function()
-    return require("yoda.terminal.shell")
+    local Shell = require("yoda.terminal.shell_di")
+    return Shell.new({
+      config = M.resolve("terminal.config"),
+      notify = M.resolve("adapters.notification").notify,
+    })
   end)
 
   M.register("terminal.venv", function()
@@ -148,13 +155,18 @@ function M.bootstrap()
   end)
 
   M.register("diagnostics.lsp", function()
-    return require("yoda.diagnostics.lsp")
+    local LSP = require("yoda.diagnostics.lsp_di")
+    return LSP.new({
+      notify = M.resolve("adapters.notification").notify,
+    })
   end)
 
   M.register("diagnostics.ai", function()
-    local AI = require("yoda.diagnostics.ai")
-    -- Dependencies: ai_cli (currently using require internally)
-    return AI
+    local AI = require("yoda.diagnostics.ai_di")
+    return AI.new({
+      ai_cli = M.resolve("diagnostics.ai_cli"),
+      notify = M.resolve("adapters.notification").notify,
+    })
   end)
 
   M.register("diagnostics.composite", function()
