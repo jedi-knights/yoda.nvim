@@ -129,12 +129,12 @@ The test suite is comprehensive enough that we have high confidence in coverage 
 
 ---
 
-## Infrastructure Available (Dormant)
+## Infrastructure Removed
 
-The following files exist but are not actively used:
-- `.luacov` - LuaCov configuration (for future use if compatibility improves)
-- `scripts/coverage_summary.sh` - Report parser (dormant)
-- `.gitignore` - Excludes coverage output files
+All automated coverage infrastructure has been removed due to incompatibility:
+- ~~`.luacov`~~ - Removed (LuaCov incompatible with LuaJIT)
+- ~~`scripts/coverage_summary.sh`~~ - Removed (no coverage data to parse)
+- ~~Coverage-related Makefile targets~~ - Removed (simplified)
 
 **Status:** ⚠️ Automated coverage disabled - using manual estimates
 
