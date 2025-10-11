@@ -36,6 +36,9 @@ Yoda.nvim maintains world-class code quality (10/10):
 git clone https://github.com/jedi-knights/yoda.nvim.git
 cd yoda.nvim
 
+# Install git hooks (runs lint + test before each commit)
+make install-hooks
+
 # Run tests
 make test
 
