@@ -4,16 +4,6 @@
 -- Load minimal init
 vim.cmd("source tests/minimal_init.lua")
 
--- Enable code coverage if LuaCov is available
-local coverage_enabled = false
-local luacov_ok, luacov = pcall(require, "luacov")
-if luacov_ok then
-  coverage_enabled = true
-  print("✅ LuaCov enabled - collecting coverage data")
-else
-  print("⚠️  LuaCov not found - skipping coverage collection")
-end
-
 -- Try to run tests with available harness
 local function run_tests()
   local snacks_ok = pcall(require, "snacks")
@@ -77,10 +67,5 @@ if not ok then
   print("ERROR: " .. tostring(err))
   vim.cmd("cquit 1")
 else
-  -- Save coverage data if enabled
-  if coverage_enabled and luacov then
-    print("\n📊 Saving coverage data...")
-    luacov.save_stats()
-  end
   vim.cmd("quitall!")
 end

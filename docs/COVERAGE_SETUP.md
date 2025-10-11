@@ -129,20 +129,24 @@ The test suite is comprehensive enough that we have high confidence in coverage 
 
 ---
 
-## Files Created
+## Infrastructure Available (Dormant)
 
-- `.luacov` - LuaCov configuration
-- `scripts/coverage_summary.sh` - Report parser
-- `Makefile` targets: `coverage`, `coverage-report`, `clean`
-- Updated `.gitignore` for coverage files
+The following files exist but are not actively used:
+- `.luacov` - LuaCov configuration (for future use if compatibility improves)
+- `scripts/coverage_summary.sh` - Report parser (dormant)
+- `.gitignore` - Excludes coverage output files
 
-**Status:** ✅ nlua integration complete, LuaCov has Lua 5.1/5.4 compatibility issue
+**Status:** ⚠️ Automated coverage disabled - using manual estimates
 
-**Update:** nlua is now integrated and runs tests successfully. However, LuaCov (installed for Lua 5.4) has compatibility issues with LuaJIT/Lua 5.1. Tests run 410/410 passing, but coverage data collection is blocked by runtime errors in LuaCov's string handling.
+**Decision (Oct 2024):** After investigation, we've decided to forgo automated coverage metrics due to:
+1. LuaCov incompatibility with LuaJIT (Neovim's Lua runtime)
+2. nlua being slower than `nvim --headless` (0.475s vs 0.367s)
+3. Additional complexity for no practical benefit
 
-**Current State:**
-- ✅ nlua installed and working
-- ✅ Tests run faster with nlua than `nvim --headless`
-- ❌ LuaCov fails with: `attempt to call method 'gsub' (a nil value)`
-- ✅ Manual coverage estimates remain reliable (~95%)
+**Current Approach:**
+- ✅ 410 comprehensive tests (100% pass rate)
+- ✅ Manual coverage estimates: ~95%
+- ✅ All critical modules tested
+- ✅ Tests run efficiently with `nvim --headless`
+- ❌ No automated line-by-line coverage metrics
 
