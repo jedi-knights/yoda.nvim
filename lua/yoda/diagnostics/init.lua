@@ -45,18 +45,13 @@ end
 --- This demonstrates how to use the Composite pattern for uniform diagnostic handling
 function M.run_with_composite()
   -- Create composite diagnostic
-  local composite = M.composite:new()
-    :add(M.lsp)
-    :add(M.ai)
+  local composite = M.composite:new():add(M.lsp):add(M.ai)
 
   -- Run all and get aggregate results
   local results = composite:run_all()
   local stats = composite:get_aggregate_status()
 
-  vim.notify(
-    string.format("Diagnostics: %d/%d passed (%.0f%%)", stats.passed, stats.total, stats.pass_rate * 100),
-    vim.log.levels.INFO
-  )
+  vim.notify(string.format("Diagnostics: %d/%d passed (%.0f%%)", stats.passed, stats.total, stats.pass_rate * 100), vim.log.levels.INFO)
 
   return results, stats
 end

@@ -214,4 +214,3 @@ describe("terminal.shell", function()
     end)
   end)
 end)
-

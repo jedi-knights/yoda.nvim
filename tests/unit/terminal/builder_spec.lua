@@ -275,12 +275,7 @@ describe("terminal.builder", function()
         end,
       }
 
-      Builder:new()
-        :with_window({ width = 0.5 })
-        :with_env({ PATH = "/test" })
-        :auto_insert(false)
-        :start_insert(false)
-        :build()
+      Builder:new():with_window({ width = 0.5 }):with_env({ PATH = "/test" }):auto_insert(false):start_insert(false):build()
 
       assert.same({ width = 0.5 }, captured_opts.win)
       assert.same({ PATH = "/test" }, captured_opts.env)
@@ -338,4 +333,3 @@ describe("terminal.builder", function()
     end)
   end)
 end)
-

@@ -193,4 +193,3 @@ describe("terminal.config", function()
     end)
   end)
 end)
-

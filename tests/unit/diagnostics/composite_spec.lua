@@ -61,10 +61,8 @@ describe("diagnostics.composite", function()
     end)
 
     it("allows chaining multiple adds", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", true))
-        :add(create_mock_diagnostic("d3", true))
+      local composite =
+        Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", true)):add(create_mock_diagnostic("d3", true))
 
       assert.equals(3, #composite.diagnostics)
     end)
@@ -72,9 +70,7 @@ describe("diagnostics.composite", function()
 
   describe("run_all()", function()
     it("runs all diagnostics and collects results", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("lsp", true))
-        :add(create_mock_diagnostic("ai", false))
+      local composite = Composite:new():add(create_mock_diagnostic("lsp", true)):add(create_mock_diagnostic("ai", false))
 
       local results = composite:run_all()
       assert.is_true(results.lsp)
@@ -132,7 +128,8 @@ describe("diagnostics.composite", function()
 
   describe("run_critical()", function()
     it("runs only critical diagnostics", function()
-      local composite = Composite:new()
+      local composite = Composite
+        :new()
         :add(create_mock_diagnostic("d1", true, true)) -- critical
         :add(create_mock_diagnostic("d2", true, false)) -- not critical
         :add(create_mock_diagnostic("d3", true, true)) -- critical
@@ -144,8 +141,7 @@ describe("diagnostics.composite", function()
     end)
 
     it("returns empty when no critical diagnostics", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true, false))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true, false))
 
       local results = composite:run_critical()
       assert.same({}, results)
@@ -154,9 +150,7 @@ describe("diagnostics.composite", function()
 
   describe("count()", function()
     it("returns number of diagnostics", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", true))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", true))
 
       assert.equals(2, composite:count())
     end)
@@ -169,17 +163,13 @@ describe("diagnostics.composite", function()
 
   describe("all_pass()", function()
     it("returns true when all pass", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", true))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", true))
 
       assert.is_true(composite:all_pass())
     end)
 
     it("returns false when any fails", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", false))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", false))
 
       assert.is_false(composite:all_pass())
     end)
@@ -192,10 +182,8 @@ describe("diagnostics.composite", function()
 
   describe("get_aggregate_status()", function()
     it("calculates aggregate statistics", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", false))
-        :add(create_mock_diagnostic("d3", true))
+      local composite =
+        Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", false)):add(create_mock_diagnostic("d3", true))
 
       local stats = composite:get_aggregate_status()
       assert.equals(3, stats.total)
@@ -215,9 +203,7 @@ describe("diagnostics.composite", function()
     end)
 
     it("handles all passing", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", true))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", true))
 
       local stats = composite:get_aggregate_status()
       assert.equals(2, stats.passed)
@@ -226,9 +212,7 @@ describe("diagnostics.composite", function()
     end)
 
     it("handles all failing", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", false))
-        :add(create_mock_diagnostic("d2", false))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", false)):add(create_mock_diagnostic("d2", false))
 
       local stats = composite:get_aggregate_status()
       assert.equals(0, stats.passed)
@@ -239,25 +223,19 @@ describe("diagnostics.composite", function()
 
   describe("check_status() - Composite as Diagnostic", function()
     it("acts as single diagnostic (passes when all pass)", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", true))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", true))
 
       assert.is_true(composite:check_status())
     end)
 
     it("fails when any sub-diagnostic fails", function()
-      local composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", false))
+      local composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", false))
 
       assert.is_false(composite:check_status())
     end)
 
     it("allows nesting composites", function()
-      local sub_composite = Composite:new()
-        :add(create_mock_diagnostic("d1", true))
-        :add(create_mock_diagnostic("d2", true))
+      local sub_composite = Composite:new():add(create_mock_diagnostic("d1", true)):add(create_mock_diagnostic("d2", true))
 
       local main_composite = Composite:new():add(sub_composite)
 
@@ -272,4 +250,3 @@ describe("diagnostics.composite", function()
     end)
   end)
 end)
-
