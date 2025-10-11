@@ -79,7 +79,7 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 | `<leader>sr` | Normal | Resume last picker |
 | `<leader>ss` | Normal | Select picker |
 | `<leader>sh` | Normal | Search help |
-| `<leader>sk` | Normal | Search keymaps |
+| `<leader>sk` | Normal | Toggle showkeys display (screencaster) |
 | `<leader>n` | Normal | Notification history |
 
 ---
@@ -117,12 +117,22 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 ## 🤖 AI & Code Assistance
 
 ### GitHub Copilot
+
+#### Leader-based Keymaps (Primary)
+| Keymap | Mode | Description |
+|--------|------|-------------|
+| `<leader>cop` | Normal | Toggle Copilot on/off |
+| `<leader>a` | Insert | Accept Copilot suggestion |
+| `<leader>n` | Insert | Next suggestion |
+| `<leader>p` | Insert | Previous suggestion |
+| `<leader>d` | Insert | Dismiss suggestion |
+
+#### Alternative Keymaps (Legacy)
 | Keymap | Mode | Description |
 |--------|------|-------------|
 | `<C-j>` | Insert | Accept Copilot suggestion |
 | `<C-k>` | Insert | Dismiss Copilot suggestion |
 | `<C-Space>` | Insert | Trigger Copilot completion |
-| `<leader>cp` | Normal | Toggle Copilot on/off |
 
 #### Copilot Panel (when open)
 | Keymap | Mode | Description |
@@ -133,7 +143,7 @@ This comprehensive guide documents all keymaps available in the Yoda.nvim distri
 | `gr` | Normal | Refresh suggestions |
 | `<M-CR>` | Normal | Open panel |
 
-#### Modern Copilot.lua Keymaps
+#### Alternative Alt-based Keymaps
 | Keymap | Mode | Description |
 |--------|------|-------------|
 | `<M-l>` | Insert | Accept suggestion |

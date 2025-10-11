@@ -87,7 +87,7 @@ That's it! The first launch will automatically bootstrap all plugins.
 | `<leader>n` | Insert | Next suggestion |
 | `<leader>p` | Insert | Previous suggestion |
 | `<leader>d` | Insert | Dismiss suggestion |
-| `<leader>ct` | Normal | Toggle Copilot on/off |
+| `<leader>cop` | Normal | Toggle Copilot on/off |
 
 #### OpenCode (AI Assistant)
 | Keymap | Description |
@@ -113,7 +113,7 @@ That's it! The first launch will automatically bootstrap all plugins.
 | Keymap | Description |
 |--------|-------------|
 | `<leader>kk` | Show available keymaps (custom display) |
-| `<leader>sk` | Toggle showkeys display (minimal screencaster) |
+| `<leader>sk` | Toggle showkeys display (screencaster) |
 
 ### 🪟 Window Management
 | Keymap | Description |
@@ -197,7 +197,7 @@ vim.g.yoda_config = {
 
 **Toggle and manage Copilot:**
 ```vim
-<leader>ct         " Toggle Copilot on/off (normal mode)
+<leader>cop        " Toggle Copilot on/off (normal mode)
 :Copilot status    " Check current status
 :Copilot setup     " Authenticate with GitHub
 ```

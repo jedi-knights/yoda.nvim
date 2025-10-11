@@ -437,7 +437,7 @@ map("n", "<S-C-d>", function()
 end, { desc = "OpenCode: Messages half page down" })
 
 -- Copilot
-map("n", "<leader>ct", function()
+map("n", "<leader>cop", function()
   -- Load copilot if not already loaded
   require("lazy").load({ plugins = { "copilot.lua" } })
 
