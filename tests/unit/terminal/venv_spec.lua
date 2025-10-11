@@ -36,7 +36,7 @@ describe("terminal.venv", function()
     it("returns Windows activate script path", function()
       -- Need to reload venv module after mocking platform
       package.loaded["yoda.terminal.venv"] = nil
-      
+
       package.loaded["yoda.core.platform"] = {
         is_windows = function()
           return true
@@ -372,4 +372,3 @@ describe("terminal.venv", function()
     end)
   end)
 end)
-
