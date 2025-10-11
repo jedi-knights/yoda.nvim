@@ -14,7 +14,7 @@ describe("diagnostics.composite", function()
         return name
       end,
     }
-  end)
+  end
 
   describe("new()", function()
     it("creates composite instance", function()

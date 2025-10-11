@@ -41,6 +41,5 @@ node_modules/
 
 /plugin_dev.lua
 
-# LuaCov coverage files
+# LuaCov coverage output files (keep .luacov config)
 luacov.*.out
-*.luacov
