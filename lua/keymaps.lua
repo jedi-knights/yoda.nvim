@@ -15,17 +15,41 @@ end
 -- EXPLORER
 -- ============================================================================
 
--- Utility function to check if snacks explorer is open and return window info
+-- Cache for snacks explorer window (performance optimization)
+local snacks_explorer_cache = {}
+
+-- Invalidate cache when windows are closed
+vim.api.nvim_create_autocmd("WinClosed", {
+  callback = function(ev)
+    local win_id = tonumber(ev.match)
+    if snacks_explorer_cache.win == win_id then
+      snacks_explorer_cache = {}
+    end
+  end,
+})
+
+-- Utility function to check if snacks explorer is open and return window info (cached)
 local function get_snacks_explorer_win()
+  -- Check cache first
+  if snacks_explorer_cache.win and vim.api.nvim_win_is_valid(snacks_explorer_cache.win) then
+    return snacks_explorer_cache.win, snacks_explorer_cache.buf
+  end
+
+  -- Cache miss or invalid - search for explorer window
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.bo[buf].filetype
     local buf_name = vim.api.nvim_buf_get_name(buf)
     -- Check for snacks explorer by filetype (snacks creates multiple windows)
     if ft:match("snacks_") or ft == "snacks" or buf_name:match("snacks") then
+      -- Update cache
+      snacks_explorer_cache = { win = win, buf = buf }
       return win, buf
     end
   end
+
+  -- Not found - clear cache
+  snacks_explorer_cache = {}
   return nil, nil
 end
 
