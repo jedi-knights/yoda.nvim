@@ -1,6 +1,6 @@
 # Makefile for Yoda.nvim
 
-.PHONY: test test-watch test-unit test-integration lint format help
+.PHONY: test test-watch test-unit test-integration lint format install-hooks help
 
 # Default target
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  make test-integration  - Run integration tests only"
 	@echo "  make lint              - Run linter (stylua --check)"
 	@echo "  make format            - Format code (stylua)"
+	@echo "  make install-hooks     - Install git pre-commit hooks"
 	@echo "  make help              - Show this help"
 
 # Run all tests
@@ -44,4 +45,8 @@ lint:
 # Format code with stylua (excluding files with goto labels)  
 format:
 	@find lua tests -name "*.lua" ! -name "yaml_parser.lua" ! -name "config_loader.lua" -type f | xargs stylua
+
+# Install git hooks
+install-hooks:
+	@./scripts/install-hooks.sh
 
