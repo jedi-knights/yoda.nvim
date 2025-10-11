@@ -415,9 +415,14 @@ make coverage-report
 | 4. Rewrite with busted | Very High | ⭐⭐⭐⭐⭐ | 20+ hours | ❌ NO |
 | 5. Keep manual estimates | Zero | ⭐⭐⭐ | 0 hours | ✅ OK |
 
-**Recommendation:** **Option 5 (manual estimates)** is the practical choice.
+**Decision (Oct 2024):** **Option 5 (manual estimates)** adopted.
 
-**Update (Oct 2024):** nlua has been integrated but LuaCov has Lua 5.1/5.4 compatibility issues with LuaJIT. While nlua successfully runs all 410 tests (faster than `nvim --headless`), coverage data collection fails with runtime errors in LuaCov's string handling. Given the excellent test suite quality, manual coverage estimates (~95%) are sufficient.
+**Outcome:** After testing nlua integration, we discovered:
+1. nlua is 30% **slower** than `nvim --headless` (0.475s vs 0.367s)
+2. LuaCov has Lua 5.1/5.4 compatibility issues with LuaJIT
+3. Coverage data collection fails with runtime errors
+
+Given these findings and the excellent test suite quality (410 tests, 100% pass rate), we've decided to use manual coverage estimates (~95%) and keep the test infrastructure simple.
 
 You already have excellent test coverage. Automated metrics would be nice to have, but they're not critical when you have 410 passing tests covering all modules.
 

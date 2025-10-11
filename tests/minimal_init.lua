@@ -12,22 +12,6 @@ vim.opt.runtimepath:append(root .. "/lua")
 package.path = package.path .. ";" .. root .. "/lua/?.lua"
 package.path = package.path .. ";" .. root .. "/lua/?/init.lua"
 
--- Add luarocks path for coverage (LuaCov)
--- Directly add common luarocks paths
-local home = os.getenv("HOME")
-if home then
-  package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/5.4/?.lua"
-  package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/5.4/?/init.lua"
-  package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/5.3/?.lua"
-  package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/5.3/?/init.lua"
-  package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/5.1/?.lua"
-  package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/5.1/?/init.lua"
-  
-  package.cpath = package.cpath .. ";" .. home .. "/.luarocks/lib/lua/5.4/?.so"
-  package.cpath = package.cpath .. ";" .. home .. "/.luarocks/lib/lua/5.3/?.so"
-  package.cpath = package.cpath .. ";" .. home .. "/.luarocks/lib/lua/5.1/?.so"
-end
-
 -- Minimal Neovim settings for testing
 vim.opt.swapfile = false
 vim.opt.backup = false
