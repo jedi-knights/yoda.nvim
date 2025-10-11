@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/tests-302%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-461%20passing-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/quality-10%2F10-brightgreen" alt="Code Quality">
 </p>
 
@@ -257,7 +257,7 @@ vim.g.yoda_config = {
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Quick Guidelines
 - Use [Conventional Commits](https://www.conventionalcommits.org/)
@@ -289,4 +289,4 @@ We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.
 
 ---
 
-**Last Updated**: December 2024
+**Last Updated**: October 2025
