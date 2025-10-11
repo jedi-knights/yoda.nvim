@@ -1,6 +1,14 @@
-# Gang of Four Design Patterns Analysis
+# ADR-0007: Gang of Four Design Patterns
 
-**Deep analysis of Yoda.nvim for GoF pattern opportunities**
+**Date**: October 2024  
+**Status**: Accepted  
+**Decision**: Implement Builder and Composite patterns
+
+---
+
+## Context
+
+After establishing a solid SOLID/CLEAN/DRY foundation, we analyzed the codebase for opportunities to apply Gang of Four design patterns to improve code clarity and maintainability without over-engineering.
 
 ---
 
