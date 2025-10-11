@@ -34,8 +34,8 @@ function M:run_all(opts)
   local results = {}
 
   for _, diagnostic in ipairs(self.diagnostics) do
-    local name = diagnostic.get_name and diagnostic.get_name() or "unknown"
-    local ok = diagnostic.check_status()
+    local name = diagnostic.get_name and diagnostic:get_name() or "unknown"
+    local ok = diagnostic:check_status()
     results[name] = ok
 
     if opts.stop_on_failure and not ok then
@@ -53,8 +53,8 @@ function M:run_critical()
 
   for _, diagnostic in ipairs(self.diagnostics) do
     if diagnostic.critical then
-      local name = diagnostic.get_name and diagnostic.get_name() or "unknown"
-      results[name] = diagnostic.check_status()
+      local name = diagnostic.get_name and diagnostic:get_name() or "unknown"
+      results[name] = diagnostic:check_status()
     end
   end
 
@@ -71,7 +71,7 @@ end
 --- @return boolean True if all pass
 function M:all_pass()
   for _, diagnostic in ipairs(self.diagnostics) do
-    if not diagnostic.check_status() then
+    if not diagnostic:check_status() then
       return false
     end
   end
@@ -86,7 +86,7 @@ function M:get_aggregate_status()
 
   for _, diagnostic in ipairs(self.diagnostics) do
     total = total + 1
-    if diagnostic.check_status() then
+    if diagnostic:check_status() then
       passed = passed + 1
     end
   end
