@@ -307,6 +307,35 @@ notification.set_backend("native")  -- Force backend for testing
 
 ---
 
+## 🗑️ Deprecated Modules
+
+### functions.lua (Backwards Compatibility Layer)
+
+**Status**: Deprecated (maintained for backwards compatibility)  
+**Location**: `lua/yoda/functions.lua`  
+**Size**: ~760 lines
+
+**Background**: Originally a "God Object" that violated Single Responsibility Principle. Refactored into focused modules during SOLID compliance work (October 2024).
+
+**Current Implementation**: All functions are deprecation wrappers that:
+1. Show a one-time warning message
+2. Delegate to the appropriate new focused module
+
+**Migration Paths**:
+- `run_diagnostics()` → `require("yoda.diagnostics").run_all()`
+- `check_lsp_status()` → `require("yoda.diagnostics.lsp").check_status()`
+- `check_ai_status()` → `require("yoda.diagnostics.ai").check_status()`
+- `open_floating_terminal()` → `require("yoda.terminal").open_floating()`
+- `find_virtual_envs()` → `require("yoda.terminal.venv").find_virtual_envs()`
+- `get_activate_script_path()` → `require("yoda.terminal.venv").get_activate_script_path()`
+- `make_terminal_win_opts()` → `require("yoda.terminal.config").make_win_opts()`
+
+**Timeline**: Maintained indefinitely for backwards compatibility. Will only be removed in a major version bump (v3.0+).
+
+**Recommendation**: Update custom code to use new modules. See deprecation warnings for guidance.
+
+---
+
 ## 📚 Quick Reference
 
 ### Find Code By Purpose
