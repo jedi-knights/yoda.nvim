@@ -19,7 +19,7 @@ end
 local function get_snacks_explorer_win()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
-    local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+    local ft = vim.bo[buf].filetype
     local buf_name = vim.api.nvim_buf_get_name(buf)
     -- Check for snacks explorer by filetype (snacks creates multiple windows)
     if ft:match("snacks_") or ft == "snacks" or buf_name:match("snacks") then
@@ -63,7 +63,7 @@ map("n", "<leader>ec", function()
     local snacks_wins = {}
     for _, w in ipairs(vim.api.nvim_list_wins()) do
       local buf = vim.api.nvim_win_get_buf(w)
-      local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+      local ft = vim.bo[buf].filetype
       if ft:match("snacks_") or ft == "snacks" then
         table.insert(snacks_wins, w)
       end

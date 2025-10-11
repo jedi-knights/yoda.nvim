@@ -17,7 +17,7 @@ function M.find_window(match_fn)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local buf_name = vim.api.nvim_buf_get_name(buf)
-    local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+    local ft = vim.bo[buf].filetype
 
     if match_fn(win, buf, buf_name, ft) then
       return win, buf
@@ -34,7 +34,7 @@ function M.find_all_windows(match_fn)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local buf_name = vim.api.nvim_buf_get_name(buf)
-    local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+    local ft = vim.bo[buf].filetype
 
     if match_fn(win, buf, buf_name, ft) then
       table.insert(matches, { win = win, buf = buf })

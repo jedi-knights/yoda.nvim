@@ -6,7 +6,7 @@ describe("window_utils", function()
   local original_list_wins = vim.api.nvim_list_wins
   local original_win_get_buf = vim.api.nvim_win_get_buf
   local original_buf_get_name = vim.api.nvim_buf_get_name
-  local original_buf_get_option = vim.api.nvim_buf_get_option
+  local original_bo = vim.bo
   local original_set_current_win = vim.api.nvim_set_current_win
   local original_win_close = vim.api.nvim_win_close
   local original_notify = vim.notify
@@ -40,16 +40,23 @@ describe("window_utils", function()
       return ""
     end
 
-    vim.api.nvim_buf_get_option = function(buf, opt)
-      if opt == "filetype" then
-        for _, data in ipairs(windows_data) do
-          if data.buf == buf then
-            return data.ft or ""
-          end
-        end
-      end
-      return ""
-    end
+    -- Mock vim.bo for filetype access
+    vim.bo = setmetatable({}, {
+      __index = function(_, buf)
+        return setmetatable({}, {
+          __index = function(_, opt)
+            if opt == "filetype" then
+              for _, data in ipairs(windows_data) do
+                if data.buf == buf then
+                  return data.ft or ""
+                end
+              end
+            end
+            return ""
+          end,
+        })
+      end,
+    })
   end
 
   -- Restore after each test
@@ -57,7 +64,7 @@ describe("window_utils", function()
     vim.api.nvim_list_wins = original_list_wins
     vim.api.nvim_win_get_buf = original_win_get_buf
     vim.api.nvim_buf_get_name = original_buf_get_name
-    vim.api.nvim_buf_get_option = original_buf_get_option
+    vim.bo = original_bo
     vim.api.nvim_set_current_win = original_set_current_win
     vim.api.nvim_win_close = original_win_close
     vim.notify = original_notify
