@@ -5,16 +5,8 @@ return {
   -- ============================================================================
   -- CORE UTILITIES
   -- ============================================================================
-
-  -- Impatient - Faster Lua module loading
-  {
-    "lewis6991/impatient.nvim",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      require("impatient").enable_profile()
-    end,
-  },
+  -- Note: impatient.nvim removed - vim.loader.enable() in init.lua provides
+  -- the same functionality with better integration (Neovim 0.9+)
 
   -- Plenary - Lua utility library (required by many plugins)
   {
@@ -78,8 +70,7 @@ return {
   -- Bufferline - Visual buffer tabs
   {
     "akinsho/bufferline.nvim",
-    lazy = false,
-    priority = 999,
+    event = "VeryLazy",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("bufferline").setup({
