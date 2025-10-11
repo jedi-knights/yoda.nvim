@@ -63,16 +63,20 @@ end
 -- Load colorscheme (must be after plugins to ensure plugin availability)
 safe_require("yoda.colorscheme")
 
--- Load user commands
-safe_require("yoda.commands")
+-- Defer loading of non-critical modules (performance optimization)
+-- These modules provide commands and utilities that aren't needed immediately at startup
+vim.schedule(function()
+  -- Load user commands (deferred - only needed when user invokes them)
+  safe_require("yoda.commands")
 
--- Load utility functions
-safe_require("yoda.functions")
+  -- Load utility functions (deferred - deprecated compatibility layer)
+  safe_require("yoda.functions")
 
--- Load test utilities (only in development mode)
-if vim.env.YODA_DEV then
-  safe_require("yoda.plenary")
-end
+  -- Load test utilities (only in development mode)
+  if vim.env.YODA_DEV then
+    safe_require("yoda.plenary")
+  end
+end)
 
 -- ============================================================================
 -- Environment Setup
