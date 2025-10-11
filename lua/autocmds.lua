@@ -262,6 +262,11 @@ create_autocmd("BufEnter", {
   group = augroup("AlphaBuffer", { clear = true }),
   desc = "Show alpha dashboard for empty buffers",
   callback = function(args)
+    -- Early bailout: Skip for unlisted buffers (performance optimization)
+    if not vim.bo[args.buf].buflisted then
+      return
+    end
+
     -- Skip if entering a terminal or special buffer
     local buftype = vim.bo[args.buf].buftype
     if buftype ~= "" then

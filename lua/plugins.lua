@@ -118,8 +118,13 @@ return {
   -- Alpha - Dashboard
   {
     "goolord/alpha-nvim",
-    lazy = false,
-    priority = 1000,
+    event = function()
+      -- Only load alpha if no files were opened at startup
+      if vim.fn.argc() == 0 then
+        return "VimEnter"
+      end
+      return nil
+    end,
     config = function()
       local alpha = require("alpha")
       local dashboard = require("alpha.themes.dashboard")
