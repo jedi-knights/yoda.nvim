@@ -49,9 +49,11 @@ describe("container", function()
   describe("resolve()", function()
     it("resolves registered service", function()
       Container.register("logger", function()
-        return { log = function(msg)
-          return msg
-        end }
+        return {
+          log = function(msg)
+            return msg
+          end,
+        }
       end)
 
       local logger = Container.resolve("logger")
@@ -90,9 +92,11 @@ describe("container", function()
 
     it("allows factories to resolve other services", function()
       Container.register("logger", function()
-        return { log = function(msg)
-          return msg
-        end }
+        return {
+          log = function(msg)
+            return msg
+          end,
+        }
       end)
 
       Container.register("app", function()
@@ -284,4 +288,3 @@ describe("container", function()
     end)
   end)
 end)
-
