@@ -30,6 +30,30 @@ vim.lsp.config.gopls = {}
 -- TypeScript/JavaScript LSP
 vim.lsp.config.ts_ls = {}
 
+-- Rust LSP
+vim.lsp.config.rust_analyzer = {
+  settings = {
+    ["rust-analyzer"] = {
+      cargo = {
+        allFeatures = true,
+        loadOutDirsFromCheck = true,
+      },
+      procMacro = {
+        enable = true,
+      },
+      checkOnSave = {
+        command = "clippy",
+      },
+      diagnostics = {
+        enable = true,
+        experimental = {
+          enable = true,
+        },
+      },
+    },
+  },
+}
+
 -- Disable stylua as LSP server (it's a formatter, not a language server)
 -- stylua is not enabled as an LSP server
 
@@ -37,6 +61,7 @@ vim.lsp.config.ts_ls = {}
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("gopls")
 vim.lsp.enable("ts_ls")
+vim.lsp.enable("rust_analyzer")
 
 -- Setup keymaps for LSP
 local function on_attach(client, bufnr)
