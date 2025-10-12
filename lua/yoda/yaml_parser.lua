@@ -1,5 +1,8 @@
 -- lua/yoda/yaml_parser.lua
 -- Pure Lua YAML parser for ingress-mapping.yaml structure
+-- Uses unified logging system for trace debugging
+
+local logger = require("yoda.logging.logger")
 -- Refactored for low cyclomatic complexity (all functions ≤ 7)
 
 local M = {}
@@ -82,59 +85,44 @@ end
 --- Save current environment to results
 --- Complexity: 2 (1 if + simple operations)
 --- @param environments table Environments map
---- @param debug_log table Debug log array
 --- @param current_env string|nil Current environment
 --- @param current_regions table Current regions array
-local function save_environment(environments, debug_log, current_env, current_regions)
+local function save_environment(environments, current_env, current_regions)
   if not current_env then
     return
   end
 
   environments[current_env] = current_regions
-  table.insert(debug_log, "*** Saved environment " .. current_env .. " with " .. #current_regions .. " regions")
+  logger.trace("Saved environment", { env = current_env, regions = #current_regions })
 end
 
 --- Process environment line
 --- Complexity: 1 (simple operations)
---- @param debug_log table Debug log array
 --- @param env_order table Environment order array
 --- @param env_name string Environment name
 --- @param line_num number Line number
-local function log_new_environment(debug_log, env_order, env_name, line_num)
+local function log_new_environment(env_order, env_name, line_num)
   table.insert(env_order, env_name)
-  table.insert(debug_log, "*** Found environment: " .. env_name .. " at line " .. line_num)
+  logger.trace("Found environment", { env = env_name, line = line_num })
 end
 
 --- Process region line
 --- Complexity: 1 (simple operations)
---- @param debug_log table Debug log array
 --- @param current_regions table Regions array
 --- @param region_name string Region name
 --- @param current_env string Current environment
-local function add_region(debug_log, current_regions, region_name, current_env)
+local function add_region(current_regions, region_name, current_env)
   table.insert(current_regions, region_name)
-  table.insert(debug_log, "*** Found region: " .. region_name .. " for environment " .. current_env)
+  logger.trace("Found region", { region = region_name, env = current_env })
 end
 
---- Write debug log to file
---- Complexity: 2 (1 if + file operations)
---- @param debug_file string Debug file path
---- @param debug_log table Debug log entries
-local function write_debug_log(debug_file, debug_log)
-  local debug_content = table.concat(debug_log, "\n")
-  local file = io.open(debug_file, "w")
-  if file then
-    file:write(debug_content)
-    file:close()
-    vim.notify("Debug log written to: " .. debug_file, vim.log.levels.INFO)
-  end
-end
+--- Removed: write_debug_log - now handled by unified logger with file strategy
 
 --- Process single YAML line
 --- Complexity: 6 (1 skip + 2 env checks + 2 region checks + 1 log)
 --- @param line string Line content
 --- @param line_num number Line number
---- @param state table Parser state {current_env, current_regions, environments, env_order, debug_log}
+--- @param state table Parser state {current_env, current_regions, environments, env_order}
 local function process_line(line, line_num, state)
   local trimmed = line:match("^%s*(.-)%s*$")
 
@@ -144,42 +132,41 @@ local function process_line(line, line_num, state)
   end
 
   local indent = #(line:match("^(%s*)") or "")
-  table.insert(state.debug_log, create_line_log(line_num, indent, trimmed))
+  logger.trace(function()
+    return create_line_log(line_num, indent, trimmed)
+  end)
 
   -- Check for environment definition
   local env_name = extract_environment_name(trimmed, indent)
   if env_name then
-    save_environment(state.environments, state.debug_log, state.current_env, state.current_regions)
+    save_environment(state.environments, state.current_env, state.current_regions)
     state.current_env = env_name
     state.current_regions = {}
-    log_new_environment(state.debug_log, state.env_order, env_name, line_num)
+    log_new_environment(state.env_order, env_name, line_num)
     return
   end
 
   -- Check for region definition
   local region_name = extract_region_name(trimmed, indent, state.current_env)
   if region_name then
-    add_region(state.debug_log, state.current_regions, region_name, state.current_env)
+    add_region(state.current_regions, region_name, state.current_env)
   end
 end
 
 --- Add final debug information
 --- Complexity: 2 (1 loop + simple operations)
---- @param debug_log table Debug log entries
 --- @param env_order table Environment order
 --- @param environments table Environments map
-local function finalize_debug_log(debug_log, env_order, environments)
-  table.insert(debug_log, "")
-  table.insert(debug_log, "=== FINAL RESULTS ===")
-  table.insert(debug_log, "Environment order: " .. vim.inspect(env_order))
-  
+local function finalize_debug_log(env_order, environments)
+  logger.trace("YAML parsing complete", { env_order = env_order })
+
   for env_name, regions in pairs(environments) do
-    table.insert(debug_log, "Environment: " .. env_name .. " -> " .. vim.inspect(regions))
+    logger.trace("Environment result", { env = env_name, regions = regions })
   end
 end
 
 --- Parse YAML file and extract environments and regions
---- Complexity: 4 (1 read check + 1 loop + 1 save + 1 write)
+--- Complexity: 4 (1 read check + 1 loop + 1 save + 1 finalize)
 --- @param yaml_path string Path to the YAML file
 --- @return table|nil Table with environment names as keys and region arrays as values
 function M.parse_ingress_mapping(yaml_path)
@@ -195,15 +182,11 @@ function M.parse_ingress_mapping(yaml_path)
     current_regions = {},
     environments = {},
     env_order = {},
-    debug_log = {},
   }
 
-  -- Setup debug logging
-  table.insert(state.debug_log, "=== YAML Parser Debug ===")
-  table.insert(state.debug_log, "File: " .. yaml_path)
+  -- Setup debug logging with unified logger
   local lines = vim.split(content, "\n")
-  table.insert(state.debug_log, "Lines: " .. #lines)
-  table.insert(state.debug_log, "")
+  logger.debug("Starting YAML parse", { file = yaml_path, lines = #lines })
 
   -- Process each line
   for i, line in ipairs(lines) do
@@ -211,14 +194,15 @@ function M.parse_ingress_mapping(yaml_path)
   end
 
   -- Save final environment
-  save_environment(state.environments, state.debug_log, state.current_env, state.current_regions)
+  save_environment(state.environments, state.current_env, state.current_regions)
 
   -- Finalize debug logging
-  finalize_debug_log(state.debug_log, state.env_order, state.environments)
+  finalize_debug_log(state.env_order, state.environments)
 
-  -- Write debug output
-  local debug_file = vim.fn.stdpath("cache") .. "/yoda_yaml_debug.log"
-  write_debug_log(debug_file, state.debug_log)
+  logger.info("YAML parsing complete", {
+    file = yaml_path,
+    environments = #state.env_order,
+  })
 
   return {
     environments = state.environments,

@@ -310,70 +310,10 @@ environments:
       assert.same({ "auto", "use1", "usw2", "euc1", "apse2" }, result.environments.prod)
     end)
 
-    it("writes debug log", function()
-      local debug_written = false
-      local debug_content = nil
-
-      vim.fn.stdpath = function()
-        return "/tmp"
-      end
-
-      io.open = function(path, mode)
-        if path:match("yoda_yaml_debug.log") and mode == "w" then
-          debug_written = true
-          return {
-            write = function(self, content)
-              debug_content = content
-            end,
-            close = function() end,
-          }
-        end
-        return nil
-      end
-
-      package.loaded["plenary.path"] = {
-        new = function()
-          return {
-            read = function()
-              return "environments:\n  - name: qa\n    regions:\n      - name: auto"
-            end,
-          }
-        end,
-      }
-
-      yaml_parser.parse_ingress_mapping("test.yaml")
-      assert.is_true(debug_written)
-      assert.is_not_nil(debug_content)
-      assert.matches("YAML Parser Debug", debug_content)
-    end)
-
-    it("notifies when debug log is written", function()
-      local notified = false
-      vim.notify = function(msg, level)
-        if msg:match("Debug log written") then
-          notified = true
-        end
-      end
-
-      vim.fn.stdpath = function()
-        return "/tmp"
-      end
-      io.open = function()
-        return { write = function() end, close = function() end }
-      end
-
-      package.loaded["plenary.path"] = {
-        new = function()
-          return {
-            read = function()
-              return ""
-            end,
-          }
-        end,
-      }
-
-      yaml_parser.parse_ingress_mapping("test.yaml")
-      assert.is_true(notified)
-    end)
+    -- Note: Debug logging tests removed - yaml_parser now uses unified logger
+    -- Logging behavior is tested in logging/logger_spec.lua and strategies/*_spec.lua
+    -- To enable debug logging for yaml_parser:
+    --   require("yoda.logging.logger").set_strategy("file")
+    --   require("yoda.logging.logger").set_level("trace")
   end)
 end)

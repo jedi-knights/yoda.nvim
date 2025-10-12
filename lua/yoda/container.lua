@@ -90,6 +90,11 @@ function M.bootstrap()
     return Table.new({})
   end)
 
+  -- Logging (new in this version - provides unified logging across all modules)
+  M.register("logging", function()
+    return require("yoda.logging.logger")
+  end)
+
   -- ============================================================================
   -- Level 1: Adapters (depend on core utilities)
   -- ============================================================================
