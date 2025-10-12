@@ -81,6 +81,28 @@ vim.lsp.config.basedpyright = {
   },
 }
 
+-- C# LSP (Roslyn - modern, official Microsoft LSP)
+vim.lsp.config.csharp_ls = {
+  settings = {
+    csharp = {
+      inlayHints = {
+        enableInlayHintsForParameters = true,
+        enableInlayHintsForLiteralParameters = true,
+        enableInlayHintsForIndexerParameters = true,
+        enableInlayHintsForObjectCreationParameters = true,
+        enableInlayHintsForOtherParameters = true,
+        suppressInlayHintsForParametersThatDifferOnlyBySuffix = false,
+        suppressInlayHintsForParametersThatMatchMethodIntent = false,
+        suppressInlayHintsForParametersThatMatchArgumentName = false,
+        enableInlayHintsForTypes = true,
+        enableInlayHintsForImplicitVariableTypes = true,
+        enableInlayHintsForLambdaParameterTypes = true,
+        enableInlayHintsForImplicitObjectCreation = true,
+      },
+    },
+  },
+}
+
 -- Rust LSP
 -- Note: rust_analyzer is managed by rust-tools.nvim plugin
 -- See lua/plugins.lua RUST DEVELOPMENT section for configuration
@@ -94,6 +116,7 @@ vim.lsp.enable("lua_ls")
 vim.lsp.enable("gopls")
 vim.lsp.enable("ts_ls")
 vim.lsp.enable("basedpyright")
+vim.lsp.enable("csharp_ls")
 -- rust_analyzer is handled by rust-tools.nvim, not enabled here
 
 -- Setup keymaps for LSP

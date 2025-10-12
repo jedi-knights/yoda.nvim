@@ -794,6 +794,107 @@ end, { desc = "JavaScript: Remove console.logs" })
 -- <leader>jv - Change version
 
 -- ============================================================================
+-- C# / .NET DEVELOPMENT
+-- ============================================================================
+
+-- dotnet run
+map("n", "<leader>cr", function()
+  vim.cmd("!dotnet run")
+end, { desc = "C#: dotnet run" })
+
+-- dotnet build
+map("n", "<leader>cb", function()
+  vim.cmd("!dotnet build")
+end, { desc = "C#: dotnet build" })
+
+-- Testing with neotest
+map("n", "<leader>ct", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run()
+end, { desc = "C#: Test nearest" })
+
+map("n", "<leader>cT", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run(vim.fn.expand("%"))
+end, { desc = "C#: Test file" })
+
+map("n", "<leader>cC", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run({ suite = true })
+end, { desc = "C#: Test suite" })
+
+-- Debugging with netcoredbg
+map("n", "<leader>cd", function()
+  local ok, dap = pcall(require, "dap")
+  if not ok then
+    vim.notify("DAP not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  dap.continue()
+end, { desc = "C#: Start debugger" })
+
+-- Outline toggle (Aerial)
+map("n", "<leader>co", function()
+  local ok = pcall(vim.cmd, "AerialToggle")
+  if not ok then
+    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+  end
+end, { desc = "C#: Toggle outline" })
+
+-- Diagnostics (Trouble)
+map("n", "<leader>ce", function()
+  local ok, trouble = pcall(require, "trouble")
+  if not ok then
+    vim.diagnostic.setloclist()
+    return
+  end
+  vim.cmd("Trouble diagnostics toggle filter.buf=0")
+end, { desc = "C#: Open diagnostics" })
+
+-- Inlay hints toggle
+map("n", "<leader>ch", function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end, { desc = "C#: Toggle inlay hints" })
+
+-- dotnet new (create project/file)
+map("n", "<leader>cn", function()
+  local template = vim.fn.input("Template (console/classlib/web/etc): ")
+  if template ~= "" then
+    vim.cmd("!dotnet new " .. template)
+  end
+end, { desc = "C#: dotnet new" })
+
+-- Restore packages
+map("n", "<leader>cR", function()
+  vim.cmd("!dotnet restore")
+end, { desc = "C#: dotnet restore" })
+
+-- Clean build
+map("n", "<leader>cB", function()
+  vim.cmd("!dotnet clean && dotnet build")
+end, { desc = "C#: Clean and build" })
+
+-- Add NuGet package
+map("n", "<leader>cN", function()
+  local package = vim.fn.input("Package name: ")
+  if package ~= "" then
+    vim.cmd("!dotnet add package " .. package)
+  end
+end, { desc = "C#: Add NuGet package" })
+
+-- ============================================================================
 -- AI & COPILOT
 -- ============================================================================
 

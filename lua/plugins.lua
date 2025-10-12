@@ -262,6 +262,7 @@ return {
             "ts_ls",
             "rust_analyzer",
             "basedpyright",
+            "csharp_ls",
           },
         })
       end
@@ -701,6 +702,20 @@ return {
         table.insert(adapters, neotest_vitest)
       end
 
+      -- Add .NET adapter if available
+      local dotnet_ok, neotest_dotnet = pcall(require, "neotest-dotnet")
+      if dotnet_ok then
+        table.insert(
+          adapters,
+          neotest_dotnet({
+            dap = {
+              adapter_name = "coreclr",
+              args = { justMyCode = false },
+            },
+          })
+        )
+      end
+
       require("neotest").setup({
         adapters = adapters,
       })
@@ -984,6 +999,7 @@ return {
           typescriptreact = { "biome", "prettier" },
           json = { "biome", "prettier" },
           jsonc = { "biome", "prettier" },
+          cs = { "csharpier" }, -- C# formatter
         },
         format_on_save = {
           timeout_ms = 500,
@@ -1168,7 +1184,7 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter" },
+        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter", "netcoredbg" },
         automatic_installation = true,
         handlers = {},
       })
@@ -1365,5 +1381,45 @@ return {
         end,
       })
     end,
+  },
+
+  -- ============================================================================
+  -- C# / .NET DEVELOPMENT
+  -- ============================================================================
+
+  -- Roslyn.nvim - Modern C# LSP with Roslyn
+  {
+    "jmederosalvarado/roslyn.nvim",
+    ft = "cs",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "mfussenegger/nvim-dap",
+    },
+    config = function()
+      require("roslyn").setup({
+        config = {
+          settings = {
+            ["csharp|inlay_hints"] = {
+              csharp_enable_inlay_hints_for_parameters = true,
+              csharp_enable_inlay_hints_for_types = true,
+              csharp_enable_inlay_hints_for_implicit_object_creation = true,
+              csharp_enable_inlay_hints_for_implicit_variable_types = true,
+              csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+            },
+            ["csharp|code_lens"] = {
+              dotnet_enable_references_code_lens = true,
+              dotnet_enable_tests_code_lens = true,
+            },
+          },
+        },
+      })
+    end,
+  },
+
+  -- Neotest .NET adapter
+  {
+    "Issafalcon/neotest-dotnet",
+    dependencies = { "nvim-neotest/neotest" },
+    ft = "cs",
   },
 }
