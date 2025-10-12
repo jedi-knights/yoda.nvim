@@ -176,15 +176,18 @@ describe("adapters.notification", function()
     end)
 
     it("validates msg is a string", function()
-      local printed = false
-      print = function(msg)
-        if msg:match("must be a string") then
-          printed = true
+      local original_vim_notify = vim.notify
+      local notify_called = false
+      vim.notify = function(msg, level)
+        if type(msg) == "string" and msg:match("must be a string") then
+          notify_called = true
         end
       end
 
       notification.notify(123, "info")
-      assert.is_true(printed)
+
+      vim.notify = original_vim_notify
+      assert.is_true(notify_called)
     end)
 
     it("defaults level to info", function()

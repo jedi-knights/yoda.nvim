@@ -16,8 +16,11 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Define debug helper function early (available throughout init)
+-- Uses unified logging system (lazy-loaded to avoid startup impact)
 function _G.P(v)
-  print(vim.inspect(v))
+  local logger = require("yoda.logging.logger")
+  logger.set_strategy("console")
+  logger.debug(vim.inspect(v))
   return v
 end
 
