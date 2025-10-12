@@ -92,8 +92,39 @@ local function on_attach(client, bufnr)
   end, { desc = "Format" })
 end
 
--- Set up LSP keymaps for all LSP clients
+-- Filetypes where LSP should not attach
+-- These are typically plain text or special buffers where LSP provides no value
+-- and can cause significant lag
+local LSP_SKIP_FILETYPES = {
+  "gitcommit",
+  "gitrebase",
+  "gitconfig",
+  "NeogitCommitMessage",
+  "NeogitPopup",
+  "NeogitStatus",
+  "fugitive",
+  "fugitiveblame",
+  "help",
+  "markdown", -- Optional: remove if you want LSP in markdown
+}
+
+-- Set up LSP keymaps for all LSP clients (except skipped filetypes)
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-  callback = on_attach,
+  callback = function(args)
+    local bufnr = args.buf
+    local filetype = vim.bo[bufnr].filetype
+
+    -- Skip LSP keymaps for plain text and git-related filetypes
+    for _, skip_ft in ipairs(LSP_SKIP_FILETYPES) do
+      if filetype == skip_ft then
+        logger.set_strategy("console")
+        logger.debug("Skipping LSP attach for filetype", { filetype = filetype, buffer = bufnr })
+        return -- Don't attach LSP keymaps
+      end
+    end
+
+    -- Attach LSP keymaps for code filetypes
+    on_attach(args.data.client_id, bufnr)
+  end,
 })

@@ -205,6 +205,34 @@ local FILETYPE_SETTINGS = {
     vim.opt_local.conceallevel = 2
   end,
 
+  -- Git commit messages: optimize for fast typing
+  gitcommit = function()
+    vim.opt_local.foldmethod = "manual" -- Disable treesitter folding for performance
+    vim.opt_local.spell = true -- Enable spell check for commits
+    vim.opt_local.wrap = true -- Wrap long lines
+    vim.opt_local.textwidth = 72 -- Standard git commit line length
+    vim.opt_local.updatetime = 1000 -- Reduce event frequency (less aggressive than 250ms)
+  end,
+
+  -- Neogit buffers: optimize for performance
+  NeogitCommitMessage = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.spell = true
+    vim.opt_local.wrap = true
+    vim.opt_local.textwidth = 72
+    vim.opt_local.updatetime = 1000
+  end,
+
+  NeogitStatus = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.updatetime = 1000
+  end,
+
+  NeogitPopup = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.updatetime = 1000
+  end,
+
   ["snacks-explorer"] = function()
     vim.cmd("stopinsert")
     vim.schedule(function()
@@ -265,6 +293,26 @@ create_autocmd("BufEnter", {
     -- Early bailout: Skip for unlisted buffers (performance optimization)
     if not vim.bo[args.buf].buflisted then
       return
+    end
+
+    -- Early bailout: Skip for git-related buffers (performance optimization)
+    -- These buffers never need the alpha dashboard and the checks are expensive
+    local filetype = vim.bo[args.buf].filetype
+    local skip_filetypes = {
+      "gitcommit",
+      "gitrebase",
+      "gitconfig",
+      "NeogitCommitMessage",
+      "NeogitPopup",
+      "NeogitStatus",
+      "fugitive",
+      "fugitiveblame",
+    }
+
+    for _, ft in ipairs(skip_filetypes) do
+      if filetype == ft then
+        return
+      end
     end
 
     -- Skip if entering a terminal or special buffer
