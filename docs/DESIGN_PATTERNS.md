@@ -2,6 +2,8 @@
 
 **Gang of Four patterns used throughout the codebase**
 
+**Total Patterns:** 8 (World-Class!)
+
 ---
 
 ## 📚 Patterns Implemented
@@ -352,6 +354,81 @@ local all_tools = Composite:new()
 
 -- Uniform handling of tree structure
 local results = all_tools:run_all()
+```
+
+---
+
+### 8. Strategy Pattern ⭐⭐⭐⭐⭐ (NEW!)
+
+**Location:** `lua/yoda/logging/`
+
+**Purpose:** Multiple logging backends with runtime switching
+
+**Implementation:**
+```lua
+-- Unified logger facade
+local logger = require("yoda.logging.logger")
+
+-- Strategy 1: Console (development)
+logger.set_strategy("console")
+logger.debug("Debug to console")
+
+-- Strategy 2: File (troubleshooting)
+logger.set_strategy("file")
+logger.set_file_path(vim.fn.getcwd() .. "/debug.log")
+logger.trace("Detailed trace to file")
+
+-- Strategy 3: Notify (users)
+logger.set_strategy("notify")
+logger.info("User-facing message")
+
+-- Strategy 4: Multi (console + file)
+logger.set_strategy("multi")
+logger.debug("Goes to both!")
+
+-- Context support
+logger.debug("Loading plugin", {
+  plugin = "telescope",
+  duration_ms = 150,
+})
+```
+
+**Strategies:**
+- `ConsoleStrategy` - print() based output
+- `FileStrategy` - File logging with rotation
+- `NotifyStrategy` - vim.notify based (via adapter)
+- `MultiStrategy` - Combined console + file
+
+**Benefits:**
+- Runtime strategy switching
+- Environment-based configuration
+- Lazy evaluation for performance
+- Unified API across all modules
+- Easy to add new strategies
+- Comprehensive testing (~77 tests)
+
+**Usage:**
+```lua
+-- Development mode
+logger.setup({
+  strategy = "multi",  -- Console + File
+  level = logger.LEVELS.DEBUG,
+})
+
+-- Production mode
+logger.setup({
+  strategy = "notify",
+  level = logger.LEVELS.INFO,
+})
+
+-- Troubleshooting mode
+logger.setup({
+  strategy = "file",
+  level = logger.LEVELS.TRACE,
+  file = {
+    path = vim.fn.getcwd() .. "/trace.log",
+  },
+})
 ```
 
 ---
