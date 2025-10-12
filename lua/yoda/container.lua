@@ -127,6 +127,7 @@ function M.bootstrap()
     local Config = require("yoda.terminal.config_di")
     return Config.new({
       notify = M.resolve("adapters.notification").notify,
+      logger = M.resolve("logging"),
     })
   end)
 
@@ -135,6 +136,7 @@ function M.bootstrap()
     return Shell.new({
       config = M.resolve("terminal.config"),
       notify = M.resolve("adapters.notification").notify,
+      logger = M.resolve("logging"),
     })
   end)
 
@@ -144,6 +146,7 @@ function M.bootstrap()
       platform = M.resolve("core.platform"),
       io = M.resolve("core.io"),
       picker = M.resolve("adapters.picker"),
+      logger = M.resolve("logging"),
     })
   end)
 
@@ -163,6 +166,7 @@ function M.bootstrap()
     local LSP = require("yoda.diagnostics.lsp_di")
     return LSP.new({
       notify = M.resolve("adapters.notification").notify,
+      logger = M.resolve("logging"),
     })
   end)
 
@@ -171,6 +175,7 @@ function M.bootstrap()
     return AI.new({
       ai_cli = M.resolve("diagnostics.ai_cli"),
       notify = M.resolve("adapters.notification").notify,
+      logger = M.resolve("logging"),
     })
   end)
 
@@ -183,11 +188,15 @@ function M.bootstrap()
   end)
 
   M.register("config_loader", function()
-    return require("yoda.config_loader")
+    local loader = require("yoda.config_loader")
+    -- config_loader can access logger directly (it's available globally)
+    return loader
   end)
 
   M.register("yaml_parser", function()
-    return require("yoda.yaml_parser")
+    local parser = require("yoda.yaml_parser")
+    -- yaml_parser already uses logger directly (migrated)
+    return parser
   end)
 
   -- ============================================================================
