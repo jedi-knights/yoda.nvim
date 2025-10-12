@@ -137,6 +137,14 @@ map("n", "<leader>xt", function()
   end
 end, { desc = "Window: Focus Trouble" })
 
+-- Todo-comments integration with Trouble
+map("n", "<leader>xT", function()
+  local ok = pcall(vim.cmd, "TodoTrouble")
+  if not ok then
+    vim.notify("Todo-comments not available. Install via :Lazy sync", vim.log.levels.ERROR)
+  end
+end, { desc = "Trouble: Show TODOs" })
+
 map("n", "<leader>|", ":vsplit<cr>", { desc = "Window: Vertical split" })
 map("n", "<leader>-", ":split<cr>", { desc = "Window: Horizontal split" })
 map("n", "<leader>ws", "<c-w>=", { desc = "Window: Equalize sizes" })
@@ -145,17 +153,28 @@ map("n", "<leader>ws", "<c-w>=", { desc = "Window: Equalize sizes" })
 -- FILE FINDING & NAVIGATION
 -- ============================================================================
 
+-- Snacks picker for basic file operations (consistency with snacks.nvim)
 map("n", "<leader>ff", function()
-  vim.cmd("Telescope find_files")
-end, { desc = "Find Files" })
+  require("snacks").picker.files()
+end, { desc = "Find Files (Snacks)" })
 
 map("n", "<leader>fg", function()
-  vim.cmd("Telescope live_grep")
-end, { desc = "Find Text" })
+  require("snacks").picker.grep()
+end, { desc = "Find Text (Snacks)" })
 
 map("n", "<leader>fr", function()
-  vim.cmd("Telescope oldfiles")
-end, { desc = "Recent Files" })
+  require("snacks").picker.recent()
+end, { desc = "Recent Files (Snacks)" })
+
+map("n", "<leader>fb", function()
+  require("snacks").picker.buffers()
+end, { desc = "Find Buffers (Snacks)" })
+
+-- Telescope for specialized LSP operations
+map("n", "<leader>fR", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "Find Rust/LSP symbols" })
+map("n", "<leader>fS", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", { desc = "Find workspace symbols" })
+map("n", "<leader>fD", "<cmd>Telescope diagnostics<CR>", { desc = "Find diagnostics" })
+map("n", "<leader>fG", "<cmd>Telescope git_files<CR>", { desc = "Find Git files" })
 
 -- ============================================================================
 -- LSP
@@ -384,12 +403,132 @@ map("n", "<leader>cx", function()
 end, { desc = "Coverage: Hide" })
 
 -- ============================================================================
--- RUST/CARGO
+-- RUST DEVELOPMENT
 -- ============================================================================
 
-map("n", "<leader>cb", "<cmd>!cargo build<CR>", { desc = "Cargo: Build" })
-map("n", "<leader>cr", "<cmd>!cargo run<CR>", { desc = "Cargo: Run" })
-map("n", "<leader>ct", "<cmd>!cargo test<CR>", { desc = "Cargo: Test" })
+-- Cargo operations with Overseer
+map("n", "<leader>rr", function()
+  local ok, overseer = pcall(require, "overseer")
+  if not ok then
+    vim.notify("Overseer not available. Running cargo run directly...", vim.log.levels.WARN)
+    vim.cmd("!cargo run")
+    return
+  end
+  overseer.run_template({ name = "cargo run" })
+end, { desc = "Rust: Cargo run" })
+
+map("n", "<leader>rb", function()
+  local ok, overseer = pcall(require, "overseer")
+  if not ok then
+    vim.notify("Overseer not available. Running cargo build directly...", vim.log.levels.WARN)
+    vim.cmd("!cargo build")
+    return
+  end
+  overseer.run_template({ name = "cargo build" })
+end, { desc = "Rust: Cargo build" })
+
+-- Testing with neotest
+map("n", "<leader>rt", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run()
+end, { desc = "Rust: Test nearest" })
+
+map("n", "<leader>rT", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run(vim.fn.expand("%"))
+end, { desc = "Rust: Test file" })
+
+-- Debugging with rust-tools
+map("n", "<leader>rd", function()
+  local ok, rt = pcall(require, "rust-tools")
+  if not ok then
+    vim.notify("Rust-tools not available. Opening standard DAP...", vim.log.levels.WARN)
+    require("dap").continue()
+    return
+  end
+  rt.debuggables.debuggables()
+end, { desc = "Rust: Start debug" })
+
+-- Inlay hints toggle
+map("n", "<leader>rh", function()
+  local ok, rt = pcall(require, "rust-tools")
+  if not ok then
+    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  rt.inlay_hints.toggle()
+end, { desc = "Rust: Toggle inlay hints" })
+
+-- Diagnostics (Trouble)
+map("n", "<leader>re", function()
+  local ok, trouble = pcall(require, "trouble")
+  if not ok then
+    vim.diagnostic.setloclist()
+    return
+  end
+  vim.cmd("Trouble diagnostics toggle filter.buf=0")
+end, { desc = "Rust: Open diagnostics" })
+
+-- Outline toggle (Aerial)
+map("n", "<leader>ro", function()
+  local ok = pcall(vim.cmd, "AerialToggle")
+  if not ok then
+    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+  end
+end, { desc = "Rust: Toggle outline" })
+
+-- Additional rust-tools keymaps
+map("n", "<leader>ra", function()
+  local ok, rt = pcall(require, "rust-tools")
+  if not ok then
+    vim.lsp.buf.code_action()
+    return
+  end
+  rt.code_action_group.code_action_group()
+end, { desc = "Rust: Code actions" })
+
+map("n", "<leader>rm", function()
+  local ok, rt = pcall(require, "rust-tools")
+  if not ok then
+    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  rt.expand_macro.expand_macro()
+end, { desc = "Rust: Expand macro" })
+
+map("n", "<leader>rp", function()
+  local ok, rt = pcall(require, "rust-tools")
+  if not ok then
+    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  rt.parent_module.parent_module()
+end, { desc = "Rust: Go to parent module" })
+
+map("n", "<leader>rj", function()
+  local ok, rt = pcall(require, "rust-tools")
+  if not ok then
+    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  rt.join_lines.join_lines()
+end, { desc = "Rust: Join lines" })
+
+-- Crates.nvim keymaps are auto-configured in Cargo.toml files
+-- See lua/plugins.lua crates.nvim configuration for:
+-- <leader>rc - Show crate popup
+-- <leader>ru - Update crate
+-- <leader>rU - Update all crates
+-- <leader>rV - Show versions popup
+-- <leader>rF - Show features popup
 
 -- ============================================================================
 -- AI & COPILOT
