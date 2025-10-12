@@ -679,6 +679,28 @@ return {
         )
       end
 
+      -- Add Jest adapter if available
+      local jest_ok, neotest_jest = pcall(require, "neotest-jest")
+      if jest_ok then
+        table.insert(
+          adapters,
+          neotest_jest({
+            jestCommand = "npm test --",
+            jestConfigFile = "jest.config.js",
+            env = { CI = true },
+            cwd = function()
+              return vim.fn.getcwd()
+            end,
+          })
+        )
+      end
+
+      -- Add Vitest adapter if available
+      local vitest_ok, neotest_vitest = pcall(require, "neotest-vitest")
+      if vitest_ok then
+        table.insert(adapters, neotest_vitest)
+      end
+
       require("neotest").setup({
         adapters = adapters,
       })
@@ -956,6 +978,12 @@ return {
           rust = { "rustfmt" },
           lua = { "stylua" },
           python = { "ruff_format", "black" }, -- Try ruff first, fallback to black
+          javascript = { "biome", "prettier" }, -- Try biome first, fallback to prettier
+          javascriptreact = { "biome", "prettier" },
+          typescript = { "biome", "prettier" },
+          typescriptreact = { "biome", "prettier" },
+          json = { "biome", "prettier" },
+          jsonc = { "biome", "prettier" },
         },
         format_on_save = {
           timeout_ms = 500,
@@ -986,6 +1014,10 @@ return {
       lint.linters_by_ft = {
         rust = { "clippy" },
         python = { "ruff", "mypy" },
+        javascript = { "biome" },
+        javascriptreact = { "biome" },
+        typescript = { "biome" },
+        typescriptreact = { "biome" },
       }
 
       -- Auto-lint on certain events
@@ -1136,7 +1168,7 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb", "debugpy" },
+        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter" },
         automatic_installation = true,
         handlers = {},
       })
@@ -1211,6 +1243,126 @@ return {
           "env",
           ".env",
         },
+      })
+    end,
+  },
+
+  -- ============================================================================
+  -- JAVASCRIPT/TYPESCRIPT/NODE.JS DEVELOPMENT
+  -- ============================================================================
+
+  -- nvim-dap-vscode-js - VSCode JavaScript debugger
+  {
+    "mxsdev/nvim-dap-vscode-js",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "rcarriga/nvim-dap-ui",
+    },
+    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    config = function()
+      -- Get vscode-js-debug path from Mason
+      local mason_registry = require("mason-registry")
+      local debugger_path = mason_registry.get_package("js-debug-adapter"):get_install_path() .. "/js-debug/src/dapDebugServer.js"
+
+      require("dap-vscode-js").setup({
+        debugger_path = debugger_path,
+        adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" },
+      })
+
+      -- Configure for various JavaScript scenarios
+      for _, language in ipairs({ "typescript", "javascript", "typescriptreact", "javascriptreact" }) do
+        require("dap").configurations[language] = {
+          -- Node.js debugging
+          {
+            type = "pwa-node",
+            request = "launch",
+            name = "Launch file",
+            program = "${file}",
+            cwd = "${workspaceFolder}",
+          },
+          {
+            type = "pwa-node",
+            request = "attach",
+            name = "Attach",
+            processId = require("dap.utils").pick_process,
+            cwd = "${workspaceFolder}",
+          },
+          -- Jest debugging
+          {
+            type = "pwa-node",
+            request = "launch",
+            name = "Debug Jest Tests",
+            runtimeExecutable = "node",
+            runtimeArgs = {
+              "./node_modules/jest/bin/jest.js",
+              "--runInBand",
+            },
+            rootPath = "${workspaceFolder}",
+            cwd = "${workspaceFolder}",
+            console = "integratedTerminal",
+            internalConsoleOptions = "neverOpen",
+          },
+          -- Chrome debugging
+          {
+            type = "pwa-chrome",
+            request = "launch",
+            name = "Launch Chrome",
+            url = "http://localhost:3000",
+            webRoot = "${workspaceFolder}",
+          },
+        }
+      end
+    end,
+  },
+
+  -- Neotest Jest adapter
+  {
+    "nvim-neotest/neotest-jest",
+    dependencies = { "nvim-neotest/neotest" },
+    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+  },
+
+  -- Neotest Vitest adapter
+  {
+    "marilari88/neotest-vitest",
+    dependencies = { "nvim-neotest/neotest" },
+    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+  },
+
+  -- Package-info.nvim - Show package versions in package.json
+  {
+    "vuki656/package-info.nvim",
+    dependencies = { "MunifTanjim/nui.nvim" },
+    event = { "BufRead package.json" },
+    config = function()
+      require("package-info").setup({
+        colors = {
+          up_to_date = "#3C4048",
+          outdated = "#d19a66",
+        },
+        icons = {
+          enable = true,
+          style = {
+            up_to_date = "|  ",
+            outdated = "|  ",
+          },
+        },
+        autostart = true,
+        hide_up_to_date = false,
+        hide_unstable_versions = false,
+      })
+
+      -- Package.json specific keymaps (set in autocmd)
+      vim.api.nvim_create_autocmd("BufRead", {
+        pattern = "package.json",
+        callback = function()
+          local pkg = require("package-info")
+          vim.keymap.set("n", "<leader>js", pkg.show, { desc = "JS: Show package info", buffer = true, silent = true })
+          vim.keymap.set("n", "<leader>ju", pkg.update, { desc = "JS: Update package", buffer = true, silent = true })
+          vim.keymap.set("n", "<leader>jd", pkg.delete, { desc = "JS: Delete package", buffer = true, silent = true })
+          vim.keymap.set("n", "<leader>ji", pkg.install, { desc = "JS: Install package", buffer = true, silent = true })
+          vim.keymap.set("n", "<leader>jv", pkg.change_version, { desc = "JS: Change version", buffer = true, silent = true })
+        end,
       })
     end,
   },
