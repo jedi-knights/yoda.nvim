@@ -673,6 +673,127 @@ end, { desc = "Python: Show coverage" })
 -- It provides environment, region, and marker selection functionality
 
 -- ============================================================================
+-- JAVASCRIPT/TYPESCRIPT/NODE.JS DEVELOPMENT
+-- ============================================================================
+
+-- Node.js execution
+map("n", "<leader>jr", function()
+  local file = vim.fn.expand("%:p")
+  vim.cmd("!node " .. file)
+end, { desc = "JavaScript: Run Node.js file" })
+
+-- Node.js REPL
+map("n", "<leader>jn", function()
+  local terminal = require("snacks.terminal")
+  terminal.toggle("node", {
+    cmd = { "node" },
+    win = {
+      relative = "editor",
+      position = "float",
+      width = 0.85,
+      height = 0.85,
+      border = "rounded",
+      title = " Node.js REPL ",
+      title_pos = "center",
+    },
+  })
+end, { desc = "JavaScript: Open Node REPL" })
+
+-- Testing with neotest
+map("n", "<leader>jt", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run()
+end, { desc = "JavaScript: Test nearest" })
+
+map("n", "<leader>jT", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run(vim.fn.expand("%"))
+end, { desc = "JavaScript: Test file" })
+
+map("n", "<leader>jC", function()
+  local ok, neotest = pcall(require, "neotest")
+  if not ok then
+    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  neotest.run.run({ suite = true })
+end, { desc = "JavaScript: Test suite" })
+
+-- Debugging with vscode-js-debug
+map("n", "<leader>jd", function()
+  local ok, dap = pcall(require, "dap")
+  if not ok then
+    vim.notify("DAP not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    return
+  end
+  dap.continue()
+end, { desc = "JavaScript: Start debugger" })
+
+-- Outline toggle (Aerial - reuse from Rust/Python)
+map("n", "<leader>jo", function()
+  local ok = pcall(vim.cmd, "AerialToggle")
+  if not ok then
+    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+  end
+end, { desc = "JavaScript: Toggle outline" })
+
+-- Diagnostics (Trouble)
+map("n", "<leader>je", function()
+  local ok, trouble = pcall(require, "trouble")
+  if not ok then
+    vim.diagnostic.setloclist()
+    return
+  end
+  vim.cmd("Trouble diagnostics toggle filter.buf=0")
+end, { desc = "JavaScript: Open diagnostics" })
+
+-- Organize imports (LSP)
+map("n", "<leader>jI", function()
+  vim.lsp.buf.code_action({
+    apply = true,
+    context = {
+      only = { "source.organizeImports" },
+      diagnostics = {},
+    },
+  })
+end, { desc = "JavaScript: Organize imports" })
+
+-- Inlay hints toggle
+map("n", "<leader>jh", function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end, { desc = "JavaScript: Toggle inlay hints" })
+
+-- Console.log helper (quick insert)
+map("n", "<leader>jl", function()
+  local line = vim.fn.line(".")
+  local var = vim.fn.expand("<cword>")
+  local log = string.format('console.log("%s:", %s);', var, var)
+  vim.fn.append(line, log)
+end, { desc = "JavaScript: Insert console.log" })
+
+-- Remove all console.log statements in file
+map("n", "<leader>jL", function()
+  vim.cmd([[%g/console\.log/d]])
+  vim.notify("Removed all console.log statements", vim.log.levels.INFO)
+end, { desc = "JavaScript: Remove console.logs" })
+
+-- Package.json keymaps are auto-configured in package.json files
+-- See lua/plugins.lua package-info.nvim configuration for:
+-- <leader>js - Show package info
+-- <leader>ju - Update package
+-- <leader>jd - Delete package (note: conflicts with debug in package.json context)
+-- <leader>ji - Install package (note: conflicts with organize imports)
+-- <leader>jv - Change version
+
+-- ============================================================================
 -- AI & COPILOT
 -- ============================================================================
 

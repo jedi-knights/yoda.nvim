@@ -27,8 +27,44 @@ vim.lsp.config.lua_ls = {
 -- Go LSP
 vim.lsp.config.gopls = {}
 
--- TypeScript/JavaScript LSP
-vim.lsp.config.ts_ls = {}
+-- TypeScript/JavaScript LSP (enhanced)
+vim.lsp.config.ts_ls = {
+  settings = {
+    typescript = {
+      inlayHints = {
+        includeInlayParameterNameHints = "all",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      },
+      suggest = {
+        completeFunctionCalls = true,
+      },
+      preferences = {
+        importModuleSpecifier = "non-relative",
+      },
+    },
+    javascript = {
+      inlayHints = {
+        includeInlayParameterNameHints = "all",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      },
+    },
+  },
+  init_options = {
+    preferences = {
+      disableSuggestions = false,
+    },
+  },
+}
 
 -- Python LSP (basedpyright)
 vim.lsp.config.basedpyright = {
