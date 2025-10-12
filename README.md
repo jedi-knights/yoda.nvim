@@ -63,6 +63,78 @@ nvim
 
 That's it! The first launch will automatically bootstrap all plugins.
 
+## 🔧 Language Support
+
+Yoda.nvim comes with LSP support for multiple languages. Language servers can be installed via Mason.
+
+### Supported Languages
+
+#### 📦 Pre-configured LSP Servers
+- **Lua** (`lua_ls`) - Built-in configuration
+- **Go** (`gopls`) - Built-in configuration
+- **TypeScript/JavaScript** (`ts_ls`) - Built-in configuration
+- **Rust** (`rust_analyzer`) - Built-in configuration with Clippy integration
+
+### Installing Language Servers
+
+#### Method 1: Using Mason (Recommended)
+```vim
+:Mason                    " Open Mason UI
+" Navigate to desired LSP server (e.g., rust-analyzer)
+" Press 'i' to install
+" Restart Neovim
+```
+
+#### Method 2: Command Line Installation
+
+**Rust (rust-analyzer)**
+```bash
+# macOS (via Homebrew)
+brew install rust-analyzer
+
+# Or via rustup (any platform)
+rustup component add rust-analyzer
+```
+
+**TypeScript/JavaScript (ts_ls)**
+```bash
+npm install -g typescript typescript-language-server
+```
+
+**Go (gopls)**
+```bash
+go install golang.org/x/tools/gopls@latest
+```
+
+**Lua (lua_ls)**
+```bash
+brew install lua-language-server  # macOS
+# Or install via Mason
+```
+
+### Rust-Specific Features
+
+When using Rust with `rust_analyzer`, you get:
+- ✅ Full cargo integration (allFeatures, loadOutDirs)
+- ✅ Procedural macro support
+- ✅ Clippy linting on save
+- ✅ Experimental diagnostics
+- ✅ Enhanced Cargo keymaps:
+  - `<leader>cb` - Cargo build (with LSP diagnostics)
+  - `<leader>cr` - Cargo run
+  - `<leader>ct` - Cargo test
+
+### LSP Features (All Languages)
+
+Once installed, all language servers provide:
+- 🔍 **Go to definition** (`gd`, `gD`)
+- 📝 **Auto-completion** (automatic)
+- ⚠️ **Inline diagnostics** (errors/warnings)
+- 🔧 **Code actions** (`<leader>ca`)
+- 📖 **Hover documentation** (`K`)
+- ♻️ **Rename** (`rn`)
+- 🎨 **Format** (`<leader>f`)
+
 ## ⌨️ Essential Keymaps
 
 > **Leader key**: `<Space>` (most keymaps start with `<leader>`)
