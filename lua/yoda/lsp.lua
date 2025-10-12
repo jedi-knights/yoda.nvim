@@ -30,6 +30,21 @@ vim.lsp.config.gopls = {}
 -- TypeScript/JavaScript LSP
 vim.lsp.config.ts_ls = {}
 
+-- Python LSP (basedpyright)
+vim.lsp.config.basedpyright = {
+  settings = {
+    basedpyright = {
+      analysis = {
+        typeCheckingMode = "basic", -- "off", "basic", "strict"
+        autoSearchPaths = true,
+        useLibraryCodeForTypes = true,
+        diagnosticMode = "workspace", -- "openFilesOnly" or "workspace"
+        autoImportCompletions = true,
+      },
+    },
+  },
+}
+
 -- Rust LSP
 -- Note: rust_analyzer is managed by rust-tools.nvim plugin
 -- See lua/plugins.lua RUST DEVELOPMENT section for configuration
@@ -42,6 +57,7 @@ vim.lsp.config.ts_ls = {}
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("gopls")
 vim.lsp.enable("ts_ls")
+vim.lsp.enable("basedpyright")
 -- rust_analyzer is handled by rust-tools.nvim, not enabled here
 
 -- Setup keymaps for LSP
