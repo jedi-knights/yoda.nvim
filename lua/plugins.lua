@@ -261,6 +261,7 @@ return {
             "gopls",
             "ts_ls",
             "rust_analyzer",
+            "basedpyright",
           },
         })
       end
@@ -646,7 +647,23 @@ return {
     config = function()
       local adapters = {
         require("neotest-python")({
-          dap = { justMyCode = false },
+          dap = {
+            justMyCode = false,
+            console = "integratedTerminal",
+          },
+          args = { "--log-level", "DEBUG", "-vv" },
+          runner = "pytest",
+          python = function()
+            -- Auto-detect virtual environment
+            local venv_ok, venv = pcall(require, "yoda.terminal.venv")
+            if venv_ok then
+              local venvs = venv.find_virtual_envs()
+              if #venvs > 0 then
+                return venvs[1] .. "/bin/python"
+              end
+            end
+            return vim.fn.exepath("python3") or "python"
+          end,
         }),
       }
 
@@ -929,7 +946,7 @@ return {
     ft = "rust",
   },
 
-  -- Conform.nvim - Modern formatter (rustfmt)
+  -- Conform.nvim - Modern formatter (rustfmt, black, ruff)
   {
     "stevearc/conform.nvim",
     event = { "BufReadPre", "BufNewFile" },
@@ -938,7 +955,7 @@ return {
         formatters_by_ft = {
           rust = { "rustfmt" },
           lua = { "stylua" },
-          python = { "black" },
+          python = { "ruff_format", "black" }, -- Try ruff first, fallback to black
         },
         format_on_save = {
           timeout_ms = 500,
@@ -958,7 +975,7 @@ return {
     end,
   },
 
-  -- nvim-lint - Modern linter (Clippy for Rust)
+  -- nvim-lint - Modern linter (Clippy, ruff, mypy)
   {
     "mfussenegger/nvim-lint",
     event = { "BufReadPre", "BufNewFile" },
@@ -968,12 +985,13 @@ return {
       -- Configure linters by filetype
       lint.linters_by_ft = {
         rust = { "clippy" },
+        python = { "ruff", "mypy" },
       }
 
       -- Auto-lint on certain events
       vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
         callback = function()
-          -- Only lint if clippy is available
+          -- Only lint if linters are configured
           local linters = lint.linters_by_ft[vim.bo.filetype]
           if linters then
             lint.try_lint()
@@ -1118,9 +1136,81 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb" },
+        ensure_installed = { "codelldb", "debugpy" },
         automatic_installation = true,
         handlers = {},
+      })
+    end,
+  },
+
+  -- ============================================================================
+  -- PYTHON DEVELOPMENT
+  -- ============================================================================
+
+  -- nvim-dap-python - Python debugging with debugpy
+  {
+    "mfussenegger/nvim-dap-python",
+    ft = "python",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "rcarriga/nvim-dap-ui",
+    },
+    config = function()
+      -- Try to find debugpy in virtual environment first
+      local debugpy_path = vim.fn.exepath("python")
+
+      -- Check for venv
+      local venv_ok, venv = pcall(require, "yoda.terminal.venv")
+      if venv_ok then
+        local venvs = venv.find_virtual_envs()
+        if #venvs > 0 then
+          debugpy_path = venvs[1] .. "/bin/python"
+        end
+      end
+
+      require("dap-python").setup(debugpy_path)
+
+      -- Configure test runner
+      require("dap-python").test_runner = "pytest"
+
+      -- Add configurations for common scenarios
+      table.insert(require("dap").configurations.python, {
+        type = "python",
+        request = "launch",
+        name = "Launch file with arguments",
+        program = "${file}",
+        args = function()
+          local args_string = vim.fn.input("Arguments: ")
+          return vim.split(args_string, " +")
+        end,
+      })
+    end,
+  },
+
+  -- venv-selector.nvim - Virtual environment selector
+  {
+    "linux-cultist/venv-selector.nvim",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "nvim-telescope/telescope.nvim",
+      "mfussenegger/nvim-dap-python",
+    },
+    branch = "regexp",
+    ft = "python",
+    config = function()
+      require("venv-selector").setup({
+        auto_refresh = true,
+        search_venv_managers = true,
+        search_workspace = true,
+        search = true,
+        dap_enabled = true, -- Auto-configure dap-python
+        parents = 2,
+        name = {
+          "venv",
+          ".venv",
+          "env",
+          ".env",
+        },
       })
     end,
   },
