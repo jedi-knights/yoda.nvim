@@ -31,28 +31,9 @@ vim.lsp.config.gopls = {}
 vim.lsp.config.ts_ls = {}
 
 -- Rust LSP
-vim.lsp.config.rust_analyzer = {
-  settings = {
-    ["rust-analyzer"] = {
-      cargo = {
-        allFeatures = true,
-        loadOutDirsFromCheck = true,
-      },
-      procMacro = {
-        enable = true,
-      },
-      checkOnSave = {
-        command = "clippy",
-      },
-      diagnostics = {
-        enable = true,
-        experimental = {
-          enable = true,
-        },
-      },
-    },
-  },
-}
+-- Note: rust_analyzer is managed by rust-tools.nvim plugin
+-- See lua/plugins.lua RUST DEVELOPMENT section for configuration
+-- rust-tools provides enhanced features like inlay hints, hover actions, and DAP integration
 
 -- Disable stylua as LSP server (it's a formatter, not a language server)
 -- stylua is not enabled as an LSP server
@@ -61,7 +42,7 @@ vim.lsp.config.rust_analyzer = {
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("gopls")
 vim.lsp.enable("ts_ls")
-vim.lsp.enable("rust_analyzer")
+-- rust_analyzer is handled by rust-tools.nvim, not enabled here
 
 -- Setup keymaps for LSP
 local function on_attach(client, bufnr)

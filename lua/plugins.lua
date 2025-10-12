@@ -260,6 +260,7 @@ return {
             "lua_ls",
             "gopls",
             "ts_ls",
+            "rust_analyzer",
           },
         })
       end
@@ -643,12 +644,26 @@ return {
       "antoinemadec/FixCursorHold.nvim",
     },
     config = function()
+      local adapters = {
+        require("neotest-python")({
+          dap = { justMyCode = false },
+        }),
+      }
+
+      -- Add Rust adapter if available
+      local rust_ok, neotest_rust = pcall(require, "neotest-rust")
+      if rust_ok then
+        table.insert(
+          adapters,
+          neotest_rust({
+            args = { "--no-capture" },
+            dap_adapter = "codelldb",
+          })
+        )
+      end
+
       require("neotest").setup({
-        adapters = {
-          require("neotest-python")({
-            dap = { justMyCode = false },
-          }),
-        },
+        adapters = adapters,
       })
     end,
   },
@@ -725,7 +740,7 @@ return {
     build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.configs").setup({
-        ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript" },
+        ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript", "rust", "toml" },
         auto_install = true,
         highlight = { enable = true },
         indent = { enable = true },
@@ -776,6 +791,336 @@ return {
         show_leader = true,
         show_which_key = true,
         position = "top-center",
+      })
+    end,
+  },
+
+  -- ============================================================================
+  -- RUST DEVELOPMENT
+  -- ============================================================================
+
+  -- Rust-Tools - Enhanced Rust development experience
+  -- Provides inlay hints, hover actions, CodeLens, and DAP integration
+  {
+    "simrat39/rust-tools.nvim",
+    ft = { "rust" },
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "nvim-lua/plenary.nvim",
+      "mfussenegger/nvim-dap",
+    },
+    config = function()
+      local rt = require("rust-tools")
+      local mason_registry = require("mason-registry")
+
+      -- Get codelldb path from mason
+      local codelldb_path = mason_registry.get_package("codelldb"):get_install_path() .. "/extension/adapter/codelldb"
+      local liblldb_path = mason_registry.get_package("codelldb"):get_install_path() .. "/extension/lldb/lib/liblldb.dylib" -- macOS path
+
+      -- Check if on Linux and adjust liblldb path
+      if vim.loop.os_uname().sysname == "Linux" then
+        liblldb_path = mason_registry.get_package("codelldb"):get_install_path() .. "/extension/lldb/lib/liblldb.so"
+      end
+
+      rt.setup({
+        tools = {
+          autoSetHints = true,
+          inlay_hints = {
+            show_parameter_hints = true,
+            parameter_hints_prefix = "<- ",
+            other_hints_prefix = "=> ",
+            max_len_align = false,
+            max_len_align_padding = 1,
+            right_align = false,
+            right_align_padding = 7,
+          },
+          hover_actions = {
+            auto_focus = true,
+            border = "rounded",
+          },
+        },
+        server = {
+          on_attach = function(client, bufnr)
+            -- Rust-specific hover action
+            vim.keymap.set("n", "K", rt.hover_actions.hover_actions, {
+              buffer = bufnr,
+              desc = "Rust: Hover actions",
+            })
+
+            -- Code action groups
+            vim.keymap.set("n", "<leader>ca", rt.code_action_group.code_action_group, {
+              buffer = bufnr,
+              desc = "Rust: Code action group",
+            })
+          end,
+          settings = {
+            ["rust-analyzer"] = {
+              cargo = {
+                allFeatures = true,
+                loadOutDirsFromCheck = true,
+              },
+              procMacro = {
+                enable = true,
+              },
+              checkOnSave = {
+                command = "clippy",
+              },
+              diagnostics = {
+                enable = true,
+                experimental = {
+                  enable = true,
+                },
+              },
+            },
+          },
+        },
+        dap = {
+          adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
+        },
+      })
+    end,
+  },
+
+  -- Crates.nvim - Cargo.toml dependency management
+  -- Shows version info, update actions in Cargo.toml files
+  {
+    "saecki/crates.nvim",
+    event = { "BufRead Cargo.toml" },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("crates").setup({
+        popup = {
+          autofocus = true,
+          border = "rounded",
+          show_version_date = true,
+        },
+        null_ls = {
+          enabled = false, -- We're using conform.nvim + nvim-lint
+        },
+        completion = {
+          cmp = {
+            enabled = true,
+          },
+        },
+      })
+
+      -- Cargo.toml specific keymaps
+      vim.api.nvim_create_autocmd("BufRead", {
+        pattern = "Cargo.toml",
+        callback = function()
+          local crates = require("crates")
+          local opts = { silent = true, buffer = true }
+
+          vim.keymap.set("n", "<leader>rc", crates.show_popup, vim.tbl_extend("force", opts, { desc = "Crates: Show popup" }))
+          vim.keymap.set("n", "<leader>ru", crates.update_crate, vim.tbl_extend("force", opts, { desc = "Crates: Update crate" }))
+          vim.keymap.set("n", "<leader>rU", crates.update_all_crates, vim.tbl_extend("force", opts, { desc = "Crates: Update all" }))
+          vim.keymap.set("n", "<leader>rV", crates.show_versions_popup, vim.tbl_extend("force", opts, { desc = "Crates: Show versions" }))
+          vim.keymap.set("n", "<leader>rF", crates.show_features_popup, vim.tbl_extend("force", opts, { desc = "Crates: Show features" }))
+        end,
+      })
+    end,
+  },
+
+  -- Neotest Rust adapter
+  {
+    "rouge8/neotest-rust",
+    lazy = true,
+    dependencies = { "nvim-neotest/neotest" },
+    ft = "rust",
+  },
+
+  -- Conform.nvim - Modern formatter (rustfmt)
+  {
+    "stevearc/conform.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("conform").setup({
+        formatters_by_ft = {
+          rust = { "rustfmt" },
+          lua = { "stylua" },
+          python = { "black" },
+        },
+        format_on_save = {
+          timeout_ms = 500,
+          lsp_fallback = true,
+        },
+      })
+
+      -- Add command to toggle format on save
+      vim.api.nvim_create_user_command("ToggleFormatOnSave", function()
+        local conform = require("conform")
+        if conform.will_fallback_lsp() then
+          vim.notify("Format on save enabled", vim.log.levels.INFO)
+        else
+          vim.notify("Format on save disabled", vim.log.levels.INFO)
+        end
+      end, { desc = "Toggle format on save" })
+    end,
+  },
+
+  -- nvim-lint - Modern linter (Clippy for Rust)
+  {
+    "mfussenegger/nvim-lint",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      local lint = require("lint")
+
+      -- Configure linters by filetype
+      lint.linters_by_ft = {
+        rust = { "clippy" },
+      }
+
+      -- Auto-lint on certain events
+      vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+        callback = function()
+          -- Only lint if clippy is available
+          local linters = lint.linters_by_ft[vim.bo.filetype]
+          if linters then
+            lint.try_lint()
+          end
+        end,
+      })
+    end,
+  },
+
+  -- Aerial.nvim - Code outline viewer
+  {
+    "stevearc/aerial.nvim",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    cmd = { "AerialToggle", "AerialOpen", "AerialClose", "AerialNavToggle" },
+    config = function()
+      require("aerial").setup({
+        backends = { "lsp", "treesitter", "markdown", "man" },
+        layout = {
+          max_width = { 40, 0.2 },
+          width = nil,
+          min_width = 30,
+          default_direction = "prefer_right",
+        },
+        attach_mode = "global",
+        filter_kind = false,
+        show_guides = true,
+        guides = {
+          mid_item = "├─",
+          last_item = "└─",
+          nested_top = "│ ",
+          whitespace = "  ",
+        },
+      })
+    end,
+  },
+
+  -- Todo-comments.nvim - Highlight TODO/FIXME/etc
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    event = "VeryLazy",
+    config = function()
+      require("todo-comments").setup({
+        signs = true,
+        sign_priority = 8,
+        keywords = {
+          FIX = {
+            icon = " ",
+            color = "error",
+            alt = { "FIXME", "BUG", "FIXIT", "ISSUE" },
+          },
+          TODO = { icon = " ", color = "info" },
+          HACK = { icon = " ", color = "warning" },
+          WARN = {
+            icon = " ",
+            color = "warning",
+            alt = { "WARNING", "XXX" },
+          },
+          PERF = {
+            icon = " ",
+            alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" },
+          },
+          NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+          TEST = {
+            icon = "⏲ ",
+            color = "test",
+            alt = { "TESTING", "PASSED", "FAILED" },
+          },
+        },
+        highlight = {
+          before = "",
+          keyword = "wide",
+          after = "fg",
+          pattern = [[.*<(KEYWORDS)\s*:]],
+          comments_only = true,
+        },
+        search = {
+          command = "rg",
+          args = {
+            "--color=never",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+          },
+          pattern = [[\b(KEYWORDS):]],
+        },
+      })
+    end,
+  },
+
+  -- Overseer.nvim - Task runner for cargo commands
+  {
+    "stevearc/overseer.nvim",
+    cmd = { "OverseerRun", "OverseerToggle", "OverseerInfo", "OverseerBuild" },
+    config = function()
+      require("overseer").setup({
+        templates = { "builtin" },
+        task_list = {
+          direction = "bottom",
+          min_height = 25,
+          max_height = 25,
+          default_detail = 1,
+          bindings = {
+            ["?"] = "ShowHelp",
+            ["g?"] = "ShowHelp",
+            ["<CR>"] = "RunAction",
+            ["<C-e>"] = "Edit",
+            ["o"] = "Open",
+            ["<C-v>"] = "OpenVsplit",
+            ["<C-s>"] = "OpenSplit",
+            ["<C-f>"] = "OpenFloat",
+            ["<C-q>"] = "OpenQuickFix",
+            ["p"] = "TogglePreview",
+            ["<C-l>"] = "IncreaseDetail",
+            ["<C-h>"] = "DecreaseDetail",
+            ["L"] = "IncreaseAllDetail",
+            ["H"] = "DecreaseAllDetail",
+            ["["] = "DecreaseWidth",
+            ["]"] = "IncreaseWidth",
+            ["{"] = "PrevTask",
+            ["}"] = "NextTask",
+            ["<C-k>"] = "ScrollOutputUp",
+            ["<C-j>"] = "ScrollOutputDown",
+          },
+        },
+      })
+    end,
+  },
+
+  -- Mason-nvim-dap - Auto-install DAP adapters via Mason
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    lazy = true,
+    event = "VeryLazy",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "mfussenegger/nvim-dap",
+    },
+    config = function()
+      require("mason-nvim-dap").setup({
+        ensure_installed = { "codelldb" },
+        automatic_installation = true,
+        handlers = {},
       })
     end,
   },
