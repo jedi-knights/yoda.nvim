@@ -1,6 +1,8 @@
 -- lua/yoda/lsp.lua
 -- LSP configuration
 
+local logger = require("yoda.logging.logger")
+
 -- Lua LSP
 vim.lsp.config.lua_ls = {
   settings = {
@@ -53,7 +55,8 @@ local function on_attach(client, bufnr)
   map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, { desc = "Add workspace folder" })
   map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, { desc = "Remove workspace folder" })
   map("n", "<leader>wl", function()
-    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    logger.set_strategy("console")
+    logger.info("Workspace folders", { folders = vim.lsp.buf.list_workspace_folders() })
   end, { desc = "List workspace folders" })
   map("n", "<leader>D", vim.lsp.buf.type_definition, { desc = "Go to type definition" })
   map("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename" })

@@ -125,7 +125,8 @@ local backends = {
 function M.notify(msg, level, opts)
   -- Input validation (assertive programming)
   if type(msg) ~= "string" then
-    print("ERROR: notification.notify() msg must be a string, got " .. type(msg))
+    -- Use vim.notify directly here to avoid circular dependency
+    vim.notify("ERROR: notification.notify() msg must be a string, got " .. type(msg), vim.log.levels.ERROR)
     return
   end
 
