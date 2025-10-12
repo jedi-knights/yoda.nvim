@@ -260,3 +260,58 @@ vim.api.nvim_create_user_command("YodaPythonVenv", function()
     vim.notify("❌ venv-selector not available. Install via :Lazy sync", vim.log.levels.ERROR)
   end
 end, { desc = "Select Python virtual environment" })
+
+-- JavaScript/TypeScript development setup command
+vim.api.nvim_create_user_command("YodaJavaScriptSetup", function()
+  local logger = require("yoda.logging.logger")
+  logger.set_strategy("console")
+  logger.set_level("info")
+
+  logger.info("🟨 Setting up JavaScript/TypeScript development environment...")
+
+  -- Check if Mason is available
+  local mason_ok, mason = pcall(require, "mason")
+  if not mason_ok then
+    vim.notify("❌ Mason not available. Install via :Lazy sync first", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Install JavaScript tools via Mason
+  logger.info("Installing typescript-language-server via Mason...")
+  vim.cmd("MasonInstall typescript-language-server")
+
+  logger.info("Installing js-debug-adapter (Node.js debugger) via Mason...")
+  vim.cmd("MasonInstall js-debug-adapter")
+
+  logger.info("Installing biome (linter/formatter) via Mason...")
+  vim.cmd("MasonInstall biome")
+
+  -- Notify user
+  vim.notify(
+    "🟨 JavaScript tools installation started!\n"
+      .. "Installing: typescript-language-server, js-debug-adapter, biome\n"
+      .. "Check :Mason for progress.\n"
+      .. "Restart Neovim after installation completes.",
+    vim.log.levels.INFO,
+    { title = "Yoda JavaScript Setup" }
+  )
+
+  logger.info("✅ JavaScript setup initiated. Restart Neovim after Mason installation completes.")
+end, { desc = "Install JavaScript development tools (ts_ls, js-debug-adapter, biome) via Mason" })
+
+-- Node.js version detection
+vim.api.nvim_create_user_command("YodaNodeVersion", function()
+  local handle = io.popen("node --version 2>&1")
+  if handle then
+    local result = handle:read("*a")
+    handle:close()
+    vim.notify("Node.js version: " .. result, vim.log.levels.INFO, { title = "Node Version" })
+  else
+    vim.notify("❌ Node.js not found", vim.log.levels.ERROR)
+  end
+end, { desc = "Show Node.js version" })
+
+-- NPM outdated packages
+vim.api.nvim_create_user_command("YodaNpmOutdated", function()
+  vim.cmd("!npm outdated")
+end, { desc = "Check outdated npm packages" })
