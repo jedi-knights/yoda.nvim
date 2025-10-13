@@ -198,7 +198,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end
 
     -- Attach LSP keymaps for code filetypes
-    on_attach(args.data.client_id, bufnr)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client then
+      on_attach(client, bufnr)
+    end
   end,
 })
 
