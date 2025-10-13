@@ -262,8 +262,10 @@ return {
             "ts_ls",
             "rust_analyzer",
             "basedpyright",
-            "csharp_ls",
+            "omnisharp", -- Use OmniSharp instead of csharp_ls for better reliability
           },
+          -- Add automatic installation for servers not in ensure_installed
+          automatic_installation = true,
         })
       end
     end,
