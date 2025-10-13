@@ -157,6 +157,23 @@ Yoda.nvim includes OpenCode pre-configured. The configuration is in `lua/plugins
 }
 ```
 
+### 5. Optional: OpenCode Configuration File
+
+For persistent "Bad Request" errors, you may need to create an explicit OpenCode configuration file:
+
+```bash
+mkdir -p ~/.config/opencode
+cat > ~/.config/opencode/opencode.json << 'EOF'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-3-5-sonnet-20241022",
+  "small_model": "anthropic/claude-3-5-haiku-20241022"
+}
+EOF
+```
+
+This configuration file takes precedence over environment variables and can resolve authentication issues.
+
 ## Configuration
 
 ### Default Configuration
@@ -460,13 +477,43 @@ Expected output for working setup:
 ```
 === OpenCode Setup Check ===
 CLI: ✅ 0.14.6
-OpenAI Key: ✅ SET
-Anthropic Key: ❌ NOT SET
-Provider: ✅ openai
-Model: ✅ gpt-4o
+OpenAI Key: ❌ NOT SET
+Anthropic Key: ✅ SET
+Provider: ✅ anthropic
+Model: ✅ anthropic/claude-3-5-sonnet-20241022
 ```
 
-#### 4. Check Plugin Load
+#### 4. Authentication Issues (Bad Request Errors)
+
+If you're getting persistent "Bad Request" errors even with correct environment variables, try these steps:
+
+```bash
+# 1. Login to OpenCode
+opencode auth login
+
+# 2. Check authentication status
+opencode auth list
+
+# 3. Clear OpenCode cache (this often fixes stubborn issues)
+rm -rf ~/.cache/opencode
+
+# 4. Create explicit configuration file
+mkdir -p ~/.config/opencode
+cat > ~/.config/opencode/opencode.json << 'EOF'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-20250514",
+  "small_model": "anthropic/claude-3-5-haiku-20241022"
+}
+EOF
+```
+
+**Note**: Replace the model names with your preferred models:
+- For Claude 3.5 Sonnet: `"anthropic/claude-3-5-sonnet-20241022"`
+- For Claude 3.5 Haiku: `"anthropic/claude-3-5-haiku-20241022"`
+- For OpenAI GPT-4: `"openai/gpt-4o"`
+
+#### 5. Check Plugin Load
 
 ```vim
 " Check if OpenCode plugin is loaded
