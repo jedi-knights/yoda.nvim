@@ -115,7 +115,7 @@ return M
 ```
 
 **Testing Framework**
-- **Unit Tests**: Use busted with Neovim 0.9+ and LuaRocks
+- **Unit Tests**: Use busted with Neovim 0.9+
 - **Configuration Tests**: Test distribution modules for expected behavior
 - **CI/CD**: GitHub actions for automated testing
 - **Test Structure**: `*_spec.lua` files with proper module search paths
@@ -123,8 +123,8 @@ return M
 **Documentation and Packaging**
 - **User Docs**: panvimdoc for README-to-vimdoc conversion
 - **API Docs**: mini.doc for function documentation
-- **Release Process**: luarocks-tag-release GitHub action
-- **Distribution**: LuaRocks for dependency management
+- **Release Process**: GitHub actions for automated releases
+- **Distribution**: Git-based distribution via lazy.nvim
 
 ### Advanced Development Techniques
 
