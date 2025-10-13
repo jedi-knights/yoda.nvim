@@ -114,15 +114,24 @@ OpenCode uses environment variables for API authentication:
 
 ```bash
 # Add to ~/.zshrc or ~/.bashrc
+
+# REQUIRED: Set your API key (choose one)
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 
-# Optional: Set default provider
-export OPENCODE_PROVIDER="anthropic"  # or "openai"
+# REQUIRED: Set the provider (must match your API key)
+export OPENCODE_PROVIDER="openai"      # if using OpenAI
+export OPENCODE_PROVIDER="anthropic"   # if using Anthropic
 
-# Optional: Set model
-export OPENCODE_MODEL="claude-3-5-sonnet-20241022"
+# RECOMMENDED: Set the model to use
+export OPENCODE_MODEL="gpt-4o"                    # OpenAI (latest)
+export OPENCODE_MODEL="claude-3-5-sonnet-20241022" # Anthropic (latest)
 ```
+
+**Important Notes:**
+- `OPENCODE_PROVIDER` is **required** - without it, you'll get "Bad Request" errors
+- `OPENCODE_MODEL` is **recommended** - without it, OpenCode may use a default model
+- The provider must match your API key (e.g., use `openai` with `OPENAI_API_KEY`)
 
 ### 4. Neovim Plugin Configuration
 
@@ -413,20 +422,51 @@ opencode --help
 
 **Solution**: If not found, reinstall following [Installation](#installation) steps.
 
-#### 2. Check API Keys
+#### 2. Check API Keys and Provider
 
 ```bash
 # Verify environment variables are set
-echo $OPENAI_API_KEY
-echo $ANTHROPIC_API_KEY
+echo "OPENAI_API_KEY: ${OPENAI_API_KEY:+SET}"
+echo "ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:+SET}"
+echo "OPENCODE_PROVIDER: ${OPENCODE_PROVIDER:-NOT SET}"
+echo "OPENCODE_MODEL: ${OPENCODE_MODEL:-NOT SET}"
 
 # Check if they're exported
-env | grep API_KEY
+env | grep -E "(OPENAI_API_KEY|ANTHROPIC_API_KEY|OPENCODE_PROVIDER|OPENCODE_MODEL)"
 ```
 
-**Solution**: Ensure API keys are exported in your shell configuration.
+**Common Issues:**
+- **"Bad Request" Error**: Usually means `OPENCODE_PROVIDER` is missing
+- **No API Key**: Check your API key is exported correctly
+- **Wrong Provider**: Provider must match your API key (e.g., `openai` with `OPENAI_API_KEY`)
 
-#### 3. Check Plugin Load
+**Solution**: Ensure all required environment variables are exported in your shell configuration.
+
+#### 3. Quick Setup Verification
+
+Run this command to verify your OpenCode setup:
+
+```bash
+# One-liner to check all OpenCode requirements
+echo "=== OpenCode Setup Check ===" && \
+echo "CLI: $(which opencode >/dev/null && echo "✅ $(opencode --version)" || echo "❌ Not found")" && \
+echo "OpenAI Key: ${OPENAI_API_KEY:+✅ SET}${OPENAI_API_KEY:-❌ NOT SET}" && \
+echo "Anthropic Key: ${ANTHROPIC_API_KEY:+✅ SET}${ANTHROPIC_API_KEY:-❌ NOT SET}" && \
+echo "Provider: ${OPENCODE_PROVIDER:-❌ NOT SET}${OPENCODE_PROVIDER:+✅ $OPENCODE_PROVIDER}" && \
+echo "Model: ${OPENCODE_MODEL:-❌ NOT SET}${OPENCODE_MODEL:+✅ $OPENCODE_MODEL}"
+```
+
+Expected output for working setup:
+```
+=== OpenCode Setup Check ===
+CLI: ✅ 0.14.6
+OpenAI Key: ✅ SET
+Anthropic Key: ❌ NOT SET
+Provider: ✅ openai
+Model: ✅ gpt-4o
+```
+
+#### 4. Check Plugin Load
 
 ```vim
 " Check if OpenCode plugin is loaded
