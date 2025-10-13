@@ -1203,6 +1203,14 @@ return {
       "mfussenegger/nvim-dap",
       "rcarriga/nvim-dap-ui",
     },
+    -- Use a more reliable build command
+    build = function()
+      -- Install debugpy using the system python
+      local result = vim.fn.system("python -m pip install debugpy")
+      if vim.v.shell_error ~= 0 then
+        vim.notify("Failed to install debugpy: " .. result, vim.log.levels.ERROR)
+      end
+    end,
     config = function()
       -- Try to find debugpy in virtual environment first
       local debugpy_path = vim.fn.exepath("python")
@@ -1241,7 +1249,6 @@ return {
     dependencies = {
       "neovim/nvim-lspconfig",
       "nvim-telescope/telescope.nvim",
-      "mfussenegger/nvim-dap-python",
     },
     branch = "regexp",
     ft = "python",
