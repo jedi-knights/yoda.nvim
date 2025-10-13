@@ -107,25 +107,42 @@ vim.lsp.config.basedpyright = {
   },
 }
 
--- C# LSP (Roslyn - modern, official Microsoft LSP)
-vim.lsp.config.csharp_ls = {
+-- C# LSP (OmniSharp - more reliable than csharp_ls)
+vim.lsp.config.omnisharp = {
   filetypes = { "cs", "csx", "cake" },
   settings = {
-    csharp = {
-      inlayHints = {
-        enableInlayHintsForParameters = true,
-        enableInlayHintsForLiteralParameters = true,
-        enableInlayHintsForIndexerParameters = true,
-        enableInlayHintsForObjectCreationParameters = true,
-        enableInlayHintsForOtherParameters = true,
-        suppressInlayHintsForParametersThatDifferOnlyBySuffix = false,
-        suppressInlayHintsForParametersThatMatchMethodIntent = false,
-        suppressInlayHintsForParametersThatMatchArgumentName = false,
-        enableInlayHintsForTypes = true,
-        enableInlayHintsForImplicitVariableTypes = true,
-        enableInlayHintsForLambdaParameterTypes = true,
-        enableInlayHintsForImplicitObjectCreation = true,
-      },
+    OmniSharp = {
+      enableRoslynAnalyzers = true,
+      enableEditorConfigSupport = true,
+      enableImportCompletion = true,
+      enableAsyncCompletion = true,
+      enableSnippets = true,
+      organizeImportsOnFormat = true,
+      enableMsBuildLoadProjectsOnDemand = false,
+      sdkPath = nil, -- Will be auto-detected
+      sdkVersion = nil, -- Will be auto-detected
+      monoPath = nil, -- Will be auto-detected
+      dotNetCliPath = nil, -- Will be auto-detected
+      useModernNet = true,
+      projectLoadTimeout = 60,
+      maxProjectResults = 250,
+      maxProjectFileResults = 50,
+      enableSemanticHighlighting = true,
+      enableHighlightRelated = true,
+      enableHighlightTypedSymbols = true,
+      enableInlayHints = true,
+      enableInlayHintsForParameters = true,
+      enableInlayHintsForLiteralParameters = true,
+      enableInlayHintsForIndexerParameters = true,
+      enableInlayHintsForObjectCreationParameters = true,
+      enableInlayHintsForOtherParameters = true,
+      suppressInlayHintsForParametersThatDifferOnlyBySuffix = false,
+      suppressInlayHintsForParametersThatMatchMethodIntent = false,
+      suppressInlayHintsForParametersThatMatchArgumentName = false,
+      enableInlayHintsForTypes = true,
+      enableInlayHintsForImplicitVariableTypes = true,
+      enableInlayHintsForLambdaParameterTypes = true,
+      enableInlayHintsForImplicitObjectCreation = true,
     },
   },
 }
@@ -143,7 +160,7 @@ vim.lsp.enable("lua_ls")
 vim.lsp.enable("gopls")
 vim.lsp.enable("ts_ls")
 vim.lsp.enable("basedpyright")
-vim.lsp.enable("csharp_ls")
+vim.lsp.enable("omnisharp")
 -- rust_analyzer is handled by rust-tools.nvim, not enabled here
 
 -- Setup keymaps for LSP
