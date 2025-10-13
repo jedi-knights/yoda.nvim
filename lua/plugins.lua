@@ -775,6 +775,24 @@ return {
       vim.g.opencode_opts = {
         -- Auto-reload buffers edited by opencode
         auto_reload = true,
+
+        -- Window configuration
+        window = {
+          width = 0.4, -- 40% of screen width
+          height = 0.8, -- 80% of screen height
+          position = "right", -- "left", "right", "top", "bottom"
+        },
+
+        -- Default provider and model
+        -- provider = "anthropic",
+        -- model = "claude-3-5-sonnet-20241022",
+
+        -- Custom prompts
+        prompts = {
+          explain = "Explain @thisnd its context in detail",
+          optimize = "Suggest optimizations for @this",
+          test = "Write comprehensive tests for @this",
+        },
       }
 
       -- Required for auto_reload
