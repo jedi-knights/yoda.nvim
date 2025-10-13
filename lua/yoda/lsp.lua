@@ -3,8 +3,30 @@
 
 local logger = require("yoda.logging.logger")
 
+-- Filetypes where LSP should not attach
+-- These are typically plain text or special buffers where LSP provides no value
+-- and can cause significant lag
+local LSP_SKIP_FILETYPES = {
+  "gitcommit",
+  "gitrebase",
+  "gitconfig",
+  "NeogitCommitMessage",
+  "NeogitPopup",
+  "NeogitStatus",
+  "fugitive",
+  "fugitiveblame",
+  "help",
+  "markdown", -- Optional: remove if you want LSP in markdown
+  "alpha", -- Dashboard
+  "terminal", -- Terminal buffers
+  "toggleterm",
+  "qf", -- Quickfix lists
+  "loclist", -- Location lists
+}
+
 -- Lua LSP
 vim.lsp.config.lua_ls = {
+  filetypes = { "lua" },
   settings = {
     Lua = {
       runtime = {
@@ -25,10 +47,13 @@ vim.lsp.config.lua_ls = {
 }
 
 -- Go LSP
-vim.lsp.config.gopls = {}
+vim.lsp.config.gopls = {
+  filetypes = { "go", "gomod", "gowork" },
+}
 
 -- TypeScript/JavaScript LSP (enhanced)
 vim.lsp.config.ts_ls = {
+  filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" },
   settings = {
     typescript = {
       inlayHints = {
@@ -68,13 +93,14 @@ vim.lsp.config.ts_ls = {
 
 -- Python LSP (basedpyright)
 vim.lsp.config.basedpyright = {
+  filetypes = { "python" },
   settings = {
     basedpyright = {
       analysis = {
         typeCheckingMode = "basic", -- "off", "basic", "strict"
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
-        diagnosticMode = "workspace", -- "openFilesOnly" or "workspace"
+        diagnosticMode = "openFilesOnly", -- Changed from "workspace" for better performance
         autoImportCompletions = true,
       },
     },
@@ -83,6 +109,7 @@ vim.lsp.config.basedpyright = {
 
 -- C# LSP (Roslyn - modern, official Microsoft LSP)
 vim.lsp.config.csharp_ls = {
+  filetypes = { "cs", "csx", "cake" },
   settings = {
     csharp = {
       inlayHints = {
@@ -121,6 +148,12 @@ vim.lsp.enable("csharp_ls")
 
 -- Setup keymaps for LSP
 local function on_attach(client, bufnr)
+  -- Performance optimization: Disable semantic tokens to reduce lag
+  -- Semantic tokens cause "Processing full semantic tokens" messages and slow typing
+  if client.server_capabilities.semanticTokensProvider then
+    client.server_capabilities.semanticTokensProvider = nil
+  end
+
   local function map(mode, lhs, rhs, opts)
     opts = opts or {}
     opts.buffer = bufnr
@@ -148,22 +181,6 @@ local function on_attach(client, bufnr)
   end, { desc = "Format" })
 end
 
--- Filetypes where LSP should not attach
--- These are typically plain text or special buffers where LSP provides no value
--- and can cause significant lag
-local LSP_SKIP_FILETYPES = {
-  "gitcommit",
-  "gitrebase",
-  "gitconfig",
-  "NeogitCommitMessage",
-  "NeogitPopup",
-  "NeogitStatus",
-  "fugitive",
-  "fugitiveblame",
-  "help",
-  "markdown", -- Optional: remove if you want LSP in markdown
-}
-
 -- Set up LSP keymaps for all LSP clients (except skipped filetypes)
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
@@ -184,3 +201,32 @@ vim.api.nvim_create_autocmd("LspAttach", {
     on_attach(args.data.client_id, bufnr)
   end,
 })
+
+-- Performance debugging command
+vim.api.nvim_create_user_command("LSPPerformance", function()
+  local clients = vim.lsp.get_active_clients()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local filetype = vim.bo[bufnr].filetype
+
+  print("=== LSP Performance Debug ===")
+  print("Current filetype:", filetype)
+  print("Active LSP clients:", #clients)
+
+  for _, client in ipairs(clients) do
+    local attached = vim.lsp.buf_is_attached(bufnr, client.id)
+    local semantic_tokens = client.server_capabilities.semanticTokensProvider ~= nil
+    print(string.format("  - %s: attached=%s, semantic_tokens=%s", client.name, attached, semantic_tokens))
+  end
+
+  -- Check if current filetype is in skip list
+  local is_skipped = false
+  for _, skip_ft in ipairs(LSP_SKIP_FILETYPES) do
+    if filetype == skip_ft then
+      is_skipped = true
+      break
+    end
+  end
+
+  print("Filetype in skip list:", is_skipped)
+  print("=============================")
+end, { desc = "Debug LSP performance for current buffer" })
