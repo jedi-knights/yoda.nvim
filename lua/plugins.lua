@@ -1286,7 +1286,6 @@ return {
       "neovim/nvim-lspconfig",
       "nvim-telescope/telescope.nvim",
     },
-    branch = "regexp",
     ft = "python",
     config = function()
       require("venv-selector").setup({
