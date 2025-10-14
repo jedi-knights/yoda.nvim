@@ -654,11 +654,13 @@ return {
             justMyCode = false,
             console = "integratedTerminal",
           },
-          args = { 
-            "--log-level", "DEBUG", 
+          args = {
+            "--log-level",
+            "DEBUG",
             "-vv",
-            "--browser", "chromium",
-            "--headed"
+            "--browser",
+            "chromium",
+            "--headed",
           },
           runner = "pytest",
           python = function()
