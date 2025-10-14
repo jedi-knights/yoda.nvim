@@ -203,6 +203,10 @@ local FILETYPE_SETTINGS = {
     vim.opt_local.wrap = true
     vim.opt_local.spell = true
     vim.opt_local.conceallevel = 2
+    -- Performance optimizations for markdown
+    vim.opt_local.foldmethod = "manual" -- Disable treesitter folding for performance
+    vim.opt_local.updatetime = 1000 -- Reduce event frequency (less aggressive than 250ms)
+    vim.opt_local.spelllang = "en_us" -- Limit spell checking to English for performance
   end,
 
   -- Git commit messages: optimize for fast typing
@@ -295,7 +299,7 @@ create_autocmd("BufEnter", {
       return
     end
 
-    -- Early bailout: Skip for git-related buffers (performance optimization)
+    -- Early bailout: Skip for git-related and text buffers (performance optimization)
     -- These buffers never need the alpha dashboard and the checks are expensive
     local filetype = vim.bo[args.buf].filetype
     local skip_filetypes = {
@@ -307,6 +311,7 @@ create_autocmd("BufEnter", {
       "NeogitStatus",
       "fugitive",
       "fugitiveblame",
+      "markdown", -- Skip expensive alpha checks for markdown files
     }
 
     for _, ft in ipairs(skip_filetypes) do

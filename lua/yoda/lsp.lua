@@ -250,3 +250,26 @@ vim.api.nvim_create_user_command("LSPPerformance", function()
   print("Filetype in skip list:", is_skipped)
   print("=============================")
 end, { desc = "Debug LSP performance for current buffer" })
+
+-- Markdown performance debugging command
+vim.api.nvim_create_user_command("MarkdownPerformance", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local filetype = vim.bo[bufnr].filetype
+
+  print("=== Markdown Performance Debug ===")
+  print("Current filetype:", filetype)
+  print("Spell enabled:", vim.wo.spell)
+  print("Conceal level:", vim.wo.conceallevel)
+  print("Fold method:", vim.wo.foldmethod)
+  print("Update time:", vim.bo.updatetime)
+  print("Spell language:", vim.bo.spelllang)
+
+  -- Check treesitter status
+  local ts_ok, ts = pcall(require, "nvim-treesitter.configs")
+  if ts_ok then
+    local config = ts.get_config()
+    print("Treesitter markdown enabled:", config.markdown and config.markdown.enable or "not configured")
+  end
+
+  print("================================")
+end, { desc = "Debug markdown performance settings" })
