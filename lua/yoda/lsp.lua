@@ -3,6 +3,49 @@
 
 local logger = require("yoda.logging.logger")
 
+-- Configure diagnostics to disable underlines
+vim.diagnostic.config({
+  underline = false,  -- Disable the white underlines
+  virtual_text = true, -- Keep virtual text (error messages)
+  signs = true,       -- Keep signs in the gutter
+  update_in_insert = false,
+  severity_sort = true,
+})
+
+-- Function to configure Python LSP with virtual environment
+local function configure_python_lsp()
+  local venv_ok, venv = pcall(require, "yoda.functions")
+  if venv_ok then
+    local venvs = venv.find_virtual_envs()
+    if #venvs > 0 then
+      local venv_path = venvs[1]
+      local python_path = venv.find_python_interpreter(venv_path)
+      
+      -- Update basedpyright configuration properly
+      if vim.lsp.config.basedpyright then
+        vim.lsp.config.basedpyright.settings = vim.lsp.config.basedpyright.settings or {}
+        vim.lsp.config.basedpyright.settings.basedpyright = vim.lsp.config.basedpyright.settings.basedpyright or {}
+        vim.lsp.config.basedpyright.settings.basedpyright.pythonPath = python_path
+      end
+      
+      -- Also update any active clients
+      local clients = vim.lsp.get_clients({ name = "basedpyright" })
+      for _, client in ipairs(clients) do
+        if client.config and client.config.settings then
+          client.config.settings.basedpyright = client.config.settings.basedpyright or {}
+          client.config.settings.basedpyright.pythonPath = python_path
+        end
+      end
+      
+      -- Notify user
+      vim.notify("Python LSP configured with virtual environment: " .. python_path, vim.log.levels.INFO)
+      
+      return true
+    end
+  end
+  return false
+end
+
 -- Filetypes where LSP should not attach
 -- These are typically plain text or special buffers where LSP provides no value
 -- and can cause significant lag
@@ -103,6 +146,7 @@ vim.lsp.config.basedpyright = {
         diagnosticMode = "openFilesOnly", -- Changed from "workspace" for better performance
         autoImportCompletions = true,
       },
+      pythonPath = nil, -- Will be set by configure_python_lsp() when virtual environment is detected
     },
   },
 }
@@ -224,7 +268,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- Performance debugging command
 vim.api.nvim_create_user_command("LSPPerformance", function()
-  local clients = vim.lsp.get_active_clients()
+  local clients = vim.lsp.get_clients()
   local bufnr = vim.api.nvim_get_current_buf()
   local filetype = vim.bo[bufnr].filetype
 
@@ -377,3 +421,35 @@ vim.api.nvim_create_user_command("DebugKeystrokeEvents", function()
 
   print("==========================")
 end, { desc = "Debug what events are running on keystroke" })
+
+-- Command to configure Python LSP with virtual environment
+vim.api.nvim_create_user_command("ConfigurePythonLSP", function()
+  if configure_python_lsp() then
+    -- Restart LSP to apply changes
+    vim.cmd("LspRestart")
+  else
+    vim.notify("No virtual environment found", vim.log.levels.WARN)
+  end
+end, { desc = "Configure Python LSP with virtual environment" })
+
+-- Auto-configure Python LSP when opening Python files
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*.py",
+  callback = function()
+    -- Only configure if LSP is not already configured with a venv
+    local clients = vim.lsp.get_clients({ name = "basedpyright" })
+    if #clients > 0 then
+      local client = clients[1]
+      local current_python_path = client.config.settings and 
+                                 client.config.settings.basedpyright and 
+                                 client.config.settings.basedpyright.pythonPath
+      
+      if not current_python_path then
+        configure_python_lsp()
+      end
+    else
+      -- No clients yet, try to configure anyway
+      configure_python_lsp()
+    end
+  end,
+})

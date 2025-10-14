@@ -658,6 +658,11 @@ map("n", "<leader>pm", function()
   vim.cmd("!mypy " .. file)
 end, { desc = "Python: Run mypy" })
 
+-- Configure Python LSP with virtual environment
+map("n", "<leader>pL", function()
+  vim.cmd("ConfigurePythonLSP")
+end, { desc = "Python: Configure LSP with venv" })
+
 -- Coverage
 map("n", "<leader>pc", function()
   local ok = pcall(require, "coverage")
@@ -1022,7 +1027,7 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 
 -- Terminal keymaps (refactored to use new terminal module for better SRP)
 map("n", "<leader>.", function()
-  require("yoda.terminal").open_floating()
+  require("yoda.functions").open_floating_terminal()
 end, { desc = "Terminal: Open floating terminal with venv detection" })
 
 map("n", "<leader>vt", function()

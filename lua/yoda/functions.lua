@@ -105,8 +105,14 @@ end
 --- @param message string Debug message
 --- @param level string Log level (default: INFO)
 local function debug_log(message, level)
+  -- Only show ERROR and WARN levels by default
+  -- Set DEBUG_TERMINAL=true in your environment to see all debug messages
+  local debug_enabled = os.getenv("DEBUG_TERMINAL") == "true"
   level = level or vim.log.levels.INFO
-  vim.notify(message, level, { title = "Terminal Debug" })
+  
+  if debug_enabled or level >= vim.log.levels.WARN then
+    vim.notify(message, level, { title = "Terminal Debug" })
+  end
 end
 
 --- Check if system is Windows
@@ -164,18 +170,108 @@ M.find_virtual_envs = function()
   local entries = vim.fn.readdir(cwd)
   local venvs = {}
 
+  debug_log("Scanning directory: " .. cwd)
+  debug_log("Directory entries: " .. vim.inspect(entries))
+
+  -- Common virtual environment directory names
+  local venv_names = { ".venv", "venv", "env", ".env", "virtualenv" }
+
+  -- First, check for .venv specifically (most common)
+  local venv_path = cwd .. "/.venv"
+  if vim.fn.isdirectory(venv_path) == 1 then
+    local activate_path = venv_path .. "/bin/activate"
+    debug_log("Checking .venv specifically: " .. venv_path)
+    debug_log("Activate script exists: " .. tostring(vim.fn.filereadable(activate_path) == 1))
+    if vim.fn.filereadable(activate_path) == 1 then
+      debug_log("Added .venv: " .. venv_path)
+      table.insert(venvs, venv_path)
+    end
+  end
+
+  -- Then check other entries
   for _, entry in ipairs(entries) do
     local dir_path = cwd .. "/" .. entry
-    if vim.fn.isdirectory(dir_path) == 1 then
-      local unix_activate = dir_path .. "/bin/activate"
-      local win_activate = dir_path .. "/Scripts/activate"
-      if vim.fn.filereadable(unix_activate) == 1 or vim.fn.filereadable(win_activate) == 1 then
-        table.insert(venvs, dir_path)
+    
+    -- Skip .venv since we already checked it
+    if entry ~= ".venv" and vim.fn.isdirectory(dir_path) == 1 then
+      debug_log("Checking directory: " .. entry)
+      local is_venv_dir = false
+      
+      -- Check if it matches common venv directory names
+      for _, venv_name in ipairs(venv_names) do
+        if entry == venv_name then
+          debug_log("Found venv directory by name: " .. entry)
+          is_venv_dir = true
+          break
+        end
+      end
+      
+      -- If it matches venv name or has activate script, add it
+      if is_venv_dir then
+        local unix_activate = dir_path .. "/bin/activate"
+        local win_activate = dir_path .. "/Scripts/activate"
+        debug_log("Checking activate scripts for " .. entry .. ": " .. unix_activate .. " or " .. win_activate)
+        if vim.fn.filereadable(unix_activate) == 1 or vim.fn.filereadable(win_activate) == 1 then
+          debug_log("Added venv by name: " .. dir_path)
+          table.insert(venvs, dir_path)
+        end
+      else
+        -- Check for activate script even if name doesn't match
+        local unix_activate = dir_path .. "/bin/activate"
+        local win_activate = dir_path .. "/Scripts/activate"
+        if vim.fn.filereadable(unix_activate) == 1 or vim.fn.filereadable(win_activate) == 1 then
+          debug_log("Added venv by activate script: " .. dir_path)
+          table.insert(venvs, dir_path)
+        end
       end
     end
   end
 
+  debug_log("Final venv list: " .. vim.inspect(venvs))
   return venvs
+end
+
+---
+--- Finds the correct Python interpreter for a virtual environment.
+--- Checks pyvenv.cfg to determine the correct Python version and returns the appropriate interpreter path.
+--
+-- @param venv_path string The path to the virtual environment directory.
+-- @return string|nil The path to the correct Python interpreter, or nil if not found.
+M.find_python_interpreter = function(venv_path)
+  local pyvenv_cfg_path = venv_path .. "/pyvenv.cfg"
+  
+  if vim.fn.filereadable(pyvenv_cfg_path) ~= 1 then
+    debug_log("pyvenv.cfg not found at: " .. pyvenv_cfg_path)
+    return venv_path .. "/bin/python"
+  end
+  
+  -- Read pyvenv.cfg to get the Python version
+  local file = io.open(pyvenv_cfg_path, "r")
+  if not file then
+    debug_log("Failed to read pyvenv.cfg: " .. pyvenv_cfg_path)
+    return venv_path .. "/bin/python"
+  end
+  
+  local content = file:read("*all")
+  file:close()
+  
+  -- Extract version from pyvenv.cfg
+  local version = content:match("version%s*=%s*(%d+%.%d+%.%d+)")
+  if version then
+    debug_log("Found Python version in pyvenv.cfg: " .. version)
+    local major_minor = version:match("(%d+%.%d+)")
+    if major_minor then
+      local python_interpreter = venv_path .. "/bin/python" .. major_minor
+      if vim.fn.filereadable(python_interpreter) == 1 then
+        debug_log("Using Python interpreter: " .. python_interpreter)
+        return python_interpreter
+      end
+    end
+  end
+  
+  -- Fallback to default python
+  debug_log("Using fallback Python interpreter: " .. venv_path .. "/bin/python")
+  return venv_path .. "/bin/python"
 end
 
 ---
@@ -187,6 +283,8 @@ end
 -- @param callback function A function to call with the selected venv path (or nil if none selected).
 M.select_virtual_env = function(callback)
   local venvs = M.find_virtual_envs()
+  debug_log("Found " .. #venvs .. " virtual environments: " .. vim.inspect(venvs))
+  
   if #venvs == 0 then
     local ok, noice = pcall(require, "noice")
     if ok and noice and noice.notify then
@@ -196,6 +294,7 @@ M.select_virtual_env = function(callback)
     end
     callback(nil)
   elseif #venvs == 1 then
+    debug_log("Using single virtual environment: " .. venvs[1])
     callback(venvs[1])
   else
     local ok, picker = pcall(require, "snacks.picker")
@@ -204,7 +303,9 @@ M.select_virtual_env = function(callback)
       callback(nil)
       return
     end
+    debug_log("Multiple virtual environments found, showing picker")
     picker.select(venvs, { prompt = "Select a Python virtual environment:" }, function(choice)
+      debug_log("Selected virtual environment: " .. (choice or "none"))
       callback(choice)
     end)
   end
@@ -230,15 +331,24 @@ end
 --- @param venv_activate string Virtual environment activation script path
 --- @return table|nil Shell arguments and environment, or nil on failure
 local function create_bash_config(venv_activate)
-  local rcfile_content = "source " .. venv_activate .. "\nexec bash -i\n"
-  local rcfile = create_temp_file(rcfile_content)
-  if not rcfile then
-    return nil
-  end
-
+  debug_log("Creating bash config for venv: " .. venv_activate)
+  
+  -- Read the activate script to extract environment variables
+  local venv_dir = venv_activate:match("(.*)/bin/activate")
+  local python_path = venv_dir .. "/bin/python"
+  local venv_bin = venv_dir .. "/bin"
+  
+  debug_log("Venv directory: " .. venv_dir)
+  debug_log("Python path: " .. python_path)
+  debug_log("Venv bin: " .. venv_bin)
+  
   return {
-    args = { os.getenv("SHELL") or vim.o.shell, "--rcfile", rcfile, "-i" },
-    env = nil,
+    args = { "bash", "-i" },
+    env = {
+      VIRTUAL_ENV = venv_dir,
+      PATH = venv_bin .. ":" .. os.getenv("PATH"),
+      PYTHONPATH = venv_dir .. "/lib/python*/site-packages",
+    },
   }
 end
 
@@ -246,24 +356,24 @@ end
 --- @param venv_activate string Virtual environment activation script path
 --- @return table|nil Shell arguments and environment, or nil on failure
 local function create_zsh_config(venv_activate)
-  local tmpdir = create_temp_directory()
-  if not tmpdir then
-    return nil
-  end
-
-  local rcfile = tmpdir .. "/.zshrc"
-  local rcfile_content = "source " .. venv_activate .. "\n[ -f ~/.zshrc ] && source ~/.zshrc\n"
-  local file = io.open(rcfile, "w")
-  if not file then
-    debug_log("Failed to create temporary zsh rcfile: " .. rcfile, vim.log.levels.ERROR)
-    return nil
-  end
-  file:write(rcfile_content)
-  file:close()
-
+  debug_log("Creating zsh config for venv: " .. venv_activate)
+  
+  -- Read the activate script to extract environment variables
+  local venv_dir = venv_activate:match("(.*)/bin/activate")
+  local python_path = venv_dir .. "/bin/python"
+  local venv_bin = venv_dir .. "/bin"
+  
+  debug_log("Venv directory: " .. venv_dir)
+  debug_log("Python path: " .. python_path)
+  debug_log("Venv bin: " .. venv_bin)
+  
   return {
-    args = { os.getenv("SHELL") or vim.o.shell },
-    env = { ZDOTDIR = tmpdir },
+    args = { "zsh", "-i" },
+    env = {
+      VIRTUAL_ENV = venv_dir,
+      PATH = venv_bin .. ":" .. os.getenv("PATH"),
+      PYTHONPATH = venv_dir .. "/lib/python*/site-packages",
+    },
   }
 end
 
@@ -290,11 +400,22 @@ local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
   end
 
   debug_log("Executing: " .. table.concat(config.args, " "))
+  debug_log("Terminal title: " .. win_title)
 
   local terminal_config = create_terminal_config(config.args, win_title)
   terminal_config.env = config.env
+  
+  debug_log("Terminal config: " .. vim.inspect(terminal_config))
 
-  require("snacks.terminal").open(terminal_config.cmd, terminal_config)
+  local snacks_terminal = require("snacks.terminal")
+  snacks_terminal.open(terminal_config.cmd, {
+    cmd = terminal_config.cmd,
+    win = terminal_config.win,
+    env = terminal_config.env,
+    start_insert = terminal_config.start_insert,
+    auto_insert = terminal_config.auto_insert,
+    on_open = terminal_config.on_open,
+  })
 end
 
 --- Open terminal with virtual environment
@@ -318,7 +439,15 @@ local function open_terminal_with_venv(shell, venv)
   else
     debug_log("Unknown shell type, using fallback: " .. shell, vim.log.levels.WARN)
     local snacks_terminal = require("snacks.terminal")
-    snacks_terminal.open({ shell, "-i" }, create_terminal_config({ shell, "-i" }, " Simple Terminal Fallback "))
+    local terminal_config = create_terminal_config({ shell, "-i" }, " Simple Terminal Fallback ")
+    snacks_terminal.open(terminal_config.cmd, {
+      cmd = terminal_config.cmd,
+      win = terminal_config.win,
+      env = terminal_config.env,
+      start_insert = terminal_config.start_insert,
+      auto_insert = terminal_config.auto_insert,
+      on_open = terminal_config.on_open,
+    })
     return true
   end
 end
@@ -332,9 +461,25 @@ local function open_simple_terminal(shell)
   local shell_type = get_shell_type(shell)
 
   if shell_type then
-    snacks_terminal.open({ shell, "-i" }, create_terminal_config({ shell, "-i" }, " Simple Terminal "))
+    local terminal_config = create_terminal_config({ shell, "-i" }, " Simple Terminal ")
+    snacks_terminal.open(terminal_config.cmd, {
+      cmd = terminal_config.cmd,
+      win = terminal_config.win,
+      env = terminal_config.env,
+      start_insert = terminal_config.start_insert,
+      auto_insert = terminal_config.auto_insert,
+      on_open = terminal_config.on_open,
+    })
   else
-    snacks_terminal.open({ shell }, create_terminal_config({ shell }, " Simple Terminal "))
+    local terminal_config = create_terminal_config({ shell }, " Simple Terminal ")
+    snacks_terminal.open(terminal_config.cmd, {
+      cmd = terminal_config.cmd,
+      win = terminal_config.win,
+      env = terminal_config.env,
+      start_insert = terminal_config.start_insert,
+      auto_insert = terminal_config.auto_insert,
+      on_open = terminal_config.on_open,
+    })
   end
 end
 
@@ -342,12 +487,15 @@ M.open_floating_terminal = function()
   M.select_virtual_env(function(venv)
     local shell = os.getenv("SHELL") or vim.o.shell
     debug_log("Using shell: " .. shell)
-
+    
     if venv then
+      debug_log("Found virtual environment: " .. venv)
       if not open_terminal_with_venv(shell, venv) then
+        debug_log("Failed to open terminal with venv, falling back to simple terminal", vim.log.levels.WARN)
         open_simple_terminal(shell)
       end
     else
+      debug_log("No virtual environment found, opening simple terminal")
       open_simple_terminal(shell)
     end
   end)
@@ -364,6 +512,37 @@ M.get_activate_script_path = function(venv_path)
     return activate_path
   end
   return nil
+end
+
+-- ============================================================================
+-- DEBUGGING & TESTING FUNCTIONS
+-- ============================================================================
+
+--- Test snacks.terminal directly
+--- Usage: :lua require("yoda.functions").test_snacks_terminal()
+M.test_snacks_terminal = function()
+  local snacks_terminal = require("snacks.terminal")
+  
+  print("Testing snacks.terminal with simple command...")
+  
+  snacks_terminal.open({ "echo", "Hello from snacks terminal" }, {
+    cmd = { "echo", "Hello from snacks terminal" },
+    win = {
+      relative = "editor",
+      position = "float",
+      width = 0.6,
+      height = 0.4,
+      border = "rounded",
+      title = "Test Terminal",
+      title_pos = "center",
+    },
+    start_insert = false,
+    auto_insert = false,
+    on_open = function(term)
+      vim.opt_local.modifiable = true
+      vim.opt_local.readonly = false
+    end,
+  })
 end
 
 -- ============================================================================
@@ -729,32 +908,8 @@ M.check_ai_status = function()
   return require("yoda.diagnostics.ai").check_status()
 end
 
---- Open floating terminal (wrapper for backwards compatibility)
---- @deprecated Use require("yoda.terminal").open_floating() instead
-M.open_floating_terminal = function()
-  show_deprecation_warning("open_floating_terminal", "require('yoda.terminal').open_floating()")
-  return require("yoda.terminal").open_floating()
-end
 
---- Find virtual environments (wrapper for backwards compatibility)
---- @deprecated Use require("yoda.terminal.venv").find_virtual_envs() instead
-M.find_virtual_envs = function()
-  show_deprecation_warning("find_virtual_envs", "require('yoda.terminal.venv').find_virtual_envs()")
-  return require("yoda.terminal.venv").find_virtual_envs()
-end
 
---- Get activate script path (wrapper for backwards compatibility)
---- @deprecated Use require("yoda.terminal.venv").get_activate_script_path() instead
-M.get_activate_script_path = function(venv_path)
-  show_deprecation_warning("get_activate_script_path", "require('yoda.terminal.venv').get_activate_script_path()")
-  return require("yoda.terminal.venv").get_activate_script_path(venv_path)
-end
 
---- Make terminal window options (wrapper for backwards compatibility)
---- @deprecated Use require("yoda.terminal.config").make_win_opts() instead
-M.make_terminal_win_opts = function(title, overrides)
-  show_deprecation_warning("make_terminal_win_opts", "require('yoda.terminal.config').make_win_opts()")
-  return require("yoda.terminal.config").make_win_opts(title, overrides)
-end
 
 return M
