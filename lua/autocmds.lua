@@ -201,12 +201,21 @@ end
 local FILETYPE_SETTINGS = {
   markdown = function()
     vim.opt_local.wrap = true
-    vim.opt_local.spell = true
-    vim.opt_local.conceallevel = 2
-    -- Performance optimizations for markdown
-    vim.opt_local.foldmethod = "manual" -- Disable treesitter folding for performance
-    vim.opt_local.updatetime = 1000 -- Reduce event frequency (less aggressive than 250ms)
-    vim.opt_local.spelllang = "en_us" -- Limit spell checking to English for performance
+    -- AGGRESSIVE PERFORMANCE OPTIMIZATIONS - NO DELAY ALLOWED
+    vim.opt_local.spell = false -- DISABLE spell checking (major performance impact)
+    vim.opt_local.conceallevel = 0 -- DISABLE conceal processing (major performance impact)
+    vim.opt_local.foldmethod = "manual" -- Disable treesitter folding
+    vim.opt_local.updatetime = 4000 -- Maximum delay between events (4 seconds)
+    vim.opt_local.timeoutlen = 1000 -- Increase timeout for key sequences
+    vim.opt_local.ttimeoutlen = 0 -- No timeout for terminal key codes
+    vim.opt_local.lazyredraw = true -- Disable redrawing during macros/scripts
+    vim.opt_local.synmaxcol = 200 -- Limit syntax highlighting to 200 columns
+    -- Disable all expensive features
+    vim.opt_local.relativenumber = false
+    vim.opt_local.number = false
+    vim.opt_local.cursorline = false
+    vim.opt_local.cursorcolumn = false
+    vim.opt_local.colorcolumn = ""
   end,
 
   -- Git commit messages: optimize for fast typing
@@ -393,5 +402,47 @@ create_autocmd("FileType", {
   desc = "Apply filetype-specific settings",
   callback = function()
     apply_filetype_settings(vim.bo.filetype)
+  end,
+})
+
+-- AGGRESSIVE MARKDOWN PERFORMANCE: Disable ALL expensive features
+create_autocmd("FileType", {
+  group = augroup("YodaMarkdownPerformance", { clear = true }),
+  desc = "Aggressive performance optimizations for markdown",
+  pattern = "markdown",
+  callback = function()
+    -- Disable ALL plugins that might cause lag
+    vim.cmd("silent! TSDisable markdown")
+    vim.cmd("silent! TSDisableAll")
+
+    -- Disable all autocmds that might trigger on text changes
+    vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
+
+    -- Disable all LSP features (extra safety)
+    vim.cmd("autocmd! LspAttach <buffer>")
+
+    -- Disable all completion
+    vim.opt_local.complete = ""
+    vim.opt_local.completeopt = ""
+
+    -- Disable all diagnostics
+    vim.diagnostic.disable()
+
+    -- Disable all statusline updates
+    vim.opt_local.statusline = ""
+
+    -- Disable all cursor movements that might trigger events
+    vim.opt_local.cursorline = false
+    vim.opt_local.cursorcolumn = false
+
+    -- Maximum performance settings
+    vim.opt_local.updatetime = 4000
+    vim.opt_local.timeoutlen = 1000
+    vim.opt_local.ttimeoutlen = 0
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.synmaxcol = 200
+    vim.opt_local.maxmempattern = 1000 -- Limit regex memory usage
+
+    print("🚀 AGGRESSIVE MARKDOWN PERFORMANCE MODE ENABLED")
   end,
 })

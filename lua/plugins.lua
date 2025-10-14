@@ -818,10 +818,17 @@ return {
         auto_install = true,
         highlight = { enable = true },
         indent = { enable = true },
-        -- Performance optimization: disable expensive features for markdown
+        -- AGGRESSIVE PERFORMANCE: Completely disable treesitter for markdown
         markdown = {
-          enable = false, -- Disable treesitter for markdown to improve typing performance
+          enable = false, -- Disable ALL treesitter features for markdown
+          disable = { "markdown" }, -- Explicitly disable markdown parser
         },
+        -- Disable expensive features globally
+        incremental_selection = { enable = false },
+        textobjects = { enable = false },
+        refactor = { enable = false },
+        autotag = { enable = false },
+        context_commentstring = { enable = false },
       })
     end,
   },

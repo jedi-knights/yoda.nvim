@@ -273,3 +273,49 @@ vim.api.nvim_create_user_command("MarkdownPerformance", function()
 
   print("================================")
 end, { desc = "Debug markdown performance settings" })
+
+-- Emergency markdown performance mode
+vim.api.nvim_create_user_command("MarkdownTurboMode", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local filetype = vim.bo[bufnr].filetype
+
+  if filetype ~= "markdown" then
+    print("❌ This command only works in markdown files")
+    return
+  end
+
+  print("🚀 ENABLING TURBO MODE FOR MARKDOWN...")
+
+  -- Disable EVERYTHING that could cause lag
+  vim.opt_local.spell = false
+  vim.opt_local.conceallevel = 0
+  vim.opt_local.foldmethod = "manual"
+  vim.opt_local.updatetime = 4000
+  vim.opt_local.timeoutlen = 1000
+  vim.opt_local.ttimeoutlen = 0
+  vim.opt_local.lazyredraw = true
+  vim.opt_local.synmaxcol = 200
+  vim.opt_local.maxmempattern = 1000
+  vim.opt_local.relativenumber = false
+  vim.opt_local.number = false
+  vim.opt_local.cursorline = false
+  vim.opt_local.cursorcolumn = false
+  vim.opt_local.colorcolumn = ""
+  vim.opt_local.complete = ""
+  vim.opt_local.completeopt = ""
+  vim.opt_local.statusline = ""
+
+  -- Disable treesitter
+  vim.cmd("silent! TSDisable markdown")
+  vim.cmd("silent! TSDisableAll")
+
+  -- Disable diagnostics
+  vim.diagnostic.disable()
+
+  -- Disable all autocmds
+  vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
+  vim.cmd("autocmd! LspAttach <buffer>")
+
+  print("✅ TURBO MODE ENABLED - ZERO DELAY TYPING")
+  print("📝 All expensive features disabled for maximum performance")
+end, { desc = "Enable maximum performance mode for markdown (disables all features)" })
