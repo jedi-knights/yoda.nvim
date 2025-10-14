@@ -818,6 +818,10 @@ return {
         auto_install = true,
         highlight = { enable = true },
         indent = { enable = true },
+        -- Performance optimization: disable expensive features for markdown
+        markdown = {
+          enable = false, -- Disable treesitter for markdown to improve typing performance
+        },
       })
     end,
   },
