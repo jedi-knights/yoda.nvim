@@ -415,10 +415,11 @@ create_autocmd("FileType", {
     vim.cmd("silent! TSDisable markdown")
     vim.cmd("silent! TSDisableAll")
 
-    -- Disable all autocmds that might trigger on text changes
+    -- Disable ALL autocmds that might trigger on typing events
     vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
-
-    -- Disable all LSP features (extra safety)
+    vim.cmd("autocmd! InsertEnter,InsertLeave <buffer>")
+    vim.cmd("autocmd! CursorMoved,CursorMovedI <buffer>")
+    vim.cmd("autocmd! BufEnter,BufWritePost <buffer>")
     vim.cmd("autocmd! LspAttach <buffer>")
 
     -- Disable all completion
@@ -435,6 +436,12 @@ create_autocmd("FileType", {
     vim.opt_local.cursorline = false
     vim.opt_local.cursorcolumn = false
 
+    -- Disable copilot and other AI assistants
+    vim.cmd("silent! Copilot disable")
+
+    -- Disable linting
+    vim.cmd("silent! LintDisable")
+
     -- Maximum performance settings
     vim.opt_local.updatetime = 4000
     vim.opt_local.timeoutlen = 1000
@@ -443,6 +450,10 @@ create_autocmd("FileType", {
     vim.opt_local.synmaxcol = 200
     vim.opt_local.maxmempattern = 1000 -- Limit regex memory usage
 
+    -- Disable all plugin loading
+    vim.opt_local.eventignore = "all"
+
     print("🚀 AGGRESSIVE MARKDOWN PERFORMANCE MODE ENABLED")
+    print("📝 ALL autocmds, plugins, and features disabled")
   end,
 })

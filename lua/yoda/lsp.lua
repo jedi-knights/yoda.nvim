@@ -312,10 +312,68 @@ vim.api.nvim_create_user_command("MarkdownTurboMode", function()
   -- Disable diagnostics
   vim.diagnostic.disable()
 
-  -- Disable all autocmds
+  -- Disable ALL autocmds that could cause lag
   vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
+  vim.cmd("autocmd! InsertEnter,InsertLeave <buffer>")
+  vim.cmd("autocmd! CursorMoved,CursorMovedI <buffer>")
+  vim.cmd("autocmd! BufEnter,BufWritePost <buffer>")
   vim.cmd("autocmd! LspAttach <buffer>")
 
+  -- Disable copilot and linting
+  vim.cmd("silent! Copilot disable")
+  vim.cmd("silent! LintDisable")
+
+  -- Disable all plugin loading
+  vim.opt_local.eventignore = "all"
+
   print("✅ TURBO MODE ENABLED - ZERO DELAY TYPING")
-  print("📝 All expensive features disabled for maximum performance")
+  print("📝 ALL autocmds, plugins, and features disabled")
+  print("🚀 This should eliminate ALL typing delay")
 end, { desc = "Enable maximum performance mode for markdown (disables all features)" })
+
+-- Debug what's running on keystroke
+vim.api.nvim_create_user_command("DebugKeystrokeEvents", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local filetype = vim.bo[bufnr].filetype
+
+  print("=== KEYSTROKE EVENT DEBUG ===")
+  print("Current filetype:", filetype)
+  print("Buffer:", bufnr)
+
+  -- Check active autocmds
+  print("\n--- Active Autocmds ---")
+  vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP,InsertEnter,InsertLeave,CursorMoved,CursorMovedI")
+
+  -- Check LSP clients
+  print("\n--- LSP Clients ---")
+  local clients = vim.lsp.get_active_clients()
+  for _, client in ipairs(clients) do
+    local attached = vim.lsp.buf_is_attached(bufnr, client.id)
+    print(string.format("  - %s: attached=%s", client.name, attached))
+  end
+
+  -- Check plugins
+  print("\n--- Plugin Status ---")
+  local plugins = {
+    "copilot",
+    "treesitter",
+    "lint",
+    "diagnostic",
+  }
+
+  for _, plugin in ipairs(plugins) do
+    local ok = pcall(require, plugin)
+    print(string.format("  - %s: %s", plugin, ok and "loaded" or "not loaded"))
+  end
+
+  print("\n--- Performance Settings ---")
+  print("updatetime:", vim.bo.updatetime)
+  print("timeoutlen:", vim.bo.timeoutlen)
+  print("ttimeoutlen:", vim.bo.ttimeoutlen)
+  print("lazyredraw:", vim.wo.lazyredraw)
+  print("synmaxcol:", vim.bo.synmaxcol)
+  print("maxmempattern:", vim.bo.maxmempattern)
+  print("eventignore:", vim.bo.eventignore)
+
+  print("==========================")
+end, { desc = "Debug what events are running on keystroke" })
