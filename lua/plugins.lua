@@ -654,7 +654,12 @@ return {
             justMyCode = false,
             console = "integratedTerminal",
           },
-          args = { "--log-level", "DEBUG", "-vv" },
+          args = { 
+            "--log-level", "DEBUG", 
+            "-vv",
+            "--browser", "chromium",
+            "--headed"
+          },
           runner = "pytest",
           python = function()
             -- Auto-detect virtual environment
@@ -1023,7 +1028,7 @@ return {
         formatters_by_ft = {
           rust = { "rustfmt" },
           lua = { "stylua" },
-          python = { "ruff_format", "black" }, -- Try ruff first, fallback to black
+          python = { "ruff_format" }, -- Ruff handles formatting, linting, and import sorting
           javascript = { "biome", "prettier" }, -- Try biome first, fallback to prettier
           javascriptreact = { "biome", "prettier" },
           typescript = { "biome", "prettier" },
@@ -1060,7 +1065,7 @@ return {
       -- Configure linters by filetype
       lint.linters_by_ft = {
         rust = { "clippy" },
-        python = { "ruff", "mypy" },
+        python = { "ruff" }, -- Ruff handles linting, formatting, import sorting, and basic type checking
         javascript = { "biome" },
         javascriptreact = { "biome" },
         typescript = { "biome" },
