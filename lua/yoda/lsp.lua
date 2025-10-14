@@ -5,9 +5,9 @@ local logger = require("yoda.logging.logger")
 
 -- Configure diagnostics to disable underlines
 vim.diagnostic.config({
-  underline = false,  -- Disable the white underlines
+  underline = false, -- Disable the white underlines
   virtual_text = true, -- Keep virtual text (error messages)
-  signs = true,       -- Keep signs in the gutter
+  signs = true, -- Keep signs in the gutter
   update_in_insert = false,
   severity_sort = true,
 })
@@ -20,14 +20,14 @@ local function configure_python_lsp()
     if #venvs > 0 then
       local venv_path = venvs[1]
       local python_path = venv.find_python_interpreter(venv_path)
-      
+
       -- Update basedpyright configuration properly
       if vim.lsp.config.basedpyright then
         vim.lsp.config.basedpyright.settings = vim.lsp.config.basedpyright.settings or {}
         vim.lsp.config.basedpyright.settings.basedpyright = vim.lsp.config.basedpyright.settings.basedpyright or {}
         vim.lsp.config.basedpyright.settings.basedpyright.pythonPath = python_path
       end
-      
+
       -- Also update any active clients
       local clients = vim.lsp.get_clients({ name = "basedpyright" })
       for _, client in ipairs(clients) do
@@ -36,10 +36,10 @@ local function configure_python_lsp()
           client.config.settings.basedpyright.pythonPath = python_path
         end
       end
-      
+
       -- Notify user
       vim.notify("Python LSP configured with virtual environment: " .. python_path, vim.log.levels.INFO)
-      
+
       return true
     end
   end
@@ -191,6 +191,121 @@ vim.lsp.config.omnisharp = {
   },
 }
 
+-- YAML/Helm LSP Configuration with intelligent selection
+-- Function to detect if a YAML file is a Helm template
+local function is_helm_template(filepath)
+  if not filepath or filepath == "" then
+    return false
+  end
+
+  local path_lower = filepath:lower()
+
+  -- 1. Directory-based detection (highest confidence)
+  if path_lower:match("/templates/[^/]*%.ya?ml$") then
+    return true
+  end
+
+  if path_lower:match("/charts/.*/templates/") then
+    return true
+  end
+
+  if path_lower:match("/crds/[^/]*%.ya?ml$") then
+    return true
+  end
+
+  -- 2. Chart root file detection
+  local dirname = vim.fn.fnamemodify(filepath, ":h")
+  local chart_files = { "Chart.yaml", "Chart.yml", "values.yaml", "values.yml" }
+  for _, chart_file in ipairs(chart_files) do
+    if vim.fn.filereadable(dirname .. "/" .. chart_file) == 1 then
+      return true
+    end
+  end
+
+  -- 3. Helper template detection
+  local filename = vim.fn.fnamemodify(filepath, ":t")
+  if filename:match("^_.*%.tpl$") or filename:match("^_helpers%.") or filename == "NOTES.txt" then
+    return true
+  end
+
+  -- 4. Content-based detection (read first 20 lines for performance)
+  local file = io.open(filepath, "r")
+  if not file then
+    return false
+  end
+
+  local line_count = 0
+  local max_lines = 20
+  for line in file:lines() do
+    line_count = line_count + 1
+    if line_count > max_lines then
+      break
+    end
+
+    -- Strong Helm indicators
+    if
+      line:match("{{%s*%.Release%.")
+      or line:match("{{%s*%.Values%.")
+      or line:match("{{%s*%.Chart%.")
+      or line:match('{{%s*include%s+"')
+      or line:match('{{%s*template%s+"')
+    then
+      file:close()
+      return true
+    end
+  end
+
+  file:close()
+  return false
+end
+
+-- YAML LSP (generic YAML files)
+vim.lsp.config.yamlls = {
+  filetypes = { "yaml" },
+  settings = {
+    yaml = {
+      schemas = {
+        ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
+        ["https://json.schemastore.org/ansible-stable-2.9.json"] = "/ansible/**/*.yml",
+        ["https://json.schemastore.org/docker-compose.json"] = "docker-compose*.yml",
+        ["https://json.schemastore.org/kustomization.json"] = "kustomization.yaml",
+        ["https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.json"] = "/*openapi*.{yml,yaml}",
+      },
+      validate = true,
+      completion = true,
+      hover = true,
+      format = {
+        enable = true,
+        singleQuote = false,
+        bracketSpacing = true,
+      },
+      customTags = {
+        "!reference sequence",
+        "!encrypted/pkcs1-oaep scalar",
+        "!vault scalar",
+      },
+    },
+  },
+  root_dir = function(fname)
+    return vim.fs.dirname(vim.fs.find({ ".git", "pyproject.toml", "setup.py" }, { upward = true, path = fname })[1])
+  end,
+}
+
+-- Helm LSP (Helm templates)
+vim.lsp.config.helm_ls = {
+  filetypes = { "helm" },
+  settings = {
+    ["helm-ls"] = {
+      yamlls = {
+        enabled = false, -- We'll use this LSP instead of yamlls for Helm files
+      },
+    },
+  },
+  root_dir = function(fname)
+    return vim.fs.dirname(vim.fs.find({ "Chart.yaml", "Chart.yml" }, { upward = true, path = fname })[1])
+  end,
+}
+
 -- Rust LSP
 -- Note: rust_analyzer is managed by rust-tools.nvim plugin
 -- See lua/plugins.lua RUST DEVELOPMENT section for configuration
@@ -205,6 +320,8 @@ vim.lsp.enable("gopls")
 vim.lsp.enable("ts_ls")
 vim.lsp.enable("basedpyright")
 vim.lsp.enable("omnisharp")
+vim.lsp.enable("yamlls")
+vim.lsp.enable("helm_ls")
 -- rust_analyzer is handled by rust-tools.nvim, not enabled here
 
 -- Setup keymaps for LSP
@@ -440,10 +557,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
     local clients = vim.lsp.get_clients({ name = "basedpyright" })
     if #clients > 0 then
       local client = clients[1]
-      local current_python_path = client.config.settings and 
-                                 client.config.settings.basedpyright and 
-                                 client.config.settings.basedpyright.pythonPath
-      
+      local current_python_path = client.config.settings and client.config.settings.basedpyright and client.config.settings.basedpyright.pythonPath
       if not current_python_path then
         configure_python_lsp()
       end
@@ -452,4 +566,24 @@ vim.api.nvim_create_autocmd("BufEnter", {
       configure_python_lsp()
     end
   end,
+})
+
+-- Intelligent YAML/Helm filetype detection and LSP selection
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { "*.yaml", "*.yml" },
+  callback = function()
+    local filepath = vim.fn.expand("%:p")
+    if is_helm_template(filepath) then
+      -- Set filetype to helm for Helm templates (helm_ls will attach)
+      vim.bo.filetype = "helm"
+      logger.set_strategy("console")
+      logger.debug("Detected Helm template, using helm_ls", { file = filepath })
+    else
+      -- Keep as yaml for regular YAML files (yamlls will attach)
+      vim.bo.filetype = "yaml"
+      logger.set_strategy("console")
+      logger.debug("Detected regular YAML file, using yamlls", { file = filepath })
+    end
+  end,
+  group = vim.api.nvim_create_augroup("YamlHelmDetection", { clear = true }),
 })

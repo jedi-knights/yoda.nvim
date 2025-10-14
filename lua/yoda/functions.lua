@@ -109,7 +109,7 @@ local function debug_log(message, level)
   -- Set DEBUG_TERMINAL=true in your environment to see all debug messages
   local debug_enabled = os.getenv("DEBUG_TERMINAL") == "true"
   level = level or vim.log.levels.INFO
-  
+
   if debug_enabled or level >= vim.log.levels.WARN then
     vim.notify(message, level, { title = "Terminal Debug" })
   end
@@ -191,12 +191,12 @@ M.find_virtual_envs = function()
   -- Then check other entries
   for _, entry in ipairs(entries) do
     local dir_path = cwd .. "/" .. entry
-    
+
     -- Skip .venv since we already checked it
     if entry ~= ".venv" and vim.fn.isdirectory(dir_path) == 1 then
       debug_log("Checking directory: " .. entry)
       local is_venv_dir = false
-      
+
       -- Check if it matches common venv directory names
       for _, venv_name in ipairs(venv_names) do
         if entry == venv_name then
@@ -205,7 +205,7 @@ M.find_virtual_envs = function()
           break
         end
       end
-      
+
       -- If it matches venv name or has activate script, add it
       if is_venv_dir then
         local unix_activate = dir_path .. "/bin/activate"
@@ -239,22 +239,22 @@ end
 -- @return string|nil The path to the correct Python interpreter, or nil if not found.
 M.find_python_interpreter = function(venv_path)
   local pyvenv_cfg_path = venv_path .. "/pyvenv.cfg"
-  
+
   if vim.fn.filereadable(pyvenv_cfg_path) ~= 1 then
     debug_log("pyvenv.cfg not found at: " .. pyvenv_cfg_path)
     return venv_path .. "/bin/python"
   end
-  
+
   -- Read pyvenv.cfg to get the Python version
   local file = io.open(pyvenv_cfg_path, "r")
   if not file then
     debug_log("Failed to read pyvenv.cfg: " .. pyvenv_cfg_path)
     return venv_path .. "/bin/python"
   end
-  
+
   local content = file:read("*all")
   file:close()
-  
+
   -- Extract version from pyvenv.cfg
   local version = content:match("version%s*=%s*(%d+%.%d+%.%d+)")
   if version then
@@ -268,7 +268,7 @@ M.find_python_interpreter = function(venv_path)
       end
     end
   end
-  
+
   -- Fallback to default python
   debug_log("Using fallback Python interpreter: " .. venv_path .. "/bin/python")
   return venv_path .. "/bin/python"
@@ -284,7 +284,7 @@ end
 M.select_virtual_env = function(callback)
   local venvs = M.find_virtual_envs()
   debug_log("Found " .. #venvs .. " virtual environments: " .. vim.inspect(venvs))
-  
+
   if #venvs == 0 then
     local ok, noice = pcall(require, "noice")
     if ok and noice and noice.notify then
@@ -332,16 +332,16 @@ end
 --- @return table|nil Shell arguments and environment, or nil on failure
 local function create_bash_config(venv_activate)
   debug_log("Creating bash config for venv: " .. venv_activate)
-  
+
   -- Read the activate script to extract environment variables
   local venv_dir = venv_activate:match("(.*)/bin/activate")
   local python_path = venv_dir .. "/bin/python"
   local venv_bin = venv_dir .. "/bin"
-  
+
   debug_log("Venv directory: " .. venv_dir)
   debug_log("Python path: " .. python_path)
   debug_log("Venv bin: " .. venv_bin)
-  
+
   return {
     args = { "bash", "-i" },
     env = {
@@ -357,16 +357,16 @@ end
 --- @return table|nil Shell arguments and environment, or nil on failure
 local function create_zsh_config(venv_activate)
   debug_log("Creating zsh config for venv: " .. venv_activate)
-  
+
   -- Read the activate script to extract environment variables
   local venv_dir = venv_activate:match("(.*)/bin/activate")
   local python_path = venv_dir .. "/bin/python"
   local venv_bin = venv_dir .. "/bin"
-  
+
   debug_log("Venv directory: " .. venv_dir)
   debug_log("Python path: " .. python_path)
   debug_log("Venv bin: " .. venv_bin)
-  
+
   return {
     args = { "zsh", "-i" },
     env = {
@@ -404,7 +404,7 @@ local function open_shell_with_venv(shell, venv_activate, shell_type, win_title)
 
   local terminal_config = create_terminal_config(config.args, win_title)
   terminal_config.env = config.env
-  
+
   debug_log("Terminal config: " .. vim.inspect(terminal_config))
 
   local snacks_terminal = require("snacks.terminal")
@@ -487,7 +487,7 @@ M.open_floating_terminal = function()
   M.select_virtual_env(function(venv)
     local shell = os.getenv("SHELL") or vim.o.shell
     debug_log("Using shell: " .. shell)
-    
+
     if venv then
       debug_log("Found virtual environment: " .. venv)
       if not open_terminal_with_venv(shell, venv) then
@@ -522,9 +522,9 @@ end
 --- Usage: :lua require("yoda.functions").test_snacks_terminal()
 M.test_snacks_terminal = function()
   local snacks_terminal = require("snacks.terminal")
-  
+
   print("Testing snacks.terminal with simple command...")
-  
+
   snacks_terminal.open({ "echo", "Hello from snacks terminal" }, {
     cmd = { "echo", "Hello from snacks terminal" },
     win = {
@@ -907,9 +907,5 @@ M.check_ai_status = function()
   show_deprecation_warning("check_ai_status", "require('yoda.diagnostics.ai').check_status()")
   return require("yoda.diagnostics.ai").check_status()
 end
-
-
-
-
 
 return M

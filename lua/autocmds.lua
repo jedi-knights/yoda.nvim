@@ -254,6 +254,25 @@ local FILETYPE_SETTINGS = {
       end
     end)
   end,
+
+  -- Helm template files: use YAML syntax with helm-specific settings
+  helm = function()
+    vim.opt_local.commentstring = "# %s"
+    vim.opt_local.syntax = "yaml" -- Use YAML syntax highlighting as base
+    vim.opt_local.wrap = false
+    vim.opt_local.expandtab = true
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.tabstop = 2
+  end,
+
+  -- Regular YAML files
+  yaml = function()
+    vim.opt_local.commentstring = "# %s"
+    vim.opt_local.wrap = false
+    vim.opt_local.expandtab = true
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.tabstop = 2
+  end,
 }
 
 --- Apply filetype-specific settings
