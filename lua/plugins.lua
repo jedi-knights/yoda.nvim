@@ -916,16 +916,8 @@ return {
       local rt = require("rust-tools")
       local mason_registry = require("mason-registry")
 
-      -- Get codelldb path from mason
-      local codelldb_path = mason_registry.get_package("codelldb"):get_install_path() .. "/extension/adapter/codelldb"
-      local liblldb_path = mason_registry.get_package("codelldb"):get_install_path() .. "/extension/lldb/lib/liblldb.dylib" -- macOS path
-
-      -- Check if on Linux and adjust liblldb path
-      if vim.loop.os_uname().sysname == "Linux" then
-        liblldb_path = mason_registry.get_package("codelldb"):get_install_path() .. "/extension/lldb/lib/liblldb.so"
-      end
-
-      rt.setup({
+      -- Setup rust-tools with basic configuration first
+      local rust_tools_opts = {
         tools = {
           autoSetHints = true,
           inlay_hints = {
@@ -977,10 +969,29 @@ return {
             },
           },
         },
-        dap = {
+      }
+
+      -- Try to setup DAP with codelldb if available
+      if mason_registry.is_installed("codelldb") then
+        local codelldb_package = mason_registry.get_package("codelldb")
+        local install_path = codelldb_package:get_install_path()
+        local codelldb_path = install_path .. "/extension/adapter/codelldb"
+        local liblldb_path = install_path .. "/extension/lldb/lib/liblldb.dylib" -- macOS path
+
+        -- Check if on Linux and adjust liblldb path
+        if vim.loop.os_uname().sysname == "Linux" then
+          liblldb_path = install_path .. "/extension/lldb/lib/liblldb.so"
+        end
+
+        rust_tools_opts.dap = {
           adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
-        },
-      })
+        }
+      else
+        -- Warn user that debugging won't work without codelldb
+        vim.notify("codelldb not installed via Mason. Rust debugging disabled. Run :YodaRustSetup to install.", vim.log.levels.WARN)
+      end
+
+      rt.setup(rust_tools_opts)
     end,
   },
 
