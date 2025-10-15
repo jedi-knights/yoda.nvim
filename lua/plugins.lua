@@ -260,12 +260,23 @@ return {
             "lua_ls",
             "gopls",
             "ts_ls",
-            "rust_analyzer",
+            "rust_analyzer", -- Installed by Mason but handled by rust-tools.nvim, not mason-lspconfig
             "basedpyright",
             "omnisharp", -- Use OmniSharp instead of csharp_ls for better reliability
           },
           -- Add automatic installation for servers not in ensure_installed
           automatic_installation = true,
+          -- Handlers to configure servers (rust_analyzer excluded - handled by rust-tools.nvim)
+          handlers = {
+            -- Default handler for most servers
+            function(server_name)
+              -- Skip rust_analyzer - it's handled by rust-tools.nvim
+              if server_name == "rust_analyzer" then
+                return
+              end
+              require("lspconfig")[server_name].setup({})
+            end,
+          },
         })
       end
     end,
