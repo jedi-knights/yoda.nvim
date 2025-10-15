@@ -287,7 +287,15 @@ vim.lsp.config.yamlls = {
     },
   },
   root_dir = function(fname)
-    return vim.fs.dirname(vim.fs.find({ ".git", "pyproject.toml", "setup.py" }, { upward = true, path = fname })[1])
+    if type(fname) ~= "string" or fname == "" then
+      return nil
+    end
+    local root_files = vim.fs.find({ ".git", "pyproject.toml", "setup.py" }, { upward = true, path = fname })
+    if root_files and #root_files > 0 and root_files[1] then
+      return vim.fs.dirname(root_files[1])
+    end
+    -- Fallback to current working directory if no root found
+    return vim.fn.getcwd()
   end,
 }
 
@@ -302,7 +310,15 @@ vim.lsp.config.helm_ls = {
     },
   },
   root_dir = function(fname)
-    return vim.fs.dirname(vim.fs.find({ "Chart.yaml", "Chart.yml" }, { upward = true, path = fname })[1])
+    if type(fname) ~= "string" or fname == "" then
+      return nil
+    end
+    local chart_files = vim.fs.find({ "Chart.yaml", "Chart.yml" }, { upward = true, path = fname })
+    if chart_files and #chart_files > 0 and chart_files[1] then
+      return vim.fs.dirname(chart_files[1])
+    end
+    -- Fallback to current working directory if no root found
+    return vim.fn.getcwd()
   end,
 }
 

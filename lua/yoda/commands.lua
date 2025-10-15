@@ -2,6 +2,65 @@
 -- FEATURE FILE FORMATTING COMMANDS
 -- ============================================================================
 
+-- ============================================================================
+-- LSP UTILITY COMMANDS
+-- ============================================================================
+
+--- Show LSP clients attached to current buffer
+local function show_lsp_clients()
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  if #clients == 0 then
+    print("No LSP clients attached to current buffer")
+    return
+  end
+
+  print("LSP clients attached to current buffer:")
+  for _, client in pairs(clients) do
+    print("  - " .. client.name .. " (id: " .. client.id .. ")")
+  end
+end
+
+--- Debug Helm template detection and LSP setup
+local function debug_helm_setup()
+  local filepath = vim.fn.expand("%:p")
+  local current_ft = vim.bo.filetype
+
+  print("=== Helm Debug Info ===")
+  print("File path: " .. filepath)
+  print("Current filetype: " .. current_ft)
+
+  -- Check if file matches Helm patterns
+  local path_lower = filepath:lower()
+  local is_templates_dir = path_lower:match("/templates/[^/]*%.ya?ml$") ~= nil
+  local is_charts_templates = path_lower:match("/charts/.*/templates/") ~= nil
+  local is_crds = path_lower:match("/crds/[^/]*%.ya?ml$") ~= nil
+
+  print("Pattern matches:")
+  print("  - In /templates/: " .. tostring(is_templates_dir))
+  print("  - In /charts/.../templates/: " .. tostring(is_charts_templates))
+  print("  - In /crds/: " .. tostring(is_crds))
+
+  -- Check for Chart files
+  local dirname = vim.fn.fnamemodify(filepath, ":h")
+  local chart_files = { "Chart.yaml", "Chart.yml", "values.yaml", "values.yml" }
+  print("Chart files in directory:")
+  for _, chart_file in ipairs(chart_files) do
+    local exists = vim.fn.filereadable(dirname .. "/" .. chart_file) == 1
+    print("  - " .. chart_file .. ": " .. tostring(exists))
+  end
+
+  -- Show LSP clients
+  print("\nLSP clients:")
+  show_lsp_clients()
+
+  -- Check enabled LSP servers
+  print("\nConfigured LSP servers:")
+  local lsp_configs = vim.lsp.config or {}
+  for name, _ in pairs(lsp_configs) do
+    print("  - " .. name)
+  end
+end
+
 --- Trim trailing whitespace from all lines
 local function trim_trailing_whitespace()
   vim.cmd([[%s/\s\+$//e]])
@@ -378,3 +437,7 @@ vim.api.nvim_create_user_command("YodaDotnetNew", function(opts)
     vim.cmd("!dotnet new " .. template)
   end
 end, { nargs = "?", desc = "Create new .NET project/file" })
+
+-- LSP utility commands
+vim.api.nvim_create_user_command("YodaLspInfo", show_lsp_clients, { desc = "Show LSP clients for current buffer" })
+vim.api.nvim_create_user_command("YodaHelmDebug", debug_helm_setup, { desc = "Debug Helm template detection and LSP" })
