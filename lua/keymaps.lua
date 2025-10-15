@@ -359,7 +359,7 @@ map("n", "<leader>tt", function()
         table.insert(preprocessor_args, markers)
       end
 
-      -- Add allure flag if requested (assuming --allure or similar flag exists)
+      -- Add allure flag if requested
       if open_allure then
         table.insert(preprocessor_args, "--allure")
       end
@@ -386,14 +386,48 @@ map("n", "<leader>tt", function()
       "",
     }
 
-    -- Create shell command that displays config then runs the appropriate command
-    local config_cmd = "echo '" .. table.concat(config_display, "\\n") .. "' && " .. actual_command
+    -- Create enhanced shell command that conditionally handles allure serving
+    local enhanced_command
+    if open_allure then
+      -- Determine allure command based on venv
+      local allure_serve_cmd = "allure serve allure-results"
+      if #venvs > 0 then
+        allure_serve_cmd = "(" .. venvs[1] .. "/bin/allure serve allure-results 2>/dev/null || allure serve allure-results)"
+      end
+
+      -- When allure is requested, check if results exist and serve them conditionally
+      local allure_check_and_serve = table.concat({
+        "echo ''",
+        "echo '🔍 Checking for Allure results...'",
+        "if [ -d 'allure-results' ] && [ \"$(ls -A allure-results 2>/dev/null)\" ]",
+        "then",
+        "  echo '✅ Allure results found! Serving report...'",
+        "  echo 'Press Ctrl+C to stop the Allure server'",
+        "  echo ''",
+        "  " .. allure_serve_cmd,
+        "else",
+        "  echo '❌ No Allure results found in allure-results/ directory'",
+        "  echo 'Make sure:'",
+        "  echo '  1. Tests actually ran (check for errors above)'",
+        "  echo '  2. pytest-allure-adaptor is installed: pip install pytest-allure-adaptor'",
+        "  echo '  3. Tests generated results with --alluredir=allure-results'",
+        "fi",
+      }, "; ")
+
+      enhanced_command = table.concat({
+        "echo '" .. table.concat(config_display, "\\n") .. "'",
+        actual_command,
+        allure_check_and_serve,
+      }, " && ")
+    else
+      enhanced_command = "echo '" .. table.concat(config_display, "\\n") .. "' && " .. actual_command
+    end
 
     -- Execute enhanced command in a terminal with environment variables
     local snacks_terminal = require("snacks.terminal")
-    snacks_terminal.open({ "sh", "-c", config_cmd }, {
+    snacks_terminal.open({ "sh", "-c", enhanced_command }, {
       env = terminal_env,
-      win = require("yoda.terminal.config").make_win_opts("Pytest Test Runner"),
+      win = require("yoda.terminal.config").make_win_opts(open_allure and "Pytest + Allure Server" or "Pytest Test Runner"),
       start_insert = false,
       auto_insert = false,
       on_open = function(term)
