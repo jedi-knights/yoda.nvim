@@ -293,4 +293,203 @@ describe("picker_handler", function()
       assert.is_not_nil(saved_data.region)
     end)
   end)
+
+  describe("display_current_config()", function()
+    local original_notify
+    local notify_calls = {}
+
+    before_each(function()
+      notify_calls = {}
+      original_notify = vim.notify
+      vim.notify = function(msg, level)
+        table.insert(notify_calls, { message = msg, level = level })
+      end
+
+      -- Mock virtual env module
+      package.loaded["yoda.terminal.venv"] = {
+        find_virtual_envs = function()
+          return { "/path/to/venv" }
+        end,
+      }
+    end)
+
+    after_each(function()
+      vim.notify = original_notify
+      package.loaded["yoda.terminal.venv"] = nil
+    end)
+
+    it("displays cached configuration", function()
+      PickerHandler.display_current_config()
+
+      assert.is_true(#notify_calls > 0)
+      local config_msg = notify_calls[1].message
+      assert.is_not_nil(config_msg:match("Test Configuration:"))
+      assert.is_not_nil(config_msg:match("Environment: qa"))
+      assert.is_not_nil(config_msg:match("Region: auto"))
+      assert.is_not_nil(config_msg:match("Markers: bdd"))
+      assert.is_not_nil(config_msg:match("Allure Report: No"))
+      assert.is_not_nil(config_msg:match("Python Env: /path/to/venv"))
+      assert.is_not_nil(config_msg:match("Command: /path/to/venv/bin/pytest"))
+    end)
+
+    it("displays overridden configuration", function()
+      PickerHandler.display_current_config("prod", "us-east", "smoke", true)
+
+      assert.is_true(#notify_calls > 0)
+      local config_msg = notify_calls[1].message
+      assert.is_not_nil(config_msg:match("Environment: prod"))
+      assert.is_not_nil(config_msg:match("Region: us%-east"))
+      assert.is_not_nil(config_msg:match("Markers: smoke"))
+      assert.is_not_nil(config_msg:match("Allure Report: Yes"))
+      assert.is_not_nil(config_msg:match("%-%-alluredir=allure%-results"))
+    end)
+
+    it("handles system python when no venv found", function()
+      package.loaded["yoda.terminal.venv"] = {
+        find_virtual_envs = function()
+          return {}
+        end,
+      }
+
+      PickerHandler.display_current_config("qa", "auto", "", false)
+
+      local config_msg = notify_calls[1].message
+      assert.is_not_nil(config_msg:match("Python Env: System Python"))
+      assert.is_not_nil(config_msg:match("Command: pytest"))
+    end)
+
+    it("displays markers in command when provided", function()
+      PickerHandler.display_current_config("qa", "auto", "critical", false)
+
+      local config_msg = notify_calls[1].message
+      assert.is_not_nil(config_msg:match("Markers: critical"))
+      assert.is_not_nil(config_msg:match("%-m critical"))
+    end)
+
+    it("excludes markers from command when empty", function()
+      PickerHandler.display_current_config("qa", "auto", "", false)
+
+      local config_msg = notify_calls[1].message
+      assert.is_not_nil(config_msg:match("Markers: None"))
+      assert.is_nil(config_msg:match("%-m"))
+    end)
+  end)
+
+  describe("generate_command_preview()", function()
+    before_each(function()
+      -- Mock virtual env module
+      package.loaded["yoda.terminal.venv"] = {
+        find_virtual_envs = function()
+          return { "/path/to/venv" }
+        end,
+      }
+    end)
+
+    after_each(function()
+      package.loaded["yoda.terminal.venv"] = nil
+    end)
+
+    it("generates command with cached config", function()
+      local command = PickerHandler.generate_command_preview()
+
+      assert.is_string(command)
+      assert.is_not_nil(command:match("/path/to/venv/bin/pytest"))
+      assert.is_not_nil(command:match("%-%-tb=short"))
+      assert.is_not_nil(command:match("%-v"))
+      assert.is_not_nil(command:match("%-m bdd")) -- From mock cached config
+    end)
+
+    it("generates command with overrides", function()
+      local command = PickerHandler.generate_command_preview("prod", "us-west", "smoke", true)
+
+      assert.is_not_nil(command:match("%-m smoke"))
+      assert.is_not_nil(command:match("%-%-alluredir=allure%-results"))
+    end)
+
+    it("generates system python command when no venv", function()
+      package.loaded["yoda.terminal.venv"] = {
+        find_virtual_envs = function()
+          return {}
+        end,
+      }
+
+      local command = PickerHandler.generate_command_preview()
+
+      assert.is_not_nil(command:match("^pytest"))
+      assert.is_nil(command:match("/bin/pytest"))
+    end)
+
+    it("excludes markers when empty", function()
+      local command = PickerHandler.generate_command_preview("qa", "auto", "", false)
+
+      assert.is_nil(command:match("%-m"))
+      assert.is_nil(command:match("%-%-alluredir"))
+    end)
+  end)
+
+  describe("integration with wizard completion", function()
+    local original_notify
+    local notify_calls = {}
+
+    before_each(function()
+      notify_calls = {}
+      original_notify = vim.notify
+      vim.notify = function(msg, level)
+        table.insert(notify_calls, { message = msg, level = level })
+      end
+
+      package.loaded["yoda.terminal.venv"] = {
+        find_virtual_envs = function()
+          return { "/test/venv" }
+        end,
+      }
+    end)
+
+    after_each(function()
+      vim.notify = original_notify
+      package.loaded["yoda.terminal.venv"] = nil
+    end)
+
+    it("displays configuration after YAML wizard completion", function()
+      PickerHandler.handle_yaml_selection({
+        environments = { qa = { "auto" } },
+        env_order = { "qa" },
+      }, function() end)
+
+      -- Should have displayed configuration preview
+      local has_config_display = false
+      for _, call in ipairs(notify_calls) do
+        if call.message:match("Test Configuration:") then
+          has_config_display = true
+          break
+        end
+      end
+
+      assert.is_true(has_config_display)
+    end)
+
+    it("displays configuration after JSON selection completion", function()
+      package.loaded["snacks.picker"] = {
+        select = function(items, opts, callback)
+          callback("qa (auto)")
+        end,
+      }
+
+      PickerHandler.handle_json_selection({
+        environments = { "qa" },
+        regions = { "auto" },
+      }, function() end)
+
+      -- Should have displayed configuration preview
+      local has_config_display = false
+      for _, call in ipairs(notify_calls) do
+        if call.message:match("Test Configuration:") then
+          has_config_display = true
+          break
+        end
+      end
+
+      assert.is_true(has_config_display)
+    end)
+  end)
 end)

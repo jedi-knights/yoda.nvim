@@ -255,6 +255,87 @@ local function wizard_step_select_allure(callback)
 end
 
 -- ============================================================================
+-- Configuration Display and Command Generation
+-- ============================================================================
+
+--- Generate pytest command preview
+--- Complexity: 5 (venv check + args build + allure check + markers check + join)
+--- @param env string Environment
+--- @param region string Region
+--- @param markers string Markers
+--- @param open_allure boolean Allure preference
+--- @return string Command that will be executed
+local function generate_pytest_command(env, region, markers, open_allure)
+  local venvs = require("yoda.terminal.venv").find_virtual_envs()
+  local pytest_cmd = "pytest"
+
+  -- Use virtual environment if available
+  if #venvs > 0 then
+    local venv = venvs[1]
+    pytest_cmd = venv .. "/bin/pytest"
+  end
+
+  -- Build command arguments
+  local pytest_args = { "--tb=short", "-v" }
+
+  if markers and markers ~= "" then
+    table.insert(pytest_args, "-m")
+    table.insert(pytest_args, markers)
+  end
+
+  if open_allure then
+    table.insert(pytest_args, "--alluredir=allure-results")
+  end
+
+  return pytest_cmd .. " " .. table.concat(pytest_args, " ")
+end
+
+--- Format test configuration for display
+--- Complexity: 6 (env format + region format + markers format + allure format + venv check + join)
+--- @param env string Environment
+--- @param region string Region
+--- @param markers string Markers
+--- @param open_allure boolean Allure preference
+--- @return string Formatted configuration display
+local function format_test_config_display(env, region, markers, open_allure)
+  local config_lines = {}
+
+  -- Environment and Region
+  table.insert(config_lines, "Environment: " .. (env or "Not set"))
+  table.insert(config_lines, "Region: " .. (region or "Not set"))
+
+  -- Markers
+  local markers_display = markers and markers ~= "" and markers or "None"
+  table.insert(config_lines, "Markers: " .. markers_display)
+
+  -- Allure Report
+  local allure_display = open_allure and "Yes" or "No"
+  table.insert(config_lines, "Allure Report: " .. allure_display)
+
+  -- Virtual Environment
+  local venvs = require("yoda.terminal.venv").find_virtual_envs()
+  local venv_display = #venvs > 0 and venvs[1] or "System Python"
+  table.insert(config_lines, "Python Env: " .. venv_display)
+
+  -- Command Preview
+  local command = generate_pytest_command(env, region, markers, open_allure)
+  table.insert(config_lines, "Command: " .. command)
+
+  return table.concat(config_lines, "\n")
+end
+
+--- Display test configuration preview to user
+--- Complexity: 2 (format + notify)
+--- @param env string Environment
+--- @param region string Region
+--- @param markers string Markers
+--- @param open_allure boolean Allure preference
+local function display_test_config_preview(env, region, markers, open_allure)
+  local config_display = format_test_config_display(env, region, markers, open_allure)
+  vim.notify("Test Configuration:\n" .. config_display, vim.log.levels.INFO)
+end
+
+-- ============================================================================
 -- Wizard Orchestration (Chain of wizard steps)
 -- ============================================================================
 
@@ -293,6 +374,9 @@ function M.handle_yaml_selection(env_region, callback)
           -- Save and return results
           save_cached_config(selected_env, selected_region, markers_to_use, open_allure)
 
+          -- Display configuration preview
+          display_test_config_preview(selected_env, selected_region, markers_to_use, open_allure)
+
           callback({
             environment = selected_env,
             region = selected_region,
@@ -328,12 +412,58 @@ function M.handle_json_selection(env_region, callback)
 
     local env, region = parse_env_region_label(choice)
     if env and region then
+      -- For JSON selection, we need to get markers and allure settings from cache
+      local markers = cached.markers or ""
+      local open_allure = cached.open_allure or false
+
+      -- Display configuration preview
+      display_test_config_preview(env, region, markers, open_allure)
+
       callback({ environment = env, region = region })
     else
       vim.notify("Failed to parse environment and region from selection", vim.log.levels.ERROR)
       callback(nil)
     end
   end)
+end
+
+-- ============================================================================
+-- Public API
+-- ============================================================================
+
+--- Display current test configuration
+--- Complexity: 3 (load config + extract values + display)
+--- @param env string|nil Optional environment override
+--- @param region string|nil Optional region override
+--- @param markers string|nil Optional markers override
+--- @param open_allure boolean|nil Optional allure override
+function M.display_current_config(env, region, markers, open_allure)
+  local cached = load_cached_config()
+
+  local display_env = env or cached.environment or "Not set"
+  local display_region = region or cached.region or "Not set"
+  local display_markers = markers or cached.markers or ""
+  local display_allure = open_allure ~= nil and open_allure or (cached.open_allure or false)
+
+  display_test_config_preview(display_env, display_region, display_markers, display_allure)
+end
+
+--- Generate command preview for current configuration
+--- Complexity: 3 (load config + extract values + generate)
+--- @param env string|nil Optional environment override
+--- @param region string|nil Optional region override
+--- @param markers string|nil Optional markers override
+--- @param open_allure boolean|nil Optional allure override
+--- @return string Command that would be executed
+function M.generate_command_preview(env, region, markers, open_allure)
+  local cached = load_cached_config()
+
+  local cmd_env = env or cached.environment or ""
+  local cmd_region = region or cached.region or ""
+  local cmd_markers = markers or cached.markers or ""
+  local cmd_allure = open_allure ~= nil and open_allure or (cached.open_allure or false)
+
+  return generate_pytest_command(cmd_env, cmd_region, cmd_markers, cmd_allure)
 end
 
 return M
