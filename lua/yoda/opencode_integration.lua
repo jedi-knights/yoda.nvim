@@ -3,6 +3,29 @@
 
 local M = {}
 
+--- Check if a file should be excluded from auto-refresh
+--- @param filepath string Full file path
+--- @return boolean should_skip Whether to skip refreshing this file
+local function should_skip_refresh(filepath)
+  local filename = vim.fn.fnamemodify(filepath, ":t")
+  local git_files = {
+    "COMMIT_EDITMSG",
+    "MERGE_MSG",
+    "SQUASH_MSG",
+    "TAG_EDITMSG",
+    "git-rebase-todo",
+    "addp-hunk-edit.diff",
+  }
+
+  for _, git_file in ipairs(git_files) do
+    if filename == git_file then
+      return true
+    end
+  end
+
+  return false
+end
+
 --- Check if OpenCode is available
 --- @return boolean
 function M.is_available()
@@ -74,6 +97,11 @@ function M.refresh_buffer(buf)
     return false
   end
 
+  -- Skip special git files that shouldn't be auto-refreshed
+  if should_skip_refresh(buf_name) then
+    return false
+  end
+
   local ok, err = pcall(function()
     vim.api.nvim_buf_call(buf, function()
       vim.cmd("silent edit!")
@@ -98,17 +126,20 @@ function M.refresh_all_buffers()
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" then
       local buf_name = vim.api.nvim_buf_get_name(buf)
       if buf_name ~= "" and vim.fn.filereadable(buf_name) == 1 then
-        processed_count = processed_count + 1
+        -- Skip special git files that shouldn't be auto-refreshed
+        if not should_skip_refresh(buf_name) then
+          processed_count = processed_count + 1
 
-        -- Use checktime to detect changes
-        local ok = pcall(function()
-          vim.api.nvim_buf_call(buf, function()
-            vim.cmd("silent checktime")
+          -- Use checktime to detect changes
+          local ok = pcall(function()
+            vim.api.nvim_buf_call(buf, function()
+              vim.cmd("silent checktime")
+            end)
           end)
-        end)
 
-        if ok then
-          refreshed_count = refreshed_count + 1
+          if ok then
+            refreshed_count = refreshed_count + 1
+          end
         end
       end
     end

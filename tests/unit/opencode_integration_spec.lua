@@ -197,6 +197,32 @@ describe("yoda.opencode_integration", function()
       assert.is_false(result)
       assert.spy(mock_api.nvim_buf_call).was_not_called()
     end)
+
+    it("skips git special files like COMMIT_EDITMSG", function()
+      local buf = 1
+      mock_api.nvim_buf_is_valid.returns(true)
+      mock_api.nvim_buf_get_name.returns("/path/to/.git/COMMIT_EDITMSG")
+      mock_fn.filereadable.returns(1)
+      mock_bo[buf] = { modified = false, modifiable = true, buftype = "", readonly = false }
+
+      local result = opencode_integration.refresh_buffer(buf)
+
+      assert.is_false(result)
+      assert.spy(mock_api.nvim_buf_call).was_not_called()
+    end)
+
+    it("skips other git files like MERGE_MSG", function()
+      local buf = 1
+      mock_api.nvim_buf_is_valid.returns(true)
+      mock_api.nvim_buf_get_name.returns("/tmp/MERGE_MSG")
+      mock_fn.filereadable.returns(1)
+      mock_bo[buf] = { modified = false, modifiable = true, buftype = "", readonly = false }
+
+      local result = opencode_integration.refresh_buffer(buf)
+
+      assert.is_false(result)
+      assert.spy(mock_api.nvim_buf_call).was_not_called()
+    end)
   end)
 
   describe("refresh_all_buffers()", function()
@@ -230,6 +256,27 @@ describe("yoda.opencode_integration", function()
 
       assert.equals(0, result)
       assert.spy(mock_api.nvim_buf_call).was_not_called()
+    end)
+
+    it("skips git files like COMMIT_EDITMSG", function()
+      local buf1, buf2 = 1, 2
+      mock_api.nvim_list_bufs.returns({ buf1, buf2 })
+      mock_api.nvim_buf_is_valid.returns_values({ true, true })
+      mock_api.nvim_buf_get_name.returns_values({ "/path/COMMIT_EDITMSG", "/path/normal_file.lua" })
+      mock_fn.filereadable.returns_values({ 1, 1 })
+      mock_bo[buf1] = { buftype = "" }
+      mock_bo[buf2] = { buftype = "" }
+
+      -- Mock successful buffer calls
+      mock_api.nvim_buf_call.callback(function(buf, fn)
+        fn() -- Execute the callback
+      end)
+
+      local result = opencode_integration.refresh_all_buffers()
+
+      -- Should only process the normal file, not the git file
+      assert.equals(1, result)
+      assert.spy(mock_api.nvim_buf_call).was_called(1)
     end)
   end)
 
