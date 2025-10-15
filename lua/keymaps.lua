@@ -335,10 +335,63 @@ map("n", "<leader>tt", function()
       end
     end
 
-    -- Execute pytest command in a terminal with environment variables
+    -- Check if preprocessor.py exists
+    local preprocessor_path = "preprocessor.py"
+    local has_preprocessor = vim.fn.filereadable(preprocessor_path) == 1
+
+    local actual_command
+    if has_preprocessor then
+      -- Use preprocessor.py process command with Click command-line arguments
+      local python_exe = (#venvs > 0 and venvs[1] .. "/bin/python" or "python")
+      local preprocessor_args = { "process" } -- Start with the process command
+
+      -- Add environment argument
+      table.insert(preprocessor_args, "-e")
+      table.insert(preprocessor_args, env)
+
+      -- Add region argument
+      table.insert(preprocessor_args, "-r")
+      table.insert(preprocessor_args, region)
+
+      -- Add markers argument if specified
+      if markers and markers ~= "" then
+        table.insert(preprocessor_args, "-m")
+        table.insert(preprocessor_args, markers)
+      end
+
+      -- Add allure flag if requested (assuming --allure or similar flag exists)
+      if open_allure then
+        table.insert(preprocessor_args, "--allure")
+      end
+
+      actual_command = python_exe .. " " .. preprocessor_path .. " " .. table.concat(preprocessor_args, " ")
+    else
+      -- Fall back to direct pytest execution
+      actual_command = cmd_str
+    end
+
+    -- Create configuration display for terminal
+    local config_display = {
+      "=" .. string.rep("=", 60),
+      "TEST CONFIGURATION",
+      "=" .. string.rep("=", 60),
+      "Environment: " .. env,
+      "Region: " .. region,
+      "Markers: " .. (markers ~= "" and markers or "None"),
+      "Allure Report: " .. (open_allure and "Yes" or "No"),
+      "Python Env: " .. (#venvs > 0 and venvs[1] or "System Python"),
+      "Execution Mode: " .. (has_preprocessor and "Preprocessor Script" or "Direct Pytest"),
+      "Command: " .. actual_command,
+      "=" .. string.rep("=", 60),
+      "",
+    }
+
+    -- Create shell command that displays config then runs the appropriate command
+    local config_cmd = "echo '" .. table.concat(config_display, "\\n") .. "' && " .. actual_command
+
+    -- Execute enhanced command in a terminal with environment variables
     local snacks_terminal = require("snacks.terminal")
-    snacks_terminal.open(cmd, {
-      cmd = cmd,
+    snacks_terminal.open({ "sh", "-c", config_cmd }, {
       env = terminal_env,
       win = require("yoda.terminal.config").make_win_opts("Pytest Test Runner"),
       start_insert = false,
@@ -995,19 +1048,6 @@ map(
   end),
   { desc = "OpenCode: Toggle embedded (auto-save)" }
 )
-
-map(
-  "n",
-  "<leader>on",
-  with_auto_save(function()
-    require("opencode").command("session_new")
-  end),
-  { desc = "OpenCode: New session (auto-save)" }
-)
-
-map("n", "<leader>oi", function()
-  require("opencode").command("session_interrupt")
-end, { desc = "OpenCode: Interrupt session" })
 
 map("n", "<S-C-u>", function()
   require("opencode").command("messages_half_page_up")

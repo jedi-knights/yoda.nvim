@@ -26,6 +26,13 @@ local function should_skip_refresh(filepath)
   return false
 end
 
+--- Handle OpenCode exit
+--- This function is called when OpenCode window is closed
+function M.on_opencode_exit()
+  -- Auto-save all modified buffers
+  M.save_all_buffers()
+end
+
 --- Check if OpenCode is available
 --- @return boolean
 function M.is_available()
