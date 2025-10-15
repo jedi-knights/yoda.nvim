@@ -1,0 +1,202 @@
+-- lua/yoda/opencode_integration.lua
+-- OpenCode integration utilities for enhanced buffer management
+
+local M = {}
+
+--- Check if OpenCode is available
+--- @return boolean
+function M.is_available()
+  local ok = pcall(require, "opencode")
+  return ok
+end
+
+--- Save all modified buffers with progress notification
+--- @return boolean success Whether all buffers were saved
+function M.save_all_buffers()
+  local saved_count = 0
+  local error_count = 0
+  local buffers_to_save = {}
+
+  -- Collect modified buffers first
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].modified and vim.bo[buf].buftype == "" then
+      local buf_name = vim.api.nvim_buf_get_name(buf)
+      if buf_name ~= "" then
+        table.insert(buffers_to_save, { buf = buf, name = buf_name })
+      end
+    end
+  end
+
+  -- Save each buffer
+  for _, buffer_info in ipairs(buffers_to_save) do
+    local ok, err = pcall(function()
+      vim.api.nvim_buf_call(buffer_info.buf, function()
+        vim.cmd("silent write")
+      end)
+    end)
+
+    if ok then
+      saved_count = saved_count + 1
+    else
+      error_count = error_count + 1
+      vim.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. err, vim.log.levels.WARN)
+    end
+  end
+
+  -- Provide user feedback
+  if saved_count > 0 then
+    vim.notify("🤖 OpenCode: Auto-saved " .. saved_count .. " file(s)", vim.log.levels.INFO)
+  end
+
+  return error_count == 0
+end
+
+--- Refresh a specific buffer from disk
+--- @param buf number Buffer number
+--- @return boolean success Whether the buffer was refreshed
+function M.refresh_buffer(buf)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+  if buf_name == "" or vim.fn.filereadable(buf_name) == 0 then
+    return false
+  end
+
+  -- Don't refresh modified buffers to avoid data loss
+  if vim.bo[buf].modified then
+    return false
+  end
+
+  -- Check if buffer is suitable for reloading
+  if not vim.bo[buf].modifiable or vim.bo[buf].buftype ~= "" or vim.bo[buf].readonly then
+    return false
+  end
+
+  local ok, err = pcall(function()
+    vim.api.nvim_buf_call(buf, function()
+      vim.cmd("silent edit!")
+    end)
+  end)
+
+  if not ok then
+    vim.notify("Failed to refresh " .. vim.fn.fnamemodify(buf_name, ":t") .. ": " .. err, vim.log.levels.WARN)
+    return false
+  end
+
+  return true
+end
+
+--- Refresh all buffers that might have been changed externally
+--- @return number count Number of buffers processed
+function M.refresh_all_buffers()
+  local processed_count = 0
+  local refreshed_count = 0
+
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" then
+      local buf_name = vim.api.nvim_buf_get_name(buf)
+      if buf_name ~= "" and vim.fn.filereadable(buf_name) == 1 then
+        processed_count = processed_count + 1
+
+        -- Use checktime to detect changes
+        local ok = pcall(function()
+          vim.api.nvim_buf_call(buf, function()
+            vim.cmd("silent checktime")
+          end)
+        end)
+
+        if ok then
+          refreshed_count = refreshed_count + 1
+        end
+      end
+    end
+  end
+
+  return processed_count
+end
+
+--- Refresh git signs if gitsigns is available
+function M.refresh_git_signs()
+  local gs = package.loaded.gitsigns
+  if gs and vim.bo.buftype == "" then
+    vim.schedule(function()
+      pcall(gs.refresh)
+    end)
+  end
+end
+
+--- Refresh file explorer if Snacks explorer is available
+function M.refresh_explorer()
+  local snacks = package.loaded.snacks
+  if snacks and snacks.explorer then
+    vim.schedule(function()
+      pcall(snacks.explorer.refresh)
+    end)
+  end
+end
+
+--- Complete refresh cycle after OpenCode edits files
+function M.complete_refresh()
+  vim.schedule(function()
+    -- Force global checktime
+    pcall(vim.cmd, "silent checktime")
+
+    -- Refresh current buffer
+    local current_buf = vim.api.nvim_get_current_buf()
+    M.refresh_buffer(current_buf)
+
+    -- Refresh all buffers
+    M.refresh_all_buffers()
+
+    -- Refresh integrations
+    M.refresh_git_signs()
+    M.refresh_explorer()
+
+    -- Force redraw to ensure UI is updated
+    vim.cmd("redraw!")
+  end)
+end
+
+--- Setup OpenCode integration hooks and commands
+function M.setup()
+  if not M.is_available() then
+    return
+  end
+
+  -- Create user commands with auto-save functionality
+  local opencode_commands = {
+    { "OpencodeToggle", "Toggle OpenCode panel" },
+    { "OpencodePrompt", "Send prompt to OpenCode" },
+    { "OpencodeAsk", "Ask OpenCode a question" },
+    { "OpencodeSelect", "Send selection to OpenCode" },
+  }
+
+  for _, cmd_info in ipairs(opencode_commands) do
+    local cmd = cmd_info[1]
+    local desc = cmd_info[2]
+
+    vim.api.nvim_create_user_command(cmd .. "WithSave", function(opts)
+      -- Auto-save before OpenCode operations
+      M.save_all_buffers()
+
+      -- Execute the original command
+      vim.cmd(cmd .. " " .. (opts.args or ""))
+    end, {
+      nargs = "*",
+      desc = desc .. " (with auto-save)",
+    })
+  end
+
+  -- Set up autocmd for OpenCode start event
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "OpencodeStart",
+    desc = "Auto-save buffers when OpenCode starts",
+    callback = function()
+      M.save_all_buffers()
+    end,
+  })
+end
+
+return M

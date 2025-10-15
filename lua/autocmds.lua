@@ -486,21 +486,55 @@ create_autocmd("FileType", {
 })
 
 -- ============================================================================
--- OpenCode Integration - Git Signs Refresh
+-- OpenCode Integration - Enhanced Buffer Management
 -- ============================================================================
 
--- Refresh git signs when files are changed externally (e.g., by OpenCode)
-create_autocmd({ "BufEnter", "FocusGained" }, {
-  group = augroup("YodaGitSignsRefresh", { clear = true }),
-  desc = "Refresh git signs when files change externally",
+-- Auto-save all modified buffers when OpenCode launches
+create_autocmd("User", {
+  group = augroup("YodaOpenCodeAutoSave", { clear = true }),
+  pattern = "OpencodeStart",
+  desc = "Auto-save all buffers when OpenCode starts",
   callback = function()
-    -- Only refresh if gitsigns is loaded and buffer is valid
-    local gs = package.loaded.gitsigns
-    if gs and vim.bo.buftype == "" and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
-      -- Use schedule to avoid conflicts with other autocmds
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
       vim.schedule(function()
-        gs.refresh()
+        opencode_integration.save_all_buffers()
       end)
+    end
+  end,
+})
+
+-- Enhanced buffer refresh when files are changed externally (e.g., by OpenCode)
+create_autocmd({ "BufEnter", "FocusGained" }, {
+  group = augroup("YodaOpenCodeBufferRefresh", { clear = true }),
+  desc = "Refresh buffers and git signs when files change externally",
+  callback = function()
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
+      vim.schedule(function()
+        -- Force check for external changes
+        pcall(vim.cmd, "checktime")
+
+        -- Refresh current buffer if needed
+        if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+          local current_buf = vim.api.nvim_get_current_buf()
+          opencode_integration.refresh_buffer(current_buf)
+        end
+
+        -- Refresh git signs
+        opencode_integration.refresh_git_signs()
+      end)
+    else
+      -- Fallback to original behavior if module not available
+      if can_reload_buffer() then
+        pcall(vim.cmd, "checktime")
+        local gs = package.loaded.gitsigns
+        if gs then
+          vim.schedule(function()
+            gs.refresh()
+          end)
+        end
+      end
     end
   end,
 })
@@ -510,27 +544,69 @@ create_autocmd("BufWritePost", {
   group = augroup("YodaGitSignsWriteRefresh", { clear = true }),
   desc = "Refresh git signs after buffer is written",
   callback = function()
-    local gs = package.loaded.gitsigns
-    if gs and vim.bo.buftype == "" then
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
+      opencode_integration.refresh_git_signs()
+    else
+      -- Fallback
+      local gs = package.loaded.gitsigns
+      if gs and vim.bo.buftype == "" then
+        vim.schedule(function()
+          gs.refresh()
+        end)
+      end
+    end
+  end,
+})
+
+-- Enhanced file change detection with complete refresh cycle
+create_autocmd("FileChangedShell", {
+  group = augroup("YodaOpenCodeFileChange", { clear = true }),
+  desc = "Handle files changed by external tools like OpenCode with complete refresh",
+  callback = function(args)
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
       vim.schedule(function()
-        gs.refresh()
+        -- Refresh the specific changed buffer first
+        if args.buf and vim.api.nvim_buf_is_valid(args.buf) then
+          opencode_integration.refresh_buffer(args.buf)
+        end
+
+        -- Complete refresh cycle
+        opencode_integration.complete_refresh()
+      end)
+    else
+      -- Fallback behavior
+      vim.schedule(function()
+        pcall(vim.cmd, "checktime")
+        local gs = package.loaded.gitsigns
+        if gs then
+          gs.refresh()
+        end
       end)
     end
   end,
 })
 
--- Refresh git signs and Snacks Explorer when checktime detects changes
-create_autocmd("FileChangedShell", {
-  group = augroup("YodaOpenCodeRefresh", { clear = true }),
-  desc = "Refresh git signs when files are changed by external tools like OpenCode",
+-- Post-process file changes for UI consistency
+create_autocmd("FileChangedShellPost", {
+  group = augroup("YodaOpenCodeFileChangePost", { clear = true }),
+  desc = "Post-process file changes from external tools",
   callback = function()
-    local gs = package.loaded.gitsigns
-    if gs then
-      vim.schedule(function()
-        gs.refresh()
-        -- Also trigger a checktime to ensure all buffers are up to date
-        pcall(vim.cmd, "checktime")
-      end)
-    end
+    vim.schedule(function()
+      -- Ensure UI is properly updated
+      vim.cmd("redraw!")
+
+      -- Final git signs refresh for consistency
+      local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+      if ok then
+        opencode_integration.refresh_git_signs()
+      else
+        local gs = package.loaded.gitsigns
+        if gs and vim.bo.buftype == "" then
+          gs.refresh()
+        end
+      end
+    end)
   end,
 })

@@ -909,52 +909,101 @@ local OPENCODE_STARTUP_DELAY_MS = 100 -- Wait for OpenCode window to initialize
 -- Import window utilities for perfect encapsulation (no duplication!)
 local win_utils = require("yoda.window_utils")
 
--- OpenCode AI Assistant - Smart toggle with focus and insert mode
-map("n", "<leader>ai", function()
-  local win, _ = win_utils.find_opencode()
-  if win then
-    -- If OpenCode is open, focus on it and enter insert mode
-    vim.api.nvim_set_current_win(win)
-    vim.schedule(function()
-      vim.cmd("startinsert")
-    end)
-  else
-    -- If not open, toggle it to open
-    require("opencode").toggle()
-    -- Wait for window to open, then enter insert mode
-    vim.defer_fn(function()
-      local new_win, _ = win_utils.find_opencode()
-      if new_win then
-        vim.api.nvim_set_current_win(new_win)
-        vim.cmd("startinsert")
-      end
-    end, OPENCODE_STARTUP_DELAY_MS)
+-- Helper function to auto-save before OpenCode operations
+local function with_auto_save(operation_fn)
+  return function(...)
+    -- Auto-save buffers before OpenCode operations
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
+      opencode_integration.save_all_buffers()
+    end
+
+    -- Execute the operation
+    operation_fn(...)
   end
-end, { desc = "AI: Toggle/Focus OpenCode (insert mode)" })
+end
 
-map({ "n", "x" }, "<leader>oa", function()
-  require("opencode").ask("@this: ", { submit = true })
-end, { desc = "OpenCode: Ask about this" })
+-- OpenCode AI Assistant - Smart toggle with focus, insert mode, and auto-save
+map(
+  "n",
+  "<leader>ai",
+  with_auto_save(function()
+    local win, _ = win_utils.find_opencode()
+    if win then
+      -- If OpenCode is open, focus on it and enter insert mode
+      vim.api.nvim_set_current_win(win)
+      vim.schedule(function()
+        vim.cmd("startinsert")
+      end)
+    else
+      -- If not open, toggle it to open
+      require("opencode").toggle()
+      -- Wait for window to open, then enter insert mode
+      vim.defer_fn(function()
+        local new_win, _ = win_utils.find_opencode()
+        if new_win then
+          vim.api.nvim_set_current_win(new_win)
+          vim.cmd("startinsert")
+        end
+      end, OPENCODE_STARTUP_DELAY_MS)
+    end
+  end),
+  { desc = "AI: Toggle/Focus OpenCode (auto-save + insert mode)" }
+)
 
-map({ "n", "x" }, "<leader>o+", function()
-  require("opencode").prompt("@this")
-end, { desc = "OpenCode: Add this to prompt" })
+map(
+  { "n", "x" },
+  "<leader>oa",
+  with_auto_save(function()
+    require("opencode").ask("@this: ", { submit = true })
+  end),
+  { desc = "OpenCode: Ask about this (auto-save)" }
+)
 
-map({ "n", "x" }, "<leader>oe", function()
-  require("opencode").prompt("Explain @this and its context", { submit = true })
-end, { desc = "OpenCode: Explain this" })
+map(
+  { "n", "x" },
+  "<leader>o+",
+  with_auto_save(function()
+    require("opencode").prompt("@this")
+  end),
+  { desc = "OpenCode: Add this to prompt (auto-save)" }
+)
 
-map({ "n", "x" }, "<leader>os", function()
-  require("opencode").select()
-end, { desc = "OpenCode: Select prompt" })
+map(
+  { "n", "x" },
+  "<leader>oe",
+  with_auto_save(function()
+    require("opencode").prompt("Explain @this and its context", { submit = true })
+  end),
+  { desc = "OpenCode: Explain this (auto-save)" }
+)
 
-map("n", "<leader>ot", function()
-  require("opencode").toggle()
-end, { desc = "OpenCode: Toggle embedded" })
+map(
+  { "n", "x" },
+  "<leader>os",
+  with_auto_save(function()
+    require("opencode").select()
+  end),
+  { desc = "OpenCode: Select prompt (auto-save)" }
+)
 
-map("n", "<leader>on", function()
-  require("opencode").command("session_new")
-end, { desc = "OpenCode: New session" })
+map(
+  "n",
+  "<leader>ot",
+  with_auto_save(function()
+    require("opencode").toggle()
+  end),
+  { desc = "OpenCode: Toggle embedded (auto-save)" }
+)
+
+map(
+  "n",
+  "<leader>on",
+  with_auto_save(function()
+    require("opencode").command("session_new")
+  end),
+  { desc = "OpenCode: New session (auto-save)" }
+)
 
 map("n", "<leader>oi", function()
   require("opencode").command("session_interrupt")
