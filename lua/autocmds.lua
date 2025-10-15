@@ -610,3 +610,20 @@ create_autocmd("FileChangedShellPost", {
     end)
   end,
 })
+
+-- ============================================================================
+-- SESSION MANAGEMENT
+-- ============================================================================
+
+-- Enhanced OpenCode integration
+create_autocmd("User", {
+  group = augroup("YodaOpenCodeIntegration", { clear = true }),
+  pattern = "OpencodeExit",
+  desc = "Handle OpenCode exit",
+  callback = function()
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
+      opencode_integration.on_opencode_exit()
+    end
+  end,
+})
