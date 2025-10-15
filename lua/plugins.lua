@@ -815,8 +815,17 @@ return {
         },
       }
 
-      -- Required for auto_reload
+      -- Required for enhanced buffer management
       vim.opt.autoread = true
+      vim.opt.autowrite = true -- Auto-write buffers when switching
+
+      -- Setup OpenCode integration
+      local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+      if ok then
+        vim.defer_fn(function()
+          opencode_integration.setup()
+        end, 100)
+      end
     end,
   },
 
