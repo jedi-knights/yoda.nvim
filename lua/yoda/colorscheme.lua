@@ -8,5 +8,7 @@ local function set_colorscheme(name)
   end
 end
 
--- Default colorscheme
-set_colorscheme("tokyonight")
+-- Default colorscheme - defer slightly to improve startup time
+vim.schedule(function()
+  set_colorscheme("tokyonight")
+end)

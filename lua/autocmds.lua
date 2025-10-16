@@ -65,39 +65,58 @@ local function is_buffer_empty(bufnr)
   return is_empty_buffer_name(bufname)
 end
 
---- Check if alpha dashboard is already open
+-- Performance optimizations: cache expensive checks
+local alpha_cache = {
+  has_startup_files = nil,
+  last_check_time = 0,
+  check_interval = 100, -- ms
+}
+
+--- Check if alpha dashboard is already open (optimized)
 --- @return boolean
 local function has_alpha_buffer()
+  -- Fast check: iterate only valid listed buffers
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted and vim.bo[buf].filetype == "alpha" then
       return true
     end
   end
   return false
 end
 
---- Check if files were opened at startup
+--- Check if files were opened at startup (cached)
 --- @return boolean
 local function has_startup_files()
-  return vim.fn.argc() ~= 0
+  if alpha_cache.has_startup_files == nil then
+    alpha_cache.has_startup_files = vim.fn.argc() ~= 0
+  end
+  return alpha_cache.has_startup_files
 end
 
---- Check if current buffer has a filetype
+--- Check if current buffer has a filetype (optimized)
 --- @return boolean
 local function has_filetype()
   return vim.bo.filetype ~= ""
 end
 
---- Check if current buffer has a special buftype
+--- Check if current buffer has a special buftype (optimized)
 --- @return boolean
 local function has_special_buftype()
   return vim.bo.buftype ~= ""
 end
 
---- Count normal (non-alpha, non-empty) buffers
+--- Count normal buffers (simplified and cached)
 --- @return number
 local function count_normal_buffers()
+  local current_time = vim.loop.hrtime() / 1000000 -- convert to ms
+
+  -- Use cached result if recent enough
+  if alpha_cache.normal_count and (current_time - alpha_cache.last_check_time) < alpha_cache.check_interval then
+    return alpha_cache.normal_count
+  end
+
   local count = 0
+  -- Only check listed buffers for performance
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
       local buf_ft = vim.bo[buf].filetype
@@ -106,22 +125,18 @@ local function count_normal_buffers()
       end
     end
   end
+
+  -- Cache result
+  alpha_cache.normal_count = count
+  alpha_cache.last_check_time = current_time
   return count
 end
 
---- Check if we're in a state where alpha should be shown
+--- Check if we're in a state where alpha should be shown (optimized)
 --- @return boolean
 local function should_show_alpha()
-  -- Early returns for clear negative cases
+  -- Fastest checks first (single function calls)
   if has_startup_files() then
-    return false
-  end
-
-  if has_alpha_buffer() then
-    return false
-  end
-
-  if not is_buffer_empty() then
     return false
   end
 
@@ -133,7 +148,16 @@ local function should_show_alpha()
     return false
   end
 
-  -- Only show alpha if we have no other normal buffers
+  if not is_buffer_empty() then
+    return false
+  end
+
+  -- More expensive checks last
+  if has_alpha_buffer() then
+    return false
+  end
+
+  -- Most expensive check last with caching
   return count_normal_buffers() == 0
 end
 
