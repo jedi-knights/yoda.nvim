@@ -18,9 +18,15 @@ vim.g.maplocalleader = " "
 -- Define debug helper function early (available throughout init)
 -- Uses unified logging system (lazy-loaded to avoid startup impact)
 function _G.P(v)
-  local logger = require("yoda.logging.logger")
-  logger.set_strategy("console")
-  logger.debug(vim.inspect(v))
+  -- Lazy-load logger only when actually called
+  local ok, logger = pcall(require, "yoda.logging.logger")
+  if ok then
+    logger.set_strategy("console")
+    logger.debug(vim.inspect(v))
+  else
+    -- Fallback to print if logger not available
+    print(vim.inspect(v))
+  end
   return v
 end
 
@@ -34,16 +40,20 @@ vim.g.dbs = vim.g.dbs or {}
 -- Bootstrap lazy.nvim
 require("lazy-bootstrap")
 
--- Load base configuration
-require("options")
-require("keymaps")
-require("autocmds")
+-- Load base configuration in optimal order
+require("options") -- Fastest - just vim option settings
+require("lazy-plugins") -- Load plugins early to allow lazy loading to work
 
--- Load local configuration if it exists (must be before plugins)
-pcall(require, "local")
+-- Load local configuration if it exists (deferred)
+vim.schedule(function()
+  pcall(require, "local")
+end)
 
--- Load plugins (must be after base configuration)
-require("lazy-plugins")
+-- Defer keymaps and autocmds for better startup performance
+vim.schedule(function()
+  require("keymaps")   -- Contains some expensive setup logic
+  require("autocmds")  -- Contains complex autocommands
+end)
 
 -- ============================================================================
 -- Yoda Modules

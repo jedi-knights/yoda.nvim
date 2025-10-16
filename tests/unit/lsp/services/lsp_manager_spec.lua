@@ -8,12 +8,19 @@ describe("LSPManager", function()
   local mock_logger
   local mock_diagnostics
   local lsp_manager
+  local debug_spy_data
+  local error_spy_data
 
   before_each(function()
     -- Create mock dependencies
+    local debug_spy, debug_data = helpers.spy()
+    local error_spy, error_data = helpers.spy()
+    debug_spy_data = debug_data
+    error_spy_data = error_data
+
     mock_logger = {
-      debug = helpers.spy(),
-      error = helpers.spy(),
+      debug = debug_spy,
+      error = error_spy,
     }
 
     mock_diagnostics = {}
@@ -41,13 +48,13 @@ describe("LSPManager", function()
     it("rejects invalid server name", function()
       local result = lsp_manager:register_server("", {})
       assert.is_false(result)
-      helpers.assert_called(mock_logger.error)
+      helpers.assert_called(error_spy_data)
     end)
 
     it("rejects invalid config", function()
       local result = lsp_manager:register_server("test", "not_a_table")
       assert.is_false(result)
-      helpers.assert_called(mock_logger.error)
+      helpers.assert_called(error_spy_data)
     end)
   end)
 
@@ -60,13 +67,13 @@ describe("LSPManager", function()
     it("rejects invalid server name", function()
       local result = lsp_manager:setup_lazy_loading("", { "lua" })
       assert.is_false(result)
-      helpers.assert_called(mock_logger.error)
+      helpers.assert_called(error_spy_data)
     end)
 
     it("rejects empty filetypes", function()
       local result = lsp_manager:setup_lazy_loading("lua_ls", {})
       assert.is_false(result)
-      helpers.assert_called(mock_logger.error)
+      helpers.assert_called(error_spy_data)
     end)
   end)
 

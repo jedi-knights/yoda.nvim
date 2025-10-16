@@ -8,6 +8,28 @@ describe("commands", function()
     pcall(vim.api.nvim_del_user_command, "YodaCleanLazy")
     pcall(vim.api.nvim_del_user_command, "FormatFeature")
 
+    -- Mock diagnostics modules BEFORE loading commands
+    package.loaded["yoda.diagnostics"] = {
+      run_all = function()
+        -- Mock implementation that doesn't call checkhealth
+      end,
+      lsp = {
+        check_status = function()
+          return true
+        end,
+      },
+      ai = {
+        check_status = function()
+          return { claude_available = false, copilot_loaded = false }
+        end,
+        display_detailed_check = function() end,
+      },
+    }
+
+    package.loaded["yoda.diagnostics.ai"] = {
+      display_detailed_check = function() end,
+    }
+
     -- Load commands module
     package.loaded["yoda.commands"] = nil
     require("yoda.commands")
@@ -44,11 +66,10 @@ describe("commands", function()
     it("calls diagnostics.run_all()", function()
       local called = false
 
-      package.loaded["yoda.diagnostics"] = {
-        run_all = function()
-          called = true
-        end,
-      }
+      -- Override the mocked function to track calls
+      package.loaded["yoda.diagnostics"].run_all = function()
+        called = true
+      end
 
       vim.cmd("YodaDiagnostics")
 
@@ -56,6 +77,7 @@ describe("commands", function()
     end)
 
     it("handles missing diagnostics module", function()
+      -- Clear the mocked module to simulate missing module
       package.loaded["yoda.diagnostics"] = nil
 
       -- Should not crash
@@ -72,11 +94,10 @@ describe("commands", function()
     it("calls diagnostics.ai.display_detailed_check()", function()
       local called = false
 
-      package.loaded["yoda.diagnostics.ai"] = {
-        display_detailed_check = function()
-          called = true
-        end,
-      }
+      -- Override the mocked function to track calls
+      package.loaded["yoda.diagnostics.ai"].display_detailed_check = function()
+        called = true
+      end
 
       vim.cmd("YodaAICheck")
 
