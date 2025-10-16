@@ -330,14 +330,40 @@ vim.lsp.config.helm_ls = {
 -- Disable stylua as LSP server (it's a formatter, not a language server)
 -- stylua is not enabled as an LSP server
 
--- Enable the language servers
-vim.lsp.enable("lua_ls")
-vim.lsp.enable("gopls")
-vim.lsp.enable("ts_ls")
-vim.lsp.enable("basedpyright")
-vim.lsp.enable("omnisharp")
-vim.lsp.enable("yamlls")
-vim.lsp.enable("helm_ls")
+-- Smart LSP Loading: Only enable LSP servers when needed
+-- This prevents unnecessary LSP processes from starting until a matching filetype is opened
+
+-- Create autocmds to enable LSP servers lazily based on filetype
+local lsp_servers = {
+  { server = "lua_ls", filetypes = { "lua" } },
+  { server = "gopls", filetypes = { "go", "gomod", "gowork" } },
+  { server = "ts_ls", filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" } },
+  { server = "basedpyright", filetypes = { "python" } },
+  { server = "omnisharp", filetypes = { "cs", "csx", "cake" } },
+  { server = "yamlls", filetypes = { "yaml" } },
+  { server = "helm_ls", filetypes = { "helm" } },
+}
+
+-- Track which servers have been enabled to avoid duplicate enables
+local enabled_servers = {}
+
+for _, lsp_config in ipairs(lsp_servers) do
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = lsp_config.filetypes,
+    callback = function()
+      -- Only enable the server once
+      if not enabled_servers[lsp_config.server] then
+        vim.lsp.enable(lsp_config.server)
+        enabled_servers[lsp_config.server] = true
+        logger.set_strategy("console")
+        logger.debug("Enabled LSP server on demand", { server = lsp_config.server, filetype = vim.bo.filetype })
+      end
+    end,
+    group = vim.api.nvim_create_augroup("SmartLspLoading", { clear = true }),
+    desc = "Enable " .. lsp_config.server .. " LSP on demand for " .. table.concat(lsp_config.filetypes, ", "),
+  })
+end
+
 -- rust_analyzer is handled by rust-tools.nvim, not enabled here
 
 -- Setup keymaps for LSP
@@ -399,23 +425,35 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
--- Performance debugging command
-vim.api.nvim_create_user_command("LSPPerformance", function()
+-- Enhanced LSP debugging command
+vim.api.nvim_create_user_command("LSPStatus", function()
   local clients = vim.lsp.get_clients()
   local bufnr = vim.api.nvim_get_current_buf()
   local filetype = vim.bo[bufnr].filetype
 
-  print("=== LSP Performance Debug ===")
+  print("=== Smart LSP Status Debug ===")
+  print("Current buffer:", bufnr)
   print("Current filetype:", filetype)
-  print("Active LSP clients:", #clients)
+  print("Total active LSP clients:", #clients)
+  print("")
 
+  -- Show all running LSP servers
+  print("--- Running LSP Servers ---")
   for _, client in ipairs(clients) do
     local attached = vim.lsp.buf_is_attached(bufnr, client.id)
     local semantic_tokens = client.server_capabilities.semanticTokensProvider ~= nil
-    print(string.format("  - %s: attached=%s, semantic_tokens=%s", client.name, attached, semantic_tokens))
+    print(string.format("  %s: attached_to_current=%s, semantic_tokens=%s", client.name, attached, semantic_tokens))
   end
+  print("")
 
-  -- Check if current filetype is in skip list
+  -- Show which servers have been lazily enabled
+  print("--- Lazily Enabled Servers ---")
+  for server, enabled in pairs(enabled_servers) do
+    print(string.format("  %s: %s", server, enabled and "✅ enabled" or "❌ not enabled"))
+  end
+  print("")
+
+  -- Check if current filetype should be skipped
   local is_skipped = false
   for _, skip_ft in ipairs(LSP_SKIP_FILETYPES) do
     if filetype == skip_ft then
@@ -424,9 +462,56 @@ vim.api.nvim_create_user_command("LSPPerformance", function()
     end
   end
 
-  print("Filetype in skip list:", is_skipped)
-  print("=============================")
-end, { desc = "Debug LSP performance for current buffer" })
+  print("--- Current Buffer Analysis ---")
+  print("Filetype in skip list:", is_skipped and "✅ YES (LSP keymaps skipped)" or "❌ NO (LSP keymaps active)")
+
+  -- Show expected LSP server for current filetype
+  local expected_servers = {}
+  for _, lsp_config in ipairs(lsp_servers) do
+    for _, ft in ipairs(lsp_config.filetypes) do
+      if ft == filetype then
+        table.insert(expected_servers, lsp_config.server)
+      end
+    end
+  end
+
+  if #expected_servers > 0 then
+    print("Expected LSP servers for '" .. filetype .. "':", table.concat(expected_servers, ", "))
+  else
+    print("No LSP servers configured for filetype '" .. filetype .. "'")
+  end
+
+  print("===============================")
+end, { desc = "Show comprehensive LSP status and smart loading info" })
+
+-- Show LSP server to filetype mapping
+vim.api.nvim_create_user_command("LSPMapping", function()
+  print("=== LSP Server to Filetype Mapping ===")
+  print("")
+
+  for _, lsp_config in ipairs(lsp_servers) do
+    print(string.format("📋 %s:", lsp_config.server))
+    print("   Filetypes: " .. table.concat(lsp_config.filetypes, ", "))
+    print("   Status: " .. (enabled_servers[lsp_config.server] and "✅ Enabled" or "⏱️ Will enable on demand"))
+    print("")
+  end
+
+  print("--- Special Cases ---")
+  print("📋 rust_analyzer:")
+  print("   Filetypes: rust")
+  print("   Status: ⚙️ Managed by rust-tools.nvim plugin")
+  print("")
+
+  print("--- Skipped Filetypes (No LSP) ---")
+  print("These filetypes will never have LSP attached:")
+  for i, ft in ipairs(LSP_SKIP_FILETYPES) do
+    local separator = (i < #LSP_SKIP_FILETYPES) and ", " or ""
+    io.write(ft .. separator)
+  end
+  print("\n")
+
+  print("=====================================")
+end, { desc = "Show LSP server to filetype mapping" })
 
 -- Markdown performance debugging command
 vim.api.nvim_create_user_command("MarkdownPerformance", function()

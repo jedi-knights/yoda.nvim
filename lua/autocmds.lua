@@ -218,32 +218,74 @@ local FILETYPE_SETTINGS = {
     vim.opt_local.colorcolumn = ""
   end,
 
-  -- Git commit messages: optimize for fast typing
+  -- Git commit messages: AGGRESSIVE performance optimization for fast typing
   gitcommit = function()
+    -- Core performance settings
     vim.opt_local.foldmethod = "manual" -- Disable treesitter folding for performance
+    vim.opt_local.updatetime = 2000 -- Increased from 1000ms for even less frequent events
+    vim.opt_local.lazyredraw = true -- Don't redraw during macros/complex operations
+    vim.opt_local.synmaxcol = 200 -- Limit syntax highlighting to 200 columns
+    vim.opt_local.timeoutlen = 1000 -- Increase timeout for key sequences
+
+    -- Disable expensive cursor features
+    vim.opt_local.cursorline = false -- Disable cursor line highlighting
+    vim.opt_local.cursorcolumn = false -- Disable cursor column
+    vim.opt_local.relativenumber = false -- Disable relative numbers
+
+    -- Git commit specific settings
     vim.opt_local.spell = true -- Enable spell check for commits
     vim.opt_local.wrap = true -- Wrap long lines
     vim.opt_local.textwidth = 72 -- Standard git commit line length
-    vim.opt_local.updatetime = 1000 -- Reduce event frequency (less aggressive than 250ms)
+
+    -- Disable completion and diagnostics (LSP is already disabled)
+    vim.opt_local.complete = "" -- Disable all completion
+    vim.opt_local.completeopt = "" -- Clear completion options
+
+    -- Notification for debugging (only in DEBUG mode)
+    vim.notify("🚀 Git commit performance mode enabled", vim.log.levels.DEBUG)
   end,
 
-  -- Neogit buffers: optimize for performance
+  -- Neogit buffers: AGGRESSIVE performance optimization
   NeogitCommitMessage = function()
+    -- Core performance settings
     vim.opt_local.foldmethod = "manual"
+    vim.opt_local.updatetime = 2000 -- Increased from 1000ms
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.synmaxcol = 200
+    vim.opt_local.timeoutlen = 1000
+
+    -- Disable expensive cursor features
+    vim.opt_local.cursorline = false
+    vim.opt_local.cursorcolumn = false
+    vim.opt_local.relativenumber = false
+
+    -- Commit message specific settings
     vim.opt_local.spell = true
     vim.opt_local.wrap = true
     vim.opt_local.textwidth = 72
-    vim.opt_local.updatetime = 1000
+
+    -- Disable completion and diagnostics
+    vim.opt_local.complete = ""
+    vim.opt_local.completeopt = ""
+
+    -- Notification for debugging (only in DEBUG mode)
+    vim.notify("🚀 Neogit commit performance mode enabled", vim.log.levels.DEBUG)
   end,
 
   NeogitStatus = function()
     vim.opt_local.foldmethod = "manual"
-    vim.opt_local.updatetime = 1000
+    vim.opt_local.updatetime = 2000 -- Increased for better performance
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.cursorline = false -- Disable for performance
+    vim.opt_local.synmaxcol = 200
   end,
 
   NeogitPopup = function()
     vim.opt_local.foldmethod = "manual"
-    vim.opt_local.updatetime = 1000
+    vim.opt_local.updatetime = 2000 -- Increased for better performance
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.cursorline = false -- Disable for performance
+    vim.opt_local.synmaxcol = 200
   end,
 
   ["snacks-explorer"] = function()
@@ -608,6 +650,32 @@ create_autocmd("FileChangedShellPost", {
         end
       end
     end)
+  end,
+})
+
+-- ============================================================================
+-- PERFORMANCE OPTIMIZATION: Disable expensive text change events for commit buffers
+-- ============================================================================
+
+-- Disable expensive text change autocmds for git commit buffers to prevent lag
+create_autocmd("FileType", {
+  group = augroup("YodaGitCommitPerformance", { clear = true }),
+  desc = "Disable expensive autocmds for git commit buffers to prevent typing lag",
+  pattern = { "gitcommit", "NeogitCommitMessage" },
+  callback = function()
+    -- Disable text change events that might cause lag
+    vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
+    vim.cmd("autocmd! CursorMoved,CursorMovedI <buffer>")
+    vim.cmd("autocmd! InsertEnter,InsertLeave <buffer>")
+    vim.cmd("autocmd! BufWritePost <buffer>")
+
+    -- Disable completion-related events
+    vim.cmd("autocmd! CompleteChanged,CompleteDone <buffer>")
+
+    -- Disable any remaining LSP-related events
+    vim.cmd("autocmd! LspAttach <buffer>")
+
+    vim.notify("🔥 Disabled expensive autocmds for git commit buffer", vim.log.levels.DEBUG)
   end,
 })
 
