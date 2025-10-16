@@ -185,7 +185,26 @@ function M.setup()
   -- Diagnostic configuration
   vim.diagnostic.config({
     virtual_text = true,
-    signs = true,
+    signs = {
+      text = {
+        [vim.diagnostic.severity.ERROR] = "󰅚 ",
+        [vim.diagnostic.severity.WARN] = "󰀪 ",
+        [vim.diagnostic.severity.INFO] = " ",
+        [vim.diagnostic.severity.HINT] = "󰌶 ",
+      },
+      texthl = {
+        [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+        [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
+        [vim.diagnostic.severity.INFO] = "DiagnosticSignInfo",
+        [vim.diagnostic.severity.HINT] = "DiagnosticSignHint",
+      },
+      numhl = {
+        [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+        [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
+        [vim.diagnostic.severity.INFO] = "DiagnosticSignInfo",
+        [vim.diagnostic.severity.HINT] = "DiagnosticSignHint",
+      },
+    },
     underline = true,
     update_in_insert = false,
     severity_sort = true,
@@ -194,13 +213,6 @@ function M.setup()
       source = "always",
     },
   })
-
-  -- Diagnostic signs
-  local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
-  for type, icon in pairs(signs) do
-    local hl = "DiagnosticSign" .. type
-    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-  end
 
   -- Setup debug commands
   M._setup_debug_commands()
