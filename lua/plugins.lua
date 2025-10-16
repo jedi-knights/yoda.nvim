@@ -213,6 +213,7 @@ return {
           hover = {
             enabled = true,
             silent = false, -- set to true to not show a message if hover is not available
+            view = "hover",
           },
           signature = {
             enabled = true,
@@ -224,12 +225,23 @@ return {
             },
           },
         },
+        views = {
+          hover = {
+            border = {
+              style = "rounded",
+            },
+            position = { row = 2, col = 0 },
+            win_options = {
+              winhighlight = { Normal = "Normal", FloatBorder = "DiagnosticInfo" },
+            },
+          },
+        },
         presets = {
           bottom_search = true,
           command_palette = true,
           long_message_to_split = true,
           inc_rename = false,
-          lsp_doc_border = false,
+          lsp_doc_border = true,
         },
       })
     end,
