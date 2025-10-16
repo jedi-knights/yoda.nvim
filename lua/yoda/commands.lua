@@ -239,6 +239,53 @@ vim.api.nvim_create_user_command("YodaAICheck", function()
   require("yoda.diagnostics.ai").display_detailed_check()
 end, { desc = "Check AI API configuration and diagnose issues" })
 
+-- Completion engine status check
+vim.api.nvim_create_user_command("YodaCmpStatus", function()
+  logger.set_strategy("console")
+  logger.set_level("info")
+
+  logger.info("🔍 Checking completion engine status...")
+
+  -- Check if nvim-cmp is loaded
+  local cmp_ok, cmp = pcall(require, "cmp")
+  if cmp_ok then
+    logger.info("✅ nvim-cmp loaded successfully")
+
+    -- Check sources
+    local sources = cmp.get_config().sources
+    if sources then
+      logger.info("📦 Available completion sources:")
+      for _, source_group in ipairs(sources) do
+        for _, source in ipairs(source_group) do
+          logger.info("  • " .. source.name)
+        end
+      end
+    end
+  else
+    logger.error("❌ nvim-cmp failed to load")
+  end
+
+  -- Check LuaSnip
+  local luasnip_ok, luasnip = pcall(require, "luasnip")
+  if luasnip_ok then
+    logger.info("✅ LuaSnip loaded successfully")
+    logger.info("📝 Snippets available: " .. #luasnip.get_snippets())
+  else
+    logger.error("❌ LuaSnip failed to load")
+  end
+
+  -- Check LSP clients for completion capability
+  local clients = vim.lsp.get_clients()
+  logger.info("🔌 LSP clients with completion capability:")
+  for _, client in ipairs(clients) do
+    if client.server_capabilities.completionProvider then
+      logger.info("  ✅ " .. client.name)
+    else
+      logger.info("  ❌ " .. client.name .. " (no completion)")
+    end
+  end
+end, { desc = "Check completion engine status" })
+
 -- Rust development setup command
 vim.api.nvim_create_user_command("YodaRustSetup", function()
   local logger = require("yoda.logging.logger")
