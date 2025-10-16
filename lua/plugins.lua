@@ -326,11 +326,25 @@ return {
     end,
   },
 
-  -- Nvim LSP Config - LSP client configurations
+  -- LSP Configuration using built-in vim.lsp.config (Neovim 0.11+)
   {
-    "neovim/nvim-lspconfig",
-    dependencies = { "williamboman/mason-lspconfig.nvim" },
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { "williamboman/mason.nvim" },
     config = function()
+      -- Setup mason-lspconfig first
+      require("mason-lspconfig").setup({
+        ensure_installed = {
+          "gopls",
+          "lua_ls",
+          "ts_ls",
+          "basedpyright",
+          "yamlls",
+          "omnisharp",
+          "helm_ls",
+        },
+      })
+
+      -- Then setup our modern LSP configuration
       require("yoda.lsp").setup()
     end,
   },

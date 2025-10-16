@@ -1,17 +1,10 @@
--- lua/yoda/lsp_simple.lua
--- Simple, reliable LSP setup using standard patterns
+-- lua/yoda/lsp.lua
+-- Modern LSP setup using vim.lsp.config (Neovim 0.11+)
 
 local M = {}
 
---- Setup LSP servers using lspconfig
+--- Setup LSP servers using vim.lsp.config
 function M.setup()
-  -- Ensure nvim-lspconfig is available
-  local ok, lspconfig = pcall(require, "lspconfig")
-  if not ok then
-    vim.notify("nvim-lspconfig not found", vim.log.levels.ERROR)
-    return
-  end
-
   -- Setup completion capabilities
   local capabilities = vim.lsp.protocol.make_client_capabilities()
 
@@ -21,8 +14,23 @@ function M.setup()
     capabilities = vim.tbl_deep_extend("force", capabilities, cmp_lsp.default_capabilities())
   end
 
+  -- Helper function to safely setup LSP servers using vim.lsp.config
+  local function safe_setup(name, config)
+    local success, err = pcall(function()
+      vim.lsp.config(name, config)
+    end)
+    if not success then
+      vim.notify(string.format("Failed to configure LSP server '%s': %s", name, err), vim.log.levels.WARN)
+      return false
+    end
+    return true
+  end
+
   -- Go/gopls setup
-  lspconfig.gopls.setup({
+  safe_setup("gopls", {
+    cmd = { "gopls" },
+    filetypes = { "go", "gomod", "gowork", "gotmpl" },
+    root_markers = { "go.work", "go.mod", ".git" },
     capabilities = capabilities,
     settings = {
       gopls = {
@@ -69,7 +77,10 @@ function M.setup()
   })
 
   -- Lua/lua_ls setup
-  lspconfig.lua_ls.setup({
+  safe_setup("lua_ls", {
+    cmd = { "lua-language-server" },
+    filetypes = { "lua" },
+    root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
     capabilities = capabilities,
     settings = {
       Lua = {
@@ -91,12 +102,18 @@ function M.setup()
   })
 
   -- TypeScript setup
-  lspconfig.ts_ls.setup({
+  safe_setup("ts_ls", {
+    cmd = { "typescript-language-server", "--stdio" },
+    filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+    root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" },
     capabilities = capabilities,
   })
 
   -- Python setup
-  lspconfig.basedpyright.setup({
+  safe_setup("basedpyright", {
+    cmd = { "basedpyright-langserver", "--stdio" },
+    filetypes = { "python" },
+    root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
     capabilities = capabilities,
     settings = {
       basedpyright = {
@@ -110,7 +127,10 @@ function M.setup()
   })
 
   -- YAML setup
-  lspconfig.yamlls.setup({
+  safe_setup("yamlls", {
+    cmd = { "yaml-language-server", "--stdio" },
+    filetypes = { "yaml", "yaml.docker-compose", "yaml.gitlab" },
+    root_markers = { ".git" },
     capabilities = capabilities,
     settings = {
       yaml = {
@@ -123,13 +143,18 @@ function M.setup()
   })
 
   -- C# setup
-  lspconfig.omnisharp.setup({
-    capabilities = capabilities,
+  safe_setup("omnisharp", {
     cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
+    filetypes = { "cs", "vb" },
+    root_markers = { "*.sln", "*.csproj", "omnisharp.json", "function.json", ".git" },
+    capabilities = capabilities,
   })
 
   -- Helm setup
-  lspconfig.helm_ls.setup({
+  safe_setup("helm_ls", {
+    cmd = { "helm_ls", "serve" },
+    filetypes = { "helm" },
+    root_markers = { "Chart.yaml", ".git" },
     capabilities = capabilities,
   })
 
