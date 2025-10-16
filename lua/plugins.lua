@@ -210,6 +210,19 @@ return {
             ["vim.lsp.util.stylize_markdown"] = true,
             ["cmp.entry.get_documentation"] = true,
           },
+          hover = {
+            enabled = true,
+            silent = false, -- set to true to not show a message if hover is not available
+          },
+          signature = {
+            enabled = true,
+            auto_open = {
+              enabled = true,
+              trigger = true, -- Automatically show signature help when typing a function
+              luasnip = true, -- Will open signature help when jumping to Luasnip insert nodes
+              throttle = 50, -- Debounce lsp signature help request by 50ms
+            },
+          },
         },
         presets = {
           bottom_search = true,
