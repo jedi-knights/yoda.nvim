@@ -8,28 +8,28 @@ Yoda.nvim is a comprehensive Neovim distribution focused on providing an excelle
 
 **IMPORTANT**: After making any code changes, always run these validation commands:
 
+### Testing  
+```bash
+make test              # Run all tests (optimized for speed)
+make test-verbose      # Run tests with detailed output (for CI/debugging)
+```
+- Uses `plenary.nvim` test framework
+- Runs 542 tests in ~2-3 seconds 
+- Individual test files can be found in `tests/unit/`
+
 ### Linting
 ```bash
-make lint
+make lint              # Check code style with stylua
+make format            # Auto-format code with stylua
 ```
 - Checks Lua code style using `stylua`
 - Excludes files with goto labels (`yaml_parser.lua`, `config_loader.lua`)
-- Fix issues with `make format` if possible
-
-### Testing  
-```bash
-make test
-```
-- Runs all unit tests using `plenary.nvim` test framework
-- Provides aggregate summary at the end
-- Individual test files can be found in `tests/unit/`
 
 ### Other Available Commands
 ```bash
 make test-unit         # Run only unit tests
 make test-integration  # Run integration tests  
-make format           # Auto-format code with stylua
-make help            # Show all available commands
+make help             # Show all available commands
 ```
 
 ## Code Style
