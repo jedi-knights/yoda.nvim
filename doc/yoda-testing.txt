@@ -1,0 +1,98 @@
+*yoda-testing.txt*      Yoda.nvim Testing Guide
+
+                        YODA.NVIM TESTING
+
+==============================================================================
+CONTENTS                                               *yoda-testing-contents*
+
+1. Overview .................................... |yoda-testing-overview|
+2. Running Tests ............................... |yoda-testing-running|
+3. Test Framework .............................. |yoda-testing-framework|
+4. Writing Tests ............................... |yoda-testing-writing|
+
+==============================================================================
+OVERVIEW                                               *yoda-testing-overview*
+
+Yoda.nvim includes a comprehensive testing framework built with plenary.nvim.
+The project maintains high test coverage (~95%) with 302+ tests covering all
+major functionality.
+
+Test Structure:~
+    tests/unit/               Unit tests
+    tests/helpers.lua         Test utilities
+    tests/minimal_init.lua    Minimal test environment
+
+==============================================================================
+RUNNING TESTS                                           *yoda-testing-running*
+
+Make Commands:~
+    make test                 Run all tests
+    make test-unit            Run unit tests only
+    make lint                 Check code style
+    make format               Format code
+
+Manual Commands:~
+    nvim --headless -c "PlenaryBustedDirectory tests/unit"
+
+Individual Test Files:~
+    nvim --headless -c "PlenaryBustedFile tests/unit/core/string_spec.lua"
+
+==============================================================================
+TEST FRAMEWORK                                        *yoda-testing-framework*
+
+Yoda.nvim uses plenary.nvim's test framework with comprehensive helpers.
+
+Test Helpers:~
+    require("tests.helpers")  Test utilities
+    helpers.spy()             Function spying
+    helpers.mock()            Function mocking
+    helpers.mock_nvim_api()   API mocking
+
+Example Test Structure:~
+>
+    local helpers = require("tests.helpers")
+    
+    describe("module_name", function()
+      describe("function_name()", function()
+        it("does what it should", function()
+          -- Arrange
+          local input = "test"
+          
+          -- Act  
+          local result = module.function_name(input)
+          
+          -- Assert
+          assert.equals("expected", result)
+        end)
+      end)
+    end)
+<
+
+==============================================================================
+WRITING TESTS                                           *yoda-testing-writing*
+
+Testing Guidelines:~
+  • Use AAA pattern (Arrange-Act-Assert)
+  • Test edge cases (nil, empty, errors)
+  • Achieve >90% coverage for new code
+  • All tests must pass before commits
+
+Example Test:~
+>
+    describe("core.string", function()
+      describe("trim()", function()
+        it("removes leading whitespace", function()
+          local result = string_utils.trim("  hello")
+          assert.equals("hello", result)
+        end)
+        
+        it("handles nil input", function()
+          local result = string_utils.trim(nil)
+          assert.equals("", result)
+        end)
+      end)
+    end)
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

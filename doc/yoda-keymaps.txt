@@ -1,0 +1,228 @@
+*yoda-keymaps.txt*        Yoda.nvim Keymaps Reference
+
+                    YODA.NVIM KEYMAPS REFERENCE
+
+Author: Jedi Knights
+Version: 1.0
+License: MIT
+
+==============================================================================
+CONTENTS                                                *yoda-keymaps-contents*
+
+1. General Navigation ...................... |yoda-keymaps-navigation|
+2. File Management ......................... |yoda-keymaps-files|
+3. Search & Find ........................... |yoda-keymaps-search|
+4. LSP & Code Intelligence ................. |yoda-keymaps-lsp|
+5. AI & Code Assistance .................... |yoda-keymaps-ai|
+6. Testing & Debugging ..................... |yoda-keymaps-testing|
+7. Git Integration ......................... |yoda-keymaps-git|
+8. Buffer & Tab Management ................. |yoda-keymaps-buffers|
+9. Window Management ....................... |yoda-keymaps-windows|
+10. Project Navigation ..................... |yoda-keymaps-project|
+11. System & Configuration ................. |yoda-keymaps-system|
+12. Visual Mode ............................ |yoda-keymaps-visual|
+13. Disabled Keys .......................... |yoda-keymaps-disabled|
+
+==============================================================================
+GENERAL NAVIGATION                                   *yoda-keymaps-navigation*
+
+Legend: <leader> = <Space> (spacebar) 
+Modes: n = Normal, i = Insert, v = Visual, t = Terminal
+
+Basic Movement ~
+    jk              (i,v)  Exit to normal mode
+    <C-h>           (n)    Move to left window
+    <C-j>           (n)    Move to lower window  
+    <C-k>           (n)    Move to upper window
+    <C-l>           (n)    Move to right window
+    <C-c>           (n)    Close current window
+
+Quick Actions ~
+    <C-s>           (n)    Save file
+    <C-q>           (n)    Save and quit
+    <C-x>           (n)    Close buffer
+    <leader>i       (n)    Re-indent entire file
+    <leader>y       (n)    Yank entire buffer to system clipboard
+
+==============================================================================
+FILE MANAGEMENT                                         *yoda-keymaps-files*
+
+Explorer ~
+    <leader>eo      (n)    Open file explorer (only if closed)
+    <leader>ef      (n)    Focus on explorer (if open)
+    <leader>er      (n)    Refresh file explorer
+    <leader>ec      (n)    Close file explorer
+    <leader>et      (n)    Toggle file explorer
+
+File Operations ~
+    <leader>ff      (n)    Find files
+    <leader>fo      (n)    Open file
+    <leader>fn      (n)    New file
+    <leader>fr      (n)    Recent files
+    <leader>fs      (n)    Save file
+    <leader>fS      (n)    Save as...
+
+==============================================================================
+SEARCH & FIND                                           *yoda-keymaps-search*
+
+Text Search ~
+    <leader>/       (n)    Search in current buffer
+    <leader>sg      (n)    Live grep (search in all files)
+    <leader>sw      (n)    Search word under cursor
+    <leader>sh      (n)    Search help
+    <leader>sk      (n)    Search keymaps
+    <leader>sr      (n)    Resume last search
+
+Find & Replace ~
+    <leader>sr      (n)    Search and replace
+    <leader>r       (v)    Replace in visual selection
+
+==============================================================================
+LSP & CODE INTELLIGENCE                                   *yoda-keymaps-lsp*
+
+Navigation ~
+    gd              (n)    Go to definition
+    gr              (n)    Go to references  
+    gi              (n)    Go to implementation
+    K               (n)    Show hover documentation
+    <C-h>           (i)    Show signature help
+
+Code Actions ~
+    <leader>ca      (n)    Code actions
+    <leader>rn      (n)    Rename symbol
+    <leader>f       (n)    Format code
+    <leader>cd      (n)    Show diagnostics
+    <leader>cf      (n)    Fix diagnostic
+
+Inlay Hints ~
+    <leader>th      (n)    Toggle inlay hints (if supported)
+
+==============================================================================
+AI & CODE ASSISTANCE                                       *yoda-keymaps-ai*
+
+OpenCode Integration ~
+    <leader>ai      (n)    Toggle/Focus OpenCode (auto-save + insert mode)
+    <leader>ab      (n,i)  Return to previous buffer from OpenCode
+    <leader>aq      (n,i)  Return to main buffer (command-based, most reliable)
+    <leader>ao      (n)    Open OpenCode
+    <leader>af      (n)    Focus OpenCode window
+    <leader>ac      (n)    Close OpenCode window
+    <A-q>           (n,i)  Exit OpenCode and return to main buffer
+    <C-q>           (i)    Smart escape (return to buffer if in OpenCode)
+
+AI Diagnostics ~
+    <leader>ad      (n)    Run AI diagnostics
+    <leader>ah      (n)    AI health check
+
+==============================================================================
+TESTING & DEBUGGING                                     *yoda-keymaps-testing*
+
+Test Runner ~
+    <leader>tt      (n)    Run current test file
+    <leader>tr      (n)    Run nearest test
+    <leader>ta      (n)    Run all tests
+    <leader>ts      (n)    Stop test runner
+    <leader>tw      (n)    Watch tests
+
+Debugging ~
+    <leader>db      (n)    Toggle breakpoint
+    <leader>dc      (n)    Continue debugging
+    <leader>di      (n)    Step into
+    <leader>do      (n)    Step over
+    <leader>dr      (n)    Start/restart debugger
+
+==============================================================================
+GIT INTEGRATION                                           *yoda-keymaps-git*
+
+Git Status & Diff ~
+    <leader>gs      (n)    Git status (Neogit)
+    <leader>gd      (n)    Git diff
+    <leader>gb      (n)    Git blame
+    <leader>gl      (n)    Git log
+
+Git Hunks ~
+    <leader>gh      (n)    Next git hunk
+    <leader>gH      (n)    Previous git hunk
+    <leader>gp      (n)    Preview git hunk
+    <leader>gr      (n)    Reset git hunk
+
+Git Branches ~
+    <leader>gc      (n)    Git checkout branch
+    <leader>gC      (n)    Create new branch
+
+==============================================================================
+BUFFER & TAB MANAGEMENT                                *yoda-keymaps-buffers*
+
+Buffer Navigation ~
+    <leader>bp      (n)    Previous buffer
+    <leader>bn      (n)    Next buffer
+    <leader>bd      (n)    Delete buffer
+    <leader>bD      (n)    Force delete buffer
+    <leader>bb      (n)    Buffer picker
+
+Tab Management ~
+    <leader>tn      (n)    New tab
+    <leader>tc      (n)    Close tab
+    <leader>to      (n)    Close other tabs
+    <leader>tp      (n)    Previous tab
+    <leader>tN      (n)    Next tab
+
+==============================================================================
+WINDOW MANAGEMENT                                       *yoda-keymaps-windows*
+
+Window Split ~
+    <leader>wh      (n)    Split window horizontally
+    <leader>wv      (n)    Split window vertically
+    <leader>wr      (n)    Rotate windows
+    <leader>we      (n)    Equalize window sizes
+
+Window Resize ~
+    <leader>w+      (n)    Increase window height
+    <leader>w-      (n)    Decrease window height
+    <leader>w>      (n)    Increase window width
+    <leader>w<      (n)    Decrease window width
+
+==============================================================================
+SYSTEM & CONFIGURATION                                  *yoda-keymaps-system*
+
+Configuration ~
+    <leader>ce      (n)    Edit configuration
+    <leader>cr      (n)    Reload configuration
+    <leader>ch      (n)    Check health
+
+Plugin Management ~
+    <leader>ps      (n)    Plugin sync (Lazy)
+    <leader>pi      (n)    Plugin install
+    <leader>pu      (n)    Plugin update
+    <leader>pc      (n)    Plugin clean
+    <leader>ph      (n)    Plugin help
+
+Utilities ~
+    <leader>ul      (n)    Toggle line numbers
+    <leader>ur      (n)    Toggle relative numbers
+    <leader>uw      (n)    Toggle word wrap
+    <leader>us      (n)    Toggle spell check
+
+==============================================================================
+VISUAL MODE                                             *yoda-keymaps-visual*
+
+Text Operations ~
+    <leader>r       (v)    Replace selection
+    <leader>y       (v)    Yank to clipboard
+    <leader>d       (v)    Delete to void register
+    <leader>p       (v)    Delete and paste over
+
+==============================================================================
+DISABLED KEYS                                          *yoda-keymaps-disabled*
+
+The following keys are disabled to encourage better vim habits:
+
+    <up>            (n)    Use 'k' instead
+    <down>          (n)    Use 'j' instead
+    <left>          (n)    Use 'h' instead
+    <right>         (n)    Use 'l' instead
+    <pageup>        (n)    Use '<C-u>' instead
+    <pagedown>      (n)    Use '<C-d>' instead
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

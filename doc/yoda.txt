@@ -1,0 +1,280 @@
+*yoda.txt*              Yoda.nvim - A Modern Neovim Distribution
+
+                         YODA.NVIM
+
+Author: Jedi Knights
+Version: 1.0.0
+License: MIT
+
+==============================================================================
+CONTENTS                                                       *yoda-contents*
+
+1. Introduction ................................ |yoda-introduction|
+2. Installation ................................ |yoda-installation|
+3. Quick Start ................................. |yoda-quickstart|
+4. Configuration ............................... |yoda-configuration|
+5. Language Support ............................ |yoda-languages|
+6. AI Features ................................. |yoda-ai|
+7. Keymaps ..................................... |yoda-keymaps|
+8. Plugin Management ........................... |yoda-plugins|
+9. Troubleshooting ............................. |yoda-troubleshooting|
+
+==============================================================================
+INTRODUCTION                                               *yoda-introduction*
+
+Yoda.nvim is a modern, beginner-friendly Neovim distribution that combines
+powerful development tools with AI assistance capabilities. It's designed to
+guide developers through their Neovim journey while providing a complete
+development environment.
+
+Key Features:~
+  • Beginner-friendly setup with sensible defaults
+  • AI-powered development with GitHub Copilot and OpenCode
+  • Beautiful modern UI with TokyoNight theme  
+  • Fast performance with lazy-loading optimization
+  • Comprehensive LSP, testing, debugging, and Git integration
+  • Smart keymap discovery with Which-Key
+
+==============================================================================
+INSTALLATION                                               *yoda-installation*
+
+Prerequisites:~
+  • Neovim 0.10.1 or later
+  • Git
+  • ripgrep (for fuzzy finding)
+  • Node.js (for some language servers)
+
+Installation Steps:~
+>
+    # Clone the repository
+    git clone https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
+    
+    # Start Neovim (plugins will auto-install)
+    nvim
+<
+
+On first launch, Yoda.nvim will automatically:
+  • Bootstrap lazy.nvim plugin manager
+  • Install all configured plugins
+  • Set up LSP servers
+  • Configure keymaps and options
+
+==============================================================================
+QUICK START                                                 *yoda-quickstart*
+
+Essential Commands:~
+    :help yoda-keymaps         View all keymaps
+    :Mason                     Install language servers
+    :Lazy                      Manage plugins
+    :checkhealth               Verify installation
+
+Key Shortcuts:~
+    <Space>                    Leader key
+    <Space>ff                  Find files
+    <Space>sg                  Search in project
+    <Space>eo                  Open file explorer
+    K                          Show documentation
+    gd                         Go to definition
+
+See |yoda-keymaps| for complete keymap reference.
+
+==============================================================================
+CONFIGURATION                                           *yoda-configuration*
+
+Yoda.nvim follows the standard Neovim configuration structure:
+
+Configuration Files:~
+    init.lua                   Entry point
+    lua/options.lua            Vim options and settings
+    lua/keymaps.lua            Key mappings
+    lua/plugins.lua            Plugin specifications
+    lua/autocmds.lua           Automatic commands
+
+Customization:~
+
+To customize Yoda.nvim, edit the files in ~/.config/nvim/lua/:
+
+Example - Adding custom keymaps:
+>
+    -- In lua/keymaps.lua
+    vim.keymap.set("n", "<leader>xx", ":MyCommand<CR>", 
+        { desc = "My custom command" })
+<
+
+Example - Modifying options:
+>
+    -- In lua/options.lua  
+    vim.opt.number = false          -- Disable line numbers
+    vim.opt.tabstop = 4             -- Set tab width to 4
+<
+
+==============================================================================
+LANGUAGE SUPPORT                                           *yoda-languages*
+
+Yoda.nvim provides LSP support for multiple programming languages through
+Mason (automatic) or manual installation.
+
+Pre-configured Languages:~
+    Lua                lua_ls            Neovim configuration
+    JavaScript/TypeScript  ts_ls         Web development
+    Go                 gopls             Backend development  
+    Rust               rust_analyzer     Systems programming
+    Python             pylsp             Data science/scripting
+
+Installing Language Servers:~
+
+Method 1: Mason (Recommended)
+>
+    :Mason
+    " Navigate to desired server, press 'i' to install
+<
+
+Method 2: Manual Installation
+>
+    # Example: Rust Analyzer
+    rustup component add rust-analyzer
+    
+    # Example: TypeScript Language Server
+    npm install -g typescript-language-server
+<
+
+Language Features:~
+  • Intelligent code completion
+  • Go to definition/references
+  • Hover documentation
+  • Error diagnostics
+  • Code formatting
+  • Symbol search
+
+==============================================================================
+AI FEATURES                                                       *yoda-ai*
+
+Yoda.nvim integrates multiple AI assistance tools for enhanced development.
+
+GitHub Copilot:~
+    <Tab>                      Accept suggestion
+    <C-]>                      Next suggestion
+    <C-[>                      Previous suggestion
+    <leader>cp                 Toggle Copilot
+
+OpenCode Integration:~
+    <leader>ao                 Open OpenCode
+    <leader>af                 Focus OpenCode
+    <leader>ac                 Close OpenCode
+    
+AI-powered features:
+  • Intelligent code completion
+  • Context-aware suggestions  
+  • Code review assistance
+  • Documentation generation
+
+AI Diagnostics:~
+    <leader>ad                 Run AI diagnostics
+    <leader>ah                 AI health check
+
+==============================================================================
+KEYMAPS                                                       *yoda-keymaps*
+
+For complete keymap documentation, see:
+    :help yoda-keymaps
+
+Essential Keymaps:~
+
+Leader Key: <Space>
+
+File Operations:~
+    <leader>ff                 Find files
+    <leader>fr                 Recent files
+    <leader>eo                 Open explorer
+    <leader>fs                 Save file
+
+Search & Navigation:~
+    <leader>sg                 Live grep
+    <leader>sw                 Search word
+    gd                         Go to definition
+    gr                         Go to references
+    K                          Show documentation
+
+Git Integration:~
+    <leader>gs                 Git status
+    <leader>gd                 Git diff
+    <leader>gb                 Git blame
+
+Testing:~
+    <leader>tt                 Run tests
+    <leader>tr                 Run nearest test
+
+==============================================================================
+PLUGIN MANAGEMENT                                             *yoda-plugins*
+
+Yoda.nvim uses lazy.nvim for plugin management.
+
+Plugin Commands:~
+    :Lazy                      Open Lazy UI
+    :Lazy sync                 Update plugins
+    :Lazy clean                Remove unused plugins
+    :Lazy profile              Show startup profile
+
+Adding New Plugins:~
+
+Edit lua/plugins.lua and add plugin specifications:
+>
+    return {
+      -- Existing plugins...
+      
+      -- Add new plugin
+      {
+        "username/plugin-name",
+        config = function()
+          require("plugin-name").setup()
+        end
+      }
+    }
+<
+
+Plugin Categories:~
+  • LSP & Completion       Code intelligence
+  • UI & Appearance        Themes and statusline
+  • File Management        Explorer and fuzzy finder
+  • Git Integration        Version control tools
+  • Testing & Debugging    Development workflow
+  • AI Tools               Copilot and assistants
+
+==============================================================================
+TROUBLESHOOTING                                       *yoda-troubleshooting*
+
+Common Issues:~
+
+LSP not working:
+>
+    :checkhealth              Check system health
+    :Mason                    Install language server
+    :LspInfo                  Check LSP status
+<
+
+Plugins not loading:
+>
+    :Lazy sync                Update plugins
+    :Lazy clean               Remove unused plugins
+    rm -rf ~/.local/share/nvim  # Reset plugin data
+<
+
+Performance issues:
+>
+    :Lazy profile             Check startup time
+    :checkhealth              Verify configuration
+<
+
+Getting Help:~
+  • Check :checkhealth for system issues
+  • Review plugin documentation with :help
+  • Visit GitHub issues for community support
+  • Use :messages to see error logs
+
+Configuration Files:~
+    ~/.config/nvim/           Main configuration directory
+    ~/.local/share/nvim/      Plugin data directory
+    ~/.cache/nvim/            Cache directory
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

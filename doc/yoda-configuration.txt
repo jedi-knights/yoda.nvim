@@ -1,0 +1,358 @@
+*yoda-configuration.txt*      Yoda.nvim Configuration Guide
+
+                       YODA.NVIM CONFIGURATION GUIDE
+
+==============================================================================
+CONTENTS                                         *yoda-configuration-contents*
+
+1. Configuration Overview .................. |yoda-config-overview|
+2. Basic Configuration ..................... |yoda-config-basic|
+3. Customizing Appearance .................. |yoda-config-appearance|
+4. Language Configuration .................. |yoda-config-languages|
+5. Keymaps Customization ................... |yoda-config-keymaps|
+6. Plugin Management ....................... |yoda-config-plugins|
+7. Advanced Configuration .................. |yoda-config-advanced|
+
+==============================================================================
+CONFIGURATION OVERVIEW                            *yoda-config-overview*
+
+Yoda.nvim uses a modular configuration structure:
+
+File Structure:~
+>
+    ~/.config/nvim/
+    ├── init.lua                 Entry point
+    ├── lua/
+    │   ├── options.lua          Neovim options
+    │   ├── keymaps.lua          Key mappings
+    │   ├── autocmds.lua         Auto-commands
+    │   ├── plugins.lua          Plugin specifications
+    │   └── yoda/
+    │       ├── colorscheme.lua  Theme settings
+    │       ├── lsp.lua          LSP configuration
+    │       └── functions.lua    Custom functions
+<
+
+==============================================================================
+BASIC CONFIGURATION                               *yoda-config-basic*
+
+Startup Messages~
+
+Control what you see when Neovim starts:
+>
+    -- In init.lua or options.lua
+    vim.g.yoda_config = {
+      verbose_startup = false,              -- Show detailed startup messages
+      show_loading_messages = false,        -- Show plugin loading messages
+      show_environment_notification = true  -- Show environment notification
+    }
+<
+
+Environment Mode~
+
+Set environment-specific features:
+>
+    # For home environment
+    export YODA_ENV=home
+    
+    # For work environment  
+    export YODA_ENV=work
+<
+
+Add to your shell profile:
+>
+    # Add to ~/.zshrc or ~/.bashrc
+    echo 'export YODA_ENV=home' >> ~/.zshrc
+<
+
+Global Options~
+
+Customize Neovim behavior in lua/options.lua:
+>
+    -- Line numbers
+    vim.opt.number = true
+    vim.opt.relativenumber = true
+    
+    -- Indentation
+    vim.opt.tabstop = 2
+    vim.opt.shiftwidth = 2
+    vim.opt.expandtab = true
+    
+    -- Search
+    vim.opt.ignorecase = true
+    vim.opt.smartcase = true
+<
+
+==============================================================================
+CUSTOMIZING APPEARANCE                            *yoda-config-appearance*
+
+Colorscheme~
+
+Change the theme in lua/yoda/colorscheme.lua:
+>
+    -- Set colorscheme
+    vim.cmd.colorscheme("tokyonight")
+    
+    -- Or use a different theme
+    -- vim.cmd.colorscheme("catppuccin")
+    -- vim.cmd.colorscheme("gruvbox")
+<
+
+UI Components~
+
+Customize statusline and other UI elements:
+>
+    -- In plugins.lua
+    {
+      "nvim-lualine/lualine.nvim",
+      opts = {
+        options = {
+          theme = "tokyonight",
+          section_separators = "",
+          component_separators = ""
+        }
+      }
+    }
+<
+
+Dashboard Customization~
+
+Modify the Alpha dashboard:
+>
+    -- In plugins.lua - Alpha configuration
+    {
+      "goolord/alpha-nvim",
+      config = function()
+        local dashboard = require("alpha.themes.dashboard")
+        dashboard.section.header.val = {
+          "Your Custom ASCII Art Here"
+        }
+        require("alpha").setup(dashboard.config)
+      end
+    }
+<
+
+==============================================================================
+LANGUAGE CONFIGURATION                            *yoda-config-languages*
+
+LSP Setup~
+
+Configure language servers in lua/yoda/lsp.lua:
+>
+    -- Add new language server
+    require("lspconfig").pyright.setup({
+      capabilities = capabilities,
+      on_attach = on_attach,
+      settings = {
+        python = {
+          analysis = {
+            typeCheckingMode = "basic"
+          }
+        }
+      }
+    })
+<
+
+Mason Configuration~
+
+Install language servers automatically:
+>
+    -- In plugins.lua
+    {
+      "williamboman/mason.nvim",
+      opts = {
+        ensure_installed = {
+          "lua-language-server",
+          "pyright",
+          "rust-analyzer",
+          "typescript-language-server"
+        }
+      }
+    }
+<
+
+Treesitter Languages~
+
+Add syntax highlighting for new languages:
+>
+    -- In plugins.lua
+    {
+      "nvim-treesitter/nvim-treesitter",
+      opts = {
+        ensure_installed = {
+          "lua", "python", "rust", "javascript", "typescript",
+          "your-language-here"
+        }
+      }
+    }
+<
+
+==============================================================================
+KEYMAPS CUSTOMIZATION                             *yoda-config-keymaps*
+
+Adding Custom Keymaps~
+
+Add your keymaps in lua/keymaps.lua:
+>
+    -- Custom keymap examples
+    vim.keymap.set("n", "<leader>xx", ":MyCommand<CR>", 
+        { desc = "My custom command" })
+    
+    vim.keymap.set("n", "<C-n>", ":bnext<CR>", 
+        { desc = "Next buffer" })
+    
+    vim.keymap.set("i", "jj", "<Esc>", 
+        { desc = "Exit insert mode" })
+<
+
+Overriding Default Keymaps~
+
+Override existing keymaps by redefining them:
+>
+    -- Override default file finder
+    vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>", 
+        { desc = "Find files with Telescope" })
+<
+
+Which-Key Integration~
+
+Register custom keymaps with Which-Key for discoverability:
+>
+    -- Register custom keymaps
+    require("which-key").register({
+      ["<leader>x"] = {
+        name = "Custom Commands",
+        x = { ":MyCommand<CR>", "My Command" },
+        y = { ":AnotherCommand<CR>", "Another Command" }
+      }
+    })
+<
+
+==============================================================================
+PLUGIN MANAGEMENT                                 *yoda-config-plugins*
+
+Adding New Plugins~
+
+Add plugins to lua/plugins.lua:
+>
+    return {
+      -- Existing plugins...
+      
+      -- Add new plugin
+      {
+        "username/plugin-name",
+        config = function()
+          require("plugin-name").setup({
+            -- Plugin configuration
+          })
+        end
+      },
+      
+      -- Plugin with lazy loading
+      {
+        "username/another-plugin",
+        lazy = true,
+        cmd = "PluginCommand",
+        keys = {
+          { "<leader>p", ":PluginCommand<CR>", desc = "Plugin command" }
+        }
+      }
+    }
+<
+
+Plugin Configuration~
+
+Configure existing plugins:
+>
+    -- Override plugin settings
+    {
+      "nvim-telescope/telescope.nvim",
+      opts = {
+        defaults = {
+          layout_config = {
+            horizontal = { width = 0.9 }
+          }
+        }
+      }
+    }
+<
+
+Removing Plugins~
+
+Comment out or remove unwanted plugins:
+>
+    -- Remove this plugin by commenting out
+    -- {
+    --   "unwanted/plugin",
+    --   config = function() end
+    -- }
+<
+
+==============================================================================
+ADVANCED CONFIGURATION                            *yoda-config-advanced*
+
+Custom Functions~
+
+Add utility functions in lua/yoda/functions.lua:
+>
+    local M = {}
+    
+    function M.my_custom_function()
+      -- Your custom logic here
+      print("Custom function executed!")
+    end
+    
+    -- Make function globally available
+    vim.api.nvim_create_user_command("MyFunction", M.my_custom_function, {})
+    
+    return M
+<
+
+Autocommands~
+
+Add automatic behaviors in lua/autocmds.lua:
+>
+    -- Auto-save on focus lost
+    vim.api.nvim_create_autocmd("FocusLost", {
+      pattern = "*",
+      command = "silent! wa"
+    })
+    
+    -- Format on save for specific filetypes
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      pattern = "*.lua",
+      callback = function()
+        vim.lsp.buf.format({ async = false })
+      end
+    })
+<
+
+Custom Commands~
+
+Create custom Neovim commands:
+>
+    -- Custom command example
+    vim.api.nvim_create_user_command("ToggleRelativeNumber", function()
+      vim.opt.relativenumber = not vim.opt.relativenumber:get()
+    end, { desc = "Toggle relative line numbers" })
+<
+
+Conditional Configuration~
+
+Load configuration based on conditions:
+>
+    -- Load work-specific config
+    if vim.env.YODA_ENV == "work" then
+      require("config.work")
+    elseif vim.env.YODA_ENV == "home" then  
+      require("config.home")
+    end
+    
+    -- OS-specific configuration
+    if vim.fn.has("mac") == 1 then
+      vim.opt.clipboard = "unnamedplus"
+    end
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

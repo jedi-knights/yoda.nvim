@@ -12,6 +12,30 @@ local function map(mode, lhs, rhs, opts)
 end
 
 -- ============================================================================
+-- HELP & DOCUMENTATION
+-- ============================================================================
+
+-- Smart K mapping: LSP hover or help fallback
+map("n", "K", function()
+  -- Check if LSP clients are attached
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  if #clients > 0 then
+    vim.lsp.buf.hover()
+  else
+    -- Fallback to help for the word under cursor
+    local word = vim.fn.expand("<cword>")
+    if word ~= "" then
+      local success = pcall(vim.cmd, "help " .. word)
+      if not success then
+        vim.notify("No help found for: " .. word, vim.log.levels.WARN)
+      end
+    else
+      vim.notify("No word under cursor", vim.log.levels.INFO)
+    end
+  end
+end, { desc = "Help: Show hover/help for word under cursor" })
+
+-- ============================================================================
 -- EXPLORER
 -- ============================================================================
 
@@ -101,6 +125,17 @@ map("n", "<leader>ec", function()
   end
 end, { desc = "Explorer: Close (if open)" })
 
+-- Refresh explorer if it's open
+map("n", "<leader>er", function()
+  local success = pcall(function()
+    require("snacks").explorer.refresh()
+    vim.notify("Explorer refreshed", vim.log.levels.INFO)
+  end)
+  if not success then
+    vim.notify("Explorer not available or not open", vim.log.levels.WARN)
+  end
+end, { desc = "Explorer: Refresh" })
+
 -- Show explorer help/keybindings
 map("n", "<leader>e?", function()
   local help_text = {
@@ -108,6 +143,7 @@ map("n", "<leader>e?", function()
     "",
     "<leader>eo - Open explorer",
     "<leader>ef - Focus explorer",
+    "<leader>er - Refresh explorer",
     "<leader>ec - Close explorer",
     "",
     "In Explorer:",
@@ -1040,6 +1076,101 @@ map(
   end),
   { desc = "AI: Toggle/Focus OpenCode (auto-save + insert mode)" }
 )
+
+-- OpenCode: Return to previous buffer
+map({ "n", "i" }, "<leader>ab", function()
+  -- Exit insert mode if we're in it
+  if vim.fn.mode() == "i" then
+    vim.cmd("stopinsert")
+  end
+
+  -- Find the most recent non-OpenCode window
+  local current_win = vim.api.nvim_get_current_win()
+  local windows = vim.api.nvim_list_wins()
+
+  for _, win in ipairs(windows) do
+    if win ~= current_win then
+      local buf = vim.api.nvim_win_get_buf(win)
+      local buf_name = vim.api.nvim_buf_get_name(buf)
+      -- Skip OpenCode windows and special buffers
+      if not buf_name:match("[Oo]pen[Cc]ode") and not buf_name:match("^$") and vim.bo[buf].buftype == "" then
+        vim.api.nvim_set_current_win(win)
+        return
+      end
+    end
+  end
+
+  -- Fallback: just switch to previous window
+  vim.cmd("wincmd p")
+end, { desc = "AI: Return to previous buffer from OpenCode" })
+
+-- OpenCode: Enhanced Escape - exit insert mode and return to previous buffer
+map("i", "<C-q>", function()
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  if buf_name:match("[Oo]pen[Cc]ode") then
+    -- In OpenCode: exit insert mode and return to previous buffer
+    vim.cmd("stopinsert")
+    vim.schedule(function()
+      -- Find a non-OpenCode window
+      local windows = vim.api.nvim_list_wins()
+      for _, win in ipairs(windows) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local name = vim.api.nvim_buf_get_name(buf)
+        if not name:match("[Oo]pen[Cc]ode") and vim.bo[buf].buftype == "" then
+          vim.api.nvim_set_current_win(win)
+          return
+        end
+      end
+      -- Fallback
+      vim.cmd("wincmd p")
+    end)
+  else
+    -- Normal behavior: just exit insert mode
+    vim.cmd("stopinsert")
+  end
+end, { desc = "Smart escape: Exit insert mode (return to buffer if in OpenCode)" })
+
+-- OpenCode: Alternative method with different key combo (works better with OpenCode)
+map(
+  { "n", "i" },
+  "<A-q>", -- Alt+q (Option+q on Mac)
+  function()
+    -- Force exit insert mode first
+    if vim.fn.mode() == "i" then
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+    end
+
+    -- Schedule the window switch
+    vim.schedule(function()
+      local windows = vim.api.nvim_list_wins()
+      local current_win = vim.api.nvim_get_current_win()
+
+      -- Find the first non-OpenCode window
+      for _, win in ipairs(windows) do
+        if win ~= current_win then
+          local buf = vim.api.nvim_win_get_buf(win)
+          local name = vim.api.nvim_buf_get_name(buf)
+          local buftype = vim.bo[buf].buftype
+
+          -- Skip OpenCode and special buffers
+          if not name:match("[Oo]pen[Cc]ode") and not name:match("NvimTree") and buftype == "" and name ~= "" then
+            vim.api.nvim_set_current_win(win)
+            vim.notify("← Returned to main buffer", vim.log.levels.INFO)
+            return
+          end
+        end
+      end
+
+      -- Fallback to previous window
+      pcall(vim.cmd, "wincmd p")
+      vim.notify("← Switched to previous window", vim.log.levels.INFO)
+    end)
+  end,
+  { desc = "Exit OpenCode and return to main buffer (Alt+q)" }
+)
+
+-- OpenCode: Command-based return (most reliable)
+map({ "n", "i" }, "<leader>aq", ":OpenCodeReturn<CR>", { desc = "Return to main buffer from OpenCode (command-based)", silent = true })
 
 map(
   { "n", "x" },

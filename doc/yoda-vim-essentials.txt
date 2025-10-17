@@ -1,0 +1,252 @@
+*yoda-vim-essentials.txt*     Vim Essentials Quick Reference
+
+                        VIM ESSENTIALS QUICK REFERENCE
+
+The most important Vim commands for daily use.
+For comprehensive guide, see |yoda-vim-tutor|.
+
+==============================================================================
+CONTENTS                                       *yoda-vim-essentials-contents*
+
+1. The Big Picture ......................... |yoda-vim-essentials-big-picture|
+2. Essential Commands ...................... |yoda-vim-essentials-commands|
+3. Movement ................................ |yoda-vim-essentials-movement|
+4. Editing ................................. |yoda-vim-essentials-editing|
+5. Selection ............................... |yoda-vim-essentials-selection|
+6. Search & Replace ........................ |yoda-vim-essentials-search|
+7. File Operations ......................... |yoda-vim-essentials-files|
+8. Quick Tips .............................. |yoda-vim-essentials-tips|
+
+==============================================================================
+THE BIG PICTURE                              *yoda-vim-essentials-big-picture*
+
+Vim Modes~
+  • Normal Mode - Navigate and execute commands (default)
+  • Insert Mode - Type text like a normal editor
+  • Visual Mode - Select text  
+  • Command Mode - Execute commands (: prompts)
+
+Mode Switching~
+    <Esc>                      Return to Normal mode (from any mode)
+    i                          Insert before cursor
+    a                          Insert after cursor
+    v                          Visual selection
+    :                          Command mode
+
+Key Concept~
+Vim is modal - different modes for different tasks. Start in Normal mode,
+switch to Insert to type, return to Normal to navigate and execute commands.
+
+==============================================================================
+ESSENTIAL COMMANDS                            *yoda-vim-essentials-commands*
+
+Movement (Normal Mode)~
+    h j k l                    ← ↓ ↑ →  (left, down, up, right)
+    w                          Next word
+    b                          Previous word
+    e                          End of current word
+    0                          Start of line
+    ^                          First non-whitespace character
+    $                          End of line
+    gg                         Top of file
+    G                          Bottom of file
+    <C-u>                      Half page up
+    <C-d>                      Half page down
+
+Editing Basics~
+    i                          Insert before cursor
+    a                          Insert after cursor
+    A                          Insert at end of line
+    I                          Insert at beginning of line
+    o                          Open new line below
+    O                          Open new line above
+    <Esc>                      Exit insert mode → Normal mode
+
+Delete~
+    x                          Delete character under cursor
+    X                          Delete character before cursor
+    dw                         Delete word
+    dd                         Delete entire line
+    d$                         Delete to end of line
+    D                          Delete to end of line (same as d$)
+    
+Undo/Redo~
+    u                          Undo last change
+    <C-r>                      Redo last undo
+
+==============================================================================
+MOVEMENT                                      *yoda-vim-essentials-movement*
+
+Character Movement~
+    h                          Move left one character
+    j                          Move down one line  
+    k                          Move up one line
+    l                          Move right one character
+
+Word Movement~
+    w                          Move to beginning of next word
+    W                          Move to beginning of next WORD (space-separated)
+    b                          Move to beginning of previous word
+    B                          Move to beginning of previous WORD
+    e                          Move to end of current word
+    E                          Move to end of current WORD
+
+Line Movement~
+    0                          Move to beginning of line
+    ^                          Move to first non-whitespace character
+    $                          Move to end of line
+    g_                         Move to last non-whitespace character
+
+File Movement~
+    gg                         Move to first line of file
+    G                          Move to last line of file
+    :n                         Move to line n (e.g., :42)
+    <C-o>                      Go to previous location
+    <C-i>                      Go to next location
+
+Screen Movement~
+    H                          Move to top of screen
+    M                          Move to middle of screen  
+    L                          Move to bottom of screen
+    <C-u>                      Move half screen up
+    <C-d>                      Move half screen down
+    <C-b>                      Move full screen up
+    <C-f>                      Move full screen down
+
+==============================================================================
+EDITING                                        *yoda-vim-essentials-editing*
+
+Entering Insert Mode~
+    i                          Insert before cursor
+    a                          Insert after cursor
+    I                          Insert at beginning of line
+    A                          Insert at end of line
+    o                          Open new line below and insert
+    O                          Open new line above and insert
+    s                          Delete character and insert
+    S                          Delete line and insert
+
+Deleting Text~
+    x                          Delete character under cursor
+    X                          Delete character before cursor
+    dw                         Delete from cursor to start of next word
+    de                         Delete from cursor to end of word
+    dd                         Delete entire line
+    d$                         Delete from cursor to end of line
+    d0                         Delete from cursor to beginning of line
+
+Changing Text~
+    cw                         Change word (delete word and enter insert)
+    ce                         Change to end of word
+    cc                         Change entire line
+    c$                         Change to end of line
+    C                          Change to end of line (same as c$)
+    s                          Substitute character (delete char and insert)
+    S                          Substitute line (delete line and insert)
+
+Copy and Paste~
+    yy                         Copy (yank) current line
+    yw                         Copy word
+    y$                         Copy to end of line
+    p                          Paste after cursor/line
+    P                          Paste before cursor/line
+
+==============================================================================
+SELECTION                                    *yoda-vim-essentials-selection*
+
+Visual Mode~
+    v                          Start character-wise visual selection
+    V                          Start line-wise visual selection
+    <C-v>                      Start block-wise visual selection
+    <Esc>                      Exit visual mode
+
+In Visual Mode~
+    h j k l                    Extend selection
+    w b e                      Extend by word
+    0 $                        Extend to line boundaries
+    gg G                       Extend to file boundaries
+
+Visual Mode Operations~
+    d                          Delete selected text
+    y                          Copy selected text
+    c                          Change selected text (delete and insert)
+    >                          Indent selected text
+    <                          Unindent selected text
+    =                          Auto-indent selected text
+
+==============================================================================
+SEARCH & REPLACE                              *yoda-vim-essentials-search*
+
+Search~
+    /pattern                   Search forward for pattern
+    ?pattern                   Search backward for pattern
+    n                          Next search result
+    N                          Previous search result
+    *                          Search forward for word under cursor
+    #                          Search backward for word under cursor
+    
+Find and Replace~
+    :s/old/new                 Replace first occurrence in current line
+    :s/old/new/g               Replace all occurrences in current line
+    :%s/old/new/g              Replace all occurrences in entire file
+    :%s/old/new/gc             Replace all with confirmation
+
+==============================================================================
+FILE OPERATIONS                               *yoda-vim-essentials-files*
+
+File Commands~
+    :w                         Write (save) file
+    :w filename                Write to filename
+    :q                         Quit
+    :q!                        Quit without saving
+    :wq                        Write and quit
+    :x                         Write and quit (only if changes made)
+    ZZ                         Write and quit (Normal mode)
+    ZQ                         Quit without saving (Normal mode)
+
+Multiple Files~
+    :e filename                Edit filename
+    :bn                        Next buffer
+    :bp                        Previous buffer
+    :bd                        Delete buffer
+    :ls                        List buffers
+
+==============================================================================
+QUICK TIPS                                      *yoda-vim-essentials-tips*
+
+Essential Habits~
+1. Stay in Normal mode when not typing
+2. Use hjkl for movement instead of arrow keys  
+3. Learn word movement (w, b, e) for faster navigation
+4. Use . to repeat last command
+5. Use <C-c> as alternative to <Esc>
+
+Common Patterns~
+    dd                         Delete line
+    yy                         Copy line
+    p                          Paste line below
+    P                          Paste line above
+    u                          Undo
+    <C-r>                      Redo
+
+Productivity Shortcuts~
+    .                          Repeat last command
+    %                          Match parentheses/brackets
+    >>                         Indent line
+    <<                         Unindent line
+    ==                         Auto-indent line
+
+Getting Help~
+    :help                      Open Vim help
+    :help topic                Help on specific topic
+    :help keymaps              Help on keymaps
+    K                          Help for word under cursor (in Yoda.nvim)
+
+Remember~
+  • Vim has a learning curve, but becomes very powerful
+  • Practice these commands daily
+  • Start with basics, gradually learn more advanced features
+  • Use vimtutor for interactive learning: vimtutor
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

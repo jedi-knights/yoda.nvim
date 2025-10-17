@@ -99,6 +99,7 @@ return {
           left_trunc_marker = "",
           right_trunc_marker = "",
           diagnostics = "nvim_lsp",
+          diagnostics_update_in_insert = false,
           diagnostics_indicator = function(count, level)
             local icon = level:match("error") and " " or " "
             return " " .. icon .. count
@@ -177,14 +178,13 @@ return {
         opts = {
           margin = 5,
           setup = function()
-            vim.api.nvim_set_option_value("laststatus", 0, { scope = "local" })
-            -- Don't hide tabline on dashboard - we want bufferline visible
-            -- vim.api.nvim_set_option_value("showtabline", 0, { scope = "local" })
-            vim.api.nvim_set_option_value("ruler", false, { scope = "local" })
-            vim.api.nvim_set_option_value("showcmd", false, { scope = "local" })
-            vim.api.nvim_set_option_value("cmdheight", 0, { scope = "local" })
-            vim.api.nvim_set_option_value("number", false, { scope = "local" })
-            vim.api.nvim_set_option_value("relativenumber", false, { scope = "local" })
+            -- Use proper scopes for options that support them
+            vim.opt_local.laststatus = 0
+            vim.opt_local.ruler = false
+            vim.opt_local.showcmd = false
+            vim.opt_local.cmdheight = 0
+            vim.opt_local.number = false
+            vim.opt_local.relativenumber = false
           end,
         },
       }
@@ -311,42 +311,6 @@ return {
       local mason_ok, mason = pcall(require, "mason")
       if mason_ok then
         mason.setup()
-      end
-    end,
-  },
-
-  -- Mason LSP Config - Automatic LSP server installation
-  {
-    "williamboman/mason-lspconfig.nvim",
-    lazy = true,
-    event = "VeryLazy",
-    dependencies = { "williamboman/mason.nvim" },
-    config = function()
-      local mason_lsp_ok, mason_lspconfig = pcall(require, "mason-lspconfig")
-      if mason_lsp_ok then
-        mason_lspconfig.setup({
-          ensure_installed = {
-            "lua_ls",
-            "gopls",
-            "ts_ls",
-            "rust_analyzer", -- Installed by Mason but handled by rust-tools.nvim, not mason-lspconfig
-            "basedpyright",
-            "omnisharp", -- Use OmniSharp instead of csharp_ls for better reliability
-          },
-          -- Add automatic installation for servers not in ensure_installed
-          automatic_installation = true,
-          -- Handlers to configure servers (rust_analyzer excluded - handled by rust-tools.nvim)
-          handlers = {
-            -- Default handler for most servers
-            function(server_name)
-              -- Skip rust_analyzer - it's handled by rust-tools.nvim
-              if server_name == "rust_analyzer" then
-                return
-              end
-              require("lspconfig")[server_name].setup({})
-            end,
-          },
-        })
       end
     end,
   },

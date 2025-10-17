@@ -1,0 +1,214 @@
+*yoda-installation.txt*        Yoda.nvim Installation Guide
+
+                        YODA.NVIM INSTALLATION GUIDE
+
+==============================================================================
+CONTENTS                                           *yoda-installation-contents*
+
+1. Prerequisites ........................... |yoda-installation-prereqs|
+2. Quick Installation ...................... |yoda-installation-quick|
+3. First Launch ............................ |yoda-installation-first-launch|
+4. Verification ............................ |yoda-installation-verification|
+5. Troubleshooting ......................... |yoda-installation-troubleshooting|
+
+==============================================================================
+PREREQUISITES                                     *yoda-installation-prereqs*
+
+System Requirements:~
+  • Neovim 0.10.1 or later
+  • Git
+  • ripgrep (for fuzzy finding)
+
+Install Prerequisites~
+
+macOS (Homebrew):
+>
+    # Install Neovim
+    brew install neovim
+    
+    # Install ripgrep
+    brew install ripgrep
+<
+
+Ubuntu/Debian:
+>
+    # Install Neovim
+    sudo apt update
+    sudo apt install neovim
+    
+    # Install ripgrep  
+    sudo apt install ripgrep
+<
+
+Arch Linux:
+>
+    # Install Neovim
+    sudo pacman -S neovim
+    
+    # Install ripgrep
+    sudo pacman -S ripgrep
+<
+
+Fedora/RHEL:
+>
+    # Install Neovim
+    sudo dnf install neovim
+    
+    # Install ripgrep
+    sudo dnf install ripgrep
+<
+
+==============================================================================
+QUICK INSTALLATION                               *yoda-installation-quick*
+
+Method 1: Git Clone (Recommended)~
+>
+    # Backup existing config (optional)
+    mv ~/.config/nvim ~/.config/nvim.backup
+    
+    # Clone the repository
+    git clone https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
+    
+    # Start Neovim
+    nvim
+<
+
+Method 2: Shallow Clone (Faster)~
+>
+    # Shallow clone for faster download
+    git clone --depth=1 https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
+    
+    # Start Neovim  
+    nvim
+<
+
+Method 3: Manual Installation~
+>
+    # Create Neovim config directory
+    mkdir -p ~/.config/nvim
+    
+    # Download and extract
+    curl -L https://github.com/jedi-knights/yoda.nvim/archive/main.tar.gz | tar -xz
+    mv yoda.nvim-main/* ~/.config/nvim/
+    rm -rf yoda.nvim-main
+<
+
+==============================================================================
+FIRST LAUNCH                                   *yoda-installation-first-launch*
+
+The first launch will automatically bootstrap all plugins via lazy.nvim.
+This may take a few minutes depending on your internet connection.
+
+What Happens on First Launch:~
+1. Plugin Installation: Lazy.nvim downloads and installs all required plugins
+2. Language Servers: Mason installs LSP servers for common languages  
+3. Dashboard: Alpha dashboard appears with welcome screen
+4. Configuration: All settings are applied automatically
+
+Expected Output:~
+>
+    Installing plugins...
+    [1/45] Installing lazy.nvim
+    [2/45] Installing tokyonight.nvim
+    [3/45] Installing nvim-treesitter
+    ...
+    All plugins installed successfully!
+<
+
+==============================================================================
+VERIFICATION                                   *yoda-installation-verification*
+
+Verify Installation:~
+
+1. Check Neovim Version:
+>
+    nvim --version
+    # Should show 0.10.1 or higher
+<
+
+2. Check Plugin Installation:
+>
+    # In Neovim
+    :Lazy
+    # Should show all plugins as installed
+<
+
+3. Check LSP Servers:
+>
+    # In Neovim
+    :Mason
+    # Should show available language servers
+<
+
+4. Check System Health:
+>
+    # In Neovim
+    :checkhealth
+    # Should show all components as OK
+<
+
+Quick Test Commands:~
+    :help yoda                 Open main help
+    <leader>ff                 Find files (should work)
+    <leader>e                  Toggle file explorer
+    K                          Help system (try on any word)
+
+==============================================================================
+TROUBLESHOOTING                           *yoda-installation-troubleshooting*
+
+Common Issues:~
+
+1. Neovim Version Too Old~
+Error: "This configuration requires Neovim 0.10.1+"
+Solution:
+>
+    # Update Neovim to latest version
+    # macOS: brew upgrade neovim
+    # Ubuntu: Download from GitHub releases
+<
+
+2. Git Not Installed~
+Error: "git command not found"
+Solution:
+>
+    # Install Git
+    # macOS: brew install git
+    # Ubuntu: sudo apt install git
+<
+
+3. Plugin Installation Fails~
+Error: "Failed to install plugins"
+Solution:
+>
+    # Delete plugin data and retry
+    rm -rf ~/.local/share/nvim
+    rm -rf ~/.cache/nvim
+    nvim
+<
+
+4. LSP Servers Not Working~
+Error: "LSP client not found"
+Solution:
+>
+    # Install language server manually
+    :Mason
+    # Navigate to desired server, press 'i' to install
+<
+
+5. File Search Not Working~
+Error: "rg command not found"
+Solution:
+>
+    # Install ripgrep
+    # macOS: brew install ripgrep
+    # Ubuntu: sudo apt install ripgrep
+<
+
+Getting Help:~
+  • Run :checkhealth for system diagnostics
+  • Check :messages for error logs
+  • Visit GitHub issues for community support
+  • Join discussions for questions
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
