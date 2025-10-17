@@ -279,7 +279,15 @@ return {
             "diff",
             "diagnostics",
           },
-          lualine_c = { "filename" },
+          lualine_c = { 
+            {
+              function()
+                return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+              end,
+              icon = "📁",
+            },
+            "filename" 
+          },
           lualine_x = { "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },
