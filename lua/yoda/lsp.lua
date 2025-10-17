@@ -163,6 +163,21 @@ function M.setup()
     capabilities = capabilities,
   })
 
+  -- Java setup (also works for Jenkinsfiles/Groovy)
+  safe_setup("jdtls", {
+    cmd = { "jdtls" },
+    filetypes = { "java", "groovy" },
+    root_markers = { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" },
+    capabilities = capabilities,
+    settings = {
+      java = {
+        configuration = {
+          runtimes = {},
+        },
+      },
+    },
+  })
+
   -- Setup LSP keymaps on attach with debounced UI updates
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("YodaLspConfig", {}),
@@ -278,6 +293,7 @@ function M._setup_debug_commands()
       "yamlls",
       "omnisharp",
       "helm_ls",
+      "jdtls",
     }
     for _, server in ipairs(available_servers) do
       local cmd_available = vim.fn.executable(server) == 1
