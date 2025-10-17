@@ -338,6 +338,7 @@ return {
           "yamlls",
           "omnisharp",
           "helm_ls",
+          "marksman", -- Markdown LSP server
         },
       })
 
@@ -1049,10 +1050,10 @@ return {
         auto_install = true,
         highlight = { enable = true },
         indent = { enable = true },
-        -- AGGRESSIVE PERFORMANCE: Completely disable treesitter for markdown
+        -- PERFORMANCE: Limited treesitter for markdown (syntax highlighting only)
         markdown = {
-          enable = false, -- Disable ALL treesitter features for markdown
-          disable = { "markdown" }, -- Explicitly disable markdown parser
+          enable = true, -- Enable basic syntax highlighting
+          disable = { "markdown_inline" }, -- Disable expensive inline parsing
         },
         -- Disable expensive features globally
         incremental_selection = { enable = false },

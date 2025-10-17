@@ -398,10 +398,8 @@ map("n", "<leader>tt", function()
         table.insert(preprocessor_args, markers)
       end
 
-      -- Add allure flag if requested
-      if open_allure then
-        table.insert(preprocessor_args, "--allure")
-      end
+      -- Skip adding --allure to preprocessor - let preprocessor handle allure via env vars
+      -- The preprocessor can check TEST_OPEN_ALLURE environment variable instead
 
       actual_command = python_exe .. " " .. preprocessor_path .. " " .. table.concat(preprocessor_args, " ")
     else

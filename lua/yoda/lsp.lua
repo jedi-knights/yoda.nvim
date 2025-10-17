@@ -178,6 +178,14 @@ function M.setup()
     },
   })
 
+  -- Markdown setup
+  safe_setup("marksman", {
+    cmd = { "marksman", "server" },
+    filetypes = { "markdown", "markdown.mdx" },
+    root_markers = { ".git", ".marksman.toml" },
+    capabilities = capabilities,
+  })
+
   -- Setup LSP keymaps on attach with debounced UI updates
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("YodaLspConfig", {}),
@@ -294,6 +302,7 @@ function M._setup_debug_commands()
       "omnisharp",
       "helm_ls",
       "jdtls",
+      "marksman",
     }
     for _, server in ipairs(available_servers) do
       local cmd_available = vim.fn.executable(server) == 1
