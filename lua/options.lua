@@ -58,6 +58,13 @@ vim.opt.incsearch = true
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
 -- ============================================================================
+-- HELP & DOCUMENTATION
+-- ============================================================================
+
+-- Set keywordprg for K (Shift+K) help lookup
+vim.opt.keywordprg = ":help"
+
+-- ============================================================================
 -- WILDCARD
 -- ============================================================================
 
@@ -73,12 +80,23 @@ vim.opt.cmdheight = 1
 vim.opt.showtabline = 2 -- Always show bufferline/tabline
 
 -- ============================================================================
--- BACKUP
+-- BACKUP & SHADA
 -- ============================================================================
 
 vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.swapfile = false
+
+-- ShaDa (shared data) settings for better reliability
+vim.opt.shada = {
+  "!", -- Save global variables
+  "'100", -- Save marks for last 100 files
+  "<50", -- Save max 50 lines for each register
+  "s10", -- Max item size 10KB
+  "h", -- Disable hlsearch when loading
+  "f1", -- Store file marks
+  "r/tmp", -- Skip removable media
+}
 
 -- ============================================================================
 -- TERMINAL

@@ -3,6 +3,68 @@
 -- ============================================================================
 
 -- ============================================================================
+-- BUFFERLINE DEBUGGING COMMANDS
+-- ============================================================================
+
+--- Setup bufferline debugging commands
+local function setup_bufferline_debug_commands()
+  local bufferline_debug = require("yoda.diagnostics.bufferline_debug")
+
+  vim.api.nvim_create_user_command("BufferlineDebugStart", function()
+    bufferline_debug.enable()
+  end, { desc = "Start monitoring bufferline events for debugging flickering" })
+
+  vim.api.nvim_create_user_command("BufferlineDebugStop", function()
+    bufferline_debug.disable()
+  end, { desc = "Stop bufferline debugging" })
+
+  vim.api.nvim_create_user_command("BufferlineDebugAnalyze", function()
+    bufferline_debug.analyze()
+  end, { desc = "Analyze bufferline debug log and show insights" })
+
+  vim.api.nvim_create_user_command("BufferlineDebugStatus", function()
+    bufferline_debug.status()
+  end, { desc = "Show current bufferline debugging status" })
+end
+
+-- ============================================================================
+-- OPENCODE INTEGRATION COMMANDS
+-- ============================================================================
+
+do
+  vim.api.nvim_create_user_command("OpenCodeReturn", function()
+    -- Exit insert mode if needed
+    if vim.fn.mode() == "i" then
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+    end
+
+    vim.schedule(function()
+      local windows = vim.api.nvim_list_wins()
+      local current_win = vim.api.nvim_get_current_win()
+
+      -- Find first non-OpenCode window
+      for _, win in ipairs(windows) do
+        if win ~= current_win then
+          local buf = vim.api.nvim_win_get_buf(win)
+          local name = vim.api.nvim_buf_get_name(buf)
+          local buftype = vim.bo[buf].buftype
+
+          if not name:match("[Oo]pen[Cc]ode") and not name:match("NvimTree") and buftype == "" and name ~= "" then
+            vim.api.nvim_set_current_win(win)
+            vim.notify("← Returned to: " .. vim.fn.fnamemodify(name, ":t"), vim.log.levels.INFO)
+            return
+          end
+        end
+      end
+
+      -- Fallback
+      pcall(vim.cmd, "wincmd p")
+      vim.notify("← Switched to previous window", vim.log.levels.INFO)
+    end)
+  end, { desc = "Return to main buffer from OpenCode" })
+end
+
+-- ============================================================================
 -- LSP UTILITY COMMANDS
 -- ============================================================================
 
@@ -488,3 +550,6 @@ end, { nargs = "?", desc = "Create new .NET project/file" })
 -- LSP utility commands
 vim.api.nvim_create_user_command("YodaLspInfo", show_lsp_clients, { desc = "Show LSP clients for current buffer" })
 vim.api.nvim_create_user_command("YodaHelmDebug", debug_helm_setup, { desc = "Debug Helm template detection and LSP" })
+
+-- Setup bufferline debugging commands
+setup_bufferline_debug_commands()

@@ -1,0 +1,136 @@
+*yoda-getting-started.txt*     Getting Started with Yoda.nvim
+
+                     GETTING STARTED WITH YODA.NVIM
+
+==============================================================================
+CONTENTS                                        *yoda-getting-started-contents*
+
+1. Introduction ............................ |yoda-getting-started-intro|
+2. Essential Concepts ...................... |yoda-getting-started-concepts|
+3. First Steps ............................. |yoda-getting-started-first-steps|
+4. Development Workflow .................... |yoda-getting-started-workflow|
+5. AI Features ............................. |yoda-getting-started-ai|
+6. Testing & Debugging ..................... |yoda-getting-started-testing|
+7. Next Steps .............................. |yoda-getting-started-next-steps|
+
+==============================================================================
+INTRODUCTION                                      *yoda-getting-started-intro*
+
+Welcome to Yoda.nvim! This guide will help you get up and running quickly
+with your new Neovim distribution.
+
+What is Yoda.nvim?~
+
+Yoda.nvim is a modern Neovim distribution that provides:
+  • Beginner-friendly setup with sensible defaults
+  • AI-powered development with Avante integration  
+  • Modern UI with beautiful themes and components
+  • Comprehensive tooling for development, testing, and debugging
+
+==============================================================================
+ESSENTIAL CONCEPTS                              *yoda-getting-started-concepts*
+
+Leader Key~
+The <leader> key is set to <Space>. This is used for most custom keymaps.
+
+Keymap Structure~
+Most keymaps follow this pattern: <leader><category><action>
+  • <leader>f = File operations
+  • <leader>g = Git operations
+  • <leader>l = LSP operations  
+  • <leader>t = Testing operations
+
+==============================================================================
+FIRST STEPS                                   *yoda-getting-started-first-steps*
+
+1. Explore the Dashboard~
+When you open Neovim (nvim), you'll see the Alpha dashboard with:
+  • Project overview
+  • Quick access buttons
+  • Navigation shortcuts
+
+2. Essential Navigation~
+    <leader>e                  Toggle file explorer
+    <leader>ff                 Find files
+    <leader>fg                 Search in files
+    <leader><leader>           Smart file search
+
+3. Basic File Operations~
+    <leader>w                  Save file
+    <leader>q                  Quit
+    <leader>qq                 Force quit
+
+==============================================================================
+DEVELOPMENT WORKFLOW                            *yoda-getting-started-workflow*
+
+1. Open a Project~
+>
+    # Navigate to your project
+    cd ~/my-project
+    
+    # Open with Neovim
+    nvim .
+<
+
+2. File Navigation~
+  • File Explorer: <leader>e to toggle
+  • Find Files: <leader>ff for fuzzy search
+  • Recent Files: <leader>r or dashboard button
+
+3. Code Navigation~
+  • Go to Definition: <leader>gd or gd
+  • Find References: <leader>gr
+  • Code Actions: <leader>ca
+
+4. Git Integration~
+  • Git Status: <leader>gg (opens Neogit)
+  • Stage Changes: <leader>hs (stage hunk)
+  • View Diff: <leader>hd
+
+==============================================================================
+AI FEATURES                                       *yoda-getting-started-ai*
+
+Quick AI Access~
+    <leader>aa                 Ask AI assistant
+    <leader>ac                 Open AI chat
+    <leader>as                 Send selection to AI
+
+Setup AI Features~
+See |yoda-ai-setup| for detailed configuration.
+
+==============================================================================
+TESTING & DEBUGGING                           *yoda-getting-started-testing*
+
+Running Tests~
+    <leader>ta                 Run all tests
+    <leader>tn                 Run nearest test
+    <leader>ts                 Toggle test summary
+
+Debugging~
+    <leader>db                 Toggle breakpoint
+    <leader>dc                 Start debugging
+    <leader>do                 Step over
+
+==============================================================================
+NEXT STEPS                                     *yoda-getting-started-next-steps*
+
+Continue Learning:~
+    :help yoda-keymaps         Complete keymap reference
+    :help yoda-configuration   Configuration guide
+    :help yoda-languages       Language support
+    :help yoda-ai              AI features
+    :help yoda-troubleshooting Troubleshooting guide
+
+Language Setup:~
+    :Mason                     Install language servers
+    :checkhealth               Verify your setup
+    :Lazy                      Manage plugins
+
+Resources:~
+  • Practice with real projects
+  • Explore plugin configurations
+  • Join the community discussions
+  • Customize to your workflow
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

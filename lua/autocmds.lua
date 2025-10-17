@@ -696,8 +696,7 @@ create_autocmd("FileType", {
     -- Disable completion-related events
     vim.cmd("autocmd! CompleteChanged,CompleteDone <buffer>")
 
-    -- Disable any remaining LSP-related events
-    vim.cmd("autocmd! LspAttach <buffer>")
+    -- Note: LSP is already disabled for git commit buffers via filetype exclusion
 
     vim.notify("🔥 Disabled expensive autocmds for git commit buffer", vim.log.levels.DEBUG)
   end,

@@ -91,8 +91,13 @@ function M.setup()
           globals = { "vim", "describe", "it", "before_each", "after_each" },
         },
         workspace = {
-          library = vim.api.nvim_get_runtime_file("", true),
+          library = vim.tbl_extend("force", vim.api.nvim_get_runtime_file("", true), {
+            "${3rd}/luv/library",
+          }),
           checkThirdParty = false,
+        },
+        completion = {
+          callSnippet = "Replace",
         },
         telemetry = {
           enable = false,
@@ -158,27 +163,42 @@ function M.setup()
     capabilities = capabilities,
   })
 
-  -- Setup LSP keymaps on attach
+  -- Setup LSP keymaps on attach with debounced UI updates
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("YodaLspConfig", {}),
     callback = function(event)
       local opts = { buffer = event.buf }
 
-      -- Keymaps
-      vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-      vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-      vim.keymap.set("n", "gI", vim.lsp.buf.implementation, opts)
-      vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-      vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-      vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
-
-      -- Enable inlay hints if available
-      if vim.lsp.inlay_hint then
-        vim.keymap.set("n", "<leader>th", function()
-          vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+      -- Defer UI-affecting operations to prevent flickering
+      vim.schedule(function()
+        -- Keymaps
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+        vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+        vim.keymap.set("n", "gI", vim.lsp.buf.implementation, opts)
+        vim.keymap.set("n", "K", function()
+          -- Try LSP hover first, fallback to help
+          local clients = vim.lsp.get_clients({ bufnr = 0 })
+          if #clients > 0 then
+            vim.lsp.buf.hover()
+          else
+            -- Fallback to help for the word under cursor
+            local word = vim.fn.expand("<cword>")
+            if word ~= "" then
+              pcall(vim.cmd, "help " .. word)
+            end
+          end
         end, opts)
-      end
+        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+        vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+
+        -- Enable inlay hints if available
+        if vim.lsp.inlay_hint then
+          vim.keymap.set("n", "<leader>th", function()
+            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+          end, opts)
+        end
+      end)
     end,
   })
 

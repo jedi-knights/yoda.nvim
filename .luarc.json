@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "runtime.builtin": {
+    "basic": "enable",
+    "string": "enable", 
+    "table": "enable",
+    "math": "enable",
+    "io": "enable",
+    "os": "enable",
+    "debug": "enable",
+    "package": "enable",
+    "coroutine": "enable",
+    "utf8": "enable"
+  },
+  "diagnostics": {
+    "globals": ["vim", "describe", "it", "before_each", "after_each"]
+  },
+  "workspace": {
+    "library": [
+      "${3rd}/luv/library"
+    ],
+    "checkThirdParty": false
+  },
+  "completion": {
+    "callSnippet": "Replace"
+  },
+  "telemetry": {
+    "enable": false
+  }
+}

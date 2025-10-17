@@ -1,0 +1,273 @@
+*yoda-lsp.txt*                LSP Overview and Configuration
+
+                            LSP IN YODA.NVIM
+
+Language Server Protocol overview and configuration guide.
+
+==============================================================================
+CONTENTS                                                   *yoda-lsp-contents*
+
+1. What is LSP ............................ |yoda-lsp-what-is|
+2. Features ............................... |yoda-lsp-features|
+3. How it Works ........................... |yoda-lsp-how-it-works|
+4. Yoda.nvim Implementation ............... |yoda-lsp-implementation|
+5. Language Servers ....................... |yoda-lsp-servers|
+6. Configuration .......................... |yoda-lsp-configuration|
+7. Keymaps ................................ |yoda-lsp-keymaps|
+8. Troubleshooting ........................ |yoda-lsp-troubleshooting|
+
+==============================================================================
+WHAT IS LSP                                              *yoda-lsp-what-is*
+
+LSP stands for Language Server Protocol.
+
+It's a protocol that standardizes how code editors (like Neovim, VSCode, etc.)
+communicate with language servers that provide language-specific features.
+
+The protocol allows any editor to support any programming language without
+needing language-specific plugins for each combination.
+
+==============================================================================
+FEATURES                                                *yoda-lsp-features*
+
+LSP provides IDE-like features for any language:
+
+Code Intelligence~
+  • Go to Definition (gd)
+  • Find References (gr) 
+  • Go to Implementation (gi)
+  • Hover Documentation (K)
+
+Code Editing~  
+  • Intelligent Autocomplete
+  • Code Actions (quick fixes, refactoring)
+  • Rename Symbol across project
+  • Code Formatting
+
+Diagnostics~
+  • Real-time error detection
+  • Warning and info messages
+  • Linting integration
+  • Syntax error highlighting
+
+==============================================================================
+HOW IT WORKS                                        *yoda-lsp-how-it-works*
+
+Architecture~
+
+1. Editor (Client): Neovim with nvim-lspconfig plugin
+2. Language Server: Language-specific server (rust-analyzer, pyright, etc.)
+3. Protocol: JSON-RPC communication over stdin/stdout
+
+Communication Flow~
+>
+    Editor                    Language Server
+    ------                    ---------------
+    1. Open file         -->  Initialize server
+    2. Type/edit code    -->  Analyze code
+    3. Request hover     <--  Return documentation
+    4. Request completion <-- Return suggestions
+<
+
+Server Lifecycle~
+  • Server starts when first file of its language is opened
+  • Server analyzes project and provides diagnostics
+  • Server responds to editor requests (hover, completion, etc.)
+  • Server shuts down when editor closes
+
+==============================================================================
+YODA.NVIM IMPLEMENTATION                        *yoda-lsp-implementation*
+
+Yoda.nvim provides a complete LSP setup with sensible defaults.
+
+Key Components~
+
+1. nvim-lspconfig: Core LSP client
+2. mason.nvim: Language server installer
+3. nvim-cmp: Completion engine with LSP integration
+4. Custom configuration: Yoda-specific enhancements
+
+File Structure~
+>
+    lua/yoda/lsp.lua           Main LSP configuration
+    lua/plugins.lua            LSP plugin specifications
+    lua/yoda/commands.lua      LSP-related commands
+<
+
+Automatic Setup~
+
+Yoda.nvim automatically:
+  • Configures common language servers
+  • Sets up keymaps when LSP attaches
+  • Integrates with completion engine
+  • Provides diagnostics display
+  • Enables formatting on save
+
+==============================================================================
+LANGUAGE SERVERS                                      *yoda-lsp-servers*
+
+Pre-configured Servers~
+
+Yoda.nvim includes configuration for:
+
+    lua_ls                     Lua Language Server
+    rust_analyzer              Rust Language Server  
+    ts_ls                      TypeScript/JavaScript Language Server
+    gopls                      Go Language Server
+    pyright                    Python Language Server (via basedpyright)
+
+Installing Servers~
+
+Via Mason (Recommended):
+>
+    :Mason
+    " Navigate to desired server, press 'i' to install
+<
+
+Via Package Manager:
+>
+    # Rust
+    rustup component add rust-analyzer
+    
+    # Node.js/TypeScript
+    npm install -g typescript-language-server
+    
+    # Python
+    pip install basedpyright
+<
+
+Server Status~
+>
+    :LspInfo                   Show LSP client information
+    :Mason                     Manage language servers
+    :checkhealth lsp           Check LSP health
+<
+
+==============================================================================
+CONFIGURATION                                    *yoda-lsp-configuration*
+
+LSP settings are configured in lua/yoda/lsp.lua.
+
+Common Configuration Pattern~
+>
+    require("lspconfig").server_name.setup({
+      capabilities = capabilities,      -- From nvim-cmp
+      on_attach = on_attach,           -- Set keymaps and options
+      settings = {
+        -- Server-specific settings
+      }
+    })
+<
+
+Capabilities~
+
+Yoda.nvim automatically configures LSP capabilities for:
+  • Completion (nvim-cmp integration)
+  • Snippets (LuaSnip support)
+  • File watching
+  • Workspace folders
+
+On Attach Function~
+
+When an LSP server attaches, Yoda.nvim:
+  • Sets up buffer-local keymaps
+  • Configures diagnostic display
+  • Enables inlay hints (if supported)
+  • Sets up auto-formatting
+
+Custom Server Configuration~
+
+To add a new language server:
+>
+    -- In lua/yoda/lsp.lua
+    require("lspconfig").new_server.setup({
+      capabilities = capabilities,
+      on_attach = on_attach,
+      settings = {
+        -- Server-specific settings
+      }
+    })
+<
+
+==============================================================================
+KEYMAPS                                                 *yoda-lsp-keymaps*
+
+LSP keymaps are automatically set when a server attaches.
+
+Navigation~
+    gd                         Go to definition
+    gr                         Go to references
+    gi                         Go to implementation  
+    K                          Show hover documentation
+
+Code Actions~
+    <leader>ca                 Code actions
+    <leader>rn                 Rename symbol
+    <leader>f                  Format code/selection
+
+Diagnostics~
+    <leader>cd                 Show line diagnostics
+    <leader>cf                 Code fix (first available)
+    [d                         Previous diagnostic
+    ]d                         Next diagnostic
+
+LSP Commands~
+    :LspRestart                Restart LSP server
+    :LspStop                   Stop LSP server
+    :LspStart                  Start LSP server
+    :LspInfo                   Show LSP information
+
+==============================================================================
+TROUBLESHOOTING                                 *yoda-lsp-troubleshooting*
+
+Common Issues~
+
+LSP Server Not Starting~
+
+Check server installation:
+>
+    :Mason
+    :LspInfo
+    :checkhealth lsp
+<
+
+No Completions~
+
+1. Check if server supports completion
+2. Verify nvim-cmp is configured
+3. Check capabilities are set correctly
+
+Diagnostics Not Showing~
+
+1. Check if server provides diagnostics
+2. Verify diagnostic configuration
+3. Check for conflicting plugins
+
+Formatting Not Working~
+
+1. Check if server supports formatting
+2. Verify format on save is enabled
+3. Use manual format: <leader>f
+
+Server Errors~
+
+Check LSP logs:
+>
+    :LspLog                    Open LSP log file
+<
+
+Performance Issues~
+
+For large projects:
+1. Configure server to ignore certain directories
+2. Limit workspace scanning
+3. Disable expensive features
+
+Getting Help~
+  • :checkhealth lsp - Check LSP health
+  • :LspInfo - Show active servers
+  • :LspLog - View server logs  
+  • Server documentation for specific issues
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

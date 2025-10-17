@@ -1,0 +1,620 @@
+*yoda-rust.txt*               Rust Development in Yoda.nvim
+
+                      RUST DEVELOPMENT IN YODA.NVIM
+
+A comprehensive guide to Rust development with rust-analyzer, debugging,
+testing, and enhanced tooling.
+
+==============================================================================
+CONTENTS                                                 *yoda-rust-contents*
+
+1. Quick Start ............................. |yoda-rust-quickstart|
+2. Installation ............................ |yoda-rust-installation|
+3. LSP Features ............................ |yoda-rust-lsp|
+4. Inlay Hints ............................. |yoda-rust-inlay-hints|
+5. Hover Actions ........................... |yoda-rust-hover|
+6. Debugging ............................... |yoda-rust-debugging|
+7. Testing ................................. |yoda-rust-testing|
+8. Cargo Management ........................ |yoda-rust-cargo|
+9. Formatting & Linting .................... |yoda-rust-formatting|
+10. Task Runner ............................ |yoda-rust-tasks|
+11. Code Navigation ........................ |yoda-rust-navigation|
+12. Keymaps ................................ |yoda-rust-keymaps|
+13. Troubleshooting ........................ |yoda-rust-troubleshooting|
+
+==============================================================================
+QUICK START                                            *yoda-rust-quickstart*
+
+1. Install Rust Tools~
+
+Run the setup command to install all required tools:
+>
+    :YodaRustSetup
+<
+
+This installs:
+  • rust-analyzer - LSP server
+  • codelldb - Debug adapter
+
+After installation completes, restart Neovim.
+
+2. Open a Rust Project~
+>
+    cd your-rust-project
+    nvim src/main.rs
+<
+
+rust-analyzer will automatically activate and provide:
+  • Code completion
+  • Inline diagnostics
+  • Inlay hints (types, parameters)
+  • Hover documentation
+  • Code actions
+
+3. Essential Keymaps~
+    <leader>rr                 Cargo run
+    <leader>rb                 Cargo build
+    <leader>rt                 Run nearest test
+    <leader>rd                 Start debugger
+    <leader>rf                 Format code
+
+==============================================================================
+INSTALLATION                                         *yoda-rust-installation*
+
+Automatic Installation~
+
+The easiest way to install Rust tools:
+>
+    :YodaRustSetup
+<
+
+This command installs all required tools via Mason and configures them
+automatically.
+
+Prerequisites~
+
+Ensure Rust toolchain is installed:
+>
+    # Install Rust via rustup
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    
+    # Add to PATH
+    source ~/.cargo/env
+    
+    # Verify installation
+    rustc --version
+    cargo --version
+<
+
+Manual Installation~
+
+If you prefer manual installation:
+
+1. rust-analyzer (LSP):
+>
+    :Mason
+    " Search for 'rust_analyzer', press 'i' to install
+<
+
+2. codelldb (Debug Adapter):
+>
+    :Mason
+    " Search for 'codelldb', press 'i' to install
+<
+
+System Installation~
+>
+    # Using rustup (recommended)
+    rustup component add rust-analyzer
+    
+    # Using cargo
+    cargo install rust-analyzer
+<
+
+==============================================================================
+LSP FEATURES                                               *yoda-rust-lsp*
+
+rust-analyzer provides comprehensive Rust language support:
+
+Code Completion~
+  • Intelligent autocompletion for structs, enums, functions
+  • Macro expansion support
+  • Trait method suggestions
+  • Import suggestions and auto-imports
+  • Generic type parameter completion
+
+Diagnostics~
+  • Real-time compilation error detection
+  • Clippy lint suggestions
+  • Borrow checker errors
+  • Dead code detection
+  • Unused import warnings
+
+Refactoring~
+  • Rename symbol across project
+  • Extract function/variable
+  • Introduce variable
+  • Inline function/variable
+  • Change function signature
+
+Code Actions~
+    <leader>ca                 Show available code actions
+    
+Available actions include:
+  • Add missing imports
+  • Fill match arms
+  • Add derive attributes
+  • Extract to function
+  • Implement missing traits
+
+Navigation~
+    gd                         Go to definition
+    gr                         Find references
+    gi                         Go to implementation
+    K                          Show documentation
+
+==============================================================================
+INLAY HINTS                                          *yoda-rust-inlay-hints*
+
+rust-analyzer provides helpful inlay hints for better code understanding.
+
+Types of Hints~
+  • Parameter names in function calls
+  • Type annotations for variables
+  • Return types for closures
+  • Chain method types
+  • Binding modes
+
+Toggle Inlay Hints~
+    <leader>th                 Toggle inlay hints
+
+Example Inlay Hints~
+>
+    let numbers = vec![1, 2, 3];
+    //  ^^^^^^^: Vec<i32>
+    
+    numbers.iter()
+    //      ^^^^^^: std::slice::Iter<i32>
+        .map(|x| x * 2)
+    //       ^^: i32
+        .collect()
+    //  ^^^^^^^^^: Vec<i32>
+<
+
+Configuration~
+
+Customize inlay hints in your configuration:
+>
+    require("lspconfig").rust_analyzer.setup({
+      settings = {
+        ["rust-analyzer"] = {
+          inlayHints = {
+            parameterHints = { enable = true },
+            typeHints = { enable = true },
+            chainingHints = { enable = true }
+          }
+        }
+      }
+    })
+<
+
+==============================================================================
+HOVER ACTIONS                                             *yoda-rust-hover*
+
+Enhanced hover documentation with rust-tools integration.
+
+Hover Features~
+  • Function/method documentation
+  • Type information
+  • Macro expansion preview
+  • Memory layout for structs
+  • Trait bounds information
+
+Hover Actions~
+Press K on any symbol to see:
+  • Documentation
+  • Type signature
+  • Source code location
+  • Related items
+
+Enhanced Hover~
+
+rust-tools provides enhanced hover with:
+  • Runnable code actions
+  • Debug actions
+  • Expand macro preview
+  • View memory layout
+
+Configuration~
+>
+    -- In plugins.lua
+    {
+      "simrat39/rust-tools.nvim",
+      config = function()
+        require("rust-tools").setup({
+          hover_actions = {
+            auto_focus = true,
+            border = "rounded"
+          }
+        })
+      end
+    }
+<
+
+==============================================================================
+DEBUGGING                                             *yoda-rust-debugging*
+
+Yoda.nvim uses codelldb for Rust debugging with nvim-dap integration.
+
+Setting Breakpoints~
+    <leader>db                 Toggle breakpoint
+    <leader>dB                 Set conditional breakpoint
+    <leader>dr                 Clear all breakpoints
+
+Starting Debug Session~
+    <leader>rd                 Debug current binary
+    <leader>rt                 Debug nearest test
+    <leader>da                 Attach to running process
+
+Debug Controls~
+    <leader>dc                 Continue execution
+    <leader>ds                 Step over
+    <leader>di                 Step into
+    <leader>do                 Step out
+    <leader>dt                 Terminate session
+
+Debug UI~
+    <leader>du                 Toggle debug UI
+    <leader>dv                 View variables
+    <leader>df                 View call stack
+
+Cargo Debug Configuration~
+
+Debug configurations are automatically generated for:
+  • Binary targets
+  • Test functions
+  • Example files
+  • Bench targets
+
+Custom Debug Configuration~
+>
+    -- In .vscode/launch.json or dap configuration
+    {
+      "type": "codelldb",
+      "request": "launch",
+      "name": "Debug Rust Binary",
+      "cargo": {
+        "args": ["build", "--bin=my_binary"],
+        "filter": {
+          "name": "my_binary",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+<
+
+==============================================================================
+TESTING                                               *yoda-rust-testing*
+
+Comprehensive Rust test support with neotest integration.
+
+Running Tests~
+    <leader>tt                 Run current test file
+    <leader>tr                 Run nearest test
+    <leader>ta                 Run all tests
+    <leader>ts                 Stop test runner
+    <leader>tw                 Watch tests (auto-run on save)
+
+Cargo Test Integration~
+    <leader>rt                 Cargo test (current package)
+    <leader>rT                 Cargo test (workspace)
+    <leader>rd                 Debug test
+
+Test Types Supported~
+  • Unit tests (#[test])
+  • Integration tests (tests/ directory)
+  • Documentation tests (/// examples)
+  • Benchmark tests (#[bench])
+
+Test Configuration~
+
+neotest automatically detects:
+  • Cargo.toml projects
+  • Test modules and functions
+  • Ignored tests (#[ignore])
+  • Custom test attributes
+
+Test Output~
+    <leader>to                 Show test output
+    <leader>tO                 Show test summary
+
+Test Navigation~
+    <leader>tj                 Jump to next failing test
+    <leader>tk                 Jump to previous failing test
+
+==============================================================================
+CARGO MANAGEMENT                                         *yoda-rust-cargo*
+
+Integrated Cargo command support for project management.
+
+Cargo Commands~
+    <leader>rr                 Cargo run
+    <leader>rb                 Cargo build
+    <leader>rc                 Cargo check
+    <leader>rC                 Cargo clean
+    <leader>ru                 Cargo update
+
+Package Management~
+    <leader>ra                 Add dependency
+    <leader>rR                 Remove dependency
+    <leader>rs                 Search crates.io
+
+Build Profiles~
+    <leader>rbr                Build release
+    <leader>rrr                Run release
+
+Cargo.toml Features~
+
+When editing Cargo.toml files:
+  • Dependency completion
+  • Version suggestions
+  • Feature flag completion
+  • Workspace member completion
+
+Cargo Task Integration~
+
+Tasks are available via overseer:
+    <leader>tr                 Run Cargo task
+    <leader>tb                 Build task
+    <leader>tt                 Test task
+
+==============================================================================
+FORMATTING & LINTING                               *yoda-rust-formatting*
+
+Automated code formatting and linting with rustfmt and clippy.
+
+Code Formatting~
+    <leader>f                  Format current file
+    <leader>F                  Format entire project
+
+Auto-formatting~
+
+Files are automatically formatted on save with rustfmt.
+
+Linting with Clippy~
+
+Clippy suggestions appear as diagnostics in real-time.
+
+Enable/disable clippy:
+>
+    -- In rust-analyzer settings
+    ["rust-analyzer"] = {
+      check = {
+        command = "clippy",
+        extraArgs = { "--all", "--", "-W", "clippy::all" }
+      }
+    }
+<
+
+Custom Formatting~
+
+Configure rustfmt in rustfmt.toml:
+>
+    # rustfmt.toml
+    max_width = 100
+    hard_tabs = false
+    tab_spaces = 4
+    newline_style = "Unix"
+    use_small_heuristics = "Default"
+<
+
+Disable Auto-formatting~
+>
+    -- In your config
+    vim.g.yoda_rust_format_on_save = false
+<
+
+==============================================================================
+TASK RUNNER                                              *yoda-rust-tasks*
+
+Integrated task runner for common Rust development tasks.
+
+Overseer Integration~
+    <leader>tr                 Run task
+    <leader>tb                 Build tasks menu
+    <leader>tt                 Test tasks menu
+
+Available Tasks~
+  • cargo build - Build the project
+  • cargo run - Run the binary
+  • cargo test - Run tests
+  • cargo check - Check for errors
+  • cargo clippy - Run linter
+  • cargo fmt - Format code
+  • cargo clean - Clean build artifacts
+
+Custom Tasks~
+
+Add custom tasks in .vscode/tasks.json or via overseer configuration:
+>
+    {
+      "version": "2.0.0",
+      "tasks": [
+        {
+          "label": "cargo bench",
+          "type": "shell",
+          "command": "cargo",
+          "args": ["bench"],
+          "group": "test"
+        }
+      ]
+    }
+<
+
+Task Templates~
+
+Common task patterns:
+  • Build optimized release
+  • Run with specific features
+  • Cross-compilation targets
+  • Custom test configurations
+
+==============================================================================
+CODE NAVIGATION                                     *yoda-rust-navigation*
+
+Advanced navigation features for Rust codebases.
+
+Symbol Navigation~
+    gd                         Go to definition
+    gr                         Find references
+    gi                         Go to implementation
+    K                          Show documentation
+    <leader>ca                 Code actions
+
+Project Navigation~
+    <leader>ff                 Find files
+    <leader>fs                 Find symbols
+    <leader>fw                 Find word under cursor
+    <leader>fW                 Find word in project
+
+Module Navigation~
+    <leader>fm                 Find modules
+    <leader>fi                 Find implementations
+    <leader>ft                 Find traits
+
+Crate Navigation~
+    <leader>fc                 Find in current crate
+    <leader>fC                 Find in all dependencies
+    <leader>fd                 Find documentation
+
+Rust-specific Features~
+    <leader>rm                 Expand macro
+    <leader>rp                 Parent module
+    <leader>rj                 Join lines
+    <leader>rS                 Structural search replace
+
+==============================================================================
+KEYMAPS                                                 *yoda-rust-keymaps*
+
+Complete keymap reference for Rust development.
+
+Cargo Commands~
+    <leader>rr                 Cargo run
+    <leader>rb                 Cargo build
+    <leader>rc                 Cargo check
+    <leader>rt                 Run tests
+    <leader>rf                 Format code
+
+LSP Actions~
+    <leader>ca                 Code actions
+    <leader>cr                 Rename symbol
+    <leader>cf                 Format code
+    <leader>cd                 Show diagnostics
+
+Navigation~
+    gd                         Go to definition
+    gr                         Find references
+    gi                         Go to implementation
+    K                          Show documentation
+
+Testing~
+    <leader>tt                 Run current test file
+    <leader>tr                 Run nearest test
+    <leader>ta                 Run all tests
+    <leader>td                 Debug test
+
+Debugging~
+    <leader>db                 Toggle breakpoint
+    <leader>rd                 Start debugging
+    <leader>dc                 Continue execution
+    <leader>ds                 Step over
+
+Rust Tools~
+    <leader>rh                 Hover actions
+    <leader>rm                 Expand macro
+    <leader>rc                 Open Cargo.toml
+    <leader>rp                 Parent module
+
+==============================================================================
+TROUBLESHOOTING                                 *yoda-rust-troubleshooting*
+
+Common issues and solutions for Rust development.
+
+LSP Not Working~
+
+Check rust-analyzer status:
+>
+    :LspInfo
+    :checkhealth lsp
+<
+
+If rust-analyzer isn't running:
+1. Install via :YodaRustSetup
+2. Ensure Rust toolchain is installed: rustc --version
+3. Restart Neovim
+4. Open a Rust file
+
+Rust Toolchain Issues~
+
+Error: "Rust toolchain not found"
+>
+    # Install rustup
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    
+    # Update toolchain
+    rustup update
+    
+    # Set default toolchain
+    rustup default stable
+<
+
+Compilation Errors~
+
+If code doesn't compile:
+1. Check syntax errors in diagnostics
+2. Run cargo check manually: <leader>rc
+3. Verify dependencies in Cargo.toml
+4. Clear build cache: <leader>rC (cargo clean)
+
+Debugging Not Working~
+
+If codelldb fails:
+1. Install codelldb: :Mason -> search "codelldb"
+2. Ensure debug symbols: cargo build with debug info
+3. Check binary target in Cargo.toml
+4. Restart Neovim
+
+Slow Performance~
+
+For large projects:
+>
+    -- Limit rust-analyzer features
+    ["rust-analyzer"] = {
+      cargo = {
+        loadOutDirsFromCheck = false,
+      },
+      procMacro = {
+        enable = false,
+      }
+    }
+<
+
+Missing Features~
+
+If some features don't work:
+1. Update rust-analyzer: rustup component add rust-analyzer
+2. Check for conflicting plugins
+3. Verify Mason installation: :Mason
+4. Check configuration: :checkhealth
+
+Getting Help~
+  • :checkhealth for system diagnostics
+  • :LspInfo for LSP status
+  • :Mason for tool installation
+  • rust-analyzer documentation
+  • Visit GitHub issues for community support
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

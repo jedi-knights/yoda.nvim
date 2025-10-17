@@ -1,0 +1,512 @@
+*yoda-python.txt*             Python Development in Yoda.nvim
+
+                     PYTHON DEVELOPMENT IN YODA.NVIM
+
+A comprehensive guide to Python development with basedpyright LSP, debugpy
+debugging, ruff/mypy linting, and neotest integration.
+
+==============================================================================
+CONTENTS                                               *yoda-python-contents*
+
+1. Quick Start ............................. |yoda-python-quickstart|
+2. Installation ............................ |yoda-python-installation|
+3. LSP Features ............................ |yoda-python-lsp|
+4. Debugging ............................... |yoda-python-debugging|
+5. Testing ................................. |yoda-python-testing|
+6. Virtual Environments .................... |yoda-python-venv|
+7. Linting & Formatting .................... |yoda-python-linting|
+8. Type Checking ........................... |yoda-python-typing|
+9. REPL .................................... |yoda-python-repl|
+10. Code Navigation ........................ |yoda-python-navigation|
+11. Keymaps ................................ |yoda-python-keymaps|
+12. Troubleshooting ........................ |yoda-python-troubleshooting|
+
+==============================================================================
+QUICK START                                          *yoda-python-quickstart*
+
+1. Install Python Tools~
+
+Run the setup command to install all required tools:
+>
+    :YodaPythonSetup
+<
+
+This installs:
+  • basedpyright - LSP server (modern, fast fork of pyright)
+  • debugpy - Debug adapter
+  • ruff - Linter/formatter (ultra-fast)
+
+After installation completes, restart Neovim.
+
+2. Open a Python Project~
+>
+    cd your-python-project
+    nvim main.py
+<
+
+basedpyright will automatically activate and provide:
+  • Code completion
+  • Type checking
+  • Auto-imports
+  • Inline diagnostics
+  • Refactoring actions
+
+3. Essential Keymaps~
+    <leader>pr                 Run Python file
+    <leader>pi                 Open Python REPL
+    <leader>pt                 Run nearest test
+    <leader>pd                 Debug test
+    <leader>pv                 Select virtual environment
+
+==============================================================================
+INSTALLATION                                       *yoda-python-installation*
+
+Automatic Installation~
+
+The easiest way to install Python tools:
+>
+    :YodaPythonSetup
+<
+
+This command installs all required tools via Mason and configures them
+automatically.
+
+Manual Installation~
+
+If you prefer manual installation:
+
+1. basedpyright (LSP):
+>
+    :Mason
+    " Search for 'basedpyright', press 'i' to install
+<
+
+2. debugpy (Debug Adapter):
+>
+    :Mason  
+    " Search for 'debugpy', press 'i' to install
+<
+
+3. ruff (Linter/Formatter):
+>
+    :Mason
+    " Search for 'ruff', press 'i' to install
+<
+
+System Installation~
+
+You can also install tools system-wide:
+>
+    # Using pip
+    pip install basedpyright debugpy ruff
+    
+    # Using conda
+    conda install -c conda-forge basedpyright debugpy ruff
+<
+
+==============================================================================
+LSP FEATURES                                             *yoda-python-lsp*
+
+basedpyright LSP provides comprehensive Python language support:
+
+Code Completion~
+  • Intelligent autocompletion for variables, functions, classes
+  • Import suggestions and auto-imports
+  • Snippet expansion for common patterns
+  • Context-aware suggestions
+
+Type Checking~
+  • Real-time type error detection
+  • Support for type hints and annotations
+  • Generic type support
+  • Union and Optional types
+
+Refactoring~
+  • Rename symbol across project
+  • Extract function/variable
+  • Organize imports
+  • Convert string formatting
+
+Navigation~
+    gd                         Go to definition
+    gr                         Find references
+    gi                         Go to implementation
+    K                          Show documentation
+    <leader>ca                 Code actions
+
+Diagnostics~
+  • Inline error/warning display
+  • Configurable severity levels
+  • Quick fix suggestions
+  • Import error resolution
+
+==============================================================================
+DEBUGGING                                           *yoda-python-debugging*
+
+Yoda.nvim uses debugpy for Python debugging with nvim-dap integration.
+
+Setting Breakpoints~
+    <leader>db                 Toggle breakpoint
+    <leader>dB                 Set conditional breakpoint
+    <leader>dr                 Clear all breakpoints
+
+Starting Debug Session~
+    <leader>dc                 Start debugging current file
+    <leader>pd                 Debug nearest test
+    <leader>da                 Attach to running process
+
+Debug Controls~
+    <leader>dc                 Continue execution
+    <leader>ds                 Step over
+    <leader>di                 Step into
+    <leader>do                 Step out
+    <leader>dt                 Terminate session
+
+Debug UI~
+    <leader>du                 Toggle debug UI
+    <leader>dv                 View variables
+    <leader>df                 View call stack
+
+Configuration~
+
+debugpy is automatically configured for:
+  • Standard Python files
+  • Django applications
+  • Flask applications  
+  • FastAPI applications
+  • Pytest test files
+
+==============================================================================
+TESTING                                             *yoda-python-testing*
+
+Yoda.nvim integrates with pytest via neotest for comprehensive test support.
+
+Running Tests~
+    <leader>tt                 Run current test file
+    <leader>tr                 Run nearest test
+    <leader>ta                 Run all tests
+    <leader>ts                 Stop test runner
+    <leader>tw                 Watch tests (auto-run on save)
+
+Test Navigation~
+    <leader>tj                 Jump to next failing test
+    <leader>tk                 Jump to previous failing test
+    <leader>to                 Show test output
+    <leader>tO                 Show test output popup
+
+Test Debugging~
+    <leader>pd                 Debug nearest test
+    <leader>pD                 Debug test file
+
+Test Configuration~
+
+neotest automatically detects:
+  • pytest configuration (pytest.ini, pyproject.toml)
+  • Test discovery patterns
+  • Custom markers and fixtures
+  • Parametrized tests
+
+Supported Test Frameworks~
+  • pytest (primary)
+  • unittest (basic support)
+  • nose2 (basic support)
+
+==============================================================================
+VIRTUAL ENVIRONMENTS                                   *yoda-python-venv*
+
+Yoda.nvim provides comprehensive virtual environment support.
+
+Environment Selection~
+    <leader>pv                 Select virtual environment
+    <leader>pV                 Create new virtual environment
+
+Automatic Detection~
+
+Yoda.nvim automatically detects virtual environments in:
+  • ./venv/
+  • ./env/
+  • ./.venv/
+  • ~/.pyenv/versions/
+  • Conda environments
+
+Manual Environment Setup~
+>
+    # Create virtual environment
+    python -m venv venv
+    
+    # Activate in terminal
+    source venv/bin/activate  # Linux/macOS
+    venv\Scripts\activate     # Windows
+    
+    # Select in Neovim
+    <leader>pv
+<
+
+Environment Information~
+
+The statusline shows:
+  • Currently active environment
+  • Python version
+  • Environment path
+
+Conda Support~
+>
+    # Create conda environment
+    conda create -n myproject python=3.11
+    conda activate myproject
+    
+    # Neovim will auto-detect conda environments
+<
+
+==============================================================================
+LINTING & FORMATTING                               *yoda-python-linting*
+
+Yoda.nvim uses ruff for ultra-fast linting and formatting.
+
+Code Formatting~
+    <leader>f                  Format current file
+    <leader>F                  Format entire project
+
+Auto-formatting~
+
+Files are automatically formatted on save (configurable).
+
+Linting~
+
+ruff provides real-time linting for:
+  • PEP 8 style violations
+  • Import sorting
+  • Unused imports/variables
+  • Complex expression detection
+  • Security issues
+
+Configuration~
+
+Configure ruff in pyproject.toml:
+>
+    [tool.ruff]
+    line-length = 88
+    target-version = "py311"
+    
+    [tool.ruff.lint]
+    select = ["E", "F", "W", "I"]
+    ignore = ["E501"]
+<
+
+Disable Auto-formatting~
+>
+    -- In your config
+    vim.g.yoda_python_format_on_save = false
+<
+
+==============================================================================
+TYPE CHECKING                                         *yoda-python-typing*
+
+basedpyright provides comprehensive type checking capabilities.
+
+Type Checking Features~
+  • Static type analysis
+  • Type inference
+  • Generic type support
+  • Protocol support
+  • Literal types
+
+Type Checking Commands~
+    <leader>ct                 Run type checker
+    <leader>cT                 Type check entire project
+
+Configuration~
+
+Configure type checking in pyproject.toml:
+>
+    [tool.basedpyright]
+    typeCheckingMode = "basic"
+    pythonVersion = "3.11"
+    include = ["src"]
+    exclude = ["tests"]
+<
+
+Type Checking Modes~
+  • off - No type checking
+  • basic - Basic type checking
+  • strict - Strict type checking
+
+Ignoring Type Errors~
+>
+    # Ignore specific line
+    value = get_value()  # type: ignore
+    
+    # Ignore specific error
+    value = get_value()  # pyright: ignore[reportGeneralTypeIssues]
+<
+
+==============================================================================
+REPL                                                   *yoda-python-repl*
+
+Yoda.nvim provides integrated Python REPL support.
+
+REPL Commands~
+    <leader>pi                 Open Python REPL
+    <leader>pI                 Open IPython REPL (if available)
+    <leader>ps                 Send line to REPL
+    <leader>pS                 Send selection to REPL
+    <leader>pf                 Send file to REPL
+
+REPL Features~
+  • Syntax highlighting
+  • Command history
+  • Auto-completion
+  • Output capture
+
+IPython Integration~
+
+If IPython is installed, enhanced features include:
+  • Magic commands (%timeit, %debug, etc.)
+  • Rich output display
+  • Automatic imports
+  • Enhanced debugging
+
+Installation~
+>
+    pip install ipython
+<
+
+==============================================================================
+CODE NAVIGATION                                   *yoda-python-navigation*
+
+Advanced navigation features for Python code.
+
+Symbol Navigation~
+    gd                         Go to definition
+    gr                         Find references
+    gi                         Go to implementation
+    K                          Show documentation
+    <leader>ca                 Code actions
+
+Project Navigation~
+    <leader>ff                 Find files
+    <leader>fs                 Find symbols
+    <leader>fw                 Find word under cursor
+    <leader>fW                 Find word in project
+
+Class/Function Navigation~
+    <leader>ns                 Next function/class
+    <leader>ps                 Previous function/class
+    <leader>nS                 Next class
+    <leader>pS                 Previous class
+
+Import Navigation~
+    <leader>fi                 Find imports
+    <leader>ai                 Add import
+    <leader>ri                 Remove unused imports
+
+==============================================================================
+KEYMAPS                                             *yoda-python-keymaps*
+
+Complete keymap reference for Python development.
+
+File Operations~
+    <leader>pr                 Run Python file
+    <leader>pf                 Format file
+    <leader>pi                 Open REPL
+
+Testing~
+    <leader>pt                 Run nearest test
+    <leader>pT                 Run test file
+    <leader>pa                 Run all tests
+    <leader>pd                 Debug nearest test
+
+Environment~
+    <leader>pv                 Select virtual environment
+    <leader>pV                 Create virtual environment
+    <leader>pe                 Show environment info
+
+Code Actions~
+    <leader>ca                 Code actions
+    <leader>cr                 Rename symbol
+    <leader>cf                 Format code
+    <leader>ci                 Organize imports
+
+Debugging~
+    <leader>db                 Toggle breakpoint
+    <leader>dc                 Start debugging
+    <leader>ds                 Step over
+    <leader>di                 Step into
+
+Navigation~
+    gd                         Go to definition
+    gr                         Find references
+    K                          Show documentation
+
+==============================================================================
+TROUBLESHOOTING                               *yoda-python-troubleshooting*
+
+Common issues and solutions for Python development.
+
+LSP Not Working~
+
+Check LSP status:
+>
+    :LspInfo
+    :checkhealth lsp
+<
+
+If basedpyright isn't running:
+1. Install via :YodaPythonSetup
+2. Restart Neovim
+3. Open a Python file
+
+Python Not Found~
+
+Error: "Python executable not found"
+>
+    # Install Python
+    # macOS: brew install python
+    # Ubuntu: sudo apt install python3
+    
+    # Or select virtual environment
+    <leader>pv
+<
+
+Virtual Environment Issues~
+
+If venv detection fails:
+>
+    # Manual venv selection
+    <leader>pv
+    
+    # Check Python path
+    :lua print(vim.fn.exepath("python"))
+<
+
+Debugging Not Working~
+
+If debugpy fails:
+1. Install debugpy: :Mason -> search "debugpy"
+2. Restart Neovim
+3. Set breakpoint: <leader>db
+4. Start debugging: <leader>dc
+
+Import Errors~
+
+If imports aren't resolved:
+1. Check virtual environment: <leader>pv
+2. Ensure packages are installed in active environment
+3. Restart LSP: :LspRestart
+
+Performance Issues~
+
+For large projects:
+>
+    -- Limit LSP workspace scanning
+    vim.g.yoda_python_workspace_scan_limit = 1000
+<
+
+Getting Help~
+  • :checkhealth for system diagnostics
+  • :LspInfo for LSP status
+  • :Mason for tool installation
+  • Visit GitHub issues for community support
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

@@ -83,9 +83,17 @@ end
 
 --- Refresh a specific buffer from disk
 --- @param buf number Buffer number
+-- Prevent recursive refresh calls
+local refresh_in_progress = {}
+
 --- @return boolean success Whether the buffer was refreshed
 function M.refresh_buffer(buf)
   if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+
+  -- Prevent recursive calls
+  if refresh_in_progress[buf] then
     return false
   end
 
@@ -109,11 +117,15 @@ function M.refresh_buffer(buf)
     return false
   end
 
+  refresh_in_progress[buf] = true
+
   local ok, err = pcall(function()
     vim.api.nvim_buf_call(buf, function()
       vim.cmd("silent edit!")
     end)
   end)
+
+  refresh_in_progress[buf] = nil
 
   if not ok then
     vim.notify("Failed to refresh " .. vim.fn.fnamemodify(buf_name, ":t") .. ": " .. err, vim.log.levels.WARN)
