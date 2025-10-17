@@ -346,7 +346,25 @@ return {
       -- Snippet engine
       {
         "L3MON4D3/LuaSnip",
-        build = "make install_jsregexp",
+        version = "v2.*",
+        build = (function()
+          -- Only install jsregexp if make is available and not on problematic systems
+          if vim.fn.executable("make") == 1 and jit.os ~= "Windows" then
+            return "make install_jsregexp"
+          end
+          return nil
+        end)(),
+        config = function()
+          -- Configure LuaSnip here to ensure it loads properly
+          local luasnip = require("luasnip")
+
+          -- Enable better snippet expansion
+          luasnip.config.setup({
+            history = true,
+            updateevents = "TextChanged,TextChangedI",
+            delete_check_events = "TextChanged,InsertLeave",
+          })
+        end,
         dependencies = {
           "rafamadriz/friendly-snippets",
           config = function()
