@@ -219,6 +219,39 @@ local function can_reload_buffer()
 end
 
 -- ============================================================================
+-- Filetype Detection
+-- ============================================================================
+
+-- Jenkinsfile detection with enhanced syntax support
+create_autocmd({ "BufRead", "BufNewFile" }, {
+  group = augroup("YodaJenkinsfile", { clear = true }),
+  desc = "Detect Jenkinsfile and configure for Jenkins Pipeline syntax",
+  pattern = {
+    "Jenkinsfile",
+    "*.Jenkinsfile",
+    "jenkinsfile",
+    "*.jenkinsfile",
+    "*.jenkins",
+    "*jenkins*",
+  },
+  callback = function()
+    vim.bo.filetype = "groovy"
+    vim.bo.syntax = "groovy"
+
+    -- Add Jenkins-specific keywords for better syntax highlighting
+    vim.cmd([[
+      syntax keyword groovyKeyword pipeline agent stages stage steps script sh bat powershell
+      syntax keyword groovyKeyword when environment parameters triggers tools options
+      syntax keyword groovyKeyword post always success failure unstable changed cleanup
+      syntax keyword groovyKeyword parallel matrix node checkout scm git svn
+      syntax keyword groovyKeyword build publishHTML archiveArtifacts publishTestResults
+      syntax keyword groovyKeyword junit testReport emailext slackSend
+      syntax match groovyFunction /\w\+\s*(/
+    ]])
+  end,
+})
+
+-- ============================================================================
 -- Filetype-specific Settings Configuration
 -- ============================================================================
 
@@ -338,6 +371,18 @@ local FILETYPE_SETTINGS = {
     vim.opt_local.expandtab = true
     vim.opt_local.shiftwidth = 2
     vim.opt_local.tabstop = 2
+  end,
+
+  -- Groovy files (including Jenkinsfiles)
+  groovy = function()
+    vim.opt_local.commentstring = "// %s"
+    vim.opt_local.wrap = false
+    vim.opt_local.expandtab = true
+    vim.opt_local.shiftwidth = 4
+    vim.opt_local.tabstop = 4
+    vim.opt_local.softtabstop = 4
+    -- Enable syntax highlighting
+    vim.opt_local.syntax = "groovy"
   end,
 }
 
