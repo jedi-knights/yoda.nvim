@@ -543,15 +543,14 @@ create_autocmd("FileType", {
   end,
 })
 
--- AGGRESSIVE MARKDOWN PERFORMANCE: Disable ALL expensive features
+-- MARKDOWN PERFORMANCE: Balanced performance and functionality
 create_autocmd("FileType", {
   group = augroup("YodaMarkdownPerformance", { clear = true }),
-  desc = "Aggressive performance optimizations for markdown",
+  desc = "Balanced performance optimizations for markdown",
   pattern = "markdown",
   callback = function()
-    -- Disable ALL plugins that might cause lag
-    vim.cmd("silent! TSDisable markdown")
-    vim.cmd("silent! TSDisableAll")
+    -- Keep basic syntax highlighting but disable expensive inline parsing
+    vim.cmd("silent! TSDisable markdown_inline")
 
     -- Disable ALL autocmds that might trigger on typing events
     vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
