@@ -6,17 +6,35 @@
 SHADA_DIR="$HOME/.local/state/nvim/shada"
 
 if [ -d "$SHADA_DIR" ]; then
-    echo "Cleaning up stale ShaDa temporary files..."
+    echo "Cleaning up ShaDa temporary files..."
     
-    # Find temp files older than 1 day
-    OLD_TEMPS=$(find "$SHADA_DIR" -name "*.tmp.*" -mtime +1 2>/dev/null | wc -l)
+    # Count all temp files (including recent ones that may be stuck)
+    ALL_TEMPS=$(find "$SHADA_DIR" -name "*.tmp.*" 2>/dev/null | wc -l)
     
-    if [ "$OLD_TEMPS" -gt 0 ]; then
-        echo "Found $OLD_TEMPS stale temporary files"
-        find "$SHADA_DIR" -name "*.tmp.*" -mtime +1 -delete 2>/dev/null
-        echo "Cleanup completed"
+    if [ "$ALL_TEMPS" -gt 0 ]; then
+        echo "Found $ALL_TEMPS temporary files"
+        
+        # List the files we're about to remove for transparency
+        echo "Removing files:"
+        find "$SHADA_DIR" -name "*.tmp.*" 2>/dev/null | head -10
+        if [ "$ALL_TEMPS" -gt 10 ]; then
+            echo "... and $(($ALL_TEMPS - 10)) more"
+        fi
+        
+        # Remove ALL temp files (not just old ones)
+        # This is safe because these are temporary files by definition
+        find "$SHADA_DIR" -name "*.tmp.*" -delete 2>/dev/null
+        echo "Cleanup completed - removed $ALL_TEMPS temporary files"
     else
-        echo "No stale temporary files found"
+        echo "No temporary files found"
+    fi
+    
+    # Also clean up any backup ShaDa files that might be causing issues
+    BACKUP_FILES=$(find "$SHADA_DIR" -name "*.bak" 2>/dev/null | wc -l)
+    if [ "$BACKUP_FILES" -gt 0 ]; then
+        echo "Found $BACKUP_FILES backup ShaDa files, removing..."
+        find "$SHADA_DIR" -name "*.bak" -delete 2>/dev/null
+        echo "Backup files removed"
     fi
 else
     echo "ShaDa directory not found: $SHADA_DIR"
