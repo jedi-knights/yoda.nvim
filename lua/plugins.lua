@@ -152,6 +152,7 @@ return {
 
       -- Set menu
       dashboard.section.buttons.val = {
+        dashboard.button("a", "🤖  Open Code AI", "<leader>ai"),
         dashboard.button("e", "📁  Open Explorer", "<leader>eo"),
         dashboard.button("f", "🔍  Find Files", "<leader>ff"),
         dashboard.button("g", "🔎  Find Text", "<leader>fg"),
@@ -279,14 +280,14 @@ return {
             "diff",
             "diagnostics",
           },
-          lualine_c = { 
+          lualine_c = {
             {
               function()
                 return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
               end,
               icon = "📁",
             },
-            "filename" 
+            "filename",
           },
           lualine_x = { "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
