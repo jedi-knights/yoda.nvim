@@ -1,0 +1,502 @@
+*yoda-editing.txt*    Yoda.nvim Editing Quick Reference    Last change: 2025 Oct 19
+
+YODA EDITING QUICK REFERENCE                                        *yoda-editing*
+
+Table of Contents~
+
+1. Basic Movement.........................|yoda-editing-movement|
+2. Editing Modes..........................|yoda-editing-modes|
+3. Basic Editing..........................|yoda-editing-basic|
+4. Deletion Commands......................|yoda-editing-delete|
+5. Change and Replace.....................|yoda-editing-change|
+6. Copy and Paste.........................|yoda-editing-copy|
+7. Undo and Redo..........................|yoda-editing-undo|
+8. Search and Replace.....................|yoda-editing-search|
+9. Navigation.............................|yoda-editing-navigate|
+10. Files and Buffers.....................|yoda-editing-files|
+11. Visual Mode...........................|yoda-editing-visual|
+12. Command Line..........................|yoda-editing-cmdline|
+13. Windows and Tabs......................|yoda-editing-windows|
+14. Marks and Jumps.......................|yoda-editing-marks|
+15. Quick Reference.......................|yoda-editing-quickref|
+
+==============================================================================
+1. Basic Movement                                          *yoda-editing-movement*
+
+The fundamental keys for cursor movement in Normal mode:
+
+    h       Move cursor left
+    j       Move cursor down  
+    k       Move cursor up
+    l       Move cursor right
+
+    Arrow keys also work, but hjkl is faster for touch typists.
+
+Word Movement:~
+    w       Move forward to beginning of next word
+    e       Move forward to end of word
+    b       Move backward to beginning of word
+    W       Move forward to beginning of next WORD (whitespace separated)
+    E       Move forward to end of WORD
+    B       Move backward to beginning of WORD
+
+Line Movement:~
+    0       Move to beginning of line
+    ^       Move to first non-whitespace character of line  
+    $       Move to end of line
+    g_      Move to last non-whitespace character of line
+
+Character Movement:~
+    f{char} Move forward to next occurrence of {char} on line
+    F{char} Move backward to previous occurrence of {char} on line
+    t{char} Move forward to character before next {char}
+    T{char} Move backward to character after previous {char}
+    ;       Repeat last f, F, t, T command
+    ,       Repeat last f, F, t, T command in opposite direction
+
+==============================================================================
+2. Editing Modes                                             *yoda-editing-modes*
+
+Neovim has several modes for different types of editing:
+
+Normal Mode:~
+    Default mode for navigation and commands. Press <Esc> to return here.
+
+Insert Mode:~
+    i       Insert text before cursor
+    I       Insert text at beginning of line
+    a       Append text after cursor
+    A       Append text at end of line
+    o       Open new line below cursor and enter Insert mode
+    O       Open new line above cursor and enter Insert mode
+    s       Substitute character (delete char and enter Insert mode)
+    S       Substitute line (delete line and enter Insert mode)
+
+Visual Mode:~
+    v       Start character-wise visual selection
+    V       Start line-wise visual selection
+    <C-v>   Start block-wise visual selection
+    gv      Re-select last visual selection
+
+Command-line Mode:~
+    :       Start Ex command
+    /       Start forward search
+    ?       Start backward search
+
+Replace Mode:~
+    R       Enter Replace mode (overwrite characters)
+    r{char} Replace single character under cursor with {char}
+
+==============================================================================
+3. Basic Editing                                             *yoda-editing-basic*
+
+Insertion:~
+    i       Insert before cursor
+    I       Insert at beginning of line
+    a       Insert after cursor
+    A       Insert at end of line
+    o       Open line below
+    O       Open line above
+    <Esc>   Exit Insert mode
+
+Basic Deletion:~
+    x       Delete character under cursor
+    X       Delete character before cursor
+    s       Delete character and enter Insert mode
+    S       Delete line and enter Insert mode
+
+Numbers and Repetition:~
+    Most commands can be prefixed with a count:
+    
+    3w      Move forward 3 words
+    5j      Move down 5 lines
+    2dd     Delete 2 lines
+    4x      Delete 4 characters
+
+==============================================================================
+4. Deletion Commands                                        *yoda-editing-delete*
+
+The delete operator 'd' works with motions:
+
+Basic Deletions:~
+    x       Delete character under cursor
+    X       Delete character before cursor
+    dw      Delete from cursor to beginning of next word
+    de      Delete from cursor to end of word
+    d$      Delete from cursor to end of line
+    d0      Delete from cursor to beginning of line
+    dd      Delete entire line
+
+Count + Delete:~
+    2dw     Delete 2 words
+    3dd     Delete 3 lines
+    d3w     Delete 3 words (same as 3dw)
+
+Delete with Motions:~
+    df{char}    Delete from cursor to next {char}
+    dt{char}    Delete from cursor to before next {char}
+    d/{pattern} Delete from cursor to next search match
+
+The general format is: d{count}{motion}
+
+==============================================================================
+5. Change and Replace                                       *yoda-editing-change*
+
+The change operator 'c' deletes text and enters Insert mode:
+
+Basic Changes:~
+    cw      Change word
+    ce      Change to end of word  
+    c$      Change to end of line
+    cc      Change entire line
+    C       Change to end of line (same as c$)
+
+Replace Commands:~
+    r{char}     Replace character under cursor with {char}
+    R           Enter Replace mode
+    ~           Toggle case of character under cursor
+    g~{motion}  Toggle case of motion
+    gu{motion}  Make motion lowercase
+    gU{motion}  Make motion uppercase
+
+Substitution:~
+    s       Substitute character (delete char, enter Insert mode)
+    S       Substitute line (delete line, enter Insert mode)
+
+==============================================================================
+6. Copy and Paste                                            *yoda-editing-copy*
+
+Yank (copy) and put (paste) operations:
+
+Yank Commands:~
+    y{motion}   Yank text specified by motion
+    yw          Yank word
+    yy          Yank line
+    Y           Yank line (same as yy)
+    y$          Yank to end of line
+
+Put Commands:~
+    p       Put text after cursor/below line
+    P       Put text before cursor/above line
+    gp      Put text after cursor and move cursor after pasted text
+    gP      Put text before cursor and move cursor after pasted text
+
+Registers:~
+    "{reg}  Use register {reg} for next yank, delete, or put
+    "0      Contains last yanked text
+    "1-"9   Contains last 9 deleted texts
+    "+      System clipboard
+    "*      Primary selection (X11)
+    
+Examples:~
+    "ayy    Yank line into register 'a'
+    "ap     Put contents of register 'a'
+    "+y     Yank to system clipboard
+    "+p     Put from system clipboard
+
+==============================================================================
+7. Undo and Redo                                             *yoda-editing-undo*
+
+Undo and redo operations:
+
+    u       Undo last change
+    U       Undo all changes on current line
+    <C-r>   Redo (undo the undo)
+    
+Advanced Undo:~
+    :undolist       Show undo tree
+    :earlier 10s    Go to state 10 seconds ago
+    :earlier 5m     Go to state 5 minutes ago  
+    :earlier 1h     Go to state 1 hour ago
+    :later 10s      Go to later state
+    g-              Go to older state in undo tree
+    g+              Go to newer state in undo tree
+
+==============================================================================
+8. Search and Replace                                       *yoda-editing-search*
+
+Search Commands:~
+    /{pattern}      Search forward for pattern
+    ?{pattern}      Search backward for pattern
+    n               Next match (same direction)
+    N               Next match (opposite direction)
+    *               Search forward for word under cursor
+    #               Search backward for word under cursor
+    g*              Search forward for partial word under cursor
+    g#              Search backward for partial word under cursor
+
+Search Options:~
+    /pattern\c      Case insensitive search
+    /pattern\C      Case sensitive search
+    :set hlsearch   Highlight search matches
+    :nohlsearch     Clear search highlighting
+
+Substitute Commands:~
+    :s/old/new/         Replace first occurrence on current line
+    :s/old/new/g        Replace all occurrences on current line
+    :s/old/new/gc       Replace all with confirmation
+    :%s/old/new/g       Replace all in file
+    :%s/old/new/gc      Replace all in file with confirmation
+    :1,10s/old/new/g    Replace in lines 1-10
+    :'<,'>s/old/new/g   Replace in visual selection
+
+Substitute Flags:~
+    g       Replace all occurrences on line (global)
+    c       Confirm each replacement
+    i       Case insensitive
+    I       Case sensitive
+
+==============================================================================
+9. Navigation                                             *yoda-editing-navigate*
+
+File Navigation:~
+    gg      Go to first line of file
+    G       Go to last line of file
+    {num}G  Go to line number {num}
+    <C-g>   Show file status and current position
+    
+Screen Navigation:~
+    H       Move to top of screen (High)
+    M       Move to middle of screen (Middle)  
+    L       Move to bottom of screen (Low)
+    <C-f>   Page forward (Page Down)
+    <C-b>   Page backward (Page Up)
+    <C-d>   Half page down
+    <C-u>   Half page up
+    zz      Center current line on screen
+    zt      Move current line to top of screen
+    zb      Move current line to bottom of screen
+
+Paragraph and Block Navigation:~
+    {       Move to previous empty line (paragraph up)
+    }       Move to next empty line (paragraph down)
+    [[      Move to previous section
+    ]]      Move to next section
+
+Jump List:~
+    <C-o>   Go to previous position in jump list
+    <C-i>   Go to next position in jump list
+    :jumps  Show jump list
+
+Matching:~
+    %       Jump to matching bracket/parenthesis
+
+==============================================================================
+10. Files and Buffers                                       *yoda-editing-files*
+
+File Operations:~
+    :e {file}       Edit file
+    :w              Write (save) current file
+    :w {file}       Write to specific file
+    :wa             Write all modified files
+    :q              Quit current window
+    :q!             Quit without saving
+    :wq             Write and quit
+    :x              Write (if modified) and quit
+    :qa             Quit all windows
+    :qa!            Quit all without saving
+
+Buffer Operations:~
+    :ls             List all buffers
+    :b {num}        Switch to buffer number
+    :b {name}       Switch to buffer by name (supports tab completion)
+    :bn             Next buffer
+    :bp             Previous buffer
+    :bd             Delete current buffer
+    :bd {num}       Delete buffer by number
+
+File Exploration:~
+    :Ex             Open file explorer (netrw)
+    :Vex            Open file explorer in vertical split
+    :Sex            Open file explorer in horizontal split
+
+Read and Write:~
+    :r {file}       Read file and insert below cursor
+    :r !{cmd}       Read command output and insert below cursor
+    :{range}w {file}    Write range to file
+
+==============================================================================
+11. Visual Mode                                            *yoda-editing-visual*
+
+Starting Visual Mode:~
+    v       Character-wise visual selection
+    V       Line-wise visual selection  
+    <C-v>   Block-wise visual selection
+    gv      Re-select last visual selection
+
+Visual Mode Commands:~
+    o       Move to other end of selection
+    O       Move to other corner of block selection
+    
+Operations on Visual Selection:~
+    d       Delete selection
+    c       Change selection
+    y       Yank (copy) selection
+    >       Indent selection
+    <       Unindent selection
+    =       Auto-indent selection
+    ~       Toggle case of selection
+    u       Make selection lowercase
+    U       Make selection uppercase
+
+Block Visual Mode:~
+    I       Insert at beginning of each line in block
+    A       Append at end of each line in block
+    r{char} Replace each character in block with {char}
+
+==============================================================================
+12. Command Line                                           *yoda-editing-cmdline*
+
+Command Line Editing:~
+    <C-f>           Open command-line window
+    <Up>/<Down>     Navigate command history
+    <C-p>/<C-n>     Navigate command history
+    <Tab>           Command completion
+    <C-d>           List completions
+    <C-a>           Move to beginning of line
+    <C-e>           Move to end of line
+    <C-w>           Delete word backward
+    <C-u>           Delete to beginning of line
+
+Common Commands:~
+    :!{cmd}         Execute external command
+    :sh             Start shell
+    :set            Show all options
+    :set {option}   Set option
+    :set {opt}?     Show option value
+    :help {topic}   Get help on topic
+
+Ranges:~
+    :1,10           Lines 1 to 10
+    :%              Entire file
+    :.              Current line
+    :$              Last line
+    :'<,'>          Visual selection
+
+==============================================================================
+13. Windows and Tabs                                       *yoda-editing-windows*
+
+Window Management:~
+    <C-w>s          Split window horizontally
+    <C-w>v          Split window vertically
+    <C-w>q          Close current window
+    <C-w>o          Close all other windows
+    <C-w>n          Open new window
+    
+Window Navigation:~
+    <C-w>h          Move to left window
+    <C-w>j          Move to window below
+    <C-w>k          Move to window above  
+    <C-w>l          Move to right window
+    <C-w>w          Move to next window
+    <C-w>p          Move to previous window
+    <C-w>t          Move to top-left window
+    <C-w>b          Move to bottom-right window
+
+Window Resizing:~
+    <C-w>+          Increase window height
+    <C-w>-          Decrease window height
+    <C-w>>          Increase window width
+    <C-w><          Decrease window width
+    <C-w>=          Make all windows equal size
+    <C-w>_          Maximize window height
+    <C-w>|          Maximize window width
+
+Tab Management:~
+    :tabnew         Open new tab
+    :tabc           Close current tab
+    :tabo           Close all other tabs
+    gt              Next tab
+    gT              Previous tab
+    {n}gt           Go to tab number {n}
+
+==============================================================================
+14. Marks and Jumps                                         *yoda-editing-marks*
+
+Setting Marks:~
+    m{a-z}          Set local mark (lowercase = file-specific)
+    m{A-Z}          Set global mark (uppercase = across files)
+    
+Jumping to Marks:~
+    '{mark}         Jump to line of mark
+    `{mark}         Jump to exact position of mark
+    ``              Jump to position before last jump
+    ''              Jump to line before last jump
+    '.              Jump to last change
+    '^              Jump to last insertion
+
+Special Marks:~
+    '.              Position of last change
+    '^              Position of last insertion
+    '"              Position when last exiting file
+    '[              Start of last change or yank
+    ']              End of last change or yank
+    '<              Start of last visual selection
+    '>              End of last visual selection
+
+Mark Commands:~
+    :marks          List all marks
+    :marks {args}   List specific marks
+    :delmarks {args} Delete marks
+
+==============================================================================
+15. Quick Reference                                        *yoda-editing-quickref*
+
+Essential Commands for Daily Use~
+
+Movement:
+    h j k l         Basic movement
+    w e b           Word movement
+    0 ^ $           Line movement
+    gg G            File movement
+    f F t T         Character finding
+    % * #           Matching and search
+
+Editing:
+    i a o           Insert modes
+    x d c           Delete and change
+    y p             Copy and paste
+    u <C-r>         Undo and redo
+    r R ~           Replace commands
+
+Text Objects:
+    iw aw           Inner/around word
+    is as           Inner/around sentence  
+    ip ap           Inner/around paragraph
+    i" a"           Inner/around quotes
+    i( a(           Inner/around parentheses
+    i{ a{           Inner/around braces
+    i[ a[           Inner/around brackets
+    it at           Inner/around tags
+
+Common Combinations:
+    ciw             Change inner word
+    daw             Delete around word  
+    yip             Yank inner paragraph
+    vit             Select inner tag
+    di"             Delete inside quotes
+    ca(             Change around parentheses
+
+Search and Replace:
+    /pattern n N    Search and navigate
+    *               Search word under cursor
+    :%s/old/new/g   Replace all in file
+
+Files:
+    :e :w :q        Edit, write, quit
+    :wa :qa         Write all, quit all
+    <C-w>s <C-w>v   Split windows
+    gt gT           Switch tabs
+
+Most commands accept counts (e.g., 3w, 5dd, 2ci").
+Most commands work with motions (e.g., d3w, c$, y}).
+
+Tips:
+- Use . to repeat the last change
+- Use <C-g> to see file position  
+- Use :set number to show line numbers
+- Use :set hlsearch to highlight searches
+- Type :help {command} for detailed help
+
+==============================================================================
+vim:tw=78:ts=8:noet:ft=help:norl:
