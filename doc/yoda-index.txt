@@ -36,7 +36,8 @@ CORE DOCUMENTATION                                     *yoda-index-core*
 
 Core system documentation:
 
-    |yoda-keymaps.txt|            Complete keymap reference
+    |yoda-editing.txt|            Vim/Neovim editing quick reference
+    |yoda-keymaps.txt|            Complete keymap reference  
     |yoda-testing.txt|            Testing guide and framework
     |yoda-lsp.txt|                LSP overview and configuration
     |yoda-architecture.txt|       System architecture and design principles
@@ -96,14 +97,17 @@ USER GUIDES                                             *yoda-index-guides*
 
 User-friendly guides and tutorials:
 
+    |yoda-editing.txt|            Comprehensive Vim/Neovim editing guide
     |yoda-vim-essentials.txt|     Essential Vim commands quick reference
 
-Additional Guides:~
+The editing guide includes:~
   • Vim movement and editing basics
-  • File navigation and management
+  • File navigation and management  
   • Search and replace patterns
   • Visual mode operations
-  • Essential productivity tips
+  • Copy/paste and undo operations
+  • Text objects and motions
+  • Windows, tabs, and buffers
 
 Perfect for:~
   • Vim beginners learning the basics
@@ -114,6 +118,12 @@ Perfect for:~
 REFERENCE                                              *yoda-index-reference*
 
 Quick reference materials:
+
+Editing and Movement:~
+    |yoda-editing-quickref|       Essential editing commands reference
+    |yoda-editing-movement|       Navigation and cursor movement
+    |yoda-editing-visual|         Visual mode operations
+    |yoda-editing-search|         Search and replace commands
 
 Keymaps by Category:~
     |yoda-keymaps-navigation|     Movement and navigation
