@@ -435,20 +435,27 @@ create_autocmd("BufEnter", {
   callback = function(args)
     local buftype = vim.bo[args.buf].buftype
     local filetype = vim.bo[args.buf].filetype
+    local bufname = vim.api.nvim_buf_get_name(args.buf)
 
-    -- Check if this is a real buffer (has content or is a real file)
-    local is_real_buffer = vim.bo[args.buf].buflisted
-      and buftype == ""
-      and filetype ~= "alpha"
-      and (vim.api.nvim_buf_get_name(args.buf) ~= "" or vim.api.nvim_buf_line_count(args.buf) > 1)
+    -- Skip if this is the alpha buffer itself
+    if filetype == "alpha" then
+      return
+    end
 
+    -- Check if this is a real buffer (normal file buffer)
+    local is_real_buffer = buftype == "" and filetype ~= "alpha" and filetype ~= "" and bufname ~= ""
+
+    -- Also close alpha for any named file, even if it's still loading
+    -- This handles Telescope file selection properly
     if is_real_buffer then
-      -- Close all alpha buffers
-      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
-          pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      -- Close all alpha buffers immediately
+      vim.schedule(function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+            pcall(vim.api.nvim_buf_delete, buf, { force = true })
+          end
         end
-      end
+      end)
     end
   end,
 })
@@ -501,6 +508,107 @@ create_autocmd("BufEnter", {
         show_alpha_dashboard()
       end
     end, DELAYS.ALPHA_BUFFER_CHECK)
+  end,
+})
+
+-- Additional Alpha closing for file pickers and external commands
+create_autocmd({ "BufReadPost", "BufNewFile" }, {
+  group = augroup("AlphaCloseOnFile", { clear = true }),
+  desc = "Close alpha dashboard when reading/creating files",
+  callback = function(args)
+    local filetype = vim.bo[args.buf].filetype
+    local bufname = vim.api.nvim_buf_get_name(args.buf)
+
+    -- Skip alpha and special buffers
+    if filetype == "alpha" or filetype == "" or bufname == "" then
+      return
+    end
+
+    -- This buffer has actual file content, close alpha immediately
+    vim.schedule(function()
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+          pcall(vim.api.nvim_buf_delete, buf, { force = true })
+        end
+      end
+    end)
+  end,
+})
+
+-- Close alpha when window layout changes (e.g., from Telescope)
+create_autocmd("WinEnter", {
+  group = augroup("AlphaCloseOnWinEnter", { clear = true }),
+  desc = "Close alpha dashboard when entering non-alpha windows",
+  callback = function()
+    local current_filetype = vim.bo.filetype
+
+    -- If we're entering a non-alpha window with actual content
+    if current_filetype ~= "alpha" and current_filetype ~= "" and vim.api.nvim_buf_get_name(0) ~= "" then
+      -- Close all alpha buffers
+      vim.schedule(function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+            pcall(vim.api.nvim_buf_delete, buf, { force = true })
+          end
+        end
+      end)
+    end
+  end,
+})
+
+-- Force close alpha when Telescope or other pickers close
+create_autocmd("BufHidden", {
+  group = augroup("AlphaCloseOnPickerExit", { clear = true }),
+  desc = "Close alpha when file pickers close",
+  callback = function(args)
+    local filetype = vim.bo[args.buf].filetype
+
+    -- If a telescope or picker buffer is being hidden, likely a file was selected
+    if filetype == "TelescopePrompt" or filetype:match("^telescope") then
+      vim.defer_fn(function()
+        -- Check if any real files are now open
+        local has_real_files = false
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
+            local buf_filetype = vim.bo[buf].filetype
+            local buf_name = vim.api.nvim_buf_get_name(buf)
+            if buf_filetype ~= "alpha" and buf_filetype ~= "" and buf_name ~= "" and vim.bo[buf].buftype == "" then
+              has_real_files = true
+              break
+            end
+          end
+        end
+
+        -- If real files are open, close alpha
+        if has_real_files then
+          for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+              pcall(vim.api.nvim_buf_delete, buf, { force = true })
+            end
+          end
+        end
+      end, 50) -- Small delay to let telescope finish opening the file
+    end
+  end,
+})
+
+-- Ensure Python syntax highlighting is enabled
+create_autocmd("FileType", {
+  group = augroup("YodaPythonSyntax", { clear = true }),
+  desc = "Ensure Python syntax highlighting is properly enabled",
+  pattern = "python",
+  callback = function()
+    -- Ensure treesitter is enabled for Python
+    local ok, ts_highlight = pcall(require, "nvim-treesitter.highlight")
+    if ok and ts_highlight then
+      ts_highlight.attach(0, "python")
+    end
+
+    -- Fallback to vim syntax if treesitter fails
+    if not vim.treesitter.highlighter.active[0] then
+      vim.cmd("syntax enable")
+      vim.bo.syntax = "python"
+    end
   end,
 })
 
@@ -598,8 +706,11 @@ create_autocmd("FileType", {
     vim.opt_local.cursorline = false
     vim.opt_local.cursorcolumn = false
 
-    -- Disable copilot and other AI assistants
-    vim.cmd("silent! Copilot disable")
+    -- Disable copilot and other AI assistants (only if available)
+    local ok, copilot = pcall(require, "copilot")
+    if ok and copilot then
+      vim.cmd("silent! Copilot disable")
+    end
 
     -- Disable linting
     vim.cmd("silent! LintDisable")

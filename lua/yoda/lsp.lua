@@ -114,7 +114,7 @@ function M.setup()
     capabilities = capabilities,
   })
 
-  -- Python setup
+  -- Python setup with virtual environment support
   safe_setup("basedpyright", {
     cmd = { "basedpyright-langserver", "--stdio" },
     filetypes = { "python" },
@@ -126,9 +126,93 @@ function M.setup()
           typeCheckingMode = "basic",
           autoSearchPaths = true,
           useLibraryCodeForTypes = true,
+          autoImportCompletions = true,
+          diagnosticMode = "workspace",
+          -- Include common Python project patterns
+          include = { "**/*.py" },
+          exclude = {
+            "**/node_modules",
+            "**/__pycache__",
+            ".git",
+            "**/*.pyc",
+          },
+        },
+      },
+      python = {
+        analysis = {
+          autoSearchPaths = true,
+          useLibraryCodeForTypes = true,
+          diagnosticMode = "workspace",
+          typeCheckingMode = "basic",
         },
       },
     },
+    on_new_config = function(config, root_dir)
+      -- Auto-detect virtual environment
+      local function join_path(...)
+        return table.concat({ ... }, "/")
+      end
+
+      -- Look for virtual environment in common locations
+      local possible_venv_paths = {
+        join_path(root_dir, ".venv", "bin", "python"),
+        join_path(root_dir, "venv", "bin", "python"),
+        join_path(root_dir, "env", "bin", "python"),
+        join_path(vim.fn.getcwd(), ".venv", "bin", "python"),
+        join_path(vim.fn.getcwd(), "venv", "bin", "python"),
+        join_path(vim.fn.getcwd(), "env", "bin", "python"),
+      }
+
+      for _, venv_python in ipairs(possible_venv_paths) do
+        if vim.fn.executable(venv_python) == 1 then
+          config.settings.basedpyright.analysis.pythonPath = venv_python
+          config.settings.python.pythonPath = venv_python
+          -- Add the project root to Python path for local modules
+          if root_dir then
+            local python_paths = { root_dir }
+            -- Add src/ directory if it exists (common Python project structure)
+            local src_dir = join_path(root_dir, "src")
+            if vim.fn.isdirectory(src_dir) == 1 then
+              table.insert(python_paths, src_dir)
+            end
+            config.settings.basedpyright.analysis.extraPaths = python_paths
+            config.settings.python.analysis.extraPaths = python_paths
+          end
+          vim.notify(string.format("Python LSP: Using venv at %s", venv_python), vim.log.levels.INFO)
+          return
+        end
+      end
+
+      -- Fallback: Add project root to Python path even without venv
+      if root_dir then
+        local python_paths = { root_dir }
+        local src_dir = join_path(root_dir, "src")
+        if vim.fn.isdirectory(src_dir) == 1 then
+          table.insert(python_paths, src_dir)
+        end
+
+        -- Special handling for sun-qa-python-tools projects
+        local project_name = vim.fn.fnamemodify(root_dir, ":t")
+        if project_name:match("sun%-qa%-python%-tools") or vim.fn.isdirectory(join_path(root_dir, "sun_qa_python_tools")) == 1 then
+          -- Add common Python package directories for sun-qa-python-tools
+          local package_dirs = {
+            join_path(root_dir, "sun_qa_python_tools"),
+            join_path(root_dir, "src", "sun_qa_python_tools"),
+          }
+
+          for _, pkg_dir in ipairs(package_dirs) do
+            if vim.fn.isdirectory(pkg_dir) == 1 then
+              table.insert(python_paths, pkg_dir)
+              vim.notify(string.format("Python LSP: Added sun-qa-python-tools package dir: %s", pkg_dir), vim.log.levels.INFO)
+            end
+          end
+        end
+
+        config.settings.basedpyright.analysis.extraPaths = python_paths
+        config.settings.python.analysis.extraPaths = python_paths
+        vim.notify("Python LSP: Added project root to Python path", vim.log.levels.INFO)
+      end
+    end,
   })
 
   -- YAML setup
@@ -257,6 +341,31 @@ function M.setup()
     },
   })
 
+  -- Auto-restart Python LSP when entering different Python projects
+  vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged" }, {
+    group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", {}),
+    pattern = "*.py",
+    callback = function()
+      -- Only restart if we detect a new Python project root
+      local current_root = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
+      if current_root and vim.g.last_python_root ~= current_root then
+        vim.g.last_python_root = current_root
+
+        -- Restart Python LSP clients
+        local clients = vim.lsp.get_clients({ name = "basedpyright" })
+        if #clients > 0 then
+          for _, client in ipairs(clients) do
+            client.stop()
+          end
+          vim.defer_fn(function()
+            vim.cmd("edit") -- Trigger LSP attach
+          end, 500)
+          vim.notify(string.format("Restarted Python LSP for project: %s", current_root), vim.log.levels.INFO)
+        end
+      end
+    end,
+  })
+
   -- Setup debug commands
   M._setup_debug_commands()
 end
@@ -322,6 +431,63 @@ function M._setup_debug_commands()
   vim.api.nvim_create_user_command("LSPInfo", function()
     vim.cmd("LspInfo")
   end, { desc = "Show LSP information" })
+
+  -- Python-specific LSP debugging command
+  vim.api.nvim_create_user_command("PythonLSPDebug", function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local clients = vim.lsp.get_clients({ bufnr = bufnr, name = "basedpyright" })
+
+    print("=== Python LSP Debug ===")
+    print("Buffer filetype:", vim.bo[bufnr].filetype)
+    print("Python LSP clients:", #clients)
+
+    if #clients > 0 then
+      local client = clients[1]
+      print("Client name:", client.name)
+      print("Client ID:", client.id)
+      print("Root dir:", client.config.root_dir or "unknown")
+
+      if client.config.settings and client.config.settings.basedpyright then
+        local settings = client.config.settings.basedpyright.analysis
+        print("Python path:", settings.pythonPath or "default")
+        print("Extra paths:", vim.inspect(settings.extraPaths or {}))
+        print("Auto search paths:", settings.autoSearchPaths or false)
+        print("Diagnostic mode:", settings.diagnosticMode or "default")
+      end
+    else
+      print("No Python LSP clients attached!")
+
+      -- Check if basedpyright is available
+      if vim.fn.executable("basedpyright-langserver") == 1 then
+        print("✅ basedpyright-langserver is available")
+      else
+        print("❌ basedpyright-langserver not found in PATH")
+        print("Install with: npm install -g basedpyright")
+      end
+
+      -- Check project root detection
+      local root = vim.fs.root(bufnr, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
+      print("Detected project root:", root or "none")
+
+      -- Check for virtual environments
+      local cwd = vim.fn.getcwd()
+      local possible_venvs = {
+        cwd .. "/.venv/bin/python",
+        cwd .. "/venv/bin/python",
+        cwd .. "/env/bin/python",
+      }
+
+      print("Virtual environment check:")
+      for _, path in ipairs(possible_venvs) do
+        if vim.fn.executable(path) == 1 then
+          print("  ✅", path)
+        else
+          print("  ❌", path)
+        end
+      end
+    end
+    print("========================")
+  end, { desc = "Debug Python LSP configuration" })
 end
 
 return M
