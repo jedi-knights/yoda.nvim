@@ -428,6 +428,31 @@ create_autocmd("VimEnter", {
   end,
 })
 
+-- Close alpha dashboard when opening real buffers
+create_autocmd("BufEnter", {
+  group = augroup("AlphaClose", { clear = true }),
+  desc = "Close alpha dashboard when opening real buffers",
+  callback = function(args)
+    local buftype = vim.bo[args.buf].buftype
+    local filetype = vim.bo[args.buf].filetype
+
+    -- Check if this is a real buffer (has content or is a real file)
+    local is_real_buffer = vim.bo[args.buf].buflisted
+      and buftype == ""
+      and filetype ~= "alpha"
+      and (vim.api.nvim_buf_get_name(args.buf) ~= "" or vim.api.nvim_buf_line_count(args.buf) > 1)
+
+    if is_real_buffer then
+      -- Close all alpha buffers
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+          pcall(vim.api.nvim_buf_delete, buf, { force = true })
+        end
+      end
+    end
+  end,
+})
+
 -- Buffer Enter: Show alpha dashboard for empty buffers
 create_autocmd("BufEnter", {
   group = augroup("AlphaBuffer", { clear = true }),
