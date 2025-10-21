@@ -22,19 +22,6 @@ vim.opt.undofile = false
 vim.notify = function() end -- No-op notifications
 print = function() end -- No-op print statements
 
--- Mock vim.cmd to prevent expensive operations
-local original_vim_cmd = vim.cmd
-vim.cmd = function(cmd)
-  -- Skip expensive commands during tests
-  if cmd == "checkhealth" or cmd:match("^checkhealth") or cmd == "quitall!" then
-    if cmd == "quitall!" then
-      return original_vim_cmd(cmd)
-    end
-    return
-  end
-  return original_vim_cmd(cmd)
-end
-
 -- Disable file watching and change detection
 vim.opt.eventignore = "all"
 
@@ -106,4 +93,17 @@ else
   -- Plenary already exists, just add it to runtimepath
   vim.opt.rtp:prepend(lazypath)
   vim.opt.rtp:prepend(plenary_path)
+end
+
+-- Apply vim.cmd mock AFTER lazy setup is complete
+local original_vim_cmd = vim.cmd
+vim.cmd = function(cmd)
+  -- Skip expensive commands during tests
+  if cmd == "checkhealth" or cmd:match("^checkhealth") or cmd == "quitall!" then
+    if cmd == "quitall!" then
+      return original_vim_cmd(cmd)
+    end
+    return
+  end
+  return original_vim_cmd(cmd)
 end
