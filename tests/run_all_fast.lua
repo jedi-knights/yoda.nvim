@@ -14,13 +14,16 @@ io.write = function() end
 local function run_tests_fast()
   local plenary_ok, test_harness = pcall(require, "plenary.test_harness")
   if not plenary_ok then
+    -- Re-enable printing for error messages
+    print = original_print
+    io.write = original_write
     print("ERROR: plenary.nvim not found!")
     vim.cmd("cquit 1")
     return
   end
 
   -- Run tests with minimal configuration
-  local results = test_harness.test_directory("tests", {
+  local ok, results = pcall(test_harness.test_directory, "tests", {
     minimal_init = "./tests/minimal_init_fast.lua",
   })
 
@@ -28,13 +31,19 @@ local function run_tests_fast()
   print = original_print
   io.write = original_write
 
+  if not ok then
+    print("ERROR: Test execution failed: " .. tostring(results))
+    vim.cmd("cquit 1")
+    return
+  end
+
   -- Print aggregated summary
   print("\n" .. string.rep("=", 80))
   print("AGGREGATE TEST RESULTS")
   print(string.rep("=", 80))
 
   -- Count totals from results
-  if results then
+  if results and type(results) == "table" then
     local total_success = 0
     local total_failed = 0
     local total_errors = 0
@@ -55,18 +64,29 @@ local function run_tests_fast()
     print(string.format("Test files run: %d", file_count))
     print(string.rep("=", 80))
 
+    -- Exit with error code if any tests failed
     if total_failed > 0 or total_errors > 0 then
+      print("❌ Tests failed! Exiting with error code 1")
       vim.cmd("cquit 1")
+      return
+    else
+      print("✅ All tests passed!")
     end
   else
-    print("Test results not available for aggregation")
+    print("ERROR: Test results not available for aggregation")
+    print("Results type: " .. type(results))
     print(string.rep("=", 80))
+    vim.cmd("cquit 1")
+    return
   end
 end
 
 -- Run and exit
 local ok, err = pcall(run_tests_fast)
 if not ok then
+  -- Re-enable printing for error messages
+  print = original_print
+  io.write = original_write
   print("ERROR: " .. tostring(err))
   vim.cmd("cquit 1")
 else

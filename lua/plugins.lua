@@ -166,7 +166,6 @@ return {
 
       -- Configure alpha options
       local alpha_config = {
-        redraw_on_resize = true,
         layout = {
           { type = "padding", val = 10 },
           dashboard.section.header,
@@ -178,6 +177,7 @@ return {
         },
         opts = {
           margin = 5,
+          redraw_on_resize = false, -- Disable to prevent invalid window errors
           setup = function()
             -- Use proper scopes for options that support them
             vim.opt_local.laststatus = 0
@@ -205,6 +205,9 @@ return {
     },
     config = function()
       require("noice").setup({
+        notify = {
+          enabled = false, -- Disable noice vim.notify override to prevent conflicts
+        },
         lsp = {
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -1059,14 +1062,17 @@ return {
   -- Treesitter - Syntax highlighting
   {
     "nvim-treesitter/nvim-treesitter",
-    lazy = true,
-    event = "VeryLazy",
+    event = { "BufReadPost", "BufNewFile" },
     build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.configs").setup({
         ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript", "rust", "toml" },
         auto_install = true,
-        highlight = { enable = true },
+        sync_install = false, -- Install parsers synchronously (only applied to `ensure_installed`)
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false, -- Disable vim regex highlighting for better performance
+        },
         indent = { enable = true },
         -- PERFORMANCE: Limited treesitter for markdown (syntax highlighting only)
         markdown = {
