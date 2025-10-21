@@ -854,6 +854,20 @@ return {
     end,
   },
 
+  -- Pytest Atlas - Pytest runner with environment/marker selection
+  {
+    "ocrosby/pytest-atlas.nvim",
+    dependencies = {
+      "folke/snacks.nvim",
+    },
+    config = function()
+      require("pytest-atlas").setup({
+        keymap = "<leader>tt",
+        enable_keymap = true,
+      })
+    end,
+  },
+
   -- Neotest - Testing framework
   {
     "nvim-neotest/neotest",
