@@ -2,51 +2,28 @@
 -- Picker adapter - abstracts picker backend (DIP principle)
 -- Supports snacks, telescope, or native vim.ui.select
 
+local backends_system = require("yoda.core.backends")
+local result = require("yoda.core.result")
+
 local M = {}
 
--- Private state (perfect encapsulation through closure)
-local backend = nil
-local initialized = false
-
 -- ============================================================================
--- Backend Detection
+-- Backend Detection - PERFECT DRY
 -- ============================================================================
 
---- Initialize and detect picker backend (with encapsulation guard)
+--- Get picker backend using unified backend system
 --- @return string Backend name ("snacks", "telescope", or "native")
-local function detect_backend()
-  -- Return cached backend if already detected (singleton behavior)
-  if backend and initialized then
-    return backend
+local function get_backend()
+  local preferred = vim.g.yoda_picker_backend
+  local backend_result = backends_system.detect_backend("picker", preferred)
+  
+  if result.is_success(backend_result) then
+    return backend_result.value
+  else
+    -- Fallback to native on error
+    vim.notify("Backend detection failed: " .. result.get_error_message(backend_result), vim.log.levels.WARN)
+    return "native"
   end
-
-  -- Check user preference first
-  if vim.g.yoda_picker_backend then
-    backend = vim.g.yoda_picker_backend
-    initialized = true
-    return backend
-  end
-
-  -- Auto-detect: Try snacks first
-  local ok, snacks = pcall(require, "snacks")
-  if ok and snacks.picker then
-    backend = "snacks"
-    initialized = true
-    return backend
-  end
-
-  -- Try telescope
-  local ok_telescope, telescope = pcall(require, "telescope")
-  if ok_telescope then
-    backend = "telescope"
-    initialized = true
-    return backend
-  end
-
-  -- Fallback to native
-  backend = "native"
-  initialized = true
-  return backend
 end
 
 -- ============================================================================
@@ -83,7 +60,7 @@ local backends = {
 --- Create picker instance with automatic backend detection
 --- @return table Picker implementation with select method
 function M.create()
-  local backend_name = detect_backend()
+  local backend_name = get_backend()
   return backends[backend_name]
 end
 
@@ -113,24 +90,21 @@ end
 --- Get current backend name
 --- @return string Backend name
 function M.get_backend()
-  return detect_backend()
+  return get_backend()
 end
 
 --- Force set backend (useful for testing)
 --- @param backend_name string Backend name ("snacks", "telescope", "native")
 function M.set_backend(backend_name)
-  if backends[backend_name] then
-    backend = backend_name
-    initialized = true -- Mark as initialized to prevent re-detection
-  else
+  local set_result = backends_system.set_backend("picker", backend_name, true) -- Force for testing
+  if result.is_error(set_result) then
     error("Unknown backend: " .. backend_name)
   end
 end
 
 --- Reset backend detection (useful for testing)
 function M.reset_backend()
-  backend = nil
-  initialized = false
+  backends_system.reset_backend("picker")
 end
 
 return M
