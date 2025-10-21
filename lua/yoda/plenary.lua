@@ -57,6 +57,9 @@ function M.run_current_file()
   end
 end
 
+-- Alias for backwards compatibility and pytest-atlas fallback
+M.run_current_test = M.run_current_file
+
 -- Watch mode (auto-run on save)
 function M.watch_tests()
   local harness = get_test_harness()
