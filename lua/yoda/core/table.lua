@@ -85,4 +85,6 @@ function M.contains(tbl, value)
   return false
 end
 
-return M
+-- Validate interface compliance for perfect LSP
+local core_interfaces = require("yoda.interfaces.core")
+return core_interfaces.create_validated(M, "table")

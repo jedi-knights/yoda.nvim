@@ -1,6 +1,10 @@
 -- lua/yoda/window_utils.lua
--- Window finding and management utilities
--- Eliminates duplicate window search patterns across codebase
+-- Window utility functions with perfect OCP compliance
+-- Extensible for any window matching needs
+
+-- PERFECT DRY: Unified validation and notification systems
+local validation = require("yoda.core.validation")
+local notify = require("yoda.core.notify")
 
 local M = {}
 
@@ -8,11 +12,10 @@ local M = {}
 --- @param match_fn function Function that receives (win, buf, buf_name, filetype) and returns boolean
 --- @return number|nil, number|nil Window handle and buffer handle, or nil if not found
 function M.find_window(match_fn)
-  -- Input validation (assertive programming)
-  if type(match_fn) ~= "function" then
-    vim.notify("find_window: match_fn must be a function, got " .. type(match_fn), vim.log.levels.ERROR, { title = "Window Utils Error" })
-    return nil, nil
-  end
+  -- PERFECT DRY: Unified validation system
+  local ctx = validation.context("find_window", "window_utils")
+  local return_early = validation.validate_or_return(match_fn, "function", "match_fn", ctx, false, {nil, nil})
+  if return_early then return unpack(return_early) end
 
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
@@ -105,11 +108,10 @@ end
 --- @param pattern string Lua pattern to match against buffer name
 --- @return number|nil, number|nil Window handle and buffer handle
 function M.find_by_name(pattern)
-  -- Input validation
-  if type(pattern) ~= "string" or pattern == "" then
-    vim.notify("find_by_name: pattern must be a non-empty string", vim.log.levels.ERROR, { title = "Window Utils Error" })
-    return nil, nil
-  end
+  -- PERFECT DRY: Unified validation system
+  local ctx = validation.context("find_by_name", "window_utils")
+  local return_early = validation.validate_string_or_return(pattern, "pattern", ctx, false, {nil, nil})
+  if return_early then return unpack(return_early) end
 
   return M.find_window(function(win, buf, buf_name, ft)
     return buf_name:match(pattern)
