@@ -69,7 +69,7 @@ function M.watch_tests()
 end
 
 -- Register keymaps
-vim.keymap.set("n", "<leader>tt", M.run_current_file, { desc = "Test: Run current file" })
+-- NOTE: <leader>tt is now handled by pytest-atlas.nvim plugin
 vim.keymap.set("n", "<leader>ta", M.run_all_tests, { desc = "Test: Run all tests" })
 vim.keymap.set("n", "<leader>tw", M.watch_tests, { desc = "Test: Watch mode" })
 
