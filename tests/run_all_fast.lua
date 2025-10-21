@@ -4,6 +4,12 @@
 -- Load minimal init
 vim.cmd("source tests/minimal_init_fast.lua")
 
+-- Silence output during test runs for speed
+local original_print = print
+print = function() end
+local original_write = io.write
+io.write = function() end
+
 -- Fast test runner that bypasses plugin loading overhead
 local function run_tests_fast()
   local plenary_ok, test_harness = pcall(require, "plenary.test_harness")
@@ -17,6 +23,10 @@ local function run_tests_fast()
   local results = test_harness.test_directory("tests", {
     minimal_init = "./tests/minimal_init_fast.lua",
   })
+
+  -- Re-enable printing for final results
+  print = original_print
+  io.write = original_write
 
   -- Print aggregated summary
   print("\n" .. string.rep("=", 80))

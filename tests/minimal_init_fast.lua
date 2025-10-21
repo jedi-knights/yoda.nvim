@@ -18,6 +18,37 @@ vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.undofile = false
 
+-- Disable all output during fast tests for speed
+vim.notify = function() end -- No-op notifications
+print = function() end -- No-op print statements
+
+-- Mock vim.cmd to prevent expensive operations
+local original_vim_cmd = vim.cmd
+vim.cmd = function(cmd)
+  -- Skip expensive commands during tests
+  if cmd == "checkhealth" or cmd:match("^checkhealth") or cmd == "quitall!" then
+    if cmd == "quitall!" then
+      return original_vim_cmd(cmd)
+    end
+    return
+  end
+  return original_vim_cmd(cmd)
+end
+
+-- Disable file watching and change detection
+vim.opt.eventignore = "all"
+
+-- Speed up test execution
+vim.g.did_load_filetypes = 1
+vim.g.did_indent_on = 1
+vim.g.did_syntax_on = 1
+
+-- Disable additional plugins that might slow down tests
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+
 -- Disable plugins we don't need for tests
 vim.g.loaded_gzip = 1
 vim.g.loaded_tar = 1

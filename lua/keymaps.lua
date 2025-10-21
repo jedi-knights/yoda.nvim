@@ -294,8 +294,8 @@ end, { desc = "Test: View test output" })
 -- <leader>tt functionality with fallback
 map("n", "<leader>tt", function()
   local ok, pytest_atlas = pcall(require, "pytest-atlas")
-  if ok and pytest_atlas.run_current_test then
-    pytest_atlas.run_current_test()
+  if ok and pytest_atlas.run_tests then
+    pytest_atlas.run_tests()
   else
     -- Fallback to our custom plenary test runner
     local plenary = require("yoda.plenary")

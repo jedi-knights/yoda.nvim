@@ -865,6 +865,8 @@ return {
       require("pytest-atlas").setup({
         keymap = "<leader>tt",
         enable_keymap = true,
+        picker = "snacks", -- Use snacks.nvim for picker
+        debug = false, -- Set to true for debugging picker issues
       })
     end,
   },

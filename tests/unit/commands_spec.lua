@@ -1,5 +1,9 @@
 -- Tests for commands.lua
 describe("commands", function()
+  -- Store original functions
+  local original_vim_cmd = vim.cmd
+  local original_notify = vim.notify
+
   before_each(function()
     -- Clear any existing commands
     pcall(vim.api.nvim_del_user_command, "YodaDiagnostics")
@@ -8,10 +12,26 @@ describe("commands", function()
     pcall(vim.api.nvim_del_user_command, "YodaCleanLazy")
     pcall(vim.api.nvim_del_user_command, "FormatFeature")
 
+    -- Mock vim.cmd to prevent checkhealth from running
+    vim.cmd = function(cmd)
+      if cmd == "checkhealth" then
+        -- No-op, don't run actual checkhealth
+        return
+      end
+      return original_vim_cmd(cmd)
+    end
+
+    -- Mock vim.notify to prevent notifications during tests
+    vim.notify = function(msg, level)
+      -- No-op during tests
+    end
+
     -- Mock diagnostics modules BEFORE loading commands
     package.loaded["yoda.diagnostics"] = {
       run_all = function()
-        -- Mock implementation that doesn't call checkhealth
+        -- Fast mock implementation
+        vim.notify("🔍 Running Yoda diagnostics...", vim.log.levels.INFO)
+        -- Don't call checkhealth or do any expensive operations
       end,
       lsp = {
         check_status = function()
@@ -22,17 +42,27 @@ describe("commands", function()
         check_status = function()
           return { claude_available = false, copilot_loaded = false }
         end,
-        display_detailed_check = function() end,
+        display_detailed_check = function()
+          -- Fast mock implementation
+        end,
       },
     }
 
     package.loaded["yoda.diagnostics.ai"] = {
-      display_detailed_check = function() end,
+      display_detailed_check = function()
+        -- Fast mock implementation
+      end,
     }
 
     -- Load commands module
     package.loaded["yoda.commands"] = nil
     require("yoda.commands")
+  end)
+
+  after_each(function()
+    -- Restore original functions
+    vim.cmd = original_vim_cmd
+    vim.notify = original_notify
   end)
 
   describe("command registration", function()

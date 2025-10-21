@@ -322,7 +322,7 @@ describe("picker_handler", function()
     it("completes YAML wizard without configuration display (moved to pytest-atlas)", function()
       local completed = false
       local result = nil
-      
+
       PickerHandler.handle_yaml_selection({
         environments = { qa = { "auto" } },
         env_order = { "qa" },
@@ -341,7 +341,7 @@ describe("picker_handler", function()
     it("completes JSON selection without configuration display (moved to pytest-atlas)", function()
       local completed = false
       local result = nil
-      
+
       package.loaded["snacks.picker"] = {
         select = function(items, opts, callback)
           callback("qa (auto)")
