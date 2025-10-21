@@ -291,7 +291,17 @@ map("n", "<leader>tv", function()
   require("neotest").output.open({ enter = true })
 end, { desc = "Test: View test output" })
 
--- NOTE: <leader>tt functionality has been moved to pytest-atlas.nvim plugin
+-- <leader>tt functionality with fallback
+map("n", "<leader>tt", function()
+  local ok, pytest_atlas = pcall(require, "pytest-atlas")
+  if ok and pytest_atlas.run_current_test then
+    pytest_atlas.run_current_test()
+  else
+    -- Fallback to our custom plenary test runner
+    local plenary = require("yoda.plenary")
+    plenary.run_current_test()
+  end
+end, { desc = "Test: Run current test file" })
 
 map("n", "<leader>tS", function()
   local ok, pytest_atlas = pcall(require, "pytest-atlas")

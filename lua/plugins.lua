@@ -857,6 +857,7 @@ return {
   -- Pytest Atlas - Pytest runner with environment/marker selection
   {
     "ocrosby/pytest-atlas.nvim",
+    lazy = false, -- Load immediately to ensure keymap is registered
     dependencies = {
       "folke/snacks.nvim",
     },

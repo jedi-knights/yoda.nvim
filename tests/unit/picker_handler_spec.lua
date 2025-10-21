@@ -319,25 +319,29 @@ describe("picker_handler", function()
       package.loaded["yoda.terminal.venv"] = nil
     end)
 
-    it("displays configuration after YAML wizard completion", function()
+    it("completes YAML wizard without configuration display (moved to pytest-atlas)", function()
+      local completed = false
+      local result = nil
+      
       PickerHandler.handle_yaml_selection({
         environments = { qa = { "auto" } },
         env_order = { "qa" },
-      }, function() end)
+      }, function(config)
+        completed = true
+        result = config
+      end)
 
-      -- Should have displayed configuration preview
-      local has_config_display = false
-      for _, call in ipairs(notify_calls) do
-        if call.message:match("Test Configuration:") then
-          has_config_display = true
-          break
-        end
-      end
-
-      assert.is_true(has_config_display)
+      -- Should complete successfully with result
+      assert.is_true(completed)
+      assert.is_not_nil(result)
+      assert.equals("qa", result.environment)
+      assert.equals("auto", result.region)
     end)
 
-    it("displays configuration after JSON selection completion", function()
+    it("completes JSON selection without configuration display (moved to pytest-atlas)", function()
+      local completed = false
+      local result = nil
+      
       package.loaded["snacks.picker"] = {
         select = function(items, opts, callback)
           callback("qa (auto)")
@@ -347,18 +351,16 @@ describe("picker_handler", function()
       PickerHandler.handle_json_selection({
         environments = { "qa" },
         regions = { "auto" },
-      }, function() end)
+      }, function(config)
+        completed = true
+        result = config
+      end)
 
-      -- Should have displayed configuration preview
-      local has_config_display = false
-      for _, call in ipairs(notify_calls) do
-        if call.message:match("Test Configuration:") then
-          has_config_display = true
-          break
-        end
-      end
-
-      assert.is_true(has_config_display)
+      -- Should complete successfully with result
+      assert.is_true(completed)
+      assert.is_not_nil(result)
+      assert.equals("qa", result.environment)
+      assert.equals("auto", result.region)
     end)
   end)
 end)
