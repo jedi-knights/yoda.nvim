@@ -898,21 +898,3 @@ create_autocmd("User", {
     end
   end,
 })
-
--- Safe ShaDa cleanup on exit
-create_autocmd("VimLeavePre", {
-  group = augroup("YodaShadaCleanup", { clear = true }),
-  desc = "Clean up stale ShaDa temporary files on exit",
-  callback = function()
-    local ok, utils = pcall(require, "yoda.utils")
-    if ok then
-      -- Only clean up old files, don't force remove recent ones
-      local success, message = utils.cleanup_shada_files(false)
-      if success and message:match("Cleaned up %d+") then
-        vim.schedule(function()
-          utils.notify("ShaDa cleanup: " .. message, "info", { title = "Maintenance" })
-        end)
-      end
-    end
-  end,
-})

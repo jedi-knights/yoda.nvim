@@ -2,11 +2,6 @@
 -- FEATURE FILE FORMATTING COMMANDS
 -- ============================================================================
 
--- PERFECT DRY: Unified execution and notification systems
-local safe = require("yoda.core.safe")
-local notify = require("yoda.core.notify")
-local validation = require("yoda.core.validation")
-
 -- ============================================================================
 -- BUFFERLINE DEBUGGING COMMANDS
 -- ============================================================================
@@ -238,10 +233,9 @@ vim.api.nvim_create_user_command("YodaDebugLazy", function()
   logger.debug("Lazy.nvim path", { path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" })
   logger.debug("Plugin state path", { path = vim.fn.stdpath("state") .. "/lazy" })
 
-  -- PERFECT DRY: Unified safe execution
-  local lazy_result = safe.require("lazy")
-  if lazy_result.success then
-    local lazy = lazy_result.value
+  -- Check if Lazy.nvim is loaded
+  local ok, lazy = pcall(require, "lazy")
+  if ok then
     logger.info("Lazy.nvim loaded successfully")
 
     -- Check plugin status
@@ -315,10 +309,7 @@ vim.api.nvim_create_user_command("YodaCmpStatus", function()
   logger.info("🔍 Checking completion engine status...")
 
   -- Check if nvim-cmp is loaded
-  -- PERFECT DRY: Unified safe execution
-  local cmp_result = safe.require("cmp")
-  local cmp_ok = cmp_result.success
-  local cmp = cmp_result.value
+  local cmp_ok, cmp = pcall(require, "cmp")
   if cmp_ok then
     logger.info("✅ nvim-cmp loaded successfully")
 
@@ -501,13 +492,12 @@ vim.api.nvim_create_user_command("YodaCSharpSetup", function()
 
   logger.info("⚡ Setting up C# / .NET development environment...")
 
-  -- PERFECT DRY: Unified safe execution and notification  
-  local mason_result = safe.require("mason")
-  if not mason_result.success then
-    notify.missing_dependency("Mason", "Install via :Lazy sync first")
+  -- Check if Mason is available
+  local mason_ok = pcall(require, "mason")
+  if not mason_ok then
+    vim.notify("❌ Mason not available. Install via :Lazy sync first", vim.log.levels.ERROR)
     return
   end
-  local mason = mason_result.value
 
   -- Install C# tools via Mason
   logger.info("Installing csharp-ls via Mason...")
@@ -563,49 +553,3 @@ vim.api.nvim_create_user_command("YodaHelmDebug", debug_helm_setup, { desc = "De
 
 -- Setup bufferline debugging commands
 setup_bufferline_debug_commands()
-
--- ============================================================================
--- SYSTEM MAINTENANCE COMMANDS
--- ============================================================================
-
--- ShaDa cleanup command
-vim.api.nvim_create_user_command("YodaShadaCleanup", function(opts)
-  local ok, utils = pcall(require, "yoda.utils")
-  if not ok then
-    vim.notify("❌ Failed to load utils module", vim.log.levels.ERROR)
-    return
-  end
-
-  local force = opts.bang or false
-  local success, message = utils.cleanup_shada_files(force)
-
-  if success then
-    if message:match("Cleaned up %d+") then
-      vim.notify("✅ " .. message, vim.log.levels.INFO, { title = "ShaDa Cleanup" })
-    else
-      vim.notify("ℹ️ " .. message, vim.log.levels.INFO, { title = "ShaDa Cleanup" })
-    end
-  else
-    vim.notify("❌ ShaDa cleanup failed: " .. message, vim.log.levels.ERROR)
-  end
-end, {
-  bang = true,
-  desc = "Clean up ShaDa temporary files (use ! to force cleanup)",
-})
-
--- ShaDa status command
-vim.api.nvim_create_user_command("YodaShadaStatus", function()
-  local ok, utils = pcall(require, "yoda.utils")
-  if not ok then
-    vim.notify("❌ Failed to load utils module", vim.log.levels.ERROR)
-    return
-  end
-
-  local needs_cleanup, count = utils.check_shada_cleanup_needed()
-
-  if needs_cleanup then
-    vim.notify(string.format("⚠️ Found %d ShaDa temporary files that may need cleanup", count), vim.log.levels.WARN, { title = "ShaDa Status" })
-  else
-    vim.notify("✅ No ShaDa cleanup needed", vim.log.levels.INFO, { title = "ShaDa Status" })
-  end
-end, { desc = "Check ShaDa cleanup status" })

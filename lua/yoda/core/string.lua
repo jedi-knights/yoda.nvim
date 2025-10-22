@@ -76,6 +76,4 @@ function M.get_extension(path)
   return ext or ""
 end
 
--- Validate interface compliance for perfect LSP
-local core_interfaces = require("yoda.interfaces.core")
-return core_interfaces.create_validated(M, "string")
+return M

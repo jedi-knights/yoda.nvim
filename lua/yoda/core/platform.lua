@@ -69,6 +69,4 @@ function M.normalize_path(path)
   end
 end
 
--- Validate interface compliance for perfect LSP
-local core_interfaces = require("yoda.interfaces.core")
-return core_interfaces.create_validated(M, "platform")
+return M
