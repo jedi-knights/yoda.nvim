@@ -56,18 +56,18 @@ function M.setup()
           vendor = true,
         },
         hints = {
-          assignVariableTypes = true,
-          compositeLiteralFields = true,
-          compositeLiteralTypes = true,
-          constantValues = true,
-          functionTypeParameters = true,
-          parameterNames = true,
-          rangeVariableTypes = true,
+          assignVariableTypes = false,
+          compositeLiteralFields = false,
+          compositeLiteralTypes = false,
+          constantValues = false,
+          functionTypeParameters = false,
+          parameterNames = false,
+          rangeVariableTypes = false,
         },
         usePlaceholders = true,
         completeUnimported = true,
         directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
-        semanticTokens = true,
+        semanticTokens = false,
         buildFlags = { "-tags=integration" },
       },
     },
@@ -258,8 +258,69 @@ function M.setup()
         configuration = {
           runtimes = {},
         },
+        signatureHelp = {
+          enabled = true,
+        },
+        contentProvider = {
+          preferred = "fernflower",
+        },
+        completion = {
+          favoriteStaticMembers = {
+            "org.hamcrest.MatcherAssert.assertThat",
+            "org.hamcrest.Matchers.*",
+            "org.junit.Assert.*",
+            "java.util.Objects.requireNonNull",
+            "java.util.Objects.requireNonNullElse",
+            "org.mockito.Mockito.*",
+          },
+          importOrder = {
+            "java",
+            "javax",
+            "com",
+            "org",
+          },
+        },
+        sources = {
+          organizeImports = {
+            starThreshold = 9999,
+            staticStarThreshold = 9999,
+          },
+        },
+        codeGeneration = {
+          toString = {
+            template = "${member.name()}=${member.value()}",
+          },
+          useBlocks = true,
+        },
       },
     },
+    on_attach = function(client, bufnr)
+      -- Disable document formatting capabilities
+      client.server_capabilities.documentFormattingProvider = false
+      client.server_capabilities.documentRangeFormattingProvider = false
+
+      local function jdtls_setup_commands()
+        vim.api.nvim_create_user_command("JdtlsQuiet", function()
+          vim.lsp.codelens.run()
+          vim.notify("JDTLS quiet mode toggled")
+        end, {
+          desc = "Toggle JDTLS quiet mode",
+        })
+
+        vim.api.nvim_create_user_command("JdtlsBuild", function()
+          vim.lsp.buf.execute_command({
+            command = "java.project.buildWorkspace",
+            arguments = { true },
+          })
+          vim.notify("JDTLS build initiated")
+        end, {
+          desc = "Force JDTLS build",
+        })
+      end
+
+      jdtls_setup_commands()
+    end,
+    debounce_text_changes = 500,
   })
 
   -- Markdown setup
@@ -272,7 +333,7 @@ function M.setup()
 
   -- Setup LSP keymaps on attach with debounced UI updates
   vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("YodaLspConfig", {}),
+    group = vim.api.nvim_create_augroup("YodaLspConfig", { clear = true }),
     callback = function(event)
       local opts = { buffer = event.buf }
 
@@ -299,6 +360,25 @@ function M.setup()
         vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
         vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 
+        -- Toggle inlay hints
+        vim.keymap.set("n", "<leader>th", function()
+          -- Check if inlay hints are supported and enabled
+          local clients = vim.lsp.get_clients({ bufnr = event.buf })
+          for _, client in ipairs(clients) do
+            if client.supports_method("textDocument/inlayHint") then
+              local is_enabled = vim.lsp.inlay_hint.is_enabled(event.buf)
+              vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = event.buf })
+              if is_enabled then
+                vim.notify("Inlay hints disabled")
+              else
+                vim.notify("Inlay hints enabled")
+              end
+              return
+            end
+          end
+          vim.notify("Inlay hints not supported by any active LSP server", vim.log.levels.WARN)
+        end, { desc = "Toggle Inlay Hints" })
+
         -- Enable inlay hints if available
         if vim.lsp.inlay_hint then
           vim.keymap.set("n", "<leader>th", function()
@@ -309,7 +389,7 @@ function M.setup()
     end,
   })
 
-  -- Diagnostic configuration
+  -- Diagnostic configuration (optimized for performance)
   vim.diagnostic.config({
     virtual_text = true,
     signs = {
@@ -339,6 +419,17 @@ function M.setup()
       border = "rounded",
       source = "always",
     },
+  })
+
+  -- Disable LSP semantic tokens globally (reduces lag significantly)
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("YodaLspSemanticTokensDisable", { clear = true }),
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client then
+        client.server_capabilities.semanticTokensProvider = nil
+      end
+    end,
   })
 
   -- Auto-restart Python LSP when entering different Python projects
@@ -488,6 +579,57 @@ function M._setup_debug_commands()
     end
     print("========================")
   end, { desc = "Debug Python LSP configuration" })
+
+  -- Groovy/Java LSP debugging command
+  vim.api.nvim_create_user_command("GroovyLSPDebug", function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local clients = vim.lsp.get_clients({ bufnr = bufnr, name = "jdtls" })
+
+    print("=== Groovy/Java LSP Debug ===")
+    print("Buffer filetype:", vim.bo[bufnr].filetype)
+    print("JDTLS clients:", #clients)
+
+    if #clients > 0 then
+      local client = clients[1]
+      print("Client name:", client.name)
+      print("Client ID:", client.id)
+      print("Root dir:", client.config.root_dir or "unknown")
+      print("Status:", client.is_stopped() and "stopped" or "running")
+
+      -- Show workspace information
+      if client.config.settings and client.config.settings.java then
+        print("Java settings configured: ✅")
+      end
+
+      -- Check memory usage (if available)
+      local stats = vim.lsp.get_client_by_id(client.id)
+      if stats then
+        print("Client attached buffers:", #vim.lsp.get_buffers_by_client_id(client.id))
+      end
+    else
+      print("No JDTLS clients attached!")
+
+      -- Check if jdtls is available
+      if vim.fn.executable("jdtls") == 1 then
+        print("✅ jdtls is available")
+      else
+        print("❌ jdtls not found in PATH")
+        print("Install Eclipse JDT Language Server")
+      end
+
+      -- Check project root detection
+      local root = vim.fs.root(bufnr, { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" })
+      print("Detected project root:", root or "none")
+
+      -- Check for Java runtime
+      if vim.fn.executable("java") == 1 then
+        print("✅ Java runtime available")
+      else
+        print("❌ Java runtime not found")
+      end
+    end
+    print("========================")
+  end, { desc = "Debug Groovy/Java LSP configuration" })
 end
 
 return M
