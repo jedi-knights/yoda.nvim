@@ -1,6 +1,5 @@
 -- lua/yoda/config_loader.lua
--- Configuration loading utilities with perfect DRY architecture
--- Uses consolidated core modules (io, json, platform)
+-- Configuration loading utilities
 
 local M = {}
 

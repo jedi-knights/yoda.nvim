@@ -5,30 +5,20 @@
 local M = {}
 
 -- ============================================================================
--- CORE MODULE IMPORTS (perfect loose coupling)
+-- CORE MODULE IMPORTS
 -- ============================================================================
 
--- Use core loader to eliminate direct coupling - PERFECT SRP
-local core_loader = require("yoda.core.loader")
+-- Import focused core modules
+local string_utils = require("yoda.core.string")
+local table_utils = require("yoda.core.table")
+local io_utils = require("yoda.core.io")
+local platform_utils = require("yoda.core.platform")
 
--- Lazy load ONLY focused modules (perfect single responsibility)
-local string_utils = core_loader.load_core("string")
-local table_utils = core_loader.load_core("table")
-local filesystem_utils = core_loader.load_core("filesystem")
-local json_utils = core_loader.load_core("json")
-local temp_utils = core_loader.load_core("temp")
-local platform_utils = core_loader.load_core("platform")
-
--- Export focused modules directly (perfect SRP compliance)
+-- Export core modules for direct access
 M.string = string_utils
 M.table = table_utils
-M.filesystem = filesystem_utils
-M.json = json_utils
-M.temp = temp_utils
+M.io = io_utils
 M.platform = platform_utils
-
--- Backwards compatibility layer (delegates only, no business logic)
-M.io = require("yoda.compat.io")
 
 -- ============================================================================
 -- STRING UTILITIES (delegated to core/string.lua)
@@ -72,7 +62,7 @@ end
 --- @param path string
 --- @return boolean
 function M.file_exists(path)
-  return filesystem_utils.file_exists(path)
+  return io_utils.file_exists(path)
 end
 
 -- ============================================================================
@@ -196,82 +186,6 @@ end
 --- @return string|nil, string|nil
 function M.get_claude_version()
   return require("yoda.diagnostics.ai_cli").get_claude_version()
-end
-
--- ============================================================================
--- SHADA MAINTENANCE
--- ============================================================================
-
---- Safely clean up ShaDa temporary files (only removes stale files)
---- This function checks for active Neovim processes before removing temp files
---- @param force boolean|nil Force cleanup even if other instances might be running
---- @return boolean success, string message
-function M.cleanup_shada_files(force)
-  local shada_dir = vim.fn.stdpath("state") .. "/shada"
-
-  if not M.file_exists(shada_dir) then
-    return true, "ShaDa directory not found"
-  end
-
-  -- Get all temp files
-  local temp_files = vim.fn.glob(shada_dir .. "/*.tmp.*", false, true)
-
-  if #temp_files == 0 then
-    return true, "No temporary files found"
-  end
-
-  -- Check for other running Neovim instances if not forcing
-  if not force then
-    local nvim_processes = vim.fn.system("pgrep -c nvim"):match("^%d+")
-    local process_count = tonumber(nvim_processes) or 0
-
-    -- If more than 1 nvim process (current one), be more careful
-    if process_count > 1 then
-      local old_files = {}
-      local current_time = os.time()
-
-      -- Only remove files older than 5 minutes (300 seconds)
-      for _, file in ipairs(temp_files) do
-        local stat = vim.loop.fs_stat(file)
-        if stat and (current_time - stat.mtime.sec) > 300 then
-          table.insert(old_files, file)
-        end
-      end
-
-      temp_files = old_files
-
-      if #temp_files == 0 then
-        return true,
-          string.format(
-            "Found %d temp files but they're recent (other nvim instances may be using them)",
-            #vim.fn.glob(shada_dir .. "/*.tmp.*", false, true)
-          )
-      end
-    end
-  end
-
-  -- Remove the identified temp files
-  local removed_count = 0
-  for _, file in ipairs(temp_files) do
-    if vim.fn.delete(file) == 0 then
-      removed_count = removed_count + 1
-    end
-  end
-
-  return true, string.format("Cleaned up %d temporary files", removed_count)
-end
-
---- Check if ShaDa cleanup is needed
---- @return boolean needs_cleanup, number temp_file_count
-function M.check_shada_cleanup_needed()
-  local shada_dir = vim.fn.stdpath("state") .. "/shada"
-
-  if not M.file_exists(shada_dir) then
-    return false, 0
-  end
-
-  local temp_files = vim.fn.glob(shada_dir .. "/*.tmp.*", false, true)
-  return #temp_files > 0, #temp_files
 end
 
 return M
