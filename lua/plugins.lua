@@ -77,6 +77,12 @@ return {
         terminal = {
           enabled = true,
         },
+        input = {
+          enabled = true,
+          win = {
+            border = "rounded",
+          },
+        },
       })
     end,
   },
