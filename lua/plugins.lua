@@ -184,7 +184,7 @@ return {
         },
         opts = {
           margin = 5,
-          redraw_on_resize = false, -- Disable to prevent invalid window errors
+          redraw_on_resize = true, -- Enable to recenter when explorer opens
           setup = function()
             -- Use proper scopes for options that support them
             vim.opt_local.laststatus = 0

@@ -99,6 +99,37 @@ local function has_filetype()
   return vim.bo.filetype ~= ""
 end
 
+--- Recenter alpha dashboard if visible
+--- @return boolean true if alpha was recentered
+local function recenter_alpha_dashboard()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == "alpha" then
+      -- Save current window
+      local current_win = vim.api.nvim_get_current_win()
+
+      -- Switch to alpha window
+      vim.api.nvim_set_current_win(win)
+
+      -- Restart alpha to recenter
+      local ok, alpha = pcall(require, "alpha")
+      if ok and alpha and alpha.start then
+        -- Get stored config or start with defaults
+        local alpha_config = vim.b[buf].alpha_config
+        pcall(alpha.start, false, alpha_config)
+      end
+
+      -- Restore previous window if different
+      if current_win ~= win and vim.api.nvim_win_is_valid(current_win) then
+        vim.api.nvim_set_current_win(current_win)
+      end
+
+      return true
+    end
+  end
+  return false
+end
+
 --- Check if current buffer has a special buftype (optimized)
 --- @return boolean
 local function has_special_buftype()
@@ -351,6 +382,9 @@ local FILETYPE_SETTINGS = {
       if vim.fn.mode() ~= "n" then
         vim.cmd("stopinsert")
       end
+
+      -- Recenter alpha dashboard if it's open
+      recenter_alpha_dashboard()
     end)
   end,
 
@@ -660,11 +694,19 @@ create_autocmd("BufReadPost", {
   end,
 })
 
--- Auto resize splits on window resize
+-- Auto resize splits on window resize (with alpha dashboard support)
 create_autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
-  desc = "Automatically resize splits on window resize",
-  command = "tabdo wincmd =",
+  desc = "Automatically resize splits on window resize and recenter alpha dashboard",
+  callback = function()
+    -- Equalize all windows
+    vim.cmd("tabdo wincmd =")
+
+    -- Check if alpha dashboard is visible and recenter it
+    vim.schedule(function()
+      recenter_alpha_dashboard()
+    end)
+  end,
 })
 
 -- Filetype-specific settings
