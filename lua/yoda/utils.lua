@@ -161,7 +161,8 @@ end
 --- Log debug information (only in verbose mode)
 --- @param msg string
 function M.debug(msg)
-  if vim.g.yoda_config and vim.g.yoda_config.verbose_startup then
+  local config = require("yoda.config")
+  if config.is_verbose_startup() then
     M.notify("[DEBUG] " .. msg, "debug")
   end
 end

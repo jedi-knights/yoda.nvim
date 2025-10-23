@@ -1,6 +1,6 @@
 -- lua/yoda/testing/defaults.lua
 -- Default test configuration (user-overridable for perfect OCP)
--- Users can extend without modifying source code via vim.g.yoda_test_config
+-- Users can extend without modifying source code via config module
 
 local M = {}
 
@@ -42,17 +42,20 @@ M.MARKER_DEFAULTS = {
 -- PUBLIC API
 -- ============================================================================
 
---- Get test configuration (user-overridable via vim.g.yoda_test_config)
+--- Get test configuration (user-overridable via config module)
 --- @return table Configuration with environments, markers, etc.
 function M.get_config()
   -- Check for user override first (OCP - extend without modification!)
-  if vim.g.yoda_test_config then
+  local config = require("yoda.config")
+  local user_overrides = config.get_test_config()
+
+  if user_overrides then
     return vim.tbl_deep_extend("force", {
       environments = M.ENVIRONMENTS,
       environment_order = M.ENVIRONMENT_ORDER,
       markers = M.MARKERS,
       marker_defaults = M.MARKER_DEFAULTS,
-    }, vim.g.yoda_test_config)
+    }, user_overrides)
   end
 
   return {
