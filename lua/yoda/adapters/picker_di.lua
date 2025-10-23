@@ -62,7 +62,8 @@ function M.new(deps)
     end
 
     -- Check for user configuration
-    local user_backend = vim.g.yoda_picker_backend or deps.default_backend
+    local config = require("yoda.config")
+    local user_backend = config.get_picker_backend() or deps.default_backend
     if user_backend and backends[user_backend] then
       backend = user_backend
       initialized = true

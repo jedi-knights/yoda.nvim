@@ -21,8 +21,10 @@ local function detect_backend()
   end
 
   -- Check user preference first
-  if vim.g.yoda_notify_backend then
-    backend = vim.g.yoda_notify_backend
+  local config = require("yoda.config")
+  local user_backend = config.get_notify_backend()
+  if user_backend then
+    backend = user_backend
     initialized = true
     return backend
   end
