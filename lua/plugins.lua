@@ -62,7 +62,14 @@ return {
       require("snacks").setup({
         explorer = {
           enabled = true,
-          show_hidden = true, -- Show hidden files and folders by default
+          show_hidden = true,
+          win = {
+            position = "left",
+            width = 30,
+            wo = {
+              winfixwidth = true,
+            },
+          },
         },
         picker = {
           enabled = true,

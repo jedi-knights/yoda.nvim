@@ -1042,9 +1042,24 @@ map(
   "n",
   "<leader>ot",
   with_auto_save(function()
-    require("opencode").toggle()
+    local win, _ = win_utils.find_opencode()
+    if win then
+      vim.api.nvim_set_current_win(win)
+      vim.schedule(function()
+        vim.cmd("startinsert")
+      end)
+    else
+      require("opencode").toggle()
+      vim.defer_fn(function()
+        local new_win, _ = win_utils.find_opencode()
+        if new_win then
+          vim.api.nvim_set_current_win(new_win)
+          vim.cmd("startinsert")
+        end
+      end, OPENCODE_STARTUP_DELAY_MS)
+    end
   end),
-  { desc = "OpenCode: Toggle embedded (auto-save)" }
+  { desc = "OpenCode: Toggle/Focus embedded (auto-save + insert mode)" }
 )
 
 map("n", "<S-C-u>", function()
