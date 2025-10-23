@@ -462,51 +462,70 @@ create_autocmd("VimEnter", {
   end,
 })
 
--- Close alpha dashboard when opening real buffers
+-- Consolidated BufEnter: Handle alpha dashboard, buffer refresh, and git signs
 create_autocmd("BufEnter", {
-  group = augroup("AlphaClose", { clear = true }),
-  desc = "Close alpha dashboard when opening real buffers",
+  group = augroup("YodaConsolidatedBufEnter", { clear = true }),
+  desc = "Consolidated buffer enter handler for alpha, refresh, and git signs",
   callback = function(args)
-    local buftype = vim.bo[args.buf].buftype
-    local filetype = vim.bo[args.buf].filetype
-    local bufname = vim.api.nvim_buf_get_name(args.buf)
+    local buf = args.buf
+    local buftype = vim.bo[buf].buftype
+    local filetype = vim.bo[buf].filetype
+    local bufname = vim.api.nvim_buf_get_name(buf)
+    local buflisted = vim.bo[buf].buflisted
 
-    -- Skip if this is the alpha buffer itself
+    -- PRIORITY 1: Handle real file buffers (most common case)
+    local is_real_buffer = buftype == "" and filetype ~= "" and filetype ~= "alpha" and bufname ~= ""
+
+    if is_real_buffer then
+      -- Immediately close alpha dashboard (no delay)
+      vim.schedule(function()
+        for _, b in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(b) and vim.bo[b].filetype == "alpha" then
+            pcall(vim.api.nvim_buf_delete, b, { force = true })
+          end
+        end
+      end)
+
+      -- OpenCode integration: Refresh buffer and git signs
+      local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+      if ok then
+        vim.schedule(function()
+          pcall(vim.cmd, "checktime")
+          if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+            opencode_integration.refresh_buffer(buf)
+          end
+          opencode_integration.refresh_git_signs()
+        end)
+      else
+        -- Fallback
+        if can_reload_buffer() then
+          pcall(vim.cmd, "checktime")
+          local gs = package.loaded.gitsigns
+          if gs then
+            vim.schedule(function()
+              gs.refresh()
+            end)
+          end
+        end
+      end
+
+      return
+    end
+
+    -- PRIORITY 2: Skip alpha logic for special buffers
     if filetype == "alpha" then
       return
     end
 
-    -- Check if this is a real buffer (normal file buffer)
-    local is_real_buffer = buftype == "" and filetype ~= "alpha" and filetype ~= "" and bufname ~= ""
-
-    -- Also close alpha for any named file, even if it's still loading
-    -- This handles Telescope file selection properly
-    if is_real_buffer then
-      -- Close all alpha buffers immediately
-      vim.schedule(function()
-        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
-            pcall(vim.api.nvim_buf_delete, buf, { force = true })
-          end
-        end
-      end)
-    end
-  end,
-})
-
--- Buffer Enter: Show alpha dashboard for empty buffers
-create_autocmd("BufEnter", {
-  group = augroup("AlphaBuffer", { clear = true }),
-  desc = "Show alpha dashboard for empty buffers",
-  callback = function(args)
-    -- Early bailout: Skip for unlisted buffers (performance optimization)
-    if not vim.bo[args.buf].buflisted then
+    if not buflisted then
       return
     end
 
-    -- Early bailout: Skip for git-related and text buffers (performance optimization)
-    -- These buffers never need the alpha dashboard and the checks are expensive
-    local filetype = vim.bo[args.buf].filetype
+    if buftype ~= "" then
+      return
+    end
+
+    -- Skip git-related and text buffers
     local skip_filetypes = {
       "gitcommit",
       "gitrebase",
@@ -516,7 +535,7 @@ create_autocmd("BufEnter", {
       "NeogitStatus",
       "fugitive",
       "fugitiveblame",
-      "markdown", -- Skip expensive alpha checks for markdown files
+      "markdown",
     }
 
     for _, ft in ipairs(skip_filetypes) do
@@ -525,18 +544,12 @@ create_autocmd("BufEnter", {
       end
     end
 
-    -- Skip if entering a terminal or special buffer
-    local buftype = vim.bo[args.buf].buftype
-    if buftype ~= "" then
-      return
-    end
-
-    -- Quick initial check (includes scratch buffer check)
+    -- PRIORITY 3: Check if alpha should be shown (least common case)
     if not should_show_alpha() then
       return
     end
 
-    -- Double-check after a short delay to ensure state is stable
+    -- Only use delay for empty buffers that might show alpha
     vim.defer_fn(function()
       if should_show_alpha() then
         show_alpha_dashboard()
@@ -792,10 +805,10 @@ create_autocmd("User", {
   end,
 })
 
--- Enhanced buffer refresh when files are changed externally (e.g., by OpenCode)
-create_autocmd({ "BufEnter", "FocusGained" }, {
-  group = augroup("YodaOpenCodeBufferRefresh", { clear = true }),
-  desc = "Refresh buffers and git signs when files change externally",
+-- Enhanced buffer refresh when focus is gained (OpenCode integration)
+create_autocmd("FocusGained", {
+  group = augroup("YodaOpenCodeFocusRefresh", { clear = true }),
+  desc = "Refresh buffers and git signs when focus is gained",
   callback = function()
     local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
     if ok then
