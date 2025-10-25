@@ -1079,11 +1079,17 @@ return {
     build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.configs").setup({
-        ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript", "rust", "toml" },
+        ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript", "rust", "toml", "make" },
         auto_install = true,
         sync_install = false, -- Install parsers synchronously (only applied to `ensure_installed`)
         highlight = {
           enable = true,
+          disable = function(lang, buf)
+            if lang == "make" and vim.api.nvim_buf_line_count(buf) > 4000 then
+              return true
+            end
+            return false
+          end,
           additional_vim_regex_highlighting = false, -- Disable vim regex highlighting for better performance
         },
         indent = { enable = true },
