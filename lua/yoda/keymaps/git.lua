@@ -1,15 +1,15 @@
 local map = vim.keymap.set
 
 map("n", "<leader>gg", function()
-	require("snacks").lazygit()
+  require("snacks").lazygit()
 end, { desc = "Git: Open LazyGit" })
 
 map("n", "<leader>gl", function()
-	require("snacks").lazygit.log()
+  require("snacks").lazygit.log()
 end, { desc = "Git: Log" })
 
 map("n", "<leader>gf", function()
-	require("snacks").lazygit.log_file()
+  require("snacks").lazygit.log_file()
 end, { desc = "Git: Log (current file)" })
 
 map("n", "<leader>gb", "<cmd>Gitsigns blame_line<cr>", { desc = "Git: Blame line" })

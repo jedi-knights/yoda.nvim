@@ -7,10 +7,10 @@ map("n", "K", help_handler.smart_help_or_hover, { desc = "Help: Show hover/help 
 map("n", "<leader>xt", win_handler.focus_trouble, { desc = "Window: Focus Trouble" })
 
 map("n", "<leader>xT", function()
-	local ok = pcall(vim.cmd, "TodoTrouble")
-	if not ok then
-		vim.notify("Todo-comments not available. Install via :Lazy sync", vim.log.levels.ERROR)
-	end
+  local ok = pcall(vim.cmd, "TodoTrouble")
+  if not ok then
+    vim.notify("Todo-comments not available. Install via :Lazy sync", vim.log.levels.ERROR)
+  end
 end, { desc = "Trouble: Show TODOs" })
 
 map("n", "<leader>|", ":vsplit<cr>", { desc = "Window: Vertical split" })
