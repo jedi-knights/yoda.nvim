@@ -291,17 +291,56 @@ map("n", "<leader>tv", function()
   require("neotest").output.open({ enter = true })
 end, { desc = "Test: View test output" })
 
--- <leader>tt functionality with fallback
-map("n", "<leader>tt", function()
-  local ok, pytest_atlas = pcall(require, "pytest-atlas")
-  if ok and pytest_atlas.run_tests then
-    pytest_atlas.run_tests()
-  else
-    -- Fallback to our custom plenary test runner
+map("n", "<leader>tO", function()
+  -- Find and focus the neotest output panel
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local bufname = vim.api.nvim_buf_get_name(buf)
+    if bufname:match("Neotest Output Panel") or vim.bo[buf].filetype == "neotest-output-panel" then
+      vim.api.nvim_set_current_win(win)
+      return
+    end
+  end
+  vim.notify("Neotest output panel not open", vim.log.levels.WARN)
+end, { desc = "Test: Focus output panel" })
+
+map("n", "<leader>tF", function()
+  -- Find and focus the neotest summary window
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == "neotest-summary" then
+      vim.api.nvim_set_current_win(win)
+      return
+    end
+  end
+  vim.notify("Neotest summary not open. Use <leader>ts to open it.", vim.log.levels.WARN)
+end, { desc = "Test: Focus summary window" })
+
+map("n", "<leader>tC", function()
+  require("neotest").output_panel.clear()
+  vim.notify("Neotest output panel cleared", vim.log.levels.INFO)
+end, { desc = "Test: Clear output panel" })
+
+-- <leader>tc for current test file (neotest for pytest, plenary for lua)
+map("n", "<leader>tc", function()
+  local filetype = vim.bo.filetype
+
+  if filetype == "python" then
+    -- Use neotest for Python/pytest files
+    local ok, neotest = pcall(require, "neotest")
+    if ok then
+      neotest.run.run(vim.fn.expand("%"))
+    else
+      vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    end
+  elseif filetype == "lua" then
+    -- Use plenary for Lua test files
     local plenary = require("yoda.plenary")
     plenary.run_current_test()
+  else
+    vim.notify("No test runner configured for filetype: " .. filetype, vim.log.levels.WARN)
   end
-end, { desc = "Test: Run current test file" })
+end, { desc = "Test: Run current file" })
 
 map("n", "<leader>tS", function()
   local ok, pytest_atlas = pcall(require, "pytest-atlas")
