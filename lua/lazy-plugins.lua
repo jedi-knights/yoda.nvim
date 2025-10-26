@@ -3,7 +3,7 @@
 
 require("lazy").setup({
   -- Import plugins
-  { import = "plugins" },
+  { import = "plugins.init" },
 }, {
   defaults = {
     lazy = true,
