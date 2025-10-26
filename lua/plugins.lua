@@ -905,12 +905,7 @@ return {
             console = "integratedTerminal",
           },
           args = {
-            "--log-level",
-            "DEBUG",
             "-vv",
-            "--browser",
-            "chromium",
-            "--headed",
           },
           runner = "pytest",
           python = function()
@@ -977,6 +972,51 @@ return {
 
       require("neotest").setup({
         adapters = adapters,
+        output = {
+          enabled = true,
+          open_on_run = "short",
+        },
+        output_panel = {
+          enabled = true,
+          open = "botright split | resize 15",
+        },
+        summary = {
+          enabled = true,
+          expand_errors = true,
+          follow = true,
+          mappings = {
+            attach = "a",
+            expand = { "<CR>", "<2-LeftMouse>" },
+            expand_all = "e",
+            jumpto = "i",
+            mark = "m",
+            next_failed = "J",
+            output = "o",
+            prev_failed = "K",
+            run = "r",
+            short = "O",
+            stop = "u",
+            target = "t",
+          },
+        },
+        icons = {
+          running_animated = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
+          passed = "✓",
+          failed = "✗",
+          running = "⟳",
+          skipped = "↓",
+          unknown = "?",
+        },
+        floating = {
+          border = "rounded",
+          max_height = 0.8,
+          max_width = 0.9,
+        },
+        status = {
+          enabled = true,
+          virtual_text = true,
+          signs = true,
+        },
       })
     end,
   },
