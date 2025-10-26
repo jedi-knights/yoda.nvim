@@ -74,24 +74,27 @@ Language keymaps are loaded via FileType autocmds and only apply to buffers of t
 | Module | Status | Lines | Notes |
 |--------|--------|-------|-------|
 | init.lua | ✅ Complete | 23 | Loader orchestration |
-| core.lua | 🚧 TODO | - | Help, windows, utilities |
-| explorer.lua | 🚧 TODO | - | Snacks explorer |
-| git.lua | 🚧 TODO | - | Git operations |
-| lsp.lua | 🚧 TODO | - | LSP features |
-| testing.lua | 🚧 TODO | - | Test runners |
-| debugging.lua | 🚧 TODO | - | DAP debugging |
-| coverage.lua | 🚧 TODO | - | Code coverage |
-| terminal.lua | 🚧 TODO | - | Terminal ops |
-| ai.lua | 🚧 TODO | - | AI/Copilot |
-| modes/visual.lua | 🚧 TODO | - | Visual mode |
-| modes/insert.lua | 🚧 TODO | - | Insert mode |
-| languages/rust.lua | 🚧 TODO | - | Rust keymaps |
-| languages/python.lua | 🚧 TODO | - | Python keymaps |
-| languages/javascript.lua | 🚧 TODO | - | JS/TS keymaps |
-| languages/csharp.lua | 🚧 TODO | - | C# keymaps |
-| handlers/help.lua | 🚧 TODO | - | Help handlers |
-| handlers/window.lua | 🚧 TODO | - | Window handlers |
-| handlers/explorer_actions.lua | 🚧 TODO | - | Explorer handlers |
+| core.lua | ✅ Complete | 20 | Help, windows, utilities |
+| explorer.lua | ✅ Complete | 17 | Snacks explorer |
+| git.lua | ✅ Complete | 18 | Git operations |
+| lsp.lua | ✅ Complete | 15 | LSP features |
+| testing.lua | ✅ Complete | 81 | Test runners |
+| debugging.lua | ✅ Complete | 39 | DAP debugging |
+| coverage.lua | ✅ Complete | 15 | Code coverage |
+| terminal.lua | ✅ Complete | 13 | Terminal ops |
+| ai.lua | ✅ Complete | 71 | AI/Copilot |
+| modes/visual.lua | ✅ Complete | 8 | Visual mode |
+| modes/insert.lua | ✅ Complete | 6 | Insert mode |
+| languages/rust.lua | ✅ Complete | 73 | Rust keymaps |
+| languages/python.lua | ✅ Complete | 140 | Python keymaps |
+| languages/javascript.lua | ✅ Complete | 98 | JS/TS keymaps |
+| languages/csharp.lua | ✅ Complete | 67 | C# keymaps |
+| handlers/help.lua | ✅ Complete | 23 | Help handlers |
+| handlers/window.lua | ✅ Complete | 108 | Window handlers |
+| handlers/explorer_actions.lua | ✅ Complete | 101 | Explorer handlers |
+
+**Total:** 959 lines across 20 focused modules (average 48 lines per module)
+**Original:** 1,402 lines in one monolithic file
 
 ## Adding New Keymaps
 
