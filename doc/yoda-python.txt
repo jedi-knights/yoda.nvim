@@ -182,21 +182,39 @@ TESTING                                             *yoda-python-testing*
 Yoda.nvim integrates with pytest via neotest for comprehensive test support.
 
 Running Tests~
-    <leader>tt                 Run current test file
+    <leader>tc                 Run current test file (neotest for Python)
     <leader>tr                 Run nearest test
     <leader>ta                 Run all tests
-    <leader>ts                 Stop test runner
+    <leader>ts                 Toggle test summary window
     <leader>tw                 Watch tests (auto-run on save)
 
-Test Navigation~
+Test Output & Navigation~
+    <leader>tv                 View test output in split
+    <leader>to                 Open test output panel
+    <leader>tO                 Focus test output panel
+    <leader>tF                 Focus test summary window
+    <leader>tC                 Clear test output panel
     <leader>tj                 Jump to next failing test
     <leader>tk                 Jump to previous failing test
-    <leader>to                 Show test output
-    <leader>tO                 Show test output popup
 
 Test Debugging~
     <leader>pd                 Debug nearest test
     <leader>pD                 Debug test file
+
+Test UI Features~
+
+Neotest provides an integrated testing UI with:
+  • Output Panel: Auto-opens on test run (bottom split)
+  • Summary Window: Tree view of all tests with status icons
+  • Inline Status: Virtual text and signs showing test results
+  • Floating Output: Detailed test output in floating windows
+
+Test Status Icons~
+    ✓                          Test passed
+    ✗                          Test failed
+    ⟳                          Test running
+    ↓                          Test skipped
+    ?                          Test status unknown
 
 Test Configuration~
 
@@ -206,10 +224,15 @@ neotest automatically detects:
   • Custom markers and fixtures
   • Parametrized tests
 
+The configuration uses simplified pytest arguments (-vv) by default.
+Output panel opens automatically for short test runs.
+
 Supported Test Frameworks~
-  • pytest (primary)
+  • pytest (primary, via neotest-python adapter)
   • unittest (basic support)
   • nose2 (basic support)
+  
+Note: Lua test files use plenary test harness automatically.
 
 ==============================================================================
 VIRTUAL ENVIRONMENTS                                   *yoda-python-venv*
