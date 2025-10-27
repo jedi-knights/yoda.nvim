@@ -1027,3 +1027,25 @@ create_autocmd("BufWinEnter", {
     end)
   end,
 })
+
+-- ============================================================================
+-- CMDLINE PERFORMANCE: Disable LSP in cmdline mode
+-- ============================================================================
+
+local cmdline_perf_group = augroup("YodaCmdlinePerformance", { clear = true })
+
+create_autocmd("CmdlineEnter", {
+  group = cmdline_perf_group,
+  desc = "Disable LSP features in cmdline mode for performance",
+  callback = function()
+    vim.g.cmdline_mode = true
+  end,
+})
+
+create_autocmd("CmdlineLeave", {
+  group = cmdline_perf_group,
+  desc = "Re-enable LSP features after leaving cmdline mode",
+  callback = function()
+    vim.g.cmdline_mode = false
+  end,
+})
