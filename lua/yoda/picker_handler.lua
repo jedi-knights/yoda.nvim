@@ -213,24 +213,24 @@ local function wizard_step_select_region(env_region, selected_env, callback)
   }, callback)
 end
 
---- Wizard Step 3: Select Markers
---- Complexity: 4 (1 load + 1 check + 1 reorder + 1 picker)
+--- Wizard Step 3: Select Markers (multiselect)
+--- Complexity: 4 (1 load + 1 check + 1 picker)
 --- @param callback function Callback(selected_markers)
 local function wizard_step_select_markers(callback)
-  local cached = load_cached_config()
   local markers = load_markers()
+  local picker = require("yoda.adapters.picker")
 
-  -- Validate cached marker exists
-  local default_markers = cached.markers
-  if default_markers and not marker_exists(markers, default_markers) then
-    default_markers = nil
-  end
-
-  local reordered = reorder_with_default_first(markers, default_markers)
-
-  safe_picker_select(reordered, {
-    prompt = "Select Test Markers",
-  }, callback)
+  picker.multiselect(markers, {
+    prompt = "Select Test Markers (Tab to toggle selection, Enter to confirm):",
+  }, function(selected)
+    if not selected or #selected == 0 then
+      callback(nil)
+      return
+    end
+    -- Join markers with comma for storage
+    local markers_str = table.concat(selected, ",")
+    callback(markers_str)
+  end)
 end
 
 --- Wizard Step 4: Select Allure Preference

@@ -61,6 +61,17 @@ local backends = {
       local snacks = require("snacks")
       snacks.picker.select(items, opts, callback)
     end,
+    multiselect = function(items, opts, callback)
+      local snacks = require("snacks")
+      local pick_opts = vim.tbl_extend("force", opts or {}, {
+        confirm = function(picker)
+          local selected = picker:selected()
+          callback(selected)
+          picker:close()
+        end,
+      })
+      snacks.picker.pick({ items = items }, pick_opts)
+    end,
   },
 
   telescope = {
@@ -69,11 +80,25 @@ local backends = {
       -- Or use telescope directly if needed
       vim.ui.select(items, opts, callback)
     end,
+    multiselect = function(items, opts, callback)
+      -- Fallback to single select for telescope
+      vim.notify("Multiselect not implemented for telescope, using single select", vim.log.levels.WARN)
+      vim.ui.select(items, opts, function(selected)
+        callback(selected and { selected } or {})
+      end)
+    end,
   },
 
   native = {
     select = function(items, opts, callback)
       vim.ui.select(items, opts, callback)
+    end,
+    multiselect = function(items, opts, callback)
+      -- Fallback to single select for native
+      vim.notify("Multiselect not supported by native picker, using single select", vim.log.levels.WARN)
+      vim.ui.select(items, opts, function(selected)
+        callback(selected and { selected } or {})
+      end)
     end,
   },
 }
@@ -110,6 +135,37 @@ function M.select(items, opts, callback)
 
   local picker = M.create()
   picker.select(items, opts, callback)
+end
+
+--- Select multiple items from list
+--- @param items table List of items
+--- @param opts table Options (prompt, format_item, etc.)
+--- @param callback function Callback receiving array of selected items
+function M.multiselect(items, opts, callback)
+  -- Input validation (assertive programming)
+  if type(items) ~= "table" then
+    vim.notify("picker.multiselect: items must be a table, got " .. type(items), vim.log.levels.ERROR, { title = "Picker Error" })
+    if callback then
+      callback({})
+    end
+    return
+  end
+
+  if type(callback) ~= "function" then
+    vim.notify("picker.multiselect: callback must be a function, got " .. type(callback), vim.log.levels.ERROR, { title = "Picker Error" })
+    return
+  end
+
+  local picker = M.create()
+  if picker.multiselect then
+    picker.multiselect(items, opts, callback)
+  else
+    -- Fallback to single select if multiselect not available
+    vim.notify("Multiselect not available, using single select", vim.log.levels.WARN)
+    picker.select(items, opts, function(selected)
+      callback(selected and { selected } or {})
+    end)
+  end
 end
 
 --- Get current backend name
