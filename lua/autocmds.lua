@@ -4,6 +4,9 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
+-- Load large file handler
+local large_file = require("yoda.large_file")
+
 -- ============================================================================
 -- Constants
 -- ============================================================================
@@ -432,6 +435,15 @@ end
 -- ============================================================================
 -- Autocommand Definitions
 -- ============================================================================
+
+-- Large File Detection (must be first to run before other expensive operations)
+create_autocmd("BufReadPre", {
+  group = augroup("YodaLargeFile", { clear = true }),
+  desc = "Detect and optimize for large files",
+  callback = function(args)
+    large_file.on_buf_read(args.buf)
+  end,
+})
 
 -- Terminal: Hide line numbers and ensure modifiable
 create_autocmd("TermOpen", {
