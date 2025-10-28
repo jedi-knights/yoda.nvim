@@ -910,7 +910,11 @@ local function with_auto_save(operation_fn)
     -- Auto-save buffers before OpenCode operations
     local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
     if ok then
-      opencode_integration.save_all_buffers()
+      local save_ok, save_result = pcall(opencode_integration.save_all_buffers)
+      -- If save was cancelled or failed, don't proceed with operation
+      if not save_ok or save_result == false then
+        return
+      end
     end
 
     -- Execute the operation
