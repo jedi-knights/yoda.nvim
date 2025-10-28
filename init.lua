@@ -85,6 +85,14 @@ vim.schedule(function()
   -- Load utility functions (deferred - deprecated compatibility layer)
   safe_require("yoda.functions")
 
+  -- Initialize large file detection system
+  local large_file = safe_require("yoda.large_file")
+  if large_file then
+    -- Setup with default config (can be overridden in local.lua)
+    large_file.setup(vim.g.yoda_large_file or {})
+    large_file.setup_commands()
+  end
+
   -- Load test utilities (only in development mode)
   if vim.env.YODA_DEV then
     safe_require("yoda.plenary")

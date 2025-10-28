@@ -52,7 +52,13 @@ function M.save_all_buffers()
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].modified and vim.bo[buf].buftype == "" then
       local buf_name = vim.api.nvim_buf_get_name(buf)
       if buf_name ~= "" then
-        table.insert(buffers_to_save, { buf = buf, name = buf_name })
+        -- Skip large files if configured
+        local ok, large_file = pcall(require, "yoda.large_file")
+        if ok and large_file.should_skip_autosave(buf) then
+          -- Don't auto-save large files
+        else
+          table.insert(buffers_to_save, { buf = buf, name = buf_name })
+        end
       end
     end
   end
