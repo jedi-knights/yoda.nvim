@@ -137,21 +137,23 @@ end
 --- Set buffer-local options for large files
 --- @param buf number Buffer number
 local function set_large_file_options(buf)
-  -- Buffer-local options
+  -- Buffer-local options only
   local buffer_opts = {
     swapfile = false,
     undofile = false,
     undolevels = -1,
     backup = false,
     writebackup = false,
-    foldmethod = "manual",
-    foldenable = false,
     synmaxcol = 200, -- Limit syntax highlighting columns
   }
 
   for opt, value in pairs(buffer_opts) do
     vim.api.nvim_set_option_value(opt, value, { buf = buf })
   end
+
+  -- Window-local options (use scope = "local")
+  vim.api.nvim_set_option_value("foldmethod", "manual", { scope = "local" })
+  vim.api.nvim_set_option_value("foldenable", false, { scope = "local" })
 
   -- Global options (cannot use buf parameter)
   vim.opt.lazyredraw = true
