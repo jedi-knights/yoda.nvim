@@ -69,7 +69,16 @@ function M.save_all_buffers()
       saved_count = saved_count + 1
     else
       error_count = error_count + 1
-      vim.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. err, vim.log.levels.WARN)
+      -- Check if error is from keyboard interrupt (Ctrl-C)
+      if err and type(err) == "string" and err:match("Keyboard interrupt") then
+        -- User cancelled with Ctrl-C, stop processing
+        vim.notify("Auto-save cancelled by user", vim.log.levels.INFO)
+        return false
+      else
+        -- Extract just the error message, not the full stack trace
+        local short_err = err and tostring(err):match("^[^\n]+") or "unknown error"
+        vim.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. short_err, vim.log.levels.WARN)
+      end
     end
   end
 

@@ -799,7 +799,7 @@ create_autocmd("User", {
     local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
     if ok then
       vim.schedule(function()
-        opencode_integration.save_all_buffers()
+        pcall(opencode_integration.save_all_buffers)
       end)
     end
   end,
