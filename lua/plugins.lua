@@ -344,6 +344,7 @@ return {
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
+    event = "VeryLazy",
     config = function()
       -- Setup mason-lspconfig first
       require("mason-lspconfig").setup({
