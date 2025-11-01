@@ -40,3 +40,6 @@ output.log
 node_modules/
 
 /plugin_dev.lua
+
+# Benchmark temporary files
+benchmarks/temp/
