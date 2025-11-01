@@ -2,6 +2,7 @@
 -- Modern LSP setup using vim.lsp.config (Neovim 0.11+)
 
 local M = {}
+local lsp_perf = require("yoda.lsp_performance")
 
 --- Setup LSP servers using vim.lsp.config
 function M.setup()
@@ -148,53 +149,20 @@ function M.setup()
       },
     },
     on_new_config = function(config, root_dir)
-      -- Auto-detect virtual environment
       local function join_path(...)
         return table.concat({ ... }, "/")
       end
 
-      -- Look for virtual environment in common locations
-      local possible_venv_paths = {
-        join_path(root_dir, ".venv", "bin", "python"),
-        join_path(root_dir, "venv", "bin", "python"),
-        join_path(root_dir, "env", "bin", "python"),
-        join_path(vim.fn.getcwd(), ".venv", "bin", "python"),
-        join_path(vim.fn.getcwd(), "venv", "bin", "python"),
-        join_path(vim.fn.getcwd(), "env", "bin", "python"),
-      }
-
-      for _, venv_python in ipairs(possible_venv_paths) do
-        if vim.fn.executable(venv_python) == 1 then
-          config.settings.basedpyright.analysis.pythonPath = venv_python
-          config.settings.python.pythonPath = venv_python
-          -- Add the project root to Python path for local modules
-          if root_dir then
-            local python_paths = { root_dir }
-            -- Add src/ directory if it exists (common Python project structure)
-            local src_dir = join_path(root_dir, "src")
-            if vim.fn.isdirectory(src_dir) == 1 then
-              table.insert(python_paths, src_dir)
-            end
-            config.settings.basedpyright.analysis.extraPaths = python_paths
-            config.settings.python.analysis.extraPaths = python_paths
-          end
-          vim.notify(string.format("Python LSP: Using venv at %s", venv_python), vim.log.levels.INFO)
-          return
-        end
-      end
-
-      -- Fallback: Add project root to Python path even without venv
       if root_dir then
         local python_paths = { root_dir }
         local src_dir = join_path(root_dir, "src")
+
         if vim.fn.isdirectory(src_dir) == 1 then
           table.insert(python_paths, src_dir)
         end
 
-        -- Special handling for sun-qa-python-tools projects
         local project_name = vim.fn.fnamemodify(root_dir, ":t")
         if project_name:match("sun%-qa%-python%-tools") or vim.fn.isdirectory(join_path(root_dir, "sun_qa_python_tools")) == 1 then
-          -- Add common Python package directories for sun-qa-python-tools
           local package_dirs = {
             join_path(root_dir, "sun_qa_python_tools"),
             join_path(root_dir, "src", "sun_qa_python_tools"),
@@ -203,15 +171,48 @@ function M.setup()
           for _, pkg_dir in ipairs(package_dirs) do
             if vim.fn.isdirectory(pkg_dir) == 1 then
               table.insert(python_paths, pkg_dir)
-              vim.notify(string.format("Python LSP: Added sun-qa-python-tools package dir: %s", pkg_dir), vim.log.levels.INFO)
             end
           end
         end
 
         config.settings.basedpyright.analysis.extraPaths = python_paths
         config.settings.python.analysis.extraPaths = python_paths
-        vim.notify("Python LSP: Added project root to Python path", vim.log.levels.INFO)
       end
+
+      vim.schedule(function()
+        local venv_start_time = vim.loop.hrtime()
+        local possible_venv_paths = {
+          join_path(root_dir, ".venv", "bin", "python"),
+          join_path(root_dir, "venv", "bin", "python"),
+          join_path(root_dir, "env", "bin", "python"),
+          join_path(vim.fn.getcwd(), ".venv", "bin", "python"),
+          join_path(vim.fn.getcwd(), "venv", "bin", "python"),
+          join_path(vim.fn.getcwd(), "env", "bin", "python"),
+        }
+
+        local found_venv = false
+        for _, venv_python in ipairs(possible_venv_paths) do
+          if vim.fn.executable(venv_python) == 1 then
+            local clients = vim.lsp.get_clients({ name = "basedpyright" })
+            for _, client in ipairs(clients) do
+              if client.config.root_dir == root_dir then
+                client.config.settings.basedpyright.analysis.pythonPath = venv_python
+                client.config.settings.python.pythonPath = venv_python
+                client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
+                vim.notify(string.format("Python LSP: Using venv at %s", venv_python), vim.log.levels.INFO)
+              end
+            end
+            found_venv = true
+            lsp_perf.track_venv_detection(root_dir, venv_start_time, true)
+            return
+          end
+        end
+
+        if not found_venv then
+          lsp_perf.track_venv_detection(root_dir, venv_start_time, false)
+          vim.notify("Python LSP: No venv found, using system Python", vim.log.levels.INFO)
+        end
+      end)
     end,
   })
 
@@ -421,44 +422,92 @@ function M.setup()
     },
   })
 
-  -- Disable LSP semantic tokens globally (reduces lag significantly)
   vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("YodaLspSemanticTokensDisable", { clear = true }),
+    group = vim.api.nvim_create_augroup("YodaLspOptimizations", { clear = true }),
     callback = function(args)
+      local start_time = vim.loop.hrtime()
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client then
         client.server_capabilities.semanticTokensProvider = nil
+
+        lsp_perf.track_lsp_attach(client.name, start_time)
       end
     end,
   })
 
   -- Auto-restart Python LSP when entering different Python projects
+  local python_lsp_restart_timer = nil
+  local autocmd_logger = require("yoda.autocmd_logger")
+
   vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged" }, {
     group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", {}),
     pattern = "*.py",
     callback = function()
-      -- Only restart if we detect a new Python project root
-      local current_root = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
-      if current_root and vim.g.last_python_root ~= current_root then
-        vim.g.last_python_root = current_root
+      autocmd_logger.log("Python_LSP_Check", { event = "BufEnter/DirChanged" })
 
-        -- Restart Python LSP clients
-        local clients = vim.lsp.get_clients({ name = "basedpyright" })
-        if #clients > 0 then
-          for _, client in ipairs(clients) do
-            client.stop()
-          end
-          vim.defer_fn(function()
-            vim.cmd("edit") -- Trigger LSP attach
-          end, 500)
-          vim.notify(string.format("Restarted Python LSP for project: %s", current_root), vim.log.levels.INFO)
-        end
+      -- Cancel any pending restart
+      if python_lsp_restart_timer then
+        autocmd_logger.log("Python_LSP_Cancel_Pending", {})
+        vim.fn.timer_stop(python_lsp_restart_timer)
+        python_lsp_restart_timer = nil
       end
+
+      -- Debounce the restart check
+      python_lsp_restart_timer = vim.fn.timer_start(1000, function()
+        autocmd_logger.log("Python_LSP_Debounce_Fire", {})
+        python_lsp_restart_timer = nil
+
+        -- Only restart if we detect a new Python project root
+        local current_root = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
+        if current_root and vim.g.last_python_root ~= current_root then
+          autocmd_logger.log("Python_LSP_Root_Change", { old = vim.g.last_python_root or "none", new = current_root })
+          vim.g.last_python_root = current_root
+
+          -- Restart Python LSP clients
+          local clients = vim.lsp.get_clients({ name = "basedpyright" })
+          if #clients > 0 then
+            autocmd_logger.log("Python_LSP_Restart", { client_count = #clients, root = current_root })
+            lsp_perf.track_lsp_restart("basedpyright")
+            vim.notify(string.format("Restarting Python LSP for project: %s", current_root), vim.log.levels.INFO)
+            for _, client in ipairs(clients) do
+              client.stop()
+            end
+          else
+            autocmd_logger.log("Python_LSP_No_Clients", { root = current_root })
+          end
+        else
+          autocmd_logger.log("Python_LSP_Same_Root", { root = current_root or "none" })
+        end
+      end)
     end,
   })
 
-  -- Setup debug commands
-  M._setup_debug_commands()
+  local debug_commands_loaded = false
+  local function ensure_debug_commands()
+    if debug_commands_loaded then
+      return
+    end
+
+    debug_commands_loaded = true
+    M._setup_debug_commands()
+  end
+
+  vim.api.nvim_create_autocmd("CmdlineEnter", {
+    pattern = ":",
+    once = true,
+    callback = function()
+      vim.schedule(ensure_debug_commands)
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    once = true,
+    callback = function()
+      vim.schedule(ensure_debug_commands)
+    end,
+  })
+
+  lsp_perf.setup_commands()
 end
 
 --- Setup debug commands for LSP troubleshooting
