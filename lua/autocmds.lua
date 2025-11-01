@@ -7,6 +7,12 @@ local augroup = vim.api.nvim_create_augroup
 -- Load large file handler
 local large_file = require("yoda.large_file")
 
+-- Load autocmd logger for performance debugging
+local autocmd_logger = require("yoda.autocmd_logger")
+
+-- Load autocmd performance tracker
+local autocmd_perf = require("yoda.autocmd_performance")
+
 -- ============================================================================
 -- Constants
 -- ============================================================================
@@ -15,6 +21,7 @@ local DELAYS = {
   ALPHA_STARTUP = 200, -- Delay for alpha dashboard on startup
   ALPHA_BUFFER_CHECK = 100, -- Delay before checking alpha conditions
   YANK_HIGHLIGHT = 50, -- Duration for yank highlight
+  BUF_ENTER_DEBOUNCE = 50, -- Debounce delay for BufEnter expensive operations
 }
 
 local THRESHOLDS = {
@@ -71,20 +78,47 @@ end
 -- Performance optimizations: cache expensive checks
 local alpha_cache = {
   has_startup_files = nil,
+  has_alpha_buffer = nil,
+  normal_count = nil,
   last_check_time = 0,
-  check_interval = 100, -- ms
+  last_alpha_check_time = 0,
+  check_interval = 150, -- ms - balance between freshness and performance
+  alpha_check_interval = 100, -- ms - prevent flickering while maintaining responsiveness
 }
 
---- Check if alpha dashboard is already open (optimized)
+-- Debounce state for BufEnter handler
+local buf_enter_debounce = {}
+
+--- Invalidate buffer caches
+local function invalidate_buffer_caches()
+  alpha_cache.has_alpha_buffer = nil
+  alpha_cache.normal_count = nil
+end
+
+--- Check if alpha dashboard is already open (optimized with caching)
 --- @return boolean
 local function has_alpha_buffer()
+  local current_time = vim.loop.hrtime() / 1000000
+
+  -- Use cached result if recent enough
+  if alpha_cache.has_alpha_buffer ~= nil and (current_time - alpha_cache.last_alpha_check_time) < alpha_cache.alpha_check_interval then
+    return alpha_cache.has_alpha_buffer
+  end
+
   -- Fast check: iterate only valid listed buffers
+  local has_alpha = false
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted and vim.bo[buf].filetype == "alpha" then
-      return true
+      has_alpha = true
+      break
     end
   end
-  return false
+
+  -- Cache result
+  alpha_cache.has_alpha_buffer = has_alpha
+  alpha_cache.last_alpha_check_time = current_time
+
+  return has_alpha
 end
 
 --- Check if files were opened at startup (cached)
@@ -142,10 +176,12 @@ end
 --- Count normal buffers (simplified and cached)
 --- @return number
 local function count_normal_buffers()
-  local current_time = vim.loop.hrtime() / 1000000 -- convert to ms
+  local perf_start = vim.loop.hrtime()
+  local current_time = perf_start / 1000000 -- convert to ms
 
   -- Use cached result if recent enough
   if alpha_cache.normal_count and (current_time - alpha_cache.last_check_time) < alpha_cache.check_interval then
+    autocmd_perf.track_buffer_operation("count_normal_buffers_cached", perf_start)
     return alpha_cache.normal_count
   end
 
@@ -163,6 +199,8 @@ local function count_normal_buffers()
   -- Cache result
   alpha_cache.normal_count = count
   alpha_cache.last_check_time = current_time
+
+  autocmd_perf.track_buffer_operation("count_normal_buffers_full", perf_start)
   return count
 end
 
@@ -421,6 +459,19 @@ local FILETYPE_SETTINGS = {
     -- Enable syntax highlighting
     vim.opt_local.syntax = "groovy"
   end,
+
+  -- Properties files (disable treesitter, use simple syntax)
+  properties = function()
+    vim.opt_local.commentstring = "# %s"
+    vim.opt_local.wrap = false
+    vim.opt_local.expandtab = true
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.tabstop = 2
+    -- Disable treesitter explicitly to prevent temp file errors
+    vim.b.ts_highlight = false
+    -- Use basic syntax highlighting
+    vim.opt_local.syntax = "conf"
+  end,
 }
 
 --- Apply filetype-specific settings
@@ -442,6 +493,95 @@ create_autocmd("BufReadPre", {
   desc = "Detect and optimize for large files",
   callback = function(args)
     large_file.on_buf_read(args.buf)
+  end,
+})
+
+-- Smart Buffer Delete Command
+vim.api.nvim_create_user_command("Bd", function(opts)
+  local buf = vim.api.nvim_get_current_buf()
+  local autocmd_logger = require("yoda.autocmd_logger")
+
+  autocmd_logger.log("Bd_Start", { buf = buf, bang = opts.bang })
+
+  -- Skip special buffers
+  if vim.bo[buf].buftype ~= "" then
+    autocmd_logger.log("Bd_Special", { buf = buf, buftype = vim.bo[buf].buftype })
+    vim.cmd("bdelete" .. (opts.bang and "!" or ""))
+    return
+  end
+
+  -- Find which window(s) are displaying this buffer
+  local windows_with_buf = vim.fn.win_findbuf(buf)
+  autocmd_logger.log("Bd_Windows", { buf = buf, window_count = #windows_with_buf })
+
+  -- Get list of normal buffers (excluding current)
+  local normal_buffers = {}
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(b) and b ~= buf and vim.bo[b].buflisted and vim.bo[b].buftype == "" then
+      table.insert(normal_buffers, b)
+    end
+  end
+
+  autocmd_logger.log("Bd_Alternates", { buf = buf, alternate_count = #normal_buffers })
+
+  -- If there are other normal buffers, switch windows before deleting
+  if #normal_buffers > 0 then
+    -- Determine which buffer to switch to
+    local alt = vim.fn.bufnr("#")
+    local target_buf
+
+    if alt ~= -1 and alt ~= buf and vim.api.nvim_buf_is_valid(alt) and vim.bo[alt].buftype == "" then
+      target_buf = alt -- Use alternate buffer
+      autocmd_logger.log("Bd_UseAlternate", { buf = buf, target = alt })
+    else
+      target_buf = normal_buffers[1] -- Use first available buffer
+      autocmd_logger.log("Bd_UseFirst", { buf = buf, target = normal_buffers[1] })
+    end
+
+    -- Switch each window to the target buffer BEFORE deletion
+    for _, win in ipairs(windows_with_buf) do
+      if vim.api.nvim_win_is_valid(win) then
+        local ok = pcall(vim.api.nvim_win_set_buf, win, target_buf)
+        autocmd_logger.log("Bd_SwitchWindow", { win = win, target = target_buf, success = ok })
+      end
+    end
+  else
+    autocmd_logger.log("Bd_NoAlternates", { buf = buf })
+  end
+
+  -- Now delete the buffer
+  local delete_cmd = "bdelete" .. (opts.bang and "!" or "") .. " " .. buf
+  autocmd_logger.log("Bd_Delete", { buf = buf, cmd = delete_cmd })
+
+  local ok, err = pcall(vim.cmd, delete_cmd)
+  if not ok then
+    autocmd_logger.log("Bd_DeleteFailed", { buf = buf, error = tostring(err) })
+    vim.notify("Buffer delete failed: " .. tostring(err), vim.log.levels.ERROR)
+  else
+    autocmd_logger.log("Bd_DeleteSuccess", { buf = buf })
+  end
+end, { bang = true, desc = "Smart buffer delete that preserves window layout" })
+
+-- Create alias for standard :bd command
+vim.api.nvim_create_user_command("BD", function(opts)
+  vim.cmd("Bd" .. (opts.bang and "!" or ""))
+end, { bang = true, desc = "Alias for Bd" })
+
+-- Buffer Cache Invalidation: Clear caches when buffer state changes
+create_autocmd({ "BufDelete", "BufWipeout" }, {
+  group = augroup("YodaBufferCacheInvalidation", { clear = true }),
+  desc = "Invalidate buffer caches when buffers are removed",
+  callback = function(args)
+    -- Only invalidate if it's a real buffer being deleted
+    local buf = args.buf
+    if vim.api.nvim_buf_is_valid(buf) then
+      local buftype = vim.bo[buf].buftype
+      local filetype = vim.bo[buf].filetype
+      -- Only invalidate for real buffers or alpha dashboard
+      if buftype == "" or filetype == "alpha" then
+        invalidate_buffer_caches()
+      end
+    end
   end,
 })
 
@@ -479,61 +619,141 @@ create_autocmd("BufEnter", {
   group = augroup("YodaConsolidatedBufEnter", { clear = true }),
   desc = "Consolidated buffer enter handler for alpha, refresh, and git signs",
   callback = function(args)
+    local perf_start_time = vim.loop.hrtime()
+    local start_time = autocmd_logger.log_start("BufEnter", { buf = args.buf })
     local buf = args.buf
+
+    -- SAFETY: Skip snacks.nvim managed buffers to prevent conflicts
+    local bufname = vim.api.nvim_buf_get_name(buf)
+    if bufname:match("snacks_") or bufname:match("^%[.-%]$") then
+      autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "snacks_buffer" })
+      autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_snacks" })
+      return
+    end
+
     local buftype = vim.bo[buf].buftype
     local filetype = vim.bo[buf].filetype
-    local bufname = vim.api.nvim_buf_get_name(buf)
     local buflisted = vim.bo[buf].buflisted
+
+    -- SAFETY: Skip special buffer types that might be managed by plugins
+    if buftype ~= "" and buftype ~= "help" then
+      autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "special_buftype", buftype = buftype })
+      autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_special" })
+      return
+    end
 
     -- PRIORITY 1: Handle real file buffers (most common case)
     local is_real_buffer = buftype == "" and filetype ~= "" and filetype ~= "alpha" and bufname ~= ""
 
     if is_real_buffer then
-      -- Immediately close alpha dashboard (no delay)
-      vim.schedule(function()
+      autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
+
+      -- Close alpha dashboard safely with delay to avoid conflicts
+      local delay = 50
+
+      vim.defer_fn(function()
+        -- Double-check we're still in a valid state BEFORE logging
+        if not vim.api.nvim_buf_is_valid(buf) then
+          autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "invalid_buffer" })
+          return
+        end
+
+        autocmd_logger.log("Alpha_Close_Check", { buf = buf, delay = delay })
+
+        -- Use has_alpha_buffer() which is cached and safe
+        if not has_alpha_buffer() then
+          autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "no_alpha_buffer" })
+          return
+        end
+
         for _, b in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(b) and vim.bo[b].filetype == "alpha" then
-            pcall(vim.api.nvim_buf_delete, b, { force = true })
+          if vim.api.nvim_buf_is_valid(b) and b ~= buf then
+            local ok, ft = pcall(function()
+              return vim.bo[b].filetype
+            end)
+
+            if ok and ft == "alpha" then
+              -- Final safety check: ensure the buffer is listed and not in use
+              local is_listed = vim.bo[b].buflisted
+              if is_listed then
+                autocmd_logger.log("Alpha_Close_Delete", { buf = b })
+                pcall(vim.api.nvim_buf_delete, b, { force = true })
+              end
+            end
           end
         end
-      end)
+      end, delay) -- Longer delay to ensure all transitions complete
 
-      -- OpenCode integration: Refresh buffer and git signs
-      local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
-      if ok then
-        vim.schedule(function()
-          pcall(vim.cmd, "checktime")
-          if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
-            opencode_integration.refresh_buffer(buf)
-          end
-          opencode_integration.refresh_git_signs()
-        end)
-      else
-        -- Fallback
-        if can_reload_buffer() then
-          pcall(vim.cmd, "checktime")
+      -- Cancel previous debounced call for this buffer
+      if buf_enter_debounce[buf] then
+        pcall(vim.fn.timer_stop, buf_enter_debounce[buf])
+        buf_enter_debounce[buf] = nil
+      end
+
+      -- Debounce expensive operations (OpenCode integration, git signs)
+      -- Use vim.fn.timer_start for proper cancellation support
+      buf_enter_debounce[buf] = vim.fn.timer_start(DELAYS.BUF_ENTER_DEBOUNCE, function()
+        -- Check buffer is still valid
+        if not vim.api.nvim_buf_is_valid(buf) then
+          autocmd_logger.log("Refresh_Skip", { buf = buf, reason = "invalid_buffer" })
+          buf_enter_debounce[buf] = nil
+          return
+        end
+
+        autocmd_logger.log("Refresh_Start", { buf = buf })
+        buf_enter_debounce[buf] = nil
+
+        -- OpenCode integration: Refresh buffer and git signs
+        local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+        if ok then
+          vim.schedule(function()
+            -- Double-check buffer is still valid in scheduled callback
+            if not vim.api.nvim_buf_is_valid(buf) then
+              return
+            end
+
+            if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+              autocmd_logger.log("Refresh_Buffer", { buf = buf })
+              opencode_integration.refresh_buffer(buf)
+            end
+            autocmd_logger.log("Refresh_GitSigns", { buf = buf })
+            opencode_integration.refresh_git_signs()
+          end)
+        else
+          -- Fallback
           local gs = package.loaded.gitsigns
           if gs then
             vim.schedule(function()
+              if not vim.api.nvim_buf_is_valid(buf) then
+                return
+              end
+              autocmd_logger.log("Refresh_GitSigns_Fallback", { buf = buf })
               gs.refresh()
             end)
           end
         end
-      end
+      end)
 
+      autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
+      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
       return
     end
 
     -- PRIORITY 2: Skip alpha logic for special buffers
     if filetype == "alpha" then
+      autocmd_logger.log_end("BufEnter", start_time, { action = "alpha_skip" })
+      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
       return
     end
 
     if not buflisted then
+      autocmd_logger.log_end("BufEnter", start_time, { action = "not_listed" })
+      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
       return
     end
 
     if buftype ~= "" then
+      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
       return
     end
 
@@ -552,12 +772,14 @@ create_autocmd("BufEnter", {
 
     for _, ft in ipairs(skip_filetypes) do
       if filetype == ft then
+        autocmd_perf.track_autocmd("BufEnter", perf_start_time)
         return
       end
     end
 
     -- PRIORITY 3: Check if alpha should be shown (least common case)
     if not should_show_alpha() then
+      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
       return
     end
 
@@ -567,6 +789,8 @@ create_autocmd("BufEnter", {
         show_alpha_dashboard()
       end
     end, DELAYS.ALPHA_BUFFER_CHECK)
+
+    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
   end,
 })
 
@@ -1061,3 +1285,40 @@ create_autocmd("CmdlineLeave", {
     vim.g.cmdline_mode = false
   end,
 })
+
+-- ============================================================================
+-- Autocmd Logging Commands (for debugging)
+-- ============================================================================
+
+vim.api.nvim_create_user_command("YodaAutocmdLogEnable", function()
+  autocmd_logger.enable()
+end, { desc = "Enable detailed autocmd logging for debugging" })
+
+vim.api.nvim_create_user_command("YodaAutocmdLogDisable", function()
+  autocmd_logger.disable()
+end, { desc = "Disable autocmd logging" })
+
+vim.api.nvim_create_user_command("YodaAutocmdLogToggle", function()
+  autocmd_logger.toggle()
+end, { desc = "Toggle autocmd logging" })
+
+vim.api.nvim_create_user_command("YodaAutocmdLogView", function()
+  autocmd_logger.view_log()
+end, { desc = "View autocmd log file" })
+
+vim.api.nvim_create_user_command("YodaAutocmdLogClear", function()
+  autocmd_logger.clear_log()
+end, { desc = "Clear autocmd log file" })
+
+-- Setup autocmd performance tracking commands
+autocmd_perf.setup_commands()
+
+-- ============================================================================
+-- Command Aliases for Better Buffer Management
+-- ============================================================================
+
+-- Make :bd use our smart buffer delete
+vim.cmd([[
+  cnoreabbrev <expr> bd getcmdtype() == ':' && getcmdline() == 'bd' ? 'Bd' : 'bd'
+  cnoreabbrev <expr> bdelete getcmdtype() == ':' && getcmdline() == 'bdelete' ? 'Bd' : 'bdelete'
+]])
