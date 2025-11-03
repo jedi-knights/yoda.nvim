@@ -6,6 +6,17 @@ local M = {}
 local gitsigns = require("yoda.integrations.gitsigns")
 local notify = require("yoda.adapters.notification")
 
+-- Safe require with error handling
+local buffer_state_ok, buffer_state = pcall(require, "yoda.buffer.state_checker")
+if not buffer_state_ok then
+  vim.notify("Failed to load buffer.state_checker: " .. tostring(buffer_state), vim.log.levels.ERROR)
+  buffer_state = nil
+end
+
+-- Debounce state for buffer operations
+local buf_debounce = {}
+local BUF_DEBOUNCE_DELAY = 50 -- milliseconds
+
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
 --- @return boolean should_skip Whether to skip refreshing this file
@@ -263,17 +274,128 @@ function M.setup()
   })
 end
 
+--- Handle debounced buffer refresh operations
+--- @param buf number Buffer number
+--- @param logger table Optional logger instance
+function M.handle_debounced_buffer_refresh(buf, logger)
+  -- Cancel any pending debounce for this buffer
+  if buf_debounce[buf] then
+    pcall(vim.fn.timer_stop, buf_debounce[buf])
+    buf_debounce[buf] = nil
+  end
+
+  -- Schedule debounced operation
+  buf_debounce[buf] = vim.fn.timer_start(BUF_DEBOUNCE_DELAY, function()
+    if not vim.api.nvim_buf_is_valid(buf) then
+      if logger then
+        logger.log("Refresh_Skip", { buf = buf, reason = "invalid_buffer" })
+      end
+      buf_debounce[buf] = nil
+      return
+    end
+
+    if logger then
+      logger.log("Refresh_Start", { buf = buf })
+    end
+    buf_debounce[buf] = nil
+
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(buf) then
+        return
+      end
+
+      -- Refresh buffer if it's reloadable
+      if buffer_state and buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+        if logger then
+          logger.log("Refresh_Buffer", { buf = buf })
+        end
+        M.refresh_buffer(buf)
+      end
+
+      -- Refresh git signs
+      if logger then
+        logger.log("Refresh_GitSigns", { buf = buf })
+      end
+      M.refresh_git_signs()
+    end)
+  end)
+end
+
 --- Setup OpenCode integration autocmds
 --- @param autocmd function vim.api.nvim_create_autocmd
 --- @param augroup function vim.api.nvim_create_augroup
-function M.setup_autocmds(autocmd, augroup)
-  -- Enhanced OpenCode integration - handle exit event
+--- @param gitsigns table GitSigns module
+--- @param buffer_state table Buffer state checker module
+function M.setup_autocmds(autocmd, augroup, gitsigns, buffer_state)
+  -- OpenCode exit handler
   autocmd("User", {
     group = augroup("YodaOpenCodeIntegration", { clear = true }),
     pattern = "OpencodeExit",
     desc = "Handle OpenCode exit",
     callback = function()
       M.on_opencode_exit()
+    end,
+  })
+
+  -- Auto-save on OpenCode start
+  autocmd("User", {
+    group = augroup("YodaOpenCodeAutoSave", { clear = true }),
+    pattern = "OpencodeStart",
+    desc = "Auto-save all buffers when OpenCode starts",
+    callback = function()
+      vim.schedule(function()
+        pcall(M.save_all_buffers)
+      end)
+    end,
+  })
+
+  -- Focus gained - refresh buffers
+  autocmd("FocusGained", {
+    group = augroup("YodaOpenCodeFocusRefresh", { clear = true }),
+    desc = "Refresh buffers and git signs when focus is gained",
+    callback = function()
+      vim.schedule(function()
+        pcall(vim.cmd, "checktime")
+        if buffer_state and buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+          M.refresh_buffer(vim.api.nvim_get_current_buf())
+        end
+        M.refresh_git_signs()
+      end)
+    end,
+  })
+
+  -- Buffer written - refresh git signs
+  autocmd("BufWritePost", {
+    group = augroup("YodaGitSignsWriteRefresh", { clear = true }),
+    desc = "Refresh git signs after buffer is written",
+    callback = function()
+      M.refresh_git_signs()
+    end,
+  })
+
+  -- File changed externally
+  autocmd("FileChangedShell", {
+    group = augroup("YodaOpenCodeFileChange", { clear = true }),
+    desc = "Handle files changed by external tools",
+    callback = function(args)
+      vim.schedule(function()
+        if args.buf and vim.api.nvim_buf_is_valid(args.buf) then
+          M.refresh_buffer(args.buf)
+        end
+        M.complete_refresh()
+      end)
+    end,
+  })
+
+  -- Post-process file changes
+  autocmd("FileChangedShellPost", {
+    group = augroup("YodaOpenCodeFileChangePost", { clear = true }),
+    desc = "Post-process file changes from external tools",
+    callback = function()
+      vim.schedule(function()
+        vim.cmd("redraw!")
+        M.refresh_git_signs()
+      end)
     end,
   })
 end
