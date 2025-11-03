@@ -10,6 +10,7 @@ local autocmd_perf = require("yoda.autocmd_performance")
 local notify = require("yoda.adapters.notification")
 local alpha_manager = require("yoda.ui.alpha_manager")
 local gitsigns = require("yoda.integrations.gitsigns")
+local buffer_state = require("yoda.buffer.state_checker")
 
 -- ============================================================================
 -- Constants
@@ -42,35 +43,6 @@ local function create_autocmd(events, opts)
   autocmd(events, opts)
 end
 
---- Check if a buffer name indicates it's empty or unnamed
---- @param bufname string Buffer name to check
---- @return boolean
-local function is_empty_buffer_name(bufname)
-  return bufname == "" or bufname == "[No Name]"
-end
-
---- Check if a buffer name indicates it's a scratch buffer
---- @param bufname string Buffer name to check
---- @return boolean
-local function is_scratch_buffer(bufname)
-  return bufname == "[Scratch]"
-end
-
---- Check if a buffer is empty or unnamed (but not a scratch buffer)
---- @param bufnr number|nil Buffer number (default: current buffer)
---- @return boolean
-local function is_buffer_empty(bufnr)
-  bufnr = bufnr or 0
-  local bufname = vim.api.nvim_buf_get_name(bufnr)
-
-  -- Don't consider scratch buffers as "empty" for alpha purposes
-  if is_scratch_buffer(bufname) then
-    return false
-  end
-
-  return is_empty_buffer_name(bufname)
-end
-
 -- Debounce state for BufEnter handler
 local buf_enter_debounce = {}
 
@@ -79,12 +51,6 @@ local function handle_directory_argument()
   if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
     vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
   end
-end
-
---- Check if buffer can be reloaded safely
---- @return boolean
-local function can_reload_buffer()
-  return vim.bo.modifiable and vim.bo.buftype == "" and not vim.bo.readonly
 end
 
 --- Handle debounced operations for real buffers (OpenCode integration, git signs)
@@ -112,7 +78,7 @@ local function handle_debounced_buffer_operations(buf)
           return
         end
 
-        if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+        if buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
           autocmd_logger.log("Refresh_Buffer", { buf = buf })
           opencode_integration.refresh_buffer(buf)
         end
@@ -437,9 +403,9 @@ create_autocmd("VimEnter", {
   callback = function()
     handle_directory_argument()
 
-    if alpha_manager.should_show_alpha(is_buffer_empty) then
+    if alpha_manager.should_show_alpha(buffer_state.is_buffer_empty) then
       vim.defer_fn(function()
-        if alpha_manager.should_show_alpha(is_buffer_empty) then
+        if alpha_manager.should_show_alpha(buffer_state.is_buffer_empty) then
           alpha_manager.show_alpha_dashboard()
         end
       end, DELAYS.ALPHA_STARTUP)
@@ -488,7 +454,7 @@ create_autocmd("BufEnter", {
       perf_start_time = perf_start_time,
       logger = autocmd_logger,
       perf_tracker = autocmd_perf,
-      is_buffer_empty_fn = is_buffer_empty,
+      is_buffer_empty_fn = buffer_state.is_buffer_empty,
       delay = DELAYS.ALPHA_BUFFER_CHECK,
     })
   end,
@@ -595,7 +561,7 @@ create_autocmd("FocusGained", {
   group = augroup("YodaAutoRead", { clear = true }),
   desc = "Reload files changed outside of Neovim and refresh git signs",
   callback = function()
-    if can_reload_buffer() then
+    if buffer_state.can_reload_buffer() then
       pcall(vim.cmd, "checktime")
       gitsigns.refresh()
     end
@@ -730,7 +696,7 @@ create_autocmd("FocusGained", {
         pcall(vim.cmd, "checktime")
 
         -- Refresh current buffer if needed
-        if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+        if buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
           local current_buf = vim.api.nvim_get_current_buf()
           opencode_integration.refresh_buffer(current_buf)
         end
@@ -739,7 +705,7 @@ create_autocmd("FocusGained", {
         opencode_integration.refresh_git_signs()
       end)
     else
-      if can_reload_buffer() then
+      if buffer_state.can_reload_buffer() then
         pcall(vim.cmd, "checktime")
         gitsigns.refresh()
       end
