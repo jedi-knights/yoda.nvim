@@ -418,37 +418,32 @@ local function should_skip_alpha_for_filetype(filetype)
 end
 
 --- Handle alpha dashboard display logic
---- @param buf number Buffer number
---- @param buftype string Buffer type
---- @param filetype string File type
---- @param buflisted boolean Whether buffer is listed
---- @param start_time number Start time for logging
---- @param perf_start_time number Performance tracking start time
-local function handle_alpha_dashboard_display(buf, buftype, filetype, buflisted, start_time, perf_start_time)
-  if filetype == "alpha" then
-    autocmd_logger.log_end("BufEnter", start_time, { action = "alpha_skip" })
-    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+--- @param ctx table Context with buf, buftype, filetype, buflisted, start_time, perf_start_time
+local function handle_alpha_dashboard_display(ctx)
+  if ctx.filetype == "alpha" then
+    autocmd_logger.log_end("BufEnter", ctx.start_time, { action = "alpha_skip" })
+    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
     return
   end
 
-  if not buflisted then
-    autocmd_logger.log_end("BufEnter", start_time, { action = "not_listed" })
-    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+  if not ctx.buflisted then
+    autocmd_logger.log_end("BufEnter", ctx.start_time, { action = "not_listed" })
+    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
     return
   end
 
-  if buftype ~= "" then
-    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+  if ctx.buftype ~= "" then
+    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
     return
   end
 
-  if should_skip_alpha_for_filetype(filetype) then
-    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+  if should_skip_alpha_for_filetype(ctx.filetype) then
+    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
     return
   end
 
   if not should_show_alpha() then
-    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
     return
   end
 
@@ -458,7 +453,7 @@ local function handle_alpha_dashboard_display(buf, buftype, filetype, buflisted,
     end
   end, DELAYS.ALPHA_BUFFER_CHECK)
 
-  autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+  autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
 end
 
 -- ============================================================================
@@ -798,7 +793,14 @@ create_autocmd("BufEnter", {
       return
     end
 
-    handle_alpha_dashboard_display(buf, buftype, filetype, buflisted, start_time, perf_start_time)
+    handle_alpha_dashboard_display({
+      buf = buf,
+      buftype = buftype,
+      filetype = filetype,
+      buflisted = buflisted,
+      start_time = start_time,
+      perf_start_time = perf_start_time,
+    })
   end,
 })
 

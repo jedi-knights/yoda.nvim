@@ -297,77 +297,67 @@ function M.handle_alpha_close_for_real_buffer(buf, delay, logger)
 end
 
 --- Handle alpha dashboard display logic
---- @param buf number Buffer number
---- @param buftype string Buffer type
---- @param filetype string File type
---- @param buflisted boolean Whether buffer is listed
---- @param start_time number Start time for logging
---- @param perf_start_time number Performance tracking start time
---- @param logger table|nil Optional logger
---- @param perf_tracker table|nil Optional performance tracker
---- @param is_buffer_empty_fn function Function to check if buffer is empty
---- @param delay number Delay for showing alpha
-function M.handle_alpha_dashboard_display(
-  buf,
-  buftype,
-  filetype,
-  buflisted,
-  start_time,
-  perf_start_time,
-  logger,
-  perf_tracker,
-  is_buffer_empty_fn,
-  delay
-)
-  if filetype == "alpha" then
-    if logger then
-      logger.log_end("BufEnter", start_time, { action = "alpha_skip" })
+--- @param ctx table Context object with fields:
+---   - buf: number Buffer number
+---   - buftype: string Buffer type
+---   - filetype: string File type
+---   - buflisted: boolean Whether buffer is listed
+---   - start_time: number Start time for logging
+---   - perf_start_time: number Performance tracking start time
+---   - logger: table|nil Optional logger
+---   - perf_tracker: table|nil Optional performance tracker
+---   - is_buffer_empty_fn: function Function to check if buffer is empty
+---   - delay: number Delay for showing alpha
+function M.handle_alpha_dashboard_display(ctx)
+  if ctx.filetype == "alpha" then
+    if ctx.logger then
+      ctx.logger.log_end("BufEnter", ctx.start_time, { action = "alpha_skip" })
     end
-    if perf_tracker then
-      perf_tracker.track_autocmd("BufEnter", perf_start_time)
+    if ctx.perf_tracker then
+      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
     end
     return
   end
 
-  if not buflisted then
-    if logger then
-      logger.log_end("BufEnter", start_time, { action = "not_listed" })
+  if not ctx.buflisted then
+    if ctx.logger then
+      ctx.logger.log_end("BufEnter", ctx.start_time, { action = "not_listed" })
     end
-    if perf_tracker then
-      perf_tracker.track_autocmd("BufEnter", perf_start_time)
-    end
-    return
-  end
-
-  if buftype ~= "" then
-    if perf_tracker then
-      perf_tracker.track_autocmd("BufEnter", perf_start_time)
+    if ctx.perf_tracker then
+      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
     end
     return
   end
 
-  if M.should_skip_alpha_for_filetype(filetype) then
-    if perf_tracker then
-      perf_tracker.track_autocmd("BufEnter", perf_start_time)
+  if ctx.buftype ~= "" then
+    if ctx.perf_tracker then
+      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
     end
     return
   end
 
-  if not M.should_show_alpha(is_buffer_empty_fn) then
-    if perf_tracker then
-      perf_tracker.track_autocmd("BufEnter", perf_start_time)
+  if M.should_skip_alpha_for_filetype(ctx.filetype) then
+    if ctx.perf_tracker then
+      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
+    end
+    return
+  end
+
+  if not M.should_show_alpha(ctx.is_buffer_empty_fn) then
+    if ctx.perf_tracker then
+      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
     end
     return
   end
 
   vim.defer_fn(function()
-    if M.should_show_alpha(is_buffer_empty_fn) then
+    if M.should_show_alpha(ctx.is_buffer_empty_fn) then
       M.show_alpha_dashboard()
     end
-  end, delay)
+  end, ctx.delay)
 
-  if perf_tracker then
-    perf_tracker.track_autocmd("BufEnter", perf_start_time)
+  if ctx.perf_tracker then
+    ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
   end
 end
 
