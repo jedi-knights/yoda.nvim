@@ -8,6 +8,7 @@ local large_file = require("yoda.large_file")
 local autocmd_logger = require("yoda.autocmd_logger")
 local autocmd_perf = require("yoda.autocmd_performance")
 local notify = require("yoda.adapters.notification")
+local alpha_manager = require("yoda.ui.alpha_manager")
 
 -- ============================================================================
 -- Constants
@@ -26,12 +27,6 @@ local DELAYS = {
 
 local THRESHOLDS = {
   MAX_LINES_FOR_YANK_HIGHLIGHT = 1000, -- Skip yank highlight for large files
-}
-
-local ALPHA_CONFIG = {
-  HEADER_PADDING = 2,
-  BUTTON_PADDING = 2,
-  FOOTER_PADDING = 1,
 }
 
 -- ============================================================================
@@ -75,202 +70,8 @@ local function is_buffer_empty(bufnr)
   return is_empty_buffer_name(bufname)
 end
 
--- Performance optimizations: cache expensive checks
-local alpha_cache = {
-  has_startup_files = nil,
-  has_alpha_buffer = nil,
-  normal_count = nil,
-  last_check_time = 0,
-  last_alpha_check_time = 0,
-  check_interval = 150, -- ms - balance between freshness and performance
-  alpha_check_interval = 100, -- ms - prevent flickering while maintaining responsiveness
-}
-
 -- Debounce state for BufEnter handler
 local buf_enter_debounce = {}
-
---- Invalidate buffer caches
-local function invalidate_buffer_caches()
-  alpha_cache.has_alpha_buffer = nil
-  alpha_cache.normal_count = nil
-end
-
---- Check if alpha dashboard is already open (optimized with caching)
---- @return boolean
-local function has_alpha_buffer()
-  local current_time = vim.loop.hrtime() / 1000000
-
-  -- Use cached result if recent enough
-  if alpha_cache.has_alpha_buffer ~= nil and (current_time - alpha_cache.last_alpha_check_time) < alpha_cache.alpha_check_interval then
-    return alpha_cache.has_alpha_buffer
-  end
-
-  -- Fast check: iterate only valid listed buffers
-  local has_alpha = false
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted and vim.bo[buf].filetype == "alpha" then
-      has_alpha = true
-      break
-    end
-  end
-
-  -- Cache result
-  alpha_cache.has_alpha_buffer = has_alpha
-  alpha_cache.last_alpha_check_time = current_time
-
-  return has_alpha
-end
-
---- Check if files were opened at startup (cached)
---- @return boolean
-local function has_startup_files()
-  if alpha_cache.has_startup_files == nil then
-    alpha_cache.has_startup_files = vim.fn.argc() ~= 0
-  end
-  return alpha_cache.has_startup_files
-end
-
---- Check if current buffer has a filetype (optimized)
---- @return boolean
-local function has_filetype()
-  return vim.bo.filetype ~= ""
-end
-
---- Recenter alpha dashboard if visible
---- @return boolean true if alpha was recentered
-local function recenter_alpha_dashboard()
-  local win_utils = require("yoda.window_utils")
-  local win, buf = win_utils.find_by_filetype("alpha")
-
-  if not win then
-    return false
-  end
-
-  local current_win = vim.api.nvim_get_current_win()
-  vim.api.nvim_set_current_win(win)
-
-  local ok, alpha = pcall(require, "alpha")
-  if ok and alpha and alpha.start then
-    local alpha_config = vim.b[buf].alpha_config
-    pcall(alpha.start, false, alpha_config)
-  end
-
-  if current_win ~= win and vim.api.nvim_win_is_valid(current_win) then
-    vim.api.nvim_set_current_win(current_win)
-  end
-
-  return true
-end
-
---- Check if current buffer has a special buftype (optimized)
---- @return boolean
-local function has_special_buftype()
-  return vim.bo.buftype ~= ""
-end
-
---- Count normal buffers (simplified and cached)
---- @return number
-local function count_normal_buffers()
-  local perf_start = vim.loop.hrtime()
-  local current_time = perf_start / 1000000 -- convert to ms
-
-  -- Use cached result if recent enough
-  if alpha_cache.normal_count and (current_time - alpha_cache.last_check_time) < alpha_cache.check_interval then
-    autocmd_perf.track_buffer_operation("count_normal_buffers_cached", perf_start)
-    return alpha_cache.normal_count
-  end
-
-  local count = 0
-  -- Only check listed buffers for performance
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
-      local buf_ft = vim.bo[buf].filetype
-      if buf_ft ~= "alpha" and buf_ft ~= "" then
-        count = count + 1
-      end
-    end
-  end
-
-  -- Cache result
-  alpha_cache.normal_count = count
-  alpha_cache.last_check_time = current_time
-
-  autocmd_perf.track_buffer_operation("count_normal_buffers_full", perf_start)
-  return count
-end
-
---- Check if we're in a state where alpha should be shown (optimized)
---- @return boolean
-local function should_show_alpha()
-  -- Fastest checks first (single function calls)
-  if has_startup_files() then
-    return false
-  end
-
-  if has_filetype() then
-    return false
-  end
-
-  if has_special_buftype() then
-    return false
-  end
-
-  if not is_buffer_empty() then
-    return false
-  end
-
-  -- More expensive checks last
-  if has_alpha_buffer() then
-    return false
-  end
-
-  -- Most expensive check last with caching
-  return count_normal_buffers() == 0
-end
-
---- Create alpha dashboard layout configuration
---- @param dashboard table Dashboard theme module
---- @return table Layout configuration
-local function create_alpha_layout(dashboard)
-  return {
-    { type = "padding", val = ALPHA_CONFIG.HEADER_PADDING },
-    dashboard.section.header,
-    { type = "padding", val = ALPHA_CONFIG.BUTTON_PADDING },
-    dashboard.section.buttons,
-    { type = "padding", val = ALPHA_CONFIG.FOOTER_PADDING },
-    dashboard.section.footer,
-  }
-end
-
---- Start the alpha dashboard with proper configuration
---- @return boolean success Whether alpha started successfully
-local function start_alpha_dashboard()
-  local ok, alpha = pcall(require, "alpha")
-  if not ok or not alpha or not alpha.start then
-    return false
-  end
-
-  local dashboard_ok, dashboard = pcall(require, "alpha.themes.dashboard")
-  if not dashboard_ok or not dashboard then
-    return false
-  end
-
-  local alpha_config = {
-    redraw_on_resize = true,
-    layout = create_alpha_layout(dashboard),
-  }
-
-  local config_ok = pcall(alpha.start, alpha_config)
-  return config_ok
-end
-
---- Attempt to show alpha dashboard with error notification
-local function show_alpha_dashboard()
-  local success = start_alpha_dashboard()
-  if not success then
-    notify.notify("Alpha dashboard failed to start", "warn")
-  end
-end
 
 --- Change to directory if provided as argument
 local function handle_directory_argument()
@@ -293,50 +94,6 @@ local function safe_refresh_gitsigns()
       gs.refresh()
     end)
   end
-end
-
---- Close all alpha dashboard buffers
-local function close_all_alpha_buffers()
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
-      pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    end
-  end
-end
-
---- Handle closing alpha dashboard for real file buffers
---- @param buf number Buffer number
---- @param start_time number Start time for logging
-local function handle_alpha_close_for_real_buffer(buf, start_time)
-  vim.defer_fn(function()
-    if not vim.api.nvim_buf_is_valid(buf) then
-      autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "invalid_buffer" })
-      return
-    end
-
-    autocmd_logger.log("Alpha_Close_Check", { buf = buf, delay = DELAYS.ALPHA_CLOSE })
-
-    if not has_alpha_buffer() then
-      autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "no_alpha_buffer" })
-      return
-    end
-
-    for _, b in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(b) and b ~= buf then
-        local ok, ft = pcall(function()
-          return vim.bo[b].filetype
-        end)
-
-        if ok and ft == "alpha" then
-          local is_listed = vim.bo[b].buflisted
-          if is_listed then
-            autocmd_logger.log("Alpha_Close_Delete", { buf = b })
-            pcall(vim.api.nvim_buf_delete, b, { force = true })
-          end
-        end
-      end
-    end
-  end, DELAYS.ALPHA_CLOSE)
 end
 
 --- Handle debounced operations for real buffers (OpenCode integration, git signs)
@@ -386,76 +143,12 @@ end
 local function handle_real_buffer_enter(buf, filetype, start_time, perf_start_time)
   autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
 
-  handle_alpha_close_for_real_buffer(buf, start_time)
+  alpha_manager.handle_alpha_close_for_real_buffer(buf, DELAYS.ALPHA_CLOSE, autocmd_logger)
   handle_debounced_buffer_operations(buf)
 
   autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
   autocmd_perf.track_autocmd("BufEnter", perf_start_time)
   return true
-end
-
---- Check if filetype should skip alpha display logic
---- @param filetype string File type to check
---- @return boolean true if should skip
-local function should_skip_alpha_for_filetype(filetype)
-  local skip_filetypes = {
-    "gitcommit",
-    "gitrebase",
-    "gitconfig",
-    "NeogitCommitMessage",
-    "NeogitPopup",
-    "NeogitStatus",
-    "fugitive",
-    "fugitiveblame",
-    "markdown",
-  }
-
-  for _, ft in ipairs(skip_filetypes) do
-    if filetype == ft then
-      return true
-    end
-  end
-
-  return false
-end
-
---- Handle alpha dashboard display logic
---- @param ctx table Context with buf, buftype, filetype, buflisted, start_time, perf_start_time
-local function handle_alpha_dashboard_display(ctx)
-  if ctx.filetype == "alpha" then
-    autocmd_logger.log_end("BufEnter", ctx.start_time, { action = "alpha_skip" })
-    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
-    return
-  end
-
-  if not ctx.buflisted then
-    autocmd_logger.log_end("BufEnter", ctx.start_time, { action = "not_listed" })
-    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
-    return
-  end
-
-  if ctx.buftype ~= "" then
-    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
-    return
-  end
-
-  if should_skip_alpha_for_filetype(ctx.filetype) then
-    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
-    return
-  end
-
-  if not should_show_alpha() then
-    autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
-    return
-  end
-
-  vim.defer_fn(function()
-    if should_show_alpha() then
-      show_alpha_dashboard()
-    end
-  end, DELAYS.ALPHA_BUFFER_CHECK)
-
-  autocmd_perf.track_autocmd("BufEnter", ctx.perf_start_time)
 end
 
 -- ============================================================================
@@ -574,7 +267,7 @@ local FILETYPE_SETTINGS = {
       end
 
       -- Recenter alpha dashboard if it's open
-      recenter_alpha_dashboard()
+      alpha_manager.recenter_alpha_dashboard()
     end)
   end,
 
@@ -728,7 +421,7 @@ create_autocmd({ "BufDelete", "BufWipeout" }, {
       local filetype = vim.bo[buf].filetype
       -- Only invalidate for real buffers or alpha dashboard
       if buftype == "" or filetype == "alpha" then
-        invalidate_buffer_caches()
+        alpha_manager.invalidate_cache()
       end
     end
   end,
@@ -753,10 +446,10 @@ create_autocmd("VimEnter", {
   callback = function()
     handle_directory_argument()
 
-    if should_show_alpha() then
+    if alpha_manager.should_show_alpha(is_buffer_empty) then
       vim.defer_fn(function()
-        if should_show_alpha() then
-          show_alpha_dashboard()
+        if alpha_manager.should_show_alpha(is_buffer_empty) then
+          alpha_manager.show_alpha_dashboard()
         end
       end, DELAYS.ALPHA_STARTUP)
     end
@@ -795,13 +488,17 @@ create_autocmd("BufEnter", {
       return
     end
 
-    handle_alpha_dashboard_display({
+    alpha_manager.handle_alpha_dashboard_display({
       buf = buf,
       buftype = buftype,
       filetype = filetype,
       buflisted = buflisted,
       start_time = start_time,
       perf_start_time = perf_start_time,
+      logger = autocmd_logger,
+      perf_tracker = autocmd_perf,
+      is_buffer_empty_fn = is_buffer_empty,
+      delay = DELAYS.ALPHA_BUFFER_CHECK,
     })
   end,
 })
@@ -820,7 +517,7 @@ create_autocmd({ "BufReadPost", "BufNewFile" }, {
     end
 
     vim.schedule(function()
-      close_all_alpha_buffers()
+      alpha_manager.close_all_alpha_buffers()
     end)
   end,
 })
@@ -834,7 +531,7 @@ create_autocmd("WinEnter", {
 
     if current_filetype ~= "alpha" and current_filetype ~= "" and vim.api.nvim_buf_get_name(0) ~= "" then
       vim.schedule(function()
-        close_all_alpha_buffers()
+        alpha_manager.close_all_alpha_buffers()
       end)
     end
   end,
@@ -864,7 +561,7 @@ create_autocmd("BufHidden", {
         end
 
         if has_real_files then
-          close_all_alpha_buffers()
+          alpha_manager.close_all_alpha_buffers()
         end
       end, DELAYS.TELESCOPE_CLOSE)
     end
@@ -942,7 +639,7 @@ create_autocmd("VimResized", {
 
     -- Check if alpha dashboard is visible and recenter it
     vim.schedule(function()
-      recenter_alpha_dashboard()
+      alpha_manager.recenter_alpha_dashboard()
     end)
   end,
 })
