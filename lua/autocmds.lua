@@ -638,21 +638,13 @@ create_autocmd("FileType", {
 })
 
 -- ============================================================================
--- SESSION MANAGEMENT
+-- OpenCode Integration Autocmds
 -- ============================================================================
 
--- Enhanced OpenCode integration
-create_autocmd("User", {
-  group = augroup("YodaOpenCodeIntegration", { clear = true }),
-  pattern = "OpencodeExit",
-  desc = "Handle OpenCode exit",
-  callback = function()
-    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
-    if ok then
-      opencode_integration.on_opencode_exit()
-    end
-  end,
-})
+local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+if ok then
+  opencode_integration.setup_autocmds(autocmd, augroup)
+end
 
 -- ============================================================================
 -- WINDOW LAYOUT MANAGEMENT: Snacks Explorer + OpenCode
