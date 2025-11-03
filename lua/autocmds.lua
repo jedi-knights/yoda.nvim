@@ -9,6 +9,7 @@ local autocmd_logger = require("yoda.autocmd_logger")
 local autocmd_perf = require("yoda.autocmd_performance")
 local notify = require("yoda.adapters.notification")
 local alpha_manager = require("yoda.ui.alpha_manager")
+local gitsigns = require("yoda.integrations.gitsigns")
 
 -- ============================================================================
 -- Constants
@@ -86,16 +87,6 @@ local function can_reload_buffer()
   return vim.bo.modifiable and vim.bo.buftype == "" and not vim.bo.readonly
 end
 
---- Safely refresh git signs
-local function safe_refresh_gitsigns()
-  local gs = package.loaded.gitsigns
-  if gs then
-    vim.schedule(function()
-      gs.refresh()
-    end)
-  end
-end
-
 --- Handle debounced operations for real buffers (OpenCode integration, git signs)
 --- @param buf number Buffer number
 local function handle_debounced_buffer_operations(buf)
@@ -129,7 +120,7 @@ local function handle_debounced_buffer_operations(buf)
         opencode_integration.refresh_git_signs()
       end)
     else
-      safe_refresh_gitsigns()
+      gitsigns.refresh()
     end
   end)
 end
@@ -606,7 +597,7 @@ create_autocmd("FocusGained", {
   callback = function()
     if can_reload_buffer() then
       pcall(vim.cmd, "checktime")
-      safe_refresh_gitsigns()
+      gitsigns.refresh()
     end
   end,
 })
@@ -750,7 +741,7 @@ create_autocmd("FocusGained", {
     else
       if can_reload_buffer() then
         pcall(vim.cmd, "checktime")
-        safe_refresh_gitsigns()
+        gitsigns.refresh()
       end
     end
   end,
@@ -766,7 +757,7 @@ create_autocmd("BufWritePost", {
       opencode_integration.refresh_git_signs()
     else
       if vim.bo.buftype == "" then
-        safe_refresh_gitsigns()
+        gitsigns.refresh()
       end
     end
   end,
@@ -792,7 +783,7 @@ create_autocmd("FileChangedShell", {
       -- Fallback behavior
       vim.schedule(function()
         pcall(vim.cmd, "checktime")
-        safe_refresh_gitsigns()
+        gitsigns.refresh()
       end)
     end
   end,
