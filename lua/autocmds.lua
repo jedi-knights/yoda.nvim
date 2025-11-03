@@ -18,10 +18,12 @@ local autocmd_perf = require("yoda.autocmd_performance")
 -- ============================================================================
 
 local DELAYS = {
-  ALPHA_STARTUP = 200, -- Delay for alpha dashboard on startup
-  ALPHA_BUFFER_CHECK = 100, -- Delay before checking alpha conditions
-  YANK_HIGHLIGHT = 50, -- Duration for yank highlight
-  BUF_ENTER_DEBOUNCE = 50, -- Debounce delay for BufEnter expensive operations
+  ALPHA_STARTUP = 200,
+  ALPHA_BUFFER_CHECK = 100,
+  YANK_HIGHLIGHT = 50,
+  BUF_ENTER_DEBOUNCE = 50,
+  ALPHA_CLOSE = 50,
+  TELESCOPE_CLOSE = 50,
 }
 
 local THRESHOLDS = {
@@ -290,6 +292,184 @@ local function can_reload_buffer()
   return vim.bo.modifiable and vim.bo.buftype == "" and not vim.bo.readonly
 end
 
+--- Safely refresh git signs
+local function safe_refresh_gitsigns()
+  local gs = package.loaded.gitsigns
+  if gs then
+    vim.schedule(function()
+      gs.refresh()
+    end)
+  end
+end
+
+--- Close all alpha dashboard buffers
+local function close_all_alpha_buffers()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
+      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    end
+  end
+end
+
+--- Handle closing alpha dashboard for real file buffers
+--- @param buf number Buffer number
+--- @param start_time number Start time for logging
+local function handle_alpha_close_for_real_buffer(buf, start_time)
+  vim.defer_fn(function()
+    if not vim.api.nvim_buf_is_valid(buf) then
+      autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "invalid_buffer" })
+      return
+    end
+
+    autocmd_logger.log("Alpha_Close_Check", { buf = buf, delay = DELAYS.ALPHA_CLOSE })
+
+    if not has_alpha_buffer() then
+      autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "no_alpha_buffer" })
+      return
+    end
+
+    for _, b in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_is_valid(b) and b ~= buf then
+        local ok, ft = pcall(function()
+          return vim.bo[b].filetype
+        end)
+
+        if ok and ft == "alpha" then
+          local is_listed = vim.bo[b].buflisted
+          if is_listed then
+            autocmd_logger.log("Alpha_Close_Delete", { buf = b })
+            pcall(vim.api.nvim_buf_delete, b, { force = true })
+          end
+        end
+      end
+    end
+  end, DELAYS.ALPHA_CLOSE)
+end
+
+--- Handle debounced operations for real buffers (OpenCode integration, git signs)
+--- @param buf number Buffer number
+local function handle_debounced_buffer_operations(buf)
+  if buf_enter_debounce[buf] then
+    pcall(vim.fn.timer_stop, buf_enter_debounce[buf])
+    buf_enter_debounce[buf] = nil
+  end
+
+  buf_enter_debounce[buf] = vim.fn.timer_start(DELAYS.BUF_ENTER_DEBOUNCE, function()
+    if not vim.api.nvim_buf_is_valid(buf) then
+      autocmd_logger.log("Refresh_Skip", { buf = buf, reason = "invalid_buffer" })
+      buf_enter_debounce[buf] = nil
+      return
+    end
+
+    autocmd_logger.log("Refresh_Start", { buf = buf })
+    buf_enter_debounce[buf] = nil
+
+    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+    if ok then
+      vim.schedule(function()
+        if not vim.api.nvim_buf_is_valid(buf) then
+          return
+        end
+
+        if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
+          autocmd_logger.log("Refresh_Buffer", { buf = buf })
+          opencode_integration.refresh_buffer(buf)
+        end
+        autocmd_logger.log("Refresh_GitSigns", { buf = buf })
+        opencode_integration.refresh_git_signs()
+      end)
+    else
+      safe_refresh_gitsigns()
+    end
+  end)
+end
+
+--- Handle real buffer enter (files with content)
+--- @param buf number Buffer number
+--- @param filetype string File type
+--- @param start_time number Start time for logging
+--- @param perf_start_time number Performance tracking start time
+--- @return boolean true if handled
+local function handle_real_buffer_enter(buf, filetype, start_time, perf_start_time)
+  autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
+
+  handle_alpha_close_for_real_buffer(buf, start_time)
+  handle_debounced_buffer_operations(buf)
+
+  autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
+  autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+  return true
+end
+
+--- Check if filetype should skip alpha display logic
+--- @param filetype string File type to check
+--- @return boolean true if should skip
+local function should_skip_alpha_for_filetype(filetype)
+  local skip_filetypes = {
+    "gitcommit",
+    "gitrebase",
+    "gitconfig",
+    "NeogitCommitMessage",
+    "NeogitPopup",
+    "NeogitStatus",
+    "fugitive",
+    "fugitiveblame",
+    "markdown",
+  }
+
+  for _, ft in ipairs(skip_filetypes) do
+    if filetype == ft then
+      return true
+    end
+  end
+
+  return false
+end
+
+--- Handle alpha dashboard display logic
+--- @param buf number Buffer number
+--- @param buftype string Buffer type
+--- @param filetype string File type
+--- @param buflisted boolean Whether buffer is listed
+--- @param start_time number Start time for logging
+--- @param perf_start_time number Performance tracking start time
+local function handle_alpha_dashboard_display(buf, buftype, filetype, buflisted, start_time, perf_start_time)
+  if filetype == "alpha" then
+    autocmd_logger.log_end("BufEnter", start_time, { action = "alpha_skip" })
+    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    return
+  end
+
+  if not buflisted then
+    autocmd_logger.log_end("BufEnter", start_time, { action = "not_listed" })
+    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    return
+  end
+
+  if buftype ~= "" then
+    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    return
+  end
+
+  if should_skip_alpha_for_filetype(filetype) then
+    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    return
+  end
+
+  if not should_show_alpha() then
+    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    return
+  end
+
+  vim.defer_fn(function()
+    if should_show_alpha() then
+      show_alpha_dashboard()
+    end
+  end, DELAYS.ALPHA_BUFFER_CHECK)
+
+  autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+end
+
 -- ============================================================================
 -- Filetype Detection
 -- ============================================================================
@@ -324,97 +504,78 @@ create_autocmd({ "BufRead", "BufNewFile" }, {
 })
 
 -- ============================================================================
+-- Performance Profiles
+-- ============================================================================
+
+local PERFORMANCE_PROFILES = {
+  aggressive = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.updatetime = 4000
+    vim.opt_local.timeoutlen = 1000
+    vim.opt_local.ttimeoutlen = 0
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.synmaxcol = 200
+    vim.opt_local.cursorline = false
+    vim.opt_local.cursorcolumn = false
+    vim.opt_local.relativenumber = false
+  end,
+
+  commit = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.updatetime = 2000
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.synmaxcol = 200
+    vim.opt_local.timeoutlen = 1000
+    vim.opt_local.cursorline = false
+    vim.opt_local.cursorcolumn = false
+    vim.opt_local.relativenumber = false
+    vim.opt_local.complete = ""
+    vim.opt_local.completeopt = ""
+  end,
+
+  neogit = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.updatetime = 2000
+    vim.opt_local.lazyredraw = true
+    vim.opt_local.cursorline = false
+    vim.opt_local.synmaxcol = 200
+  end,
+}
+
+-- ============================================================================
 -- Filetype-specific Settings Configuration
 -- ============================================================================
 
 local FILETYPE_SETTINGS = {
   markdown = function()
+    PERFORMANCE_PROFILES.aggressive()
     vim.opt_local.wrap = true
-    -- AGGRESSIVE PERFORMANCE OPTIMIZATIONS - NO DELAY ALLOWED
-    vim.opt_local.spell = false -- DISABLE spell checking (major performance impact)
-    vim.opt_local.conceallevel = 0 -- DISABLE conceal processing (major performance impact)
-    vim.opt_local.foldmethod = "manual" -- Disable treesitter folding
-    vim.opt_local.updatetime = 4000 -- Maximum delay between events (4 seconds)
-    vim.opt_local.timeoutlen = 1000 -- Increase timeout for key sequences
-    vim.opt_local.ttimeoutlen = 0 -- No timeout for terminal key codes
-    vim.opt_local.lazyredraw = true -- Disable redrawing during macros/scripts
-    vim.opt_local.synmaxcol = 200 -- Limit syntax highlighting to 200 columns
-    -- Disable all expensive features
-    vim.opt_local.relativenumber = false
+    vim.opt_local.spell = false
+    vim.opt_local.conceallevel = 0
     vim.opt_local.number = false
-    vim.opt_local.cursorline = false
-    vim.opt_local.cursorcolumn = false
     vim.opt_local.colorcolumn = ""
   end,
 
-  -- Git commit messages: AGGRESSIVE performance optimization for fast typing
   gitcommit = function()
-    -- Core performance settings
-    vim.opt_local.foldmethod = "manual" -- Disable treesitter folding for performance
-    vim.opt_local.updatetime = 2000 -- Increased from 1000ms for even less frequent events
-    vim.opt_local.lazyredraw = true -- Don't redraw during macros/complex operations
-    vim.opt_local.synmaxcol = 200 -- Limit syntax highlighting to 200 columns
-    vim.opt_local.timeoutlen = 1000 -- Increase timeout for key sequences
-
-    -- Disable expensive cursor features
-    vim.opt_local.cursorline = false -- Disable cursor line highlighting
-    vim.opt_local.cursorcolumn = false -- Disable cursor column
-    vim.opt_local.relativenumber = false -- Disable relative numbers
-
-    -- Git commit specific settings
-    vim.opt_local.spell = true -- Enable spell check for commits
-    vim.opt_local.wrap = true -- Wrap long lines
-    vim.opt_local.textwidth = 72 -- Standard git commit line length
-
-    -- Disable completion and diagnostics (LSP is already disabled)
-    vim.opt_local.complete = "" -- Disable all completion
-    vim.opt_local.completeopt = "" -- Clear completion options
-
-    -- Notification for debugging (only in DEBUG mode)
-    vim.notify("🚀 Git commit performance mode enabled", vim.log.levels.DEBUG)
-  end,
-
-  -- Neogit buffers: AGGRESSIVE performance optimization
-  NeogitCommitMessage = function()
-    -- Core performance settings
-    vim.opt_local.foldmethod = "manual"
-    vim.opt_local.updatetime = 2000 -- Increased from 1000ms
-    vim.opt_local.lazyredraw = true
-    vim.opt_local.synmaxcol = 200
-    vim.opt_local.timeoutlen = 1000
-
-    -- Disable expensive cursor features
-    vim.opt_local.cursorline = false
-    vim.opt_local.cursorcolumn = false
-    vim.opt_local.relativenumber = false
-
-    -- Commit message specific settings
+    PERFORMANCE_PROFILES.commit()
     vim.opt_local.spell = true
     vim.opt_local.wrap = true
     vim.opt_local.textwidth = 72
+  end,
 
-    -- Disable completion and diagnostics
-    vim.opt_local.complete = ""
-    vim.opt_local.completeopt = ""
-
-    -- Notification for debugging (only in DEBUG mode)
-    vim.notify("🚀 Neogit commit performance mode enabled", vim.log.levels.DEBUG)
+  NeogitCommitMessage = function()
+    PERFORMANCE_PROFILES.commit()
+    vim.opt_local.spell = true
+    vim.opt_local.wrap = true
+    vim.opt_local.textwidth = 72
   end,
 
   NeogitStatus = function()
-    vim.opt_local.foldmethod = "manual"
-    vim.opt_local.updatetime = 2000 -- Increased for better performance
-    vim.opt_local.lazyredraw = true
-    vim.opt_local.cursorline = false -- Disable for performance
-    vim.opt_local.synmaxcol = 200
+    PERFORMANCE_PROFILES.neogit()
   end,
 
   NeogitPopup = function()
-    vim.opt_local.foldmethod = "manual"
-    vim.opt_local.updatetime = 2000 -- Increased for better performance
-    vim.opt_local.lazyredraw = true
-    vim.opt_local.cursorline = false -- Disable for performance
-    vim.opt_local.synmaxcol = 200
+    PERFORMANCE_PROFILES.neogit()
   end,
 
   ["snacks-explorer"] = function()
@@ -614,7 +775,6 @@ create_autocmd("VimEnter", {
   end,
 })
 
--- Consolidated BufEnter: Handle alpha dashboard, buffer refresh, and git signs
 create_autocmd("BufEnter", {
   group = augroup("YodaConsolidatedBufEnter", { clear = true }),
   desc = "Consolidated buffer enter handler for alpha, refresh, and git signs",
@@ -623,7 +783,6 @@ create_autocmd("BufEnter", {
     local start_time = autocmd_logger.log_start("BufEnter", { buf = args.buf })
     local buf = args.buf
 
-    -- SAFETY: Skip snacks.nvim managed buffers to prevent conflicts
     local bufname = vim.api.nvim_buf_get_name(buf)
     if bufname:match("snacks_") or bufname:match("^%[.-%]$") then
       autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "snacks_buffer" })
@@ -635,162 +794,20 @@ create_autocmd("BufEnter", {
     local filetype = vim.bo[buf].filetype
     local buflisted = vim.bo[buf].buflisted
 
-    -- SAFETY: Skip special buffer types that might be managed by plugins
     if buftype ~= "" and buftype ~= "help" then
       autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "special_buftype", buftype = buftype })
       autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_special" })
       return
     end
 
-    -- PRIORITY 1: Handle real file buffers (most common case)
     local is_real_buffer = buftype == "" and filetype ~= "" and filetype ~= "alpha" and bufname ~= ""
 
     if is_real_buffer then
-      autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
-
-      -- Close alpha dashboard safely with delay to avoid conflicts
-      local delay = 50
-
-      vim.defer_fn(function()
-        -- Double-check we're still in a valid state BEFORE logging
-        if not vim.api.nvim_buf_is_valid(buf) then
-          autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "invalid_buffer" })
-          return
-        end
-
-        autocmd_logger.log("Alpha_Close_Check", { buf = buf, delay = delay })
-
-        -- Use has_alpha_buffer() which is cached and safe
-        if not has_alpha_buffer() then
-          autocmd_logger.log("Alpha_Close_Skip", { buf = buf, reason = "no_alpha_buffer" })
-          return
-        end
-
-        for _, b in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(b) and b ~= buf then
-            local ok, ft = pcall(function()
-              return vim.bo[b].filetype
-            end)
-
-            if ok and ft == "alpha" then
-              -- Final safety check: ensure the buffer is listed and not in use
-              local is_listed = vim.bo[b].buflisted
-              if is_listed then
-                autocmd_logger.log("Alpha_Close_Delete", { buf = b })
-                pcall(vim.api.nvim_buf_delete, b, { force = true })
-              end
-            end
-          end
-        end
-      end, delay) -- Longer delay to ensure all transitions complete
-
-      -- Cancel previous debounced call for this buffer
-      if buf_enter_debounce[buf] then
-        pcall(vim.fn.timer_stop, buf_enter_debounce[buf])
-        buf_enter_debounce[buf] = nil
-      end
-
-      -- Debounce expensive operations (OpenCode integration, git signs)
-      -- Use vim.fn.timer_start for proper cancellation support
-      buf_enter_debounce[buf] = vim.fn.timer_start(DELAYS.BUF_ENTER_DEBOUNCE, function()
-        -- Check buffer is still valid
-        if not vim.api.nvim_buf_is_valid(buf) then
-          autocmd_logger.log("Refresh_Skip", { buf = buf, reason = "invalid_buffer" })
-          buf_enter_debounce[buf] = nil
-          return
-        end
-
-        autocmd_logger.log("Refresh_Start", { buf = buf })
-        buf_enter_debounce[buf] = nil
-
-        -- OpenCode integration: Refresh buffer and git signs
-        local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
-        if ok then
-          vim.schedule(function()
-            -- Double-check buffer is still valid in scheduled callback
-            if not vim.api.nvim_buf_is_valid(buf) then
-              return
-            end
-
-            if can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
-              autocmd_logger.log("Refresh_Buffer", { buf = buf })
-              opencode_integration.refresh_buffer(buf)
-            end
-            autocmd_logger.log("Refresh_GitSigns", { buf = buf })
-            opencode_integration.refresh_git_signs()
-          end)
-        else
-          -- Fallback
-          local gs = package.loaded.gitsigns
-          if gs then
-            vim.schedule(function()
-              if not vim.api.nvim_buf_is_valid(buf) then
-                return
-              end
-              autocmd_logger.log("Refresh_GitSigns_Fallback", { buf = buf })
-              gs.refresh()
-            end)
-          end
-        end
-      end)
-
-      autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
-      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+      handle_real_buffer_enter(buf, filetype, start_time, perf_start_time)
       return
     end
 
-    -- PRIORITY 2: Skip alpha logic for special buffers
-    if filetype == "alpha" then
-      autocmd_logger.log_end("BufEnter", start_time, { action = "alpha_skip" })
-      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
-      return
-    end
-
-    if not buflisted then
-      autocmd_logger.log_end("BufEnter", start_time, { action = "not_listed" })
-      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
-      return
-    end
-
-    if buftype ~= "" then
-      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
-      return
-    end
-
-    -- Skip git-related and text buffers
-    local skip_filetypes = {
-      "gitcommit",
-      "gitrebase",
-      "gitconfig",
-      "NeogitCommitMessage",
-      "NeogitPopup",
-      "NeogitStatus",
-      "fugitive",
-      "fugitiveblame",
-      "markdown",
-    }
-
-    for _, ft in ipairs(skip_filetypes) do
-      if filetype == ft then
-        autocmd_perf.track_autocmd("BufEnter", perf_start_time)
-        return
-      end
-    end
-
-    -- PRIORITY 3: Check if alpha should be shown (least common case)
-    if not should_show_alpha() then
-      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
-      return
-    end
-
-    -- Only use delay for empty buffers that might show alpha
-    vim.defer_fn(function()
-      if should_show_alpha() then
-        show_alpha_dashboard()
-      end
-    end, DELAYS.ALPHA_BUFFER_CHECK)
-
-    autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+    handle_alpha_dashboard_display(buf, buftype, filetype, buflisted, start_time, perf_start_time)
   end,
 })
 
@@ -807,13 +824,8 @@ create_autocmd({ "BufReadPost", "BufNewFile" }, {
       return
     end
 
-    -- This buffer has actual file content, close alpha immediately
     vim.schedule(function()
-      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
-          pcall(vim.api.nvim_buf_delete, buf, { force = true })
-        end
-      end
+      close_all_alpha_buffers()
     end)
   end,
 })
@@ -825,15 +837,9 @@ create_autocmd("WinEnter", {
   callback = function()
     local current_filetype = vim.bo.filetype
 
-    -- If we're entering a non-alpha window with actual content
     if current_filetype ~= "alpha" and current_filetype ~= "" and vim.api.nvim_buf_get_name(0) ~= "" then
-      -- Close all alpha buffers
       vim.schedule(function()
-        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
-            pcall(vim.api.nvim_buf_delete, buf, { force = true })
-          end
-        end
+        close_all_alpha_buffers()
       end)
     end
   end,
@@ -862,15 +868,10 @@ create_autocmd("BufHidden", {
           end
         end
 
-        -- If real files are open, close alpha
         if has_real_files then
-          for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-            if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "alpha" then
-              pcall(vim.api.nvim_buf_delete, buf, { force = true })
-            end
-          end
+          close_all_alpha_buffers()
         end
-      end, 50) -- Small delay to let telescope finish opening the file
+      end, DELAYS.TELESCOPE_CLOSE)
     end
   end,
 })
@@ -913,14 +914,7 @@ create_autocmd("FocusGained", {
   callback = function()
     if can_reload_buffer() then
       pcall(vim.cmd, "checktime")
-
-      -- Refresh git signs after checking time
-      local gs = package.loaded.gitsigns
-      if gs then
-        vim.schedule(function()
-          gs.refresh()
-        end)
-      end
+      safe_refresh_gitsigns()
     end
   end,
 })
@@ -1062,15 +1056,9 @@ create_autocmd("FocusGained", {
         opencode_integration.refresh_git_signs()
       end)
     else
-      -- Fallback to original behavior if module not available
       if can_reload_buffer() then
         pcall(vim.cmd, "checktime")
-        local gs = package.loaded.gitsigns
-        if gs then
-          vim.schedule(function()
-            gs.refresh()
-          end)
-        end
+        safe_refresh_gitsigns()
       end
     end
   end,
@@ -1085,12 +1073,8 @@ create_autocmd("BufWritePost", {
     if ok then
       opencode_integration.refresh_git_signs()
     else
-      -- Fallback
-      local gs = package.loaded.gitsigns
-      if gs and vim.bo.buftype == "" then
-        vim.schedule(function()
-          gs.refresh()
-        end)
+      if vim.bo.buftype == "" then
+        safe_refresh_gitsigns()
       end
     end
   end,
@@ -1116,10 +1100,7 @@ create_autocmd("FileChangedShell", {
       -- Fallback behavior
       vim.schedule(function()
         pcall(vim.cmd, "checktime")
-        local gs = package.loaded.gitsigns
-        if gs then
-          gs.refresh()
-        end
+        safe_refresh_gitsigns()
       end)
     end
   end,
