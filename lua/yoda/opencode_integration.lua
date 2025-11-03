@@ -182,14 +182,32 @@ function M.refresh_all_buffers()
   return processed_count
 end
 
---- Refresh git signs if gitsigns is available
+-- Debounce state for git signs refresh
+local gitsigns_refresh_timer = nil
+local GITSIGNS_REFRESH_DELAY = 150 -- ms
+
+--- Refresh git signs if gitsigns is available (debounced to prevent flickering)
 function M.refresh_git_signs()
   local gs = package.loaded.gitsigns
-  if gs and vim.bo.buftype == "" then
-    vim.schedule(function()
-      pcall(gs.refresh)
-    end)
+  if not gs or vim.bo.buftype ~= "" then
+    return
   end
+
+  -- Cancel any pending refresh
+  if gitsigns_refresh_timer then
+    vim.fn.timer_stop(gitsigns_refresh_timer)
+    gitsigns_refresh_timer = nil
+  end
+
+  -- Schedule debounced refresh
+  gitsigns_refresh_timer = vim.fn.timer_start(GITSIGNS_REFRESH_DELAY, function()
+    gitsigns_refresh_timer = nil
+    vim.schedule(function()
+      if gs then
+        pcall(gs.refresh)
+      end
+    end)
+  end)
 end
 
 --- Refresh file explorer if Snacks explorer is available

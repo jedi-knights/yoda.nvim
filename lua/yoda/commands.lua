@@ -421,6 +421,27 @@ vim.api.nvim_create_user_command("YodaPythonSetup", function()
   logger.info("✅ Python setup initiated. Restart Neovim after Mason installation completes.")
 end, { desc = "Install Python development tools (basedpyright, debugpy, ruff) via Mason" })
 
+-- Stop pyright LSP (we use basedpyright instead)
+vim.api.nvim_create_user_command("StopPyright", function()
+  local clients = vim.lsp.get_clients({ name = "pyright" })
+  if #clients == 0 then
+    vim.notify("No pyright clients running", vim.log.levels.INFO)
+    return
+  end
+
+  for _, client in ipairs(clients) do
+    vim.lsp.stop_client(client.id)
+    vim.notify(string.format("Stopped pyright client (id:%d)", client.id), vim.log.levels.INFO)
+  end
+end, { desc = "Stop pyright LSP clients (we use basedpyright)" })
+
+-- Uninstall pyright from Mason (we use basedpyright instead)
+vim.api.nvim_create_user_command("UninstallPyright", function()
+  vim.notify("Uninstalling pyright from Mason...", vim.log.levels.INFO)
+  vim.cmd("MasonUninstall pyright")
+  vim.notify("✅ Pyright uninstalled!\nWe use basedpyright instead.\nRestart Neovim for changes to take effect.", vim.log.levels.INFO)
+end, { desc = "Uninstall pyright from Mason (we use basedpyright)" })
+
 -- Python virtual environment selector
 vim.api.nvim_create_user_command("YodaPythonVenv", function()
   local ok = pcall(vim.cmd, "VenvSelect")
@@ -571,23 +592,23 @@ local function setup_performance_tracking_commands()
   -- Update a specific optimization task status
   vim.api.nvim_create_user_command("YodaPerfUpdate", function(opts)
     local args = vim.split(opts.args, " ", { trimempty = true })
-    
+
     if #args < 3 then
       vim.notify("Usage: :YodaPerfUpdate <phase_id> <task_id> <status> [assignee] [notes]", vim.log.levels.ERROR)
       vim.notify("Example: :YodaPerfUpdate phase1 bufenter_debouncing in_progress john 'Started implementation'", vim.log.levels.INFO)
       return
     end
-    
+
     local phase_id = args[1]
-    local task_id = args[2] 
+    local task_id = args[2]
     local status = args[3]
     local assignee = args[4]
     local notes = table.concat(vim.list_slice(args, 5), " ")
-    
+
     if notes == "" then
       notes = nil
     end
-    
+
     local success = tracker.update_task(phase_id, task_id, status, assignee, notes)
     if success then
       vim.notify(string.format("✅ Updated %s.%s to %s", phase_id, task_id, status), vim.log.levels.INFO)
@@ -597,12 +618,12 @@ local function setup_performance_tracking_commands()
     desc = "Update performance optimization task status",
     complete = function(_, line)
       local args = vim.split(line, " ", { trimempty = true })
-      
+
       -- Complete phase IDs
       if #args <= 2 then
         return { "phase1", "phase2", "phase3", "phase4" }
       end
-      
+
       -- Complete task IDs based on phase
       if #args == 3 then
         local phase_id = args[2]
@@ -615,12 +636,12 @@ local function setup_performance_tracking_commands()
           return task_ids
         end
       end
-      
+
       -- Complete status options
       if #args == 4 then
         return { "pending", "in_progress", "completed", "blocked" }
       end
-      
+
       return {}
     end,
   })
@@ -628,12 +649,12 @@ local function setup_performance_tracking_commands()
   -- Show next recommended tasks
   vim.api.nvim_create_user_command("YodaPerfNext", function()
     local next_tasks = tracker.get_next_tasks()
-    
+
     if #next_tasks == 0 then
       vim.notify("🎉 All performance optimizations completed!", vim.log.levels.INFO)
       return
     end
-    
+
     print("=== Next Recommended Tasks ===")
     for i, task in ipairs(next_tasks) do
       print(string.format("%d. %s (%s Priority)", i, task.name, task.priority))
@@ -645,25 +666,25 @@ local function setup_performance_tracking_commands()
   -- Show progress for specific phase
   vim.api.nvim_create_user_command("YodaPerfPhase", function(opts)
     local phase_id = opts.args
-    
+
     if phase_id == "" then
       vim.notify("Usage: :YodaPerfPhase <phase_id>", vim.log.levels.ERROR)
       vim.notify("Available phases: phase1, phase2, phase3, phase4", vim.log.levels.INFO)
       return
     end
-    
+
     local phase_status = tracker.get_phase_status(phase_id)
     if not phase_status then
       vim.notify("Phase not found: " .. phase_id, vim.log.levels.ERROR)
       return
     end
-    
+
     print("=== " .. phase_status.name .. " ===")
     print(string.format("Priority: %s | Deadline: %s", phase_status.priority, phase_status.deadline))
     print(string.format("Progress: %d%% (%d/%d tasks)", phase_status.completion_percentage, phase_status.completed, phase_status.total_tasks))
     print(string.format("Target: %s", phase_status.target_improvement))
     print("")
-    
+
     -- Show individual task status
     local phase = tracker.optimizations[phase_id]
     if phase then
@@ -678,7 +699,7 @@ local function setup_performance_tracking_commands()
         else
           status_icon = "⏸️"
         end
-        
+
         print(string.format("%s %s (%s)", status_icon, task.name, task.status))
         if task.assignee then
           print(string.format("    Assignee: %s", task.assignee))
@@ -699,12 +720,12 @@ local function setup_performance_tracking_commands()
   -- Run baseline performance benchmarks
   vim.api.nvim_create_user_command("YodaPerfBenchmark", function(opts)
     local benchmark_type = opts.args ~= "" and opts.args or "all"
-    
+
     vim.notify("🚀 Running performance benchmarks...", vim.log.levels.INFO)
-    
+
     -- Run benchmark script
     local script_path = vim.fn.fnamemodify(vim.fn.resolve(vim.env.MYVIMRC), ":h") .. "/scripts/benchmark_performance.sh"
-    
+
     if vim.fn.executable(script_path) == 1 then
       vim.cmd("!" .. script_path .. " " .. benchmark_type)
     else
@@ -722,31 +743,45 @@ local function setup_performance_tracking_commands()
   -- Show overall implementation progress
   vim.api.nvim_create_user_command("YodaPerfProgress", function()
     local progress = tracker.get_progress()
-    
+
     print("=== Performance Optimization Progress ===")
     print(string.format("Overall: %d%% complete (%d/%d tasks)", progress.completion_percentage, progress.completed, progress.total))
-    print(string.format("Completed: %d | In Progress: %d | Pending: %d | Blocked: %d", 
-      progress.completed, progress.in_progress, progress.pending, progress.blocked))
+    print(
+      string.format(
+        "Completed: %d | In Progress: %d | Pending: %d | Blocked: %d",
+        progress.completed,
+        progress.in_progress,
+        progress.pending,
+        progress.blocked
+      )
+    )
     print("")
-    
+
     -- Show phase breakdown
     for phase_id in pairs(tracker.optimizations) do
       local phase_status = tracker.get_phase_status(phase_id)
       if phase_status then
-        print(string.format("%s: %d%% (%d/%d) - %s Priority", 
-          phase_status.name, phase_status.completion_percentage, phase_status.completed, 
-          phase_status.total_tasks, phase_status.priority))
+        print(
+          string.format(
+            "%s: %d%% (%d/%d) - %s Priority",
+            phase_status.name,
+            phase_status.completion_percentage,
+            phase_status.completed,
+            phase_status.total_tasks,
+            phase_status.priority
+          )
+        )
       end
     end
-    
+
     print("")
-    
+
     -- Show expected performance gains
     if progress.completion_percentage < 100 then
       print("Expected Performance Gains Upon Completion:")
       print("• Startup time: 15-25% improvement")
       print("• Buffer switching: 30-50% faster")
-      print("• LSP responsiveness: 20-30% improvement") 
+      print("• LSP responsiveness: 20-30% improvement")
       print("• Memory usage: 10-15% reduction")
     else
       print("🎉 All optimizations complete! Run benchmarks to measure actual improvements.")
