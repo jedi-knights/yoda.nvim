@@ -4,14 +4,10 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
--- Load large file handler
 local large_file = require("yoda.large_file")
-
--- Load autocmd logger for performance debugging
 local autocmd_logger = require("yoda.autocmd_logger")
-
--- Load autocmd performance tracker
 local autocmd_perf = require("yoda.autocmd_performance")
+local notify = require("yoda.adapters.notification")
 
 -- ============================================================================
 -- Constants
@@ -270,7 +266,7 @@ end
 local function show_alpha_dashboard()
   local success = start_alpha_dashboard()
   if not success then
-    vim.notify("Alpha dashboard failed to start", vim.log.levels.WARN)
+    notify.notify("Alpha dashboard failed to start", "warn")
   end
 end
 
@@ -712,7 +708,7 @@ vim.api.nvim_create_user_command("Bd", function(opts)
   local ok, err = pcall(vim.cmd, delete_cmd)
   if not ok then
     autocmd_logger.log("Bd_DeleteFailed", { buf = buf, error = tostring(err) })
-    vim.notify("Buffer delete failed: " .. tostring(err), vim.log.levels.ERROR)
+    notify.notify("Buffer delete failed: " .. tostring(err), "error")
   else
     autocmd_logger.log("Bd_DeleteSuccess", { buf = buf })
   end
@@ -1145,7 +1141,7 @@ create_autocmd("FileType", {
 
     -- Note: LSP is already disabled for git commit buffers via filetype exclusion
 
-    vim.notify("🔥 Disabled expensive autocmds for git commit buffer", vim.log.levels.DEBUG)
+    notify.notify("🔥 Disabled expensive autocmds for git commit buffer", "debug")
   end,
 })
 

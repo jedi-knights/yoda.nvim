@@ -6,6 +6,7 @@
 -- HELPER FUNCTIONS (minimal, inline where needed)
 -- ============================================================================
 
+local notify = require("yoda.adapters.notification")
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
   vim.keymap.set(mode, lhs, rhs, opts)
@@ -27,10 +28,10 @@ map("n", "K", function()
     if word ~= "" then
       local success = pcall(vim.cmd, "help " .. word)
       if not success then
-        vim.notify("No help found for: " .. word, vim.log.levels.WARN)
+        notify.notify("No help found for: " .. word, "warn")
       end
     else
-      vim.notify("No word under cursor", vim.log.levels.INFO)
+      notify.notify("No word under cursor", "info")
     end
   end
 end, { desc = "Help: Show hover/help for word under cursor" })
@@ -74,7 +75,7 @@ end
 map("n", "<leader>eo", function()
   local win, _ = get_snacks_explorer_win()
   if win then
-    vim.notify("Snacks Explorer is already open", vim.log.levels.INFO)
+    notify.notify("Snacks Explorer is already open", "info")
     return
   end
   -- Open Snacks Explorer using the API
@@ -82,7 +83,7 @@ map("n", "<leader>eo", function()
     require("snacks").explorer.open()
   end)
   if not success then
-    vim.notify("Snacks Explorer could not be opened", vim.log.levels.ERROR)
+    notify.notify("Snacks Explorer could not be opened", "error")
   end
 end, { desc = "Explorer: Open (only if closed)" })
 
@@ -92,7 +93,7 @@ map("n", "<leader>ef", function()
   if win then
     vim.api.nvim_set_current_win(win)
   else
-    vim.notify("Snacks Explorer is not open. Use <leader>eo to open it.", vim.log.levels.INFO)
+    notify.notify("Snacks Explorer is not open. Use <leader>eo to open it.", "info")
   end
 end, { desc = "Explorer: Focus (if open)" })
 
@@ -105,7 +106,7 @@ map("n", "<leader>ec", function()
       return ft:match("snacks_") or ft == "snacks"
     end, true)
   else
-    vim.notify("Snacks Explorer is not open", vim.log.levels.INFO)
+    notify.notify("Snacks Explorer is not open", "info")
   end
 end, { desc = "Explorer: Close (if open)" })
 
@@ -113,10 +114,10 @@ end, { desc = "Explorer: Close (if open)" })
 map("n", "<leader>er", function()
   local success = pcall(function()
     require("snacks").explorer.refresh()
-    vim.notify("Explorer refreshed", vim.log.levels.INFO)
+    notify.notify("Explorer refreshed", "info")
   end)
   if not success then
-    vim.notify("Explorer not available or not open", vim.log.levels.WARN)
+    notify.notify("Explorer not available or not open", "warn")
   end
 end, { desc = "Explorer: Refresh" })
 
@@ -139,7 +140,7 @@ map("n", "<leader>e?", function()
     "Note: Hidden files are shown by default due to show_hidden=true setting",
   }
 
-  vim.notify(table.concat(help_text, "\n"), vim.log.levels.INFO, { title = "Snacks Explorer Help" })
+  notify.notify(table.concat(help_text, "\n"), "info", { title = "Snacks Explorer Help" })
 end, { desc = "Explorer: Show help" })
 
 -- ============================================================================
@@ -157,7 +158,7 @@ end, { desc = "Window: Focus Trouble" })
 map("n", "<leader>xT", function()
   local ok = pcall(vim.cmd, "TodoTrouble")
   if not ok then
-    vim.notify("Todo-comments not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Todo-comments not available. Install via :Lazy sync", "error")
   end
 end, { desc = "Trouble: Show TODOs" })
 
@@ -278,7 +279,7 @@ map("n", "<leader>tO", function()
     return buf_name:match("Neotest Output Panel") or ft == "neotest-output-panel"
   end)
   if not found then
-    vim.notify("Neotest output panel not open", vim.log.levels.WARN)
+    notify.notify("Neotest output panel not open", "warn")
   end
 end, { desc = "Test: Focus output panel" })
 
@@ -288,13 +289,13 @@ map("n", "<leader>tF", function()
     return ft == "neotest-summary"
   end)
   if not found then
-    vim.notify("Neotest summary not open. Use <leader>ts to open it.", vim.log.levels.WARN)
+    notify.notify("Neotest summary not open. Use <leader>ts to open it.", "warn")
   end
 end, { desc = "Test: Focus summary window" })
 
 map("n", "<leader>tC", function()
   require("neotest").output_panel.clear()
-  vim.notify("Neotest output panel cleared", vim.log.levels.INFO)
+  notify.notify("Neotest output panel cleared", "info")
 end, { desc = "Test: Clear output panel" })
 
 -- <leader>tc for current test file (neotest for pytest, plenary for lua)
@@ -307,14 +308,14 @@ map("n", "<leader>tc", function()
     if ok then
       neotest.run.run(vim.fn.expand("%"))
     else
-      vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+      notify.notify("Neotest not available. Install via :Lazy sync", "error")
     end
   elseif filetype == "lua" then
     -- Use plenary for Lua test files
     local plenary = require("yoda.plenary")
     plenary.run_current_test()
   else
-    vim.notify("No test runner configured for filetype: " .. filetype, vim.log.levels.WARN)
+    notify.notify("No test runner configured for filetype: " .. filetype, "warn")
   end
 end, { desc = "Test: Run current file" })
 
@@ -325,7 +326,7 @@ map("n", "<leader>tS", function()
   else
     local env = vim.env.TEST_ENVIRONMENT or "qa"
     local region = vim.env.TEST_REGION or "auto"
-    vim.notify(string.format("Current test environment: %s (%s)", env, region), vim.log.levels.INFO)
+    notify.notify(string.format("Current test environment: %s (%s)", env, region), "info")
   end
 end, { desc = "Test: Show environment status" })
 
@@ -382,7 +383,7 @@ end, { desc = "Coverage: Hide" })
 map("n", "<leader>rr", function()
   local ok, overseer = pcall(require, "overseer")
   if not ok then
-    vim.notify("Overseer not available. Running cargo run directly...", vim.log.levels.WARN)
+    notify.notify("Overseer not available. Running cargo run directly...", "warn")
     vim.cmd("!cargo run")
     return
   end
@@ -392,7 +393,7 @@ end, { desc = "Rust: Cargo run" })
 map("n", "<leader>rb", function()
   local ok, overseer = pcall(require, "overseer")
   if not ok then
-    vim.notify("Overseer not available. Running cargo build directly...", vim.log.levels.WARN)
+    notify.notify("Overseer not available. Running cargo build directly...", "warn")
     vim.cmd("!cargo build")
     return
   end
@@ -403,7 +404,7 @@ end, { desc = "Rust: Cargo build" })
 map("n", "<leader>rt", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run()
@@ -412,7 +413,7 @@ end, { desc = "Rust: Test nearest" })
 map("n", "<leader>rT", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run(vim.fn.expand("%"))
@@ -422,7 +423,7 @@ end, { desc = "Rust: Test file" })
 map("n", "<leader>rd", function()
   local ok, rt = pcall(require, "rust-tools")
   if not ok then
-    vim.notify("Rust-tools not available. Opening standard DAP...", vim.log.levels.WARN)
+    notify.notify("Rust-tools not available. Opening standard DAP...", "warn")
     require("dap").continue()
     return
   end
@@ -433,7 +434,7 @@ end, { desc = "Rust: Start debug" })
 map("n", "<leader>rh", function()
   local ok, rt = pcall(require, "rust-tools")
   if not ok then
-    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
     return
   end
   rt.inlay_hints.toggle()
@@ -453,7 +454,7 @@ end, { desc = "Rust: Open diagnostics" })
 map("n", "<leader>ro", function()
   local ok = pcall(vim.cmd, "AerialToggle")
   if not ok then
-    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Aerial not available. Install via :Lazy sync", "error")
   end
 end, { desc = "Rust: Toggle outline" })
 
@@ -470,7 +471,7 @@ end, { desc = "Rust: Code actions" })
 map("n", "<leader>rm", function()
   local ok, rt = pcall(require, "rust-tools")
   if not ok then
-    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
     return
   end
   rt.expand_macro.expand_macro()
@@ -479,7 +480,7 @@ end, { desc = "Rust: Expand macro" })
 map("n", "<leader>rp", function()
   local ok, rt = pcall(require, "rust-tools")
   if not ok then
-    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
     return
   end
   rt.parent_module.parent_module()
@@ -488,7 +489,7 @@ end, { desc = "Rust: Go to parent module" })
 map("n", "<leader>rj", function()
   local ok, rt = pcall(require, "rust-tools")
   if not ok then
-    vim.notify("Rust-tools not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
     return
   end
   rt.join_lines.join_lines()
@@ -516,7 +517,7 @@ map("n", "<leader>pr", function()
     local venvs = venv.find_virtual_envs()
     if #venvs > 0 then
       python_cmd = venvs[1] .. "/bin/python"
-      vim.notify("Using venv: " .. venvs[1], vim.log.levels.INFO)
+      notify.notify("Using venv: " .. venvs[1], "info")
     end
   end
 
@@ -554,7 +555,7 @@ end, { desc = "Python: Open REPL" })
 map("n", "<leader>pt", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run()
@@ -563,7 +564,7 @@ end, { desc = "Python: Test nearest" })
 map("n", "<leader>pT", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run(vim.fn.expand("%"))
@@ -572,7 +573,7 @@ end, { desc = "Python: Test file" })
 map("n", "<leader>pC", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run({ suite = true })
@@ -582,7 +583,7 @@ end, { desc = "Python: Test suite" })
 map("n", "<leader>pd", function()
   local ok, dap_python = pcall(require, "dap-python")
   if not ok then
-    vim.notify("dap-python not available. Opening standard DAP...", vim.log.levels.WARN)
+    notify.notify("dap-python not available. Opening standard DAP...", "warn")
     require("dap").continue()
     return
   end
@@ -592,7 +593,7 @@ end, { desc = "Python: Debug test" })
 map("n", "<leader>pD", function()
   local ok, dap_python = pcall(require, "dap-python")
   if not ok then
-    vim.notify("dap-python not available", vim.log.levels.ERROR)
+    notify.notify("dap-python not available", "error")
     return
   end
   dap_python.test_class()
@@ -602,7 +603,7 @@ end, { desc = "Python: Debug test class" })
 map("n", "<leader>pv", function()
   local ok = pcall(vim.cmd, "VenvSelect")
   if not ok then
-    vim.notify("venv-selector not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("venv-selector not available. Install via :Lazy sync", "error")
   end
 end, { desc = "Python: Select venv" })
 
@@ -610,7 +611,7 @@ end, { desc = "Python: Select venv" })
 map("n", "<leader>po", function()
   local ok = pcall(vim.cmd, "AerialToggle")
   if not ok then
-    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Aerial not available. Install via :Lazy sync", "error")
   end
 end, { desc = "Python: Toggle outline" })
 
@@ -639,7 +640,7 @@ end, { desc = "Python: Configure LSP with venv" })
 map("n", "<leader>pc", function()
   local ok = pcall(require, "coverage")
   if not ok then
-    vim.notify("Coverage plugin not available", vim.log.levels.ERROR)
+    notify.notify("Coverage plugin not available", "error")
     return
   end
   require("coverage").load()
@@ -679,7 +680,7 @@ end, { desc = "JavaScript: Open Node REPL" })
 map("n", "<leader>jt", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run()
@@ -688,7 +689,7 @@ end, { desc = "JavaScript: Test nearest" })
 map("n", "<leader>jT", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run(vim.fn.expand("%"))
@@ -697,7 +698,7 @@ end, { desc = "JavaScript: Test file" })
 map("n", "<leader>jC", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run({ suite = true })
@@ -707,7 +708,7 @@ end, { desc = "JavaScript: Test suite" })
 map("n", "<leader>jd", function()
   local ok, dap = pcall(require, "dap")
   if not ok then
-    vim.notify("DAP not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("DAP not available. Install via :Lazy sync", "error")
     return
   end
   dap.continue()
@@ -717,7 +718,7 @@ end, { desc = "JavaScript: Start debugger" })
 map("n", "<leader>jo", function()
   local ok = pcall(vim.cmd, "AerialToggle")
   if not ok then
-    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Aerial not available. Install via :Lazy sync", "error")
   end
 end, { desc = "JavaScript: Toggle outline" })
 
@@ -758,7 +759,7 @@ end, { desc = "JavaScript: Insert console.log" })
 -- Remove all console.log statements in file
 map("n", "<leader>jL", function()
   vim.cmd([[%g/console\.log/d]])
-  vim.notify("Removed all console.log statements", vim.log.levels.INFO)
+  notify.notify("Removed all console.log statements", "info")
 end, { desc = "JavaScript: Remove console.logs" })
 
 -- Package.json keymaps are auto-configured in package.json files
@@ -787,7 +788,7 @@ end, { desc = "C#: dotnet build" })
 map("n", "<leader>ct", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run()
@@ -796,7 +797,7 @@ end, { desc = "C#: Test nearest" })
 map("n", "<leader>cT", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run(vim.fn.expand("%"))
@@ -805,7 +806,7 @@ end, { desc = "C#: Test file" })
 map("n", "<leader>cC", function()
   local ok, neotest = pcall(require, "neotest")
   if not ok then
-    vim.notify("Neotest not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Neotest not available. Install via :Lazy sync", "error")
     return
   end
   neotest.run.run({ suite = true })
@@ -815,7 +816,7 @@ end, { desc = "C#: Test suite" })
 map("n", "<leader>cd", function()
   local ok, dap = pcall(require, "dap")
   if not ok then
-    vim.notify("DAP not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("DAP not available. Install via :Lazy sync", "error")
     return
   end
   dap.continue()
@@ -825,7 +826,7 @@ end, { desc = "C#: Start debugger" })
 map("n", "<leader>co", function()
   local ok = pcall(vim.cmd, "AerialToggle")
   if not ok then
-    vim.notify("Aerial not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("Aerial not available. Install via :Lazy sync", "error")
   end
 end, { desc = "C#: Toggle outline" })
 
@@ -989,10 +990,10 @@ map(
       end)
 
       if found then
-        vim.notify("← Returned to main buffer", vim.log.levels.INFO)
+        notify.notify("← Returned to main buffer", "info")
       else
         pcall(vim.cmd, "wincmd p")
-        vim.notify("← Switched to previous window", vim.log.levels.INFO)
+        notify.notify("← Switched to previous window", "info")
       end
     end)
   end,
@@ -1078,16 +1079,16 @@ map("n", "<leader>cop", function()
   -- Get copilot.suggestion module
   local ok, copilot_suggestion = pcall(require, "copilot.suggestion")
   if not ok then
-    vim.notify("❌ Copilot is not available", vim.log.levels.ERROR)
+    notify.notify("❌ Copilot is not available", "error")
     return
   end
 
   -- Toggle: if visible, dismiss and disable; otherwise enable
   if copilot_suggestion.is_visible() then
     copilot_suggestion.dismiss()
-    vim.notify("🚫 Copilot disabled", vim.log.levels.INFO)
+    notify.notify("🚫 Copilot disabled", "info")
   else
-    vim.notify("✅ Copilot enabled - suggestions will appear as you type", vim.log.levels.INFO)
+    notify.notify("✅ Copilot enabled - suggestions will appear as you type", "info")
   end
 end, { desc = "Copilot: Toggle/Dismiss" })
 
@@ -1190,9 +1191,9 @@ map("n", "<leader>d", function()
   local ok, alpha = pcall(require, "alpha")
   if ok and alpha and alpha.start then
     alpha.start()
-    vim.notify("Dashboard opened", vim.log.levels.INFO)
+    notify.notify("Dashboard opened", "info")
   else
-    vim.notify("Failed to open dashboard - alpha plugin not available", vim.log.levels.ERROR)
+    notify.notify("Failed to open dashboard - alpha plugin not available", "error")
   end
 end, { desc = "Util: Open dashboard" })
 
@@ -1211,7 +1212,7 @@ map("n", "<leader><leader>r", function()
 
   -- Defer notify so that `vim.notify` has a chance to be overridden again
   vim.defer_fn(function()
-    vim.notify("✅ Reloaded Yoda config", vim.log.levels.INFO)
+    notify.notify("✅ Reloaded Yoda config", "info")
   end, 100)
 end, { desc = "Util: Hot reload Yoda config" })
 
@@ -1259,10 +1260,10 @@ map("n", "<leader>kk", function()
         end,
       })
     else
-      vim.notify("No leader keymaps found in normal mode", vim.log.levels.INFO)
+      notify.notify("No leader keymaps found in normal mode", "info")
     end
   else
-    vim.notify("❌ Failed to get keymaps", vim.log.levels.ERROR)
+    notify.notify("❌ Failed to get keymaps", "error")
   end
 end, { desc = "Util: Show leader keymaps in normal mode" })
 
@@ -1273,7 +1274,7 @@ map("n", "<leader>sk", function()
     -- Try alternative command
     local alt_success = pcall(vim.cmd, "Showkeys")
     if not alt_success then
-      vim.notify("❌ Failed to toggle Showkeys - plugin may not be loaded", vim.log.levels.ERROR)
+      notify.notify("❌ Failed to toggle Showkeys - plugin may not be loaded", "error")
     end
   end
 end, { desc = "Util: Toggle showkeys display" })
@@ -1351,7 +1352,7 @@ map("n", "<leader>kc", function()
   end
 
   if #conflicts == 0 then
-    vim.notify("✅ No keymap conflicts detected!", vim.log.levels.INFO)
+    notify.notify("✅ No keymap conflicts detected!", "info")
   else
     vim.cmd("new")
     vim.api.nvim_buf_set_lines(0, 0, -1, false, conflicts)
