@@ -6,6 +6,13 @@ local lsp_perf = require("yoda.lsp_performance")
 
 --- Setup LSP servers using vim.lsp.config
 function M.setup()
+  -- Disable pyright completely (we use basedpyright instead)
+  -- This prevents it from even trying to start
+  vim.lsp.config("pyright", {
+    enabled = false,
+    autostart = false,
+  })
+
   -- Setup completion capabilities
   local capabilities = vim.lsp.protocol.make_client_capabilities()
 
@@ -116,11 +123,21 @@ function M.setup()
   })
 
   -- Python setup with virtual environment support
+  -- Disable document highlight capability
+  local python_capabilities = vim.deepcopy(capabilities)
+  python_capabilities.textDocument.documentHighlight = nil
+
   safe_setup("basedpyright", {
     cmd = { "basedpyright-langserver", "--stdio" },
     filetypes = { "python" },
     root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
-    capabilities = capabilities,
+    capabilities = python_capabilities,
+    on_init = function(client)
+      -- Disable document highlight immediately when server initializes
+      if client.server_capabilities then
+        client.server_capabilities.documentHighlightProvider = false
+      end
+    end,
     settings = {
       basedpyright = {
         analysis = {
@@ -128,7 +145,7 @@ function M.setup()
           autoSearchPaths = true,
           useLibraryCodeForTypes = true,
           autoImportCompletions = true,
-          diagnosticMode = "workspace",
+          diagnosticMode = "openFilesOnly",
           -- Include common Python project patterns
           include = { "**/*.py" },
           exclude = {
@@ -136,6 +153,10 @@ function M.setup()
             "**/__pycache__",
             ".git",
             "**/*.pyc",
+            "**/venv",
+            "**/.venv",
+            "**/env",
+            "**/site-packages",
           },
         },
       },
@@ -143,7 +164,7 @@ function M.setup()
         analysis = {
           autoSearchPaths = true,
           useLibraryCodeForTypes = true,
-          diagnosticMode = "workspace",
+          diagnosticMode = "openFilesOnly",
           typeCheckingMode = "basic",
         },
       },
@@ -392,7 +413,10 @@ function M.setup()
 
   -- Diagnostic configuration (optimized for performance)
   vim.diagnostic.config({
-    virtual_text = true,
+    virtual_text = {
+      spacing = 4,
+      prefix = "●",
+    },
     signs = {
       text = {
         [vim.diagnostic.severity.ERROR] = "󰅚 ",
@@ -428,7 +452,68 @@ function M.setup()
       local start_time = vim.loop.hrtime()
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client then
+        -- Silently stop pyright if it somehow still attaches
+        if client.name == "pyright" then
+          vim.schedule(function()
+            vim.lsp.stop_client(client.id, true) -- true = force stop
+          end)
+          return
+        end
+
+        -- Disable semantic tokens for all LSP servers (major performance win)
         client.server_capabilities.semanticTokensProvider = nil
+
+        -- Python-specific optimizations
+        if client.name == "basedpyright" then
+          -- Aggressively disable document highlight to prevent cursor movement updates
+          client.server_capabilities.documentHighlightProvider = false
+
+          -- Keep it disabled - some servers re-enable it
+          local timer = vim.loop.new_timer()
+          if timer then
+            local timer_active = true
+
+            timer:start(
+              100,
+              100,
+              vim.schedule_wrap(function()
+                if not timer_active then
+                  return
+                end
+                if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
+                  client.server_capabilities.documentHighlightProvider = false
+                end
+              end)
+            )
+
+            -- Stop timer when client stops
+            vim.api.nvim_create_autocmd("LspDetach", {
+              callback = function(args)
+                if args.data.client_id == client.id and timer_active then
+                  timer_active = false
+                  if timer and not timer:is_closing() then
+                    timer:stop()
+                    timer:close()
+                  end
+                end
+              end,
+            })
+          end
+
+          -- Also clear any existing document highlights
+          vim.schedule(function()
+            vim.lsp.buf.clear_references()
+          end)
+
+          -- Custom diagnostic handler with debouncing
+          vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+            update_in_insert = false,
+            virtual_text = {
+              spacing = 4,
+              prefix = "●",
+            },
+          })
+        end
 
         lsp_perf.track_lsp_attach(client.name, start_time)
       end
@@ -439,11 +524,10 @@ function M.setup()
   local python_lsp_restart_timer = nil
   local autocmd_logger = require("yoda.autocmd_logger")
 
-  vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged" }, {
+  vim.api.nvim_create_autocmd("DirChanged", {
     group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", {}),
-    pattern = "*.py",
     callback = function()
-      autocmd_logger.log("Python_LSP_Check", { event = "BufEnter/DirChanged" })
+      autocmd_logger.log("Python_LSP_Check", { event = "DirChanged" })
 
       -- Cancel any pending restart
       if python_lsp_restart_timer then
@@ -463,18 +547,21 @@ function M.setup()
           autocmd_logger.log("Python_LSP_Root_Change", { old = vim.g.last_python_root or "none", new = current_root })
           vim.g.last_python_root = current_root
 
-          -- Restart Python LSP clients
-          local clients = vim.lsp.get_clients({ name = "basedpyright" })
-          if #clients > 0 then
-            autocmd_logger.log("Python_LSP_Restart", { client_count = #clients, root = current_root })
-            lsp_perf.track_lsp_restart("basedpyright")
-            vim.notify(string.format("Restarting Python LSP for project: %s", current_root), vim.log.levels.INFO)
-            for _, client in ipairs(clients) do
-              client.stop()
+          -- Schedule restart to avoid UI flicker
+          vim.schedule(function()
+            -- Restart Python LSP clients
+            local clients = vim.lsp.get_clients({ name = "basedpyright" })
+            if #clients > 0 then
+              autocmd_logger.log("Python_LSP_Restart", { client_count = #clients, root = current_root })
+              lsp_perf.track_lsp_restart("basedpyright")
+              vim.notify(string.format("Restarting Python LSP for project: %s", current_root), vim.log.levels.INFO)
+              for _, client in ipairs(clients) do
+                client.stop()
+              end
+            else
+              autocmd_logger.log("Python_LSP_No_Clients", { root = current_root })
             end
-          else
-            autocmd_logger.log("Python_LSP_No_Clients", { root = current_root })
-          end
+          end)
         else
           autocmd_logger.log("Python_LSP_Same_Root", { root = current_root or "none" })
         end
