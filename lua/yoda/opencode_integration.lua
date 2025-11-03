@@ -263,4 +263,19 @@ function M.setup()
   })
 end
 
+--- Setup OpenCode integration autocmds
+--- @param autocmd function vim.api.nvim_create_autocmd
+--- @param augroup function vim.api.nvim_create_augroup
+function M.setup_autocmds(autocmd, augroup)
+  -- Enhanced OpenCode integration - handle exit event
+  autocmd("User", {
+    group = augroup("YodaOpenCodeIntegration", { clear = true }),
+    pattern = "OpencodeExit",
+    desc = "Handle OpenCode exit",
+    callback = function()
+      M.on_opencode_exit()
+    end,
+  })
+end
+
 return M
