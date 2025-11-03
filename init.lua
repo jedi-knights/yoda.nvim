@@ -82,9 +82,6 @@ vim.schedule(function()
   -- Load user commands (deferred - only needed when user invokes them)
   safe_require("yoda.commands")
 
-  -- Load utility functions (deferred - deprecated compatibility layer)
-  safe_require("yoda.functions")
-
   -- Initialize large file detection system
   local large_file = safe_require("yoda.large_file")
   if large_file then
