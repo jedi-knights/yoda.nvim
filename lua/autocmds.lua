@@ -15,6 +15,7 @@ local filetype_settings = require("yoda.filetype.settings")
 local filetype_detection = require("yoda.filetype.detection")
 local layout_manager = require("yoda.window.layout_manager")
 local terminal_autocmds = require("yoda.terminal.autocmds")
+local performance_autocmds = require("yoda.performance.autocmds")
 
 -- ============================================================================
 -- Constants
@@ -352,16 +353,8 @@ create_autocmd("BufHidden", {
   end,
 })
 
--- Highlight on yank
-create_autocmd("TextYankPost", {
-  group = augroup("YodaHighlightYank", { clear = true }),
-  desc = "Highlight yanked text briefly",
-  callback = function()
-    if vim.api.nvim_buf_line_count(0) < THRESHOLDS.MAX_LINES_FOR_YANK_HIGHLIGHT then
-      vim.highlight.on_yank({ timeout = DELAYS.YANK_HIGHLIGHT })
-    end
-  end,
-})
+-- Performance-related autocmds (yank highlight, markdown, cmdline)
+performance_autocmds.setup_all(autocmd, augroup)
 
 -- Auto reload changed files on focus
 create_autocmd("FocusGained", {
@@ -414,61 +407,6 @@ create_autocmd("FileType", {
   desc = "Apply filetype-specific settings",
   callback = function()
     filetype_settings.apply(vim.bo.filetype)
-  end,
-})
-
--- MARKDOWN PERFORMANCE: Balanced performance and functionality
-create_autocmd("FileType", {
-  group = augroup("YodaMarkdownPerformance", { clear = true }),
-  desc = "Balanced performance optimizations for markdown",
-  pattern = "markdown",
-  callback = function()
-    -- Keep basic syntax highlighting but disable expensive inline parsing
-    vim.cmd("silent! TSDisable markdown_inline")
-
-    -- Disable ALL autocmds that might trigger on typing events
-    vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
-    vim.cmd("autocmd! InsertEnter,InsertLeave <buffer>")
-    vim.cmd("autocmd! CursorMoved,CursorMovedI <buffer>")
-    vim.cmd("autocmd! BufEnter,BufWritePost <buffer>")
-    vim.cmd("autocmd! LspAttach <buffer>")
-
-    -- Disable all completion
-    vim.opt_local.complete = ""
-    vim.opt_local.completeopt = ""
-
-    -- Disable all diagnostics
-    vim.diagnostic.disable()
-
-    -- Disable all statusline updates
-    vim.opt_local.statusline = ""
-
-    -- Disable all cursor movements that might trigger events
-    vim.opt_local.cursorline = false
-    vim.opt_local.cursorcolumn = false
-
-    -- Disable copilot and other AI assistants (only if available)
-    local ok, copilot = pcall(require, "copilot")
-    if ok and copilot then
-      vim.cmd("silent! Copilot disable")
-    end
-
-    -- Disable linting
-    vim.cmd("silent! LintDisable")
-
-    -- Maximum performance settings
-    vim.opt_local.updatetime = 4000
-    vim.opt_local.timeoutlen = 1000
-    vim.opt_local.ttimeoutlen = 0
-    vim.opt_local.lazyredraw = true
-    vim.opt_local.synmaxcol = 200
-    vim.opt_local.maxmempattern = 1000 -- Limit regex memory usage
-
-    -- Disable all plugin loading
-    vim.opt_local.eventignore = "all"
-
-    print("🚀 AGGRESSIVE MARKDOWN PERFORMANCE MODE ENABLED")
-    print("📝 ALL autocmds, plugins, and features disabled")
   end,
 })
 
@@ -624,28 +562,6 @@ end
 -- ============================================================================
 
 layout_manager.setup_autocmds(autocmd, augroup)
-
--- ============================================================================
--- CMDLINE PERFORMANCE: Disable LSP in cmdline mode
--- ============================================================================
-
-local cmdline_perf_group = augroup("YodaCmdlinePerformance", { clear = true })
-
-create_autocmd("CmdlineEnter", {
-  group = cmdline_perf_group,
-  desc = "Disable LSP features in cmdline mode for performance",
-  callback = function()
-    vim.g.cmdline_mode = true
-  end,
-})
-
-create_autocmd("CmdlineLeave", {
-  group = cmdline_perf_group,
-  desc = "Re-enable LSP features after leaving cmdline mode",
-  callback = function()
-    vim.g.cmdline_mode = false
-  end,
-})
 
 -- ============================================================================
 -- Autocmd Logging Commands (for debugging)
