@@ -1141,8 +1141,9 @@ return {
     config = function()
       require("nvim-treesitter.configs").setup({
         ensure_installed = { "lua", "vim", "vimdoc", "query", "python", "go", "javascript", "typescript", "rust", "toml", "make" },
+        ignore_install = { "scala" },
         auto_install = true,
-        sync_install = false, -- Install parsers synchronously (only applied to `ensure_installed`)
+        sync_install = false,
         highlight = {
           enable = true,
           disable = function(lang, buf)
