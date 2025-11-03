@@ -3,6 +3,8 @@
 
 local M = {}
 
+local gitsigns = require("yoda.integrations.gitsigns")
+
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
 --- @return boolean should_skip Whether to skip refreshing this file
@@ -183,31 +185,9 @@ function M.refresh_all_buffers()
 end
 
 -- Debounce state for git signs refresh
-local gitsigns_refresh_timer = nil
-local GITSIGNS_REFRESH_DELAY = 150 -- ms
-
 --- Refresh git signs if gitsigns is available (debounced to prevent flickering)
 function M.refresh_git_signs()
-  local gs = package.loaded.gitsigns
-  if not gs or vim.bo.buftype ~= "" then
-    return
-  end
-
-  -- Cancel any pending refresh
-  if gitsigns_refresh_timer then
-    vim.fn.timer_stop(gitsigns_refresh_timer)
-    gitsigns_refresh_timer = nil
-  end
-
-  -- Schedule debounced refresh
-  gitsigns_refresh_timer = vim.fn.timer_start(GITSIGNS_REFRESH_DELAY, function()
-    gitsigns_refresh_timer = nil
-    vim.schedule(function()
-      if gs then
-        pcall(gs.refresh)
-      end
-    end)
-  end)
+  gitsigns.refresh_debounced()
 end
 
 --- Refresh file explorer if Snacks explorer is available
