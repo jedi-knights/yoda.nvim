@@ -307,7 +307,18 @@ end
 --- @param perf_tracker table|nil Optional performance tracker
 --- @param is_buffer_empty_fn function Function to check if buffer is empty
 --- @param delay number Delay for showing alpha
-function M.handle_alpha_dashboard_display(buf, buftype, filetype, buflisted, start_time, perf_start_time, logger, perf_tracker, is_buffer_empty_fn, delay)
+function M.handle_alpha_dashboard_display(
+  buf,
+  buftype,
+  filetype,
+  buflisted,
+  start_time,
+  perf_start_time,
+  logger,
+  perf_tracker,
+  is_buffer_empty_fn,
+  delay
+)
   if filetype == "alpha" then
     if logger then
       logger.log_end("BufEnter", start_time, { action = "alpha_skip" })
