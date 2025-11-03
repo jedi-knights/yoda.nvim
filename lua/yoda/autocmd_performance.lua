@@ -1,5 +1,7 @@
 local M = {}
 
+local notify = require("yoda.adapters.notification")
+
 local metrics = {
   autocmd_times = {},
   buffer_operations = {},
@@ -20,7 +22,7 @@ function M.track_autocmd(event_name, start_time)
   metric.min = math.min(metric.min, elapsed)
 
   if elapsed > 100 then
-    vim.notify(string.format("Slow autocmd: %s took %.2fms", event_name, elapsed), vim.log.levels.WARN)
+    notify.notify(string.format("Slow autocmd: %s took %.2fms", event_name, elapsed), "warn")
   end
 end
 
@@ -136,7 +138,7 @@ function M.setup_commands()
 
   vim.api.nvim_create_user_command("AutocmdPerfReset", function()
     M.reset_metrics()
-    vim.notify("Autocmd performance metrics reset", vim.log.levels.INFO)
+    notify.notify("Autocmd performance metrics reset", "info")
   end, { desc = "Reset autocmd performance metrics" })
 end
 
