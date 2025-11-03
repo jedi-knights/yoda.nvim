@@ -13,6 +13,7 @@ local gitsigns = require("yoda.integrations.gitsigns")
 local buffer_state = require("yoda.buffer.state_checker")
 local filetype_settings = require("yoda.filetype.settings")
 local filetype_detection = require("yoda.filetype.detection")
+local layout_manager = require("yoda.window.layout_manager")
 
 -- ============================================================================
 -- Constants
@@ -650,66 +651,7 @@ end
 -- WINDOW LAYOUT MANAGEMENT: Snacks Explorer + OpenCode
 -- ============================================================================
 
-create_autocmd("BufWinEnter", {
-  group = augroup("YodaWindowLayout", { clear = true }),
-  desc = "Ensure proper window placement with Snacks explorer and OpenCode",
-  callback = function(args)
-    local buf = args.buf
-    local bufname = vim.api.nvim_buf_get_name(buf)
-    local filetype = vim.bo[buf].filetype
-
-    -- Skip special buffers
-    if filetype == "snacks-explorer" or filetype == "opencode" or filetype == "alpha" or bufname == "" then
-      return
-    end
-
-    -- Skip if this is not a real file buffer
-    if vim.bo[buf].buftype ~= "" then
-      return
-    end
-
-    vim.schedule(function()
-      local win_utils = require("yoda.window_utils")
-      local explorer_win, _ = win_utils.find_snacks_explorer()
-      local opencode_win, _ = win_utils.find_opencode()
-      local current_win = vim.api.nvim_get_current_win()
-      local regular_wins = {}
-
-      for _, win in ipairs(vim.api.nvim_list_wins()) do
-        if vim.api.nvim_win_get_config(win).relative == "" then
-          table.insert(regular_wins, win)
-        end
-      end
-
-      -- If both explorer and OpenCode are open, and we're opening a new file
-      if explorer_win and opencode_win then
-        -- Check if the current window is the OpenCode window
-        if current_win == opencode_win then
-          -- Find or create a main edit window between explorer and OpenCode
-          local main_win = nil
-          for _, win in ipairs(regular_wins) do
-            if win ~= explorer_win and win ~= opencode_win then
-              main_win = win
-              break
-            end
-          end
-
-          if main_win then
-            -- Use existing main window
-            vim.api.nvim_set_current_win(main_win)
-            vim.api.nvim_win_set_buf(main_win, buf)
-          else
-            -- Create new window between explorer and OpenCode
-            vim.api.nvim_set_current_win(explorer_win)
-            vim.cmd("rightbelow vsplit")
-            main_win = vim.api.nvim_get_current_win()
-            vim.api.nvim_win_set_buf(main_win, buf)
-          end
-        end
-      end
-    end)
-  end,
-})
+layout_manager.setup_autocmds(autocmd, augroup)
 
 -- ============================================================================
 -- CMDLINE PERFORMANCE: Disable LSP in cmdline mode
