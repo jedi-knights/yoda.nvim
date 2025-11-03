@@ -1506,10 +1506,10 @@ return {
         keywords = {
           FIX = {
             icon = " ",
-            color = vim.log.levels.ERROR,
+            color = "error",
             alt = { "FIXME", "BUG", "FIXIT", "ISSUE" },
           },
-          TODO = { icon = " ", color = vim.log.levels.INFO },
+          TODO = { icon = " ", color = "info" },
           HACK = { icon = " ", color = "warning" },
           WARN = {
             icon = " ",
