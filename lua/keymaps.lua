@@ -1130,7 +1130,7 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 
 -- Terminal keymaps (refactored to use new terminal module for better SRP)
 map("n", "<leader>.", function()
-  require("yoda.functions").open_floating_terminal()
+  require("yoda.terminal").open_floating()
 end, { desc = "Terminal: Open floating terminal with venv detection" })
 
 map("n", "<leader>vt", function()
