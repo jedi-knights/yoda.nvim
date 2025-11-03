@@ -14,6 +14,7 @@ local buffer_state = require("yoda.buffer.state_checker")
 local filetype_settings = require("yoda.filetype.settings")
 local filetype_detection = require("yoda.filetype.detection")
 local layout_manager = require("yoda.window.layout_manager")
+local terminal_autocmds = require("yoda.terminal.autocmds")
 
 -- ============================================================================
 -- Constants
@@ -219,17 +220,8 @@ create_autocmd({ "BufDelete", "BufWipeout" }, {
   end,
 })
 
--- Terminal: Hide line numbers and ensure modifiable
-create_autocmd("TermOpen", {
-  group = augroup("YodaTerminal", { clear = true }),
-  desc = "Configure terminal buffers",
-  callback = function()
-    vim.opt_local.number = false
-    vim.opt_local.relativenumber = false
-    -- Ensure terminal buffers are modifiable for proper operation
-    vim.opt_local.modifiable = true
-  end,
-})
+-- Terminal and Python autocmds
+terminal_autocmds.setup_all(autocmd, augroup)
 
 -- Startup: Handle directory argument and show dashboard
 create_autocmd("VimEnter", {
@@ -356,26 +348,6 @@ create_autocmd("BufHidden", {
           alpha_manager.close_all_alpha_buffers()
         end
       end, DELAYS.TELESCOPE_CLOSE)
-    end
-  end,
-})
-
--- Ensure Python syntax highlighting is enabled
-create_autocmd("FileType", {
-  group = augroup("YodaPythonSyntax", { clear = true }),
-  desc = "Ensure Python syntax highlighting is properly enabled",
-  pattern = "python",
-  callback = function()
-    -- Ensure treesitter is enabled for Python
-    local ok, ts_highlight = pcall(require, "nvim-treesitter.highlight")
-    if ok and ts_highlight then
-      ts_highlight.attach(0, "python")
-    end
-
-    -- Fallback to vim syntax if treesitter fails
-    if not vim.treesitter.highlighter.active[0] then
-      vim.cmd("syntax enable")
-      vim.bo.syntax = "python"
     end
   end,
 })
