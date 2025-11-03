@@ -48,69 +48,11 @@ local function create_autocmd(events, opts)
   autocmd(events, opts)
 end
 
--- Debounce state for BufEnter handler
-local buf_enter_debounce = {}
-
 --- Change to directory if provided as argument
 local function handle_directory_argument()
   if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
     vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
   end
-end
-
---- Handle debounced operations for real buffers (OpenCode integration, git signs)
---- @param buf number Buffer number
-local function handle_debounced_buffer_operations(buf)
-  if buf_enter_debounce[buf] then
-    pcall(vim.fn.timer_stop, buf_enter_debounce[buf])
-    buf_enter_debounce[buf] = nil
-  end
-
-  buf_enter_debounce[buf] = vim.fn.timer_start(DELAYS.BUF_ENTER_DEBOUNCE, function()
-    if not vim.api.nvim_buf_is_valid(buf) then
-      autocmd_logger.log("Refresh_Skip", { buf = buf, reason = "invalid_buffer" })
-      buf_enter_debounce[buf] = nil
-      return
-    end
-
-    autocmd_logger.log("Refresh_Start", { buf = buf })
-    buf_enter_debounce[buf] = nil
-
-    local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
-    if ok then
-      vim.schedule(function()
-        if not vim.api.nvim_buf_is_valid(buf) then
-          return
-        end
-
-        if buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
-          autocmd_logger.log("Refresh_Buffer", { buf = buf })
-          opencode_integration.refresh_buffer(buf)
-        end
-        autocmd_logger.log("Refresh_GitSigns", { buf = buf })
-        opencode_integration.refresh_git_signs()
-      end)
-    else
-      gitsigns.refresh()
-    end
-  end)
-end
-
---- Handle real buffer enter (files with content)
---- @param buf number Buffer number
---- @param filetype string File type
---- @param start_time number Start time for logging
---- @param perf_start_time number Performance tracking start time
---- @return boolean true if handled
-local function handle_real_buffer_enter(buf, filetype, start_time, perf_start_time)
-  autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
-
-  alpha_manager.handle_alpha_close_for_real_buffer(buf, DELAYS.ALPHA_CLOSE, autocmd_logger)
-  handle_debounced_buffer_operations(buf)
-
-  autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
-  autocmd_perf.track_autocmd("BufEnter", perf_start_time)
-  return true
 end
 
 -- ============================================================================
@@ -269,7 +211,21 @@ create_autocmd("BufEnter", {
     local is_real_buffer = buftype == "" and filetype ~= "" and filetype ~= "alpha" and bufname ~= ""
 
     if is_real_buffer then
-      handle_real_buffer_enter(buf, filetype, start_time, perf_start_time)
+      autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
+
+      -- Close alpha dashboard if needed
+      alpha_manager.handle_alpha_close_for_real_buffer(buf, DELAYS.ALPHA_CLOSE, autocmd_logger)
+
+      -- Handle buffer refresh (debounced)
+      local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+      if ok then
+        opencode_integration.handle_debounced_buffer_refresh(buf, autocmd_logger)
+      else
+        gitsigns.refresh()
+      end
+
+      autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
+      autocmd_perf.track_autocmd("BufEnter", perf_start_time)
       return
     end
 
