@@ -12,6 +12,7 @@ local alpha_manager = require("yoda.ui.alpha_manager")
 local gitsigns = require("yoda.integrations.gitsigns")
 local buffer_state = require("yoda.buffer.state_checker")
 local filetype_settings = require("yoda.filetype.settings")
+local filetype_detection = require("yoda.filetype.detection")
 
 -- ============================================================================
 -- Constants
@@ -113,34 +114,7 @@ end
 -- Filetype Detection
 -- ============================================================================
 
--- Jenkinsfile detection with enhanced syntax support
-create_autocmd({ "BufRead", "BufNewFile" }, {
-  group = augroup("YodaJenkinsfile", { clear = true }),
-  desc = "Detect Jenkinsfile and configure for Jenkins Pipeline syntax",
-  pattern = {
-    "Jenkinsfile",
-    "*.Jenkinsfile",
-    "jenkinsfile",
-    "*.jenkinsfile",
-    "*.jenkins",
-    "*jenkins*",
-  },
-  callback = function()
-    vim.bo.filetype = "groovy"
-    vim.bo.syntax = "groovy"
-
-    -- Add Jenkins-specific keywords for better syntax highlighting
-    vim.cmd([[
-      syntax keyword groovyKeyword pipeline agent stages stage steps script sh bat powershell
-      syntax keyword groovyKeyword when environment parameters triggers tools options
-      syntax keyword groovyKeyword post always success failure unstable changed cleanup
-      syntax keyword groovyKeyword parallel matrix node checkout scm git svn
-      syntax keyword groovyKeyword build publishHTML archiveArtifacts publishTestResults
-      syntax keyword groovyKeyword junit testReport emailext slackSend
-      syntax match groovyFunction /\w\+\s*(/
-    ]])
-  end,
-})
+filetype_detection.setup_all(autocmd, augroup)
 
 -- ============================================================================
 -- Autocommand Definitions
