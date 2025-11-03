@@ -114,7 +114,7 @@ return {
           diagnostics = "nvim_lsp",
           diagnostics_update_in_insert = false,
           diagnostics_indicator = function(count, level)
-            local icon = level:match("error") and " " or " "
+            local icon = level:match(vim.log.levels.ERROR) and " " or " "
             return " " .. icon .. count
           end,
           offsets = {
@@ -1506,10 +1506,10 @@ return {
         keywords = {
           FIX = {
             icon = " ",
-            color = "error",
+            color = vim.log.levels.ERROR,
             alt = { "FIXME", "BUG", "FIXIT", "ISSUE" },
           },
-          TODO = { icon = " ", color = "info" },
+          TODO = { icon = " ", color = vim.log.levels.INFO },
           HACK = { icon = " ", color = "warning" },
           WARN = {
             icon = " ",

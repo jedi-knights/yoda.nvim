@@ -7,6 +7,7 @@
 -- ============================================================================
 
 --- Setup bufferline debugging commands
+local notify = require("yoda.adapters.notification")
 local function setup_bufferline_debug_commands()
   local bufferline_debug = require("yoda.diagnostics.bufferline_debug")
 
@@ -53,12 +54,12 @@ do
       if win then
         vim.api.nvim_set_current_win(win)
         local name = vim.api.nvim_buf_get_name(buf)
-        vim.notify("← Returned to: " .. vim.fn.fnamemodify(name, ":t"), vim.log.levels.INFO)
+        notify.notify("← Returned to: " .. vim.fn.fnamemodify(name, ":t"), "info")
         return
       end
 
       pcall(vim.cmd, "wincmd p")
-      vim.notify("← Switched to previous window", vim.log.levels.INFO)
+      notify.notify("← Switched to previous window", "info")
     end)
   end, { desc = "Return to main buffer from OpenCode" })
 end
@@ -209,7 +210,7 @@ local function fix_feature_examples()
   end
 
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, updated)
-  vim.notify("✅ Examples blocks aligned", vim.log.levels.INFO)
+  notify.notify("✅ Examples blocks aligned", "info")
 end
 
 --- Format the current feature file
@@ -358,7 +359,7 @@ vim.api.nvim_create_user_command("YodaRustSetup", function()
   -- Check if Mason is available
   local mason_ok, mason = pcall(require, "mason")
   if not mason_ok then
-    vim.notify("❌ Mason not available. Install via :Lazy sync first", vim.log.levels.ERROR)
+    notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
     return
   end
 
@@ -370,12 +371,12 @@ vim.api.nvim_create_user_command("YodaRustSetup", function()
   vim.cmd("MasonInstall codelldb")
 
   -- Notify user
-  vim.notify(
+  notify.notify(
     "🦀 Rust tools installation started!\n"
       .. "Installing: rust-analyzer, codelldb\n"
       .. "Check :Mason for progress.\n"
       .. "Restart Neovim after installation completes.",
-    vim.log.levels.INFO,
+    "info",
     { title = "Yoda Rust Setup" }
   )
 
@@ -393,7 +394,7 @@ vim.api.nvim_create_user_command("YodaPythonSetup", function()
   -- Check if Mason is available
   local mason_ok, mason = pcall(require, "mason")
   if not mason_ok then
-    vim.notify("❌ Mason not available. Install via :Lazy sync first", vim.log.levels.ERROR)
+    notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
     return
   end
 
@@ -408,12 +409,12 @@ vim.api.nvim_create_user_command("YodaPythonSetup", function()
   vim.cmd("MasonInstall ruff")
 
   -- Notify user
-  vim.notify(
+  notify.notify(
     "🐍 Python tools installation started!\n"
       .. "Installing: basedpyright, debugpy, ruff\n"
       .. "Check :Mason for progress.\n"
       .. "Restart Neovim after installation completes.",
-    vim.log.levels.INFO,
+    "info",
     { title = "Yoda Python Setup" }
   )
 
@@ -424,28 +425,28 @@ end, { desc = "Install Python development tools (basedpyright, debugpy, ruff) vi
 vim.api.nvim_create_user_command("StopPyright", function()
   local clients = vim.lsp.get_clients({ name = "pyright" })
   if #clients == 0 then
-    vim.notify("No pyright clients running", vim.log.levels.INFO)
+    notify.notify("No pyright clients running", "info")
     return
   end
 
   for _, client in ipairs(clients) do
     vim.lsp.stop_client(client.id)
-    vim.notify(string.format("Stopped pyright client (id:%d)", client.id), vim.log.levels.INFO)
+    notify.notify(string.format("Stopped pyright client (id:%d)", client.id), "info")
   end
 end, { desc = "Stop pyright LSP clients (we use basedpyright)" })
 
 -- Uninstall pyright from Mason (we use basedpyright instead)
 vim.api.nvim_create_user_command("UninstallPyright", function()
-  vim.notify("Uninstalling pyright from Mason...", vim.log.levels.INFO)
+  notify.notify("Uninstalling pyright from Mason...", "info")
   vim.cmd("MasonUninstall pyright")
-  vim.notify("✅ Pyright uninstalled!\nWe use basedpyright instead.\nRestart Neovim for changes to take effect.", vim.log.levels.INFO)
+  notify.notify("✅ Pyright uninstalled!\nWe use basedpyright instead.\nRestart Neovim for changes to take effect.", "info")
 end, { desc = "Uninstall pyright from Mason (we use basedpyright)" })
 
 -- Python virtual environment selector
 vim.api.nvim_create_user_command("YodaPythonVenv", function()
   local ok = pcall(vim.cmd, "VenvSelect")
   if not ok then
-    vim.notify("❌ venv-selector not available. Install via :Lazy sync", vim.log.levels.ERROR)
+    notify.notify("❌ venv-selector not available. Install via :Lazy sync", "error")
   end
 end, { desc = "Select Python virtual environment" })
 
@@ -460,7 +461,7 @@ vim.api.nvim_create_user_command("YodaJavaScriptSetup", function()
   -- Check if Mason is available
   local mason_ok, mason = pcall(require, "mason")
   if not mason_ok then
-    vim.notify("❌ Mason not available. Install via :Lazy sync first", vim.log.levels.ERROR)
+    notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
     return
   end
 
@@ -475,12 +476,12 @@ vim.api.nvim_create_user_command("YodaJavaScriptSetup", function()
   vim.cmd("MasonInstall biome")
 
   -- Notify user
-  vim.notify(
+  notify.notify(
     "🟨 JavaScript tools installation started!\n"
       .. "Installing: typescript-language-server, js-debug-adapter, biome\n"
       .. "Check :Mason for progress.\n"
       .. "Restart Neovim after installation completes.",
-    vim.log.levels.INFO,
+    "info",
     { title = "Yoda JavaScript Setup" }
   )
 
@@ -493,9 +494,9 @@ vim.api.nvim_create_user_command("YodaNodeVersion", function()
   if handle then
     local result = handle:read("*a")
     handle:close()
-    vim.notify("Node.js version: " .. result, vim.log.levels.INFO, { title = "Node Version" })
+    notify.notify("Node.js version: " .. result, "info", { title = "Node Version" })
   else
-    vim.notify("❌ Node.js not found", vim.log.levels.ERROR)
+    notify.notify("❌ Node.js not found", "error")
   end
 end, { desc = "Show Node.js version" })
 
@@ -515,7 +516,7 @@ vim.api.nvim_create_user_command("YodaCSharpSetup", function()
   -- Check if Mason is available
   local mason_ok = pcall(require, "mason")
   if not mason_ok then
-    vim.notify("❌ Mason not available. Install via :Lazy sync first", vim.log.levels.ERROR)
+    notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
     return
   end
 
@@ -530,12 +531,12 @@ vim.api.nvim_create_user_command("YodaCSharpSetup", function()
   vim.cmd("MasonInstall csharpier")
 
   -- Notify user
-  vim.notify(
+  notify.notify(
     "⚡ C# tools installation started!\n"
       .. "Installing: csharp-ls, netcoredbg, csharpier\n"
       .. "Check :Mason for progress.\n"
       .. "Restart Neovim after installation completes.",
-    vim.log.levels.INFO,
+    "info",
     { title = "Yoda C# Setup" }
   )
 
@@ -548,9 +549,9 @@ vim.api.nvim_create_user_command("YodaDotnetVersion", function()
   if handle then
     local result = handle:read("*a")
     handle:close()
-    vim.notify(".NET SDK version: " .. result, vim.log.levels.INFO, { title = "Dotnet Version" })
+    notify.notify(".NET SDK version: " .. result, "info", { title = "Dotnet Version" })
   else
-    vim.notify("❌ .NET SDK not found", vim.log.levels.ERROR)
+    notify.notify("❌ .NET SDK not found", "error")
   end
 end, { desc = "Show .NET SDK version" })
 
@@ -593,8 +594,8 @@ local function setup_performance_tracking_commands()
     local args = vim.split(opts.args, " ", { trimempty = true })
 
     if #args < 3 then
-      vim.notify("Usage: :YodaPerfUpdate <phase_id> <task_id> <status> [assignee] [notes]", vim.log.levels.ERROR)
-      vim.notify("Example: :YodaPerfUpdate phase1 bufenter_debouncing in_progress john 'Started implementation'", vim.log.levels.INFO)
+      notify.notify("Usage: :YodaPerfUpdate <phase_id> <task_id> <status> [assignee] [notes]", "error")
+      notify.notify("Example: :YodaPerfUpdate phase1 bufenter_debouncing in_progress john 'Started implementation'", "info")
       return
     end
 
@@ -610,7 +611,7 @@ local function setup_performance_tracking_commands()
 
     local success = tracker.update_task(phase_id, task_id, status, assignee, notes)
     if success then
-      vim.notify(string.format("✅ Updated %s.%s to %s", phase_id, task_id, status), vim.log.levels.INFO)
+      notify.notify(string.format("✅ Updated %s.%s to %s", phase_id, task_id, status), "info")
     end
   end, {
     nargs = "+",
@@ -650,7 +651,7 @@ local function setup_performance_tracking_commands()
     local next_tasks = tracker.get_next_tasks()
 
     if #next_tasks == 0 then
-      vim.notify("🎉 All performance optimizations completed!", vim.log.levels.INFO)
+      notify.notify("🎉 All performance optimizations completed!", "info")
       return
     end
 
@@ -667,14 +668,14 @@ local function setup_performance_tracking_commands()
     local phase_id = opts.args
 
     if phase_id == "" then
-      vim.notify("Usage: :YodaPerfPhase <phase_id>", vim.log.levels.ERROR)
-      vim.notify("Available phases: phase1, phase2, phase3, phase4", vim.log.levels.INFO)
+      notify.notify("Usage: :YodaPerfPhase <phase_id>", "error")
+      notify.notify("Available phases: phase1, phase2, phase3, phase4", "info")
       return
     end
 
     local phase_status = tracker.get_phase_status(phase_id)
     if not phase_status then
-      vim.notify("Phase not found: " .. phase_id, vim.log.levels.ERROR)
+      notify.notify("Phase not found: " .. phase_id, "error")
       return
     end
 
@@ -720,7 +721,7 @@ local function setup_performance_tracking_commands()
   vim.api.nvim_create_user_command("YodaPerfBenchmark", function(opts)
     local benchmark_type = opts.args ~= "" and opts.args or "all"
 
-    vim.notify("🚀 Running performance benchmarks...", vim.log.levels.INFO)
+    notify.notify("🚀 Running performance benchmarks...", "info")
 
     -- Run benchmark script
     local script_path = vim.fn.fnamemodify(vim.fn.resolve(vim.env.MYVIMRC), ":h") .. "/scripts/benchmark_performance.sh"
@@ -728,8 +729,8 @@ local function setup_performance_tracking_commands()
     if vim.fn.executable(script_path) == 1 then
       vim.cmd("!" .. script_path .. " " .. benchmark_type)
     else
-      vim.notify("❌ Benchmark script not found: " .. script_path, vim.log.levels.ERROR)
-      vim.notify("Run 'chmod +x " .. script_path .. "' to make it executable", vim.log.levels.INFO)
+      notify.notify("❌ Benchmark script not found: " .. script_path, "error")
+      notify.notify("Run 'chmod +x " .. script_path .. "' to make it executable", "info")
     end
   end, {
     nargs = "?",
