@@ -4,6 +4,7 @@
 local M = {}
 
 local gitsigns = require("yoda.integrations.gitsigns")
+local notify = require("yoda.adapters.notification")
 
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
@@ -80,19 +81,19 @@ function M.save_all_buffers()
       -- Check if error is from keyboard interrupt (Ctrl-C)
       if err and type(err) == "string" and err:match("Keyboard interrupt") then
         -- User cancelled with Ctrl-C, stop processing
-        vim.notify("Auto-save cancelled by user", vim.log.levels.INFO)
+        notify.notify("Auto-save cancelled by user", "info")
         return false
       else
         -- Extract just the error message, not the full stack trace
         local short_err = err and tostring(err):match("^[^\n]+") or "unknown error"
-        vim.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. short_err, vim.log.levels.WARN)
+        notify.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. short_err, "warn")
       end
     end
   end
 
   -- Provide user feedback
   if saved_count > 0 then
-    vim.notify("🤖 OpenCode: Auto-saved " .. saved_count .. " file(s)", vim.log.levels.INFO)
+    notify.notify("🤖 OpenCode: Auto-saved " .. saved_count .. " file(s)", "info")
   end
 
   return error_count == 0
@@ -145,7 +146,7 @@ function M.refresh_buffer(buf)
   refresh_in_progress[buf] = nil
 
   if not ok then
-    vim.notify("Failed to refresh " .. vim.fn.fnamemodify(buf_name, ":t") .. ": " .. err, vim.log.levels.WARN)
+    notify.notify("Failed to refresh " .. vim.fn.fnamemodify(buf_name, ":t") .. ": " .. err, "warn")
     return false
   end
 

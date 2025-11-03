@@ -3,6 +3,8 @@
 
 local M = {}
 
+local notify = require("yoda.adapters.notification")
+
 local log_file = vim.fn.stdpath("data") .. "/yoda_autocmd.log"
 local enabled = false
 
@@ -15,13 +17,13 @@ function M.enable()
     f:write(string.format("=== Yoda Autocmd Log Started: %s ===\n", os.date("%Y-%m-%d %H:%M:%S")))
     f:close()
   end
-  vim.notify("Autocmd logging enabled: " .. log_file, vim.log.levels.INFO)
+  notify.notify("Autocmd logging enabled: " .. log_file, "info")
 end
 
 --- Disable autocmd logging
 function M.disable()
   enabled = false
-  vim.notify("Autocmd logging disabled", vim.log.levels.INFO)
+  notify.notify("Autocmd logging disabled", "info")
 end
 
 --- Toggle autocmd logging
@@ -161,7 +163,7 @@ function M.clear_log()
     f:write(string.format("=== Yoda Autocmd Log Cleared: %s ===\n", os.date("%Y-%m-%d %H:%M:%S")))
     f:close()
   end
-  vim.notify("Autocmd log cleared", vim.log.levels.INFO)
+  notify.notify("Autocmd log cleared", "info")
 end
 
 return M
