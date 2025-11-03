@@ -24,14 +24,20 @@ local ALPHA_CONFIG = {
 -- Private State (Caching for Performance)
 -- ============================================================================
 
+-- Cache configuration
+local CACHE_CONFIG = {
+  CHECK_INTERVAL_MS = 150, -- Balance between freshness and performance
+  ALPHA_CHECK_INTERVAL_MS = 100, -- Prevent flickering while maintaining responsiveness
+}
+
 local alpha_cache = {
   has_startup_files = nil,
   has_alpha_buffer = nil,
   normal_count = nil,
   last_check_time = 0,
   last_alpha_check_time = 0,
-  check_interval = 150,
-  alpha_check_interval = 100,
+  check_interval = CACHE_CONFIG.CHECK_INTERVAL_MS,
+  alpha_check_interval = CACHE_CONFIG.ALPHA_CHECK_INTERVAL_MS,
 }
 
 -- ============================================================================

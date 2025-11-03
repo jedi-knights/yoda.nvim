@@ -13,13 +13,15 @@ local notify = require("yoda.adapters.notification")
 -- Constants
 -- ============================================================================
 
+-- Timing constants (all values in milliseconds)
+-- These values are tuned for optimal balance between responsiveness and performance
 local DELAYS = {
-  ALPHA_STARTUP = 200,
-  ALPHA_BUFFER_CHECK = 100,
-  YANK_HIGHLIGHT = 50,
-  BUF_ENTER_DEBOUNCE = 50,
-  ALPHA_CLOSE = 50,
-  TELESCOPE_CLOSE = 50,
+  ALPHA_STARTUP = 200, -- Delay for alpha dashboard on startup (allows plugins to load)
+  ALPHA_BUFFER_CHECK = 100, -- Delay before checking alpha conditions (prevents flicker)
+  YANK_HIGHLIGHT = 50, -- Duration for yank highlight (brief visual feedback)
+  BUF_ENTER_DEBOUNCE = 50, -- Debounce for BufEnter expensive operations (prevents rapid firing)
+  ALPHA_CLOSE = 50, -- Delay for closing alpha dashboard (allows transitions to complete)
+  TELESCOPE_CLOSE = 50, -- Delay after telescope closes (allows file to open first)
 }
 
 local THRESHOLDS = {
