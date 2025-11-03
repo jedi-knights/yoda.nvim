@@ -54,25 +54,18 @@ vim.api.nvim_create_autocmd("WinClosed", {
 
 -- Utility function to check if snacks explorer is open and return window info (cached)
 local function get_snacks_explorer_win()
-  -- Check cache first
   if snacks_explorer_cache.win and vim.api.nvim_win_is_valid(snacks_explorer_cache.win) then
     return snacks_explorer_cache.win, snacks_explorer_cache.buf
   end
 
-  -- Cache miss or invalid - search for explorer window
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    local ft = vim.bo[buf].filetype
-    local buf_name = vim.api.nvim_buf_get_name(buf)
-    -- Check for snacks explorer by filetype (snacks creates multiple windows)
-    if ft:match("snacks_") or ft == "snacks" or buf_name:match("snacks") then
-      -- Update cache
-      snacks_explorer_cache = { win = win, buf = buf }
-      return win, buf
-    end
+  local win_utils = require("yoda.window_utils")
+  local win, buf = win_utils.find_snacks_explorer()
+
+  if win then
+    snacks_explorer_cache = { win = win, buf = buf }
+    return win, buf
   end
 
-  -- Not found - clear cache
   snacks_explorer_cache = {}
   return nil, nil
 end
@@ -107,19 +100,10 @@ end, { desc = "Explorer: Focus (if open)" })
 map("n", "<leader>ec", function()
   local win, _ = get_snacks_explorer_win()
   if win then
-    -- Close all snacks windows (snacks explorer creates multiple windows)
-    local snacks_wins = {}
-    for _, w in ipairs(vim.api.nvim_list_wins()) do
-      local buf = vim.api.nvim_win_get_buf(w)
-      local ft = vim.bo[buf].filetype
-      if ft:match("snacks_") or ft == "snacks" then
-        table.insert(snacks_wins, w)
-      end
-    end
-    -- Close all snacks windows
-    for _, w in ipairs(snacks_wins) do
-      vim.api.nvim_win_close(w, true)
-    end
+    local win_utils = require("yoda.window_utils")
+    local count = win_utils.close_windows(function(win, buf, buf_name, ft)
+      return ft:match("snacks_") or ft == "snacks"
+    end, true)
   else
     vim.notify("Snacks Explorer is not open", vim.log.levels.INFO)
   end
@@ -163,14 +147,10 @@ end, { desc = "Explorer: Show help" })
 -- ============================================================================
 
 map("n", "<leader>xt", function()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    local bufname = vim.api.nvim_buf_get_name(buf)
-    if bufname:match("Trouble") then
-      vim.api.nvim_set_current_win(win)
-      return
-    end
-  end
+  local win_utils = require("yoda.window_utils")
+  win_utils.focus_window(function(win, buf, buf_name, ft)
+    return buf_name:match("Trouble")
+  end)
 end, { desc = "Window: Focus Trouble" })
 
 -- Todo-comments integration with Trouble
@@ -293,27 +273,23 @@ end, { desc = "Test: View test output" })
 
 map("n", "<leader>tO", function()
   -- Find and focus the neotest output panel
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    local bufname = vim.api.nvim_buf_get_name(buf)
-    if bufname:match("Neotest Output Panel") or vim.bo[buf].filetype == "neotest-output-panel" then
-      vim.api.nvim_set_current_win(win)
-      return
-    end
+  local win_utils = require("yoda.window_utils")
+  local found = win_utils.focus_window(function(win, buf, buf_name, ft)
+    return buf_name:match("Neotest Output Panel") or ft == "neotest-output-panel"
+  end)
+  if not found then
+    vim.notify("Neotest output panel not open", vim.log.levels.WARN)
   end
-  vim.notify("Neotest output panel not open", vim.log.levels.WARN)
 end, { desc = "Test: Focus output panel" })
 
 map("n", "<leader>tF", function()
-  -- Find and focus the neotest summary window
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.bo[buf].filetype == "neotest-summary" then
-      vim.api.nvim_set_current_win(win)
-      return
-    end
+  local win_utils = require("yoda.window_utils")
+  local found = win_utils.focus_window(function(win, buf, buf_name, ft)
+    return ft == "neotest-summary"
+  end)
+  if not found then
+    vim.notify("Neotest summary not open. Use <leader>ts to open it.", vim.log.levels.WARN)
   end
-  vim.notify("Neotest summary not open. Use <leader>ts to open it.", vim.log.levels.WARN)
 end, { desc = "Test: Focus summary window" })
 
 map("n", "<leader>tC", function()
@@ -957,24 +933,16 @@ map({ "n", "i" }, "<leader>ab", function()
     vim.cmd("stopinsert")
   end
 
-  -- Find the most recent non-OpenCode window
+  local win_utils = require("yoda.window_utils")
   local current_win = vim.api.nvim_get_current_win()
-  local windows = vim.api.nvim_list_wins()
 
-  for _, win in ipairs(windows) do
-    if win ~= current_win then
-      local buf = vim.api.nvim_win_get_buf(win)
-      local buf_name = vim.api.nvim_buf_get_name(buf)
-      -- Skip OpenCode windows and special buffers
-      if not buf_name:match("[Oo]pen[Cc]ode") and not buf_name:match("^$") and vim.bo[buf].buftype == "" then
-        vim.api.nvim_set_current_win(win)
-        return
-      end
-    end
+  local found = win_utils.focus_window(function(win, buf, buf_name, ft)
+    return win ~= current_win and not buf_name:match("[Oo]pen[Cc]ode") and not buf_name:match("^$") and vim.bo[buf].buftype == ""
+  end)
+
+  if not found then
+    vim.cmd("wincmd p")
   end
-
-  -- Fallback: just switch to previous window
-  vim.cmd("wincmd p")
 end, { desc = "AI: Return to previous buffer from OpenCode" })
 
 -- OpenCode: Enhanced Escape - exit insert mode and return to previous buffer
@@ -984,18 +952,13 @@ map("i", "<C-q>", function()
     -- In OpenCode: exit insert mode and return to previous buffer
     vim.cmd("stopinsert")
     vim.schedule(function()
-      -- Find a non-OpenCode window
-      local windows = vim.api.nvim_list_wins()
-      for _, win in ipairs(windows) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        local name = vim.api.nvim_buf_get_name(buf)
-        if not name:match("[Oo]pen[Cc]ode") and vim.bo[buf].buftype == "" then
-          vim.api.nvim_set_current_win(win)
-          return
-        end
+      local win_utils = require("yoda.window_utils")
+      local found = win_utils.focus_window(function(win, buf, buf_name, ft)
+        return not buf_name:match("[Oo]pen[Cc]ode") and vim.bo[buf].buftype == ""
+      end)
+      if not found then
+        vim.cmd("wincmd p")
       end
-      -- Fallback
-      vim.cmd("wincmd p")
     end)
   else
     -- Normal behavior: just exit insert mode
@@ -1013,30 +976,24 @@ map(
       vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
     end
 
-    -- Schedule the window switch
     vim.schedule(function()
-      local windows = vim.api.nvim_list_wins()
+      local win_utils = require("yoda.window_utils")
       local current_win = vim.api.nvim_get_current_win()
 
-      -- Find the first non-OpenCode window
-      for _, win in ipairs(windows) do
-        if win ~= current_win then
-          local buf = vim.api.nvim_win_get_buf(win)
-          local name = vim.api.nvim_buf_get_name(buf)
-          local buftype = vim.bo[buf].buftype
+      local found = win_utils.focus_window(function(win, buf, buf_name, ft)
+        return win ~= current_win
+          and not buf_name:match("[Oo]pen[Cc]ode")
+          and not buf_name:match("NvimTree")
+          and vim.bo[buf].buftype == ""
+          and buf_name ~= ""
+      end)
 
-          -- Skip OpenCode and special buffers
-          if not name:match("[Oo]pen[Cc]ode") and not name:match("NvimTree") and buftype == "" and name ~= "" then
-            vim.api.nvim_set_current_win(win)
-            vim.notify("← Returned to main buffer", vim.log.levels.INFO)
-            return
-          end
-        end
+      if found then
+        vim.notify("← Returned to main buffer", vim.log.levels.INFO)
+      else
+        pcall(vim.cmd, "wincmd p")
+        vim.notify("← Switched to previous window", vim.log.levels.INFO)
       end
-
-      -- Fallback to previous window
-      pcall(vim.cmd, "wincmd p")
-      vim.notify("← Switched to previous window", vim.log.levels.INFO)
     end)
   end,
   { desc = "Exit OpenCode and return to main buffer (Alt+q)" }

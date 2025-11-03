@@ -141,32 +141,27 @@ end
 --- Recenter alpha dashboard if visible
 --- @return boolean true if alpha was recentered
 local function recenter_alpha_dashboard()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.bo[buf].filetype == "alpha" then
-      -- Save current window
-      local current_win = vim.api.nvim_get_current_win()
+  local win_utils = require("yoda.window_utils")
+  local win, buf = win_utils.find_by_filetype("alpha")
 
-      -- Switch to alpha window
-      vim.api.nvim_set_current_win(win)
-
-      -- Restart alpha to recenter
-      local ok, alpha = pcall(require, "alpha")
-      if ok and alpha and alpha.start then
-        -- Get stored config or start with defaults
-        local alpha_config = vim.b[buf].alpha_config
-        pcall(alpha.start, false, alpha_config)
-      end
-
-      -- Restore previous window if different
-      if current_win ~= win and vim.api.nvim_win_is_valid(current_win) then
-        vim.api.nvim_set_current_win(current_win)
-      end
-
-      return true
-    end
+  if not win then
+    return false
   end
-  return false
+
+  local current_win = vim.api.nvim_get_current_win()
+  vim.api.nvim_set_current_win(win)
+
+  local ok, alpha = pcall(require, "alpha")
+  if ok and alpha and alpha.start then
+    local alpha_config = vim.b[buf].alpha_config
+    pcall(alpha.start, false, alpha_config)
+  end
+
+  if current_win ~= win and vim.api.nvim_win_is_valid(current_win) then
+    vim.api.nvim_set_current_win(current_win)
+  end
+
+  return true
 end
 
 --- Check if current buffer has a special buftype (optimized)
@@ -1194,23 +1189,14 @@ create_autocmd("BufWinEnter", {
     end
 
     vim.schedule(function()
-      -- Find all relevant windows
-      local explorer_win = nil
-      local opencode_win = nil
+      local win_utils = require("yoda.window_utils")
+      local explorer_win, _ = win_utils.find_snacks_explorer()
+      local opencode_win, _ = win_utils.find_opencode()
       local current_win = vim.api.nvim_get_current_win()
       local regular_wins = {}
 
       for _, win in ipairs(vim.api.nvim_list_wins()) do
-        local win_buf = vim.api.nvim_win_get_buf(win)
-        local win_ft = vim.bo[win_buf].filetype
-        local win_name = vim.api.nvim_buf_get_name(win_buf)
-
-        if win_ft == "snacks-explorer" or win_name:match("snacks%-explorer") then
-          explorer_win = win
-        elseif win_ft == "opencode" or win_name:match("opencode") then
-          opencode_win = win
-        elseif vim.api.nvim_win_get_config(win).relative == "" then
-          -- Regular window (not floating)
+        if vim.api.nvim_win_get_config(win).relative == "" then
           table.insert(regular_wins, win)
         end
       end

@@ -39,25 +39,24 @@ do
     end
 
     vim.schedule(function()
-      local windows = vim.api.nvim_list_wins()
+      local win_utils = require("yoda.window_utils")
       local current_win = vim.api.nvim_get_current_win()
 
-      -- Find first non-OpenCode window
-      for _, win in ipairs(windows) do
-        if win ~= current_win then
-          local buf = vim.api.nvim_win_get_buf(win)
-          local name = vim.api.nvim_buf_get_name(buf)
-          local buftype = vim.bo[buf].buftype
-
-          if not name:match("[Oo]pen[Cc]ode") and not name:match("NvimTree") and buftype == "" and name ~= "" then
-            vim.api.nvim_set_current_win(win)
-            vim.notify("← Returned to: " .. vim.fn.fnamemodify(name, ":t"), vim.log.levels.INFO)
-            return
-          end
+      local win, buf = win_utils.find_window(function(win, buf, buf_name, ft)
+        if win == current_win then
+          return false
         end
+        local buftype = vim.bo[buf].buftype
+        return not buf_name:match("[Oo]pen[Cc]ode") and not buf_name:match("NvimTree") and buftype == "" and buf_name ~= ""
+      end)
+
+      if win then
+        vim.api.nvim_set_current_win(win)
+        local name = vim.api.nvim_buf_get_name(buf)
+        vim.notify("← Returned to: " .. vim.fn.fnamemodify(name, ":t"), vim.log.levels.INFO)
+        return
       end
 
-      -- Fallback
       pcall(vim.cmd, "wincmd p")
       vim.notify("← Switched to previous window", vim.log.levels.INFO)
     end)
