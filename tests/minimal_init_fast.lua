@@ -18,9 +18,8 @@ vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.undofile = false
 
--- Disable all output during fast tests for speed
+-- Disable notifications during fast tests for speed  
 vim.notify = function() end -- No-op notifications
-print = function() end -- No-op print statements
 
 -- Disable file watching and change detection
 vim.opt.eventignore = "all"
@@ -95,15 +94,4 @@ else
   vim.opt.rtp:prepend(plenary_path)
 end
 
--- Apply vim.cmd mock AFTER lazy setup is complete
-local original_vim_cmd = vim.cmd
-vim.cmd = function(cmd)
-  -- Skip expensive commands during tests
-  if cmd == "checkhealth" or cmd:match("^checkhealth") or cmd == "quitall!" then
-    if cmd == "quitall!" then
-      return original_vim_cmd(cmd)
-    end
-    return
-  end
-  return original_vim_cmd(cmd)
-end
+-- Note: vim.cmd mocking removed - was causing exit code issues in CI

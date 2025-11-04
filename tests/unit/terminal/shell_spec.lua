@@ -84,8 +84,8 @@ describe("terminal.shell", function()
       }
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function(cmd, title, opts)
-          return { cmd = cmd, win = {} }
+        make_win_opts = function(title, overrides)
+          return { title = title }
         end,
       }
 
@@ -112,8 +112,8 @@ describe("terminal.shell", function()
       }
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function(cmd, title, opts)
-          return { cmd = cmd, win = {} }
+        make_win_opts = function(title, overrides)
+          return { title = title }
         end,
       }
 
@@ -137,8 +137,8 @@ describe("terminal.shell", function()
       }
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function(cmd, title, opts)
-          return { cmd = cmd, win = {} }
+        make_win_opts = function(title, overrides)
+          return { title = title }
         end,
       }
 
@@ -156,9 +156,9 @@ describe("terminal.shell", function()
       }
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function(cmd, title, opts)
+        make_win_opts = function(title, overrides)
           captured_title = title
-          return { cmd = cmd, win = {} }
+          return { title = title }
         end,
       }
 
@@ -176,9 +176,9 @@ describe("terminal.shell", function()
       }
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function(cmd, title, opts)
+        make_win_opts = function(title, overrides)
           captured_title = title
-          return { cmd = cmd, win = {} }
+          return { title = title }
         end,
       }
 
@@ -199,8 +199,8 @@ describe("terminal.shell", function()
       }
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function(cmd, title, opts)
-          return { cmd = cmd, win = {} }
+        make_win_opts = function(title, overrides)
+          return { title = title }
         end,
       }
 

@@ -34,12 +34,12 @@ help:
 # Run all tests (optimized for speed)
 test:
 	@echo "Running all tests..."
-	@nvim --headless -u tests/minimal_init_fast.lua -c "luafile tests/run_all_fast.lua"
+	@./scripts/run_tests.sh tests/minimal_init_fast.lua
 
 # Verbose test runner for CI/debugging  
 test-verbose:
 	@echo "Running tests with detailed output..."
-	@nvim --headless -u tests/minimal_init.lua -c "luafile tests/run_all.lua" 2>&1 | tee /tmp/yoda_test_output.txt
+	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/unit', {minimal_init = './tests/minimal_init.lua'})" -c "quitall!" 2>&1 | tee /tmp/yoda_test_output.txt
 	@echo ""
 	@echo "================================================================================"
 	@echo "AGGREGATE TEST RESULTS"
@@ -53,7 +53,7 @@ test-watch:
 
 # Run only unit tests
 test-unit:
-	nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/unit')" -c "quitall!"
+	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/unit')" -c "quitall!"
 
 # Run only integration tests
 test-integration:

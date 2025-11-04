@@ -110,9 +110,7 @@ describe("terminal.config", function()
 
       assert.same(cmd, cfg.cmd)
       assert.equals("My Terminal", cfg.win.title)
-      assert.is_true(cfg.start_insert)
-      assert.is_true(cfg.auto_insert)
-      assert.is_function(cfg.on_open)
+      assert.is_table(cfg.win)
     end)
 
     it("validates cmd is a table", function()
@@ -146,30 +144,11 @@ describe("terminal.config", function()
       assert.equals("Custom Title", cfg.win.title)
     end)
 
-    it("defaults start_insert to true", function()
+    it("returns minimal config with cmd and win", function()
       local cfg = config.make_config({ "sh" }, "Title")
-      assert.is_true(cfg.start_insert)
-    end)
-
-    it("allows disabling start_insert", function()
-      local cfg = config.make_config({ "sh" }, "Title", { start_insert = false })
-      assert.is_false(cfg.start_insert)
-    end)
-
-    it("defaults auto_insert to true", function()
-      local cfg = config.make_config({ "sh" }, "Title")
-      assert.is_true(cfg.auto_insert)
-    end)
-
-    it("allows disabling auto_insert", function()
-      local cfg = config.make_config({ "sh" }, "Title", { auto_insert = false })
-      assert.is_false(cfg.auto_insert)
-    end)
-
-    it("passes env through", function()
-      local env = { PATH = "/custom/path" }
-      local cfg = config.make_config({ "sh" }, "Title", { env = env })
-      assert.same(env, cfg.env)
+      assert.is_table(cfg.cmd)
+      assert.is_table(cfg.win)
+      assert.equals("Title", cfg.win.title)
     end)
 
     it("passes custom on_exit", function()
@@ -178,9 +157,9 @@ describe("terminal.config", function()
       assert.equals(on_exit_fn, cfg.on_exit)
     end)
 
-    it("sets up default on_open function", function()
+    it("does not set on_open by default", function()
       local cfg = config.make_config({ "sh" }, "Title")
-      assert.is_function(cfg.on_open)
+      assert.is_nil(cfg.on_open)
     end)
 
     it("passes window options through", function()

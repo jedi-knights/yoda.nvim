@@ -1,54 +1,34 @@
 -- Fast test runner for development
 -- Usage: nvim --headless -u tests/minimal_init_fast.lua -c "luafile tests/run_all_fast.lua"
 
--- Load minimal init
-vim.cmd("source tests/minimal_init_fast.lua")
+-- This script runs all tests with minimal output for speed
+-- After tests complete, it prints an aggregate summary
 
--- Silence output during test runs for speed
-local original_print = print
-print = function() end
-local original_write = io.write
-io.write = function() end
+-- Ensure minimal_init_fast is loaded
+if not package.loaded["plenary.test_harness"] then
+  vim.cmd("source tests/minimal_init_fast.lua")
+end
 
--- Fast test runner that bypasses plugin loading overhead
-local function run_tests_fast()
-  local plenary_ok, test_harness = pcall(require, "plenary.test_harness")
-  if not plenary_ok then
-    -- Re-enable printing for error messages
-    print = original_print
-    io.write = original_write
-    print("ERROR: plenary.nvim not found!")
-    vim.cmd("cquit 1")
-    return
-  end
-
-  -- Run tests with minimal configuration
-  local ok, results = pcall(test_harness.test_directory, "tests", {
+-- Run tests and print summary
+local function run()
+  local test_harness = require("plenary.test_harness")
+  
+  -- Run all tests
+  local results = test_harness.test_directory("tests", {
     minimal_init = "./tests/minimal_init_fast.lua",
   })
-
-  -- Re-enable printing for final results
-  print = original_print
-  io.write = original_write
-
-  if not ok then
-    print("ERROR: Test execution failed: " .. tostring(results))
-    vim.cmd("cquit 1")
-    return
-  end
-
-  -- Print aggregated summary
+  
+  -- Print aggregate summary
   print("\n" .. string.rep("=", 80))
   print("AGGREGATE TEST RESULTS")
   print(string.rep("=", 80))
-
-  -- Count totals from results
+  
   if results and type(results) == "table" then
     local total_success = 0
     local total_failed = 0
     local total_errors = 0
     local file_count = 0
-
+    
     for file, result in pairs(results) do
       if type(result) == "table" then
         file_count = file_count + 1
@@ -57,38 +37,29 @@ local function run_tests_fast()
         total_errors = total_errors + (result.errs or 0)
       end
     end
-
+    
     print(string.format("Total tests passed: %d", total_success))
     print(string.format("Total tests failed: %d", total_failed))
     print(string.format("Total errors: %d", total_errors))
     print(string.format("Test files run: %d", file_count))
     print(string.rep("=", 80))
-
-    -- Exit with error code if any tests failed
+    
     if total_failed > 0 or total_errors > 0 then
-      print("❌ Tests failed! Exiting with error code 1")
+      print("❌ Tests failed!")
       vim.cmd("cquit 1")
-      return
     else
       print("✅ All tests passed!")
+      vim.cmd("quitall!")
     end
   else
-    print("ERROR: Test results not available for aggregation")
-    print("Results type: " .. type(results))
-    print(string.rep("=", 80))
+    print("ERROR: Could not get test results")
     vim.cmd("cquit 1")
-    return
   end
 end
 
--- Run and exit
-local ok, err = pcall(run_tests_fast)
+-- Execute
+local ok, err = pcall(run)
 if not ok then
-  -- Re-enable printing for error messages
-  print = original_print
-  io.write = original_write
   print("ERROR: " .. tostring(err))
   vim.cmd("cquit 1")
-else
-  vim.cmd("quitall!")
 end
