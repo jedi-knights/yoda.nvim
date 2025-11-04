@@ -14,6 +14,7 @@ require("lazy").setup({
   { import = "plugins_new.completion" },
   { import = "plugins_new.lsp" },
   { import = "plugins_new.testing" },
+  { import = "plugins_new.debugging" },
 }, {
   defaults = {
     lazy = true,
