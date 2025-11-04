@@ -64,20 +64,26 @@ function M.make_config(cmd, title, opts)
     cmd = { vim.o.shell } -- Fallback
   end
 
+  -- Validate cmd is a proper array (list) not a dict
+  if cmd[1] == nil then
+    vim.notify("make_config: cmd must be an array with at least one element", vim.log.levels.ERROR, { title = "Terminal Config Error" })
+    cmd = { vim.o.shell }
+  end
+
   opts = opts or {}
 
-  return {
+  -- Build config for snacks.terminal
+  local config = {
     cmd = cmd,
     win = M.make_win_opts(title, opts.win or {}),
-    start_insert = opts.start_insert ~= false,
-    auto_insert = opts.auto_insert ~= false,
-    env = opts.env,
-    on_open = opts.on_open or function(term)
-      vim.opt_local.modifiable = true
-      vim.opt_local.readonly = false
-    end,
-    on_exit = opts.on_exit,
   }
+
+  -- Only add optional fields if they're provided
+  if opts.on_exit then
+    config.on_exit = opts.on_exit
+  end
+
+  return config
 end
 
 return M
