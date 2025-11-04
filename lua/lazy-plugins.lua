@@ -2,9 +2,10 @@
 -- Setup lazy.nvim with plugins
 
 require("lazy").setup({
-  -- Import plugins (old structure - will be phased out)
+  -- NOTE: Old monolithic plugins.lua has been migrated to modular structure
+  -- Remaining plugins (language-specific, utilities) still in plugins.lua
   { import = "plugins" },
-  -- Import new modular structure (parallel loading during migration)
+  -- Import new modular structure (main plugin organization)
   { import = "plugins_new.core" },
   { import = "plugins_new.motion" },
   { import = "plugins_new.ai" },
