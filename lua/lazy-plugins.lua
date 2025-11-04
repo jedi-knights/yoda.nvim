@@ -11,6 +11,7 @@ require("lazy").setup({
   { import = "plugins_new.explorer" },
   { import = "plugins_new.git" },
   { import = "plugins_new.editor" },
+  { import = "plugins_new.completion" },
 }, {
   defaults = {
     lazy = true,
