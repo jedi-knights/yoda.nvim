@@ -12,6 +12,7 @@ require("lazy").setup({
   { import = "plugins_new.git" },
   { import = "plugins_new.editor" },
   { import = "plugins_new.completion" },
+  { import = "plugins_new.lsp" },
 }, {
   defaults = {
     lazy = true,
