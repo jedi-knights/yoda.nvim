@@ -126,7 +126,7 @@ function M:open()
   -- Try snacks terminal (preferred)
   local ok, snacks = pcall(require, "snacks")
   if ok and snacks.terminal then
-    snacks.terminal.open(term_config.cmd, term_config)
+    snacks.terminal.open(term_config)
   else
     -- Fallback to native terminal
     vim.cmd("terminal " .. table.concat(term_config.cmd, " "))

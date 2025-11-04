@@ -18,7 +18,7 @@ M.builder = require("yoda.terminal.builder")
 -- ============================================================================
 
 --- Open floating terminal with optional virtual environment
---- @param opts table|nil Options {venv_path, title, cmd, win, env}
+--- @param opts table|nil Options {venv_path, title, cmd, win, env, auto_detect}
 function M.open_floating(opts)
   opts = opts or {}
   local notify = require("yoda.utils").notify
@@ -27,8 +27,24 @@ function M.open_floating(opts)
   if opts.venv_path then
     local activate_script = M.venv.get_activate_script_path(opts.venv_path)
     if activate_script then
-      -- TODO: Implement venv terminal opening (complex logic)
-      notify("Opening terminal with venv: " .. opts.venv_path, "info")
+      -- Get default shell
+      local shell = M.shell.get_default()
+      local shell_type = M.shell.get_type(shell)
+
+      -- Instead of using env parameter, source the activate script in the shell command
+      -- This is more reliable with snacks.terminal
+      local cmd
+      if shell_type == "bash" or shell_type == "zsh" then
+        cmd = { shell, "-i", "-c", string.format("source '%s' && exec %s -i", activate_script, shell) }
+      else
+        -- Fallback: just open shell in venv directory
+        cmd = { shell, "-i" }
+      end
+
+      opts.cmd = cmd
+      opts.title = opts.title or string.format(" Terminal (venv: %s) ", vim.fn.fnamemodify(opts.venv_path, ":t"))
+
+      notify("Activating venv: " .. opts.venv_path, "info")
       M.shell.open_simple(opts)
     else
       notify("No activate script found for: " .. opts.venv_path, "warn")
@@ -37,7 +53,18 @@ function M.open_floating(opts)
     return
   end
 
-  -- Auto-detect venv and prompt user
+  -- Auto-detect .venv in current directory
+  local cwd = vim.fn.getcwd()
+  local default_venv = cwd .. "/.venv"
+  local io = require("yoda.core.io")
+
+  if io.is_dir(default_venv) and M.venv.get_activate_script_path(default_venv) then
+    opts.venv_path = default_venv
+    M.open_floating(opts)
+    return
+  end
+
+  -- No .venv found, check for other venvs and prompt user
   M.venv.select_virtual_env(function(venv)
     if venv then
       opts.venv_path = venv

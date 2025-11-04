@@ -126,12 +126,12 @@ describe("terminal.shell", function()
     end)
 
     it("uses custom cmd when provided", function()
-      local captured_cmd = nil
+      local captured_config = nil
 
       package.loaded["snacks"] = {
         terminal = {
-          open = function(cmd, cfg)
-            captured_cmd = cmd
+          open = function(config)
+            captured_config = config
           end,
         },
       }
@@ -143,7 +143,7 @@ describe("terminal.shell", function()
       }
 
       shell.open_simple({ cmd = { "python", "-i" } })
-      assert.same({ "python", "-i" }, captured_cmd)
+      assert.same({ "python", "-i" }, captured_config.cmd)
     end)
 
     it("uses custom title when provided", function()

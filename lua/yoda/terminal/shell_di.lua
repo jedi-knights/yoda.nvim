@@ -53,7 +53,7 @@ function M.new(deps)
     -- Try snacks terminal (preferred)
     local ok, snacks = pcall(require, "snacks")
     if ok and snacks.terminal then
-      snacks.terminal.open(term_config.cmd, term_config)
+      snacks.terminal.open(term_config)
     else
       -- Fallback to native terminal
       notify("Using native terminal (snacks not available)", vim.log.levels.INFO)

@@ -35,7 +35,7 @@ function M.get_default()
 end
 
 --- Open simple terminal without venv
---- @param opts table|nil Options {cmd, title, win, env}
+--- @param opts table|nil Options {cmd, title, win}
 function M.open_simple(opts)
   opts = opts or {}
   local config = require("yoda.terminal.config")
@@ -43,12 +43,16 @@ function M.open_simple(opts)
   local shell = opts.cmd or { M.get_default(), "-i" }
   local title = opts.title or " Terminal "
 
-  local term_config = config.make_config(shell, title, opts)
+  -- Create minimal config - only pass what snacks.terminal definitely supports
+  local term_config = {
+    cmd = shell,
+    win = config.make_win_opts(title, opts.win or {}),
+  }
 
   -- Try snacks terminal (preferred)
   local ok, snacks = pcall(require, "snacks")
   if ok and snacks.terminal then
-    snacks.terminal.open(term_config.cmd, term_config)
+    snacks.terminal.open(term_config)
   else
     -- Fallback to native terminal
     local notify = require("yoda.utils").notify
