@@ -30,8 +30,10 @@ end
 local modules = {
   "plugins_new.core",
   "plugins_new.motion",
+  "plugins_new.ai",
   -- More will be added incrementally
   -- Note: motion plugins (leap, vim-tmux-navigator) migrated
+  -- Note: ai plugins (copilot, opencode) migrated
 }
 
 -- Load all plugin modules
