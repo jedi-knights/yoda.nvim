@@ -78,29 +78,9 @@ function M.handle_buf_win_enter(buf)
     return
   end
 
-  vim.schedule(function()
-    local explorer_win, _ = win_utils.find_snacks_explorer()
-    local opencode_win, _ = win_utils.find_opencode()
-    local current_win = vim.api.nvim_get_current_win()
-
-    -- Only manage layout if both explorer and OpenCode are open
-    if not (explorer_win and opencode_win) then
-      return
-    end
-
-    -- Only intervene if current window is the OpenCode window
-    if current_win ~= opencode_win then
-      return
-    end
-
-    local regular_wins = get_regular_windows()
-    local main_win = find_or_create_main_window(explorer_win, opencode_win, regular_wins)
-
-    if main_win then
-      vim.api.nvim_set_current_win(main_win)
-      vim.api.nvim_win_set_buf(main_win, buf)
-    end
-  end)
+  -- Don't manage layout - let Snacks explorer handle it naturally
+  -- This module is DISABLED to prevent duplicate window creation
+  return
 end
 
 --- Setup window layout management autocmds
