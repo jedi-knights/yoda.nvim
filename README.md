@@ -14,8 +14,9 @@
 
 <p align="center">
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/tests-531%20passing-brightgreen" alt="Tests">
-  <img src="https://img.shields.io/badge/quality-10%2F10-brightgreen" alt="Code Quality">
+  <img src="https://img.shields.io/badge/tests-302%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/quality-15%2F15%20★-gold" alt="Code Quality">
+  <img src="https://img.shields.io/badge/coverage-~95%25-brightgreen" alt="Coverage">
 </p>
 
 <p align="center">
@@ -203,9 +204,16 @@ Once installed, all language servers provide:
 
 ### Configuration
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Customize your setup
+- **[User Configuration](docs/USER_CONFIGURATION.md)** - New! Customize terminal, YAML parser, and more
 - **[AI Setup Guide](docs/AI_SETUP.md)** - Configure Copilot and OpenCode
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[Performance Guide](docs/PERFORMANCE_GUIDE.md)** - Optimize startup and runtime
+
+### For Contributors
+- **[Quick Start Guide](docs/QUICK_START.md)** - New! Get contributing in 5 minutes
+- **[Architecture Diagrams](docs/diagrams/ARCHITECTURE.md)** - New! Visual architecture guide
+- **[Standards Reference](docs/STANDARDS_QUICK_REFERENCE.md)** - Code quality standards
+- **[Contributing Guide](CONTRIBUTING.md)** - Full contribution guidelines
 
 ### Advanced Topics
 - **[LSP Guide](docs/overview/LSP.md)** - Language Server Protocol setup

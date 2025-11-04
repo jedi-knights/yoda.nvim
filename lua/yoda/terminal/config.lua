@@ -4,14 +4,15 @@
 local M = {}
 
 -- ============================================================================
--- Constants
+-- Constants (configurable via vim.g.yoda_terminal_*)
 -- ============================================================================
 
 -- Terminal window dimensions (percentages of screen size)
-local TERMINAL_WIDTH_PERCENT = 0.9 -- Use 90% of screen width for better readability
-local TERMINAL_HEIGHT_PERCENT = 0.85 -- Use 85% of screen height for comfortable viewing
-local DEFAULT_BORDER_STYLE = "rounded"
-local DEFAULT_TITLE_POSITION = "center"
+-- Users can override with: vim.g.yoda_terminal_width, vim.g.yoda_terminal_height
+local TERMINAL_WIDTH_PERCENT = vim.g.yoda_terminal_width or 0.9 -- Use 90% of screen width for better readability
+local TERMINAL_HEIGHT_PERCENT = vim.g.yoda_terminal_height or 0.85 -- Use 85% of screen height for comfortable viewing
+local DEFAULT_BORDER_STYLE = vim.g.yoda_terminal_border or "rounded"
+local DEFAULT_TITLE_POSITION = vim.g.yoda_terminal_title_pos or "center"
 
 M.DEFAULTS = {
   WIDTH = TERMINAL_WIDTH_PERCENT,
