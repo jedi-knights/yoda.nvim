@@ -13,6 +13,7 @@ require("lazy").setup({
   { import = "plugins_new.editor" },
   { import = "plugins_new.completion" },
   { import = "plugins_new.lsp" },
+  { import = "plugins_new.testing" },
 }, {
   defaults = {
     lazy = true,
