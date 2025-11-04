@@ -2,8 +2,11 @@
 -- Setup lazy.nvim with plugins
 
 require("lazy").setup({
-  -- Import plugins
+  -- Import plugins (old structure - will be phased out)
   { import = "plugins" },
+  -- Import new modular structure (parallel loading during migration)
+  { import = "plugins_new.core" },
+  { import = "plugins_new.motion" },
 }, {
   defaults = {
     lazy = true,
