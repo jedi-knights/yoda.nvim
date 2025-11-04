@@ -9,6 +9,7 @@ require("lazy").setup({
   { import = "plugins_new.motion" },
   { import = "plugins_new.ai" },
   { import = "plugins_new.explorer" },
+  { import = "plugins_new.git" },
 }, {
   defaults = {
     lazy = true,

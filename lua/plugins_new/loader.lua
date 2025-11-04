@@ -32,10 +32,12 @@ local modules = {
   "plugins_new.motion",
   "plugins_new.ai",
   "plugins_new.explorer",
+  "plugins_new.git",
   -- More will be added incrementally
   -- Note: motion plugins (leap, vim-tmux-navigator) migrated
   -- Note: ai plugins (copilot, opencode) migrated
   -- Note: explorer plugins (snacks, nvim-tree, devicons) migrated
+  -- Note: git plugins (gitsigns, diffview, neogit) migrated
 }
 
 -- Load all plugin modules
