@@ -2,21 +2,29 @@
 -- Setup lazy.nvim with plugins
 
 require("lazy").setup({
-  -- NOTE: Old monolithic plugins.lua has been migrated to modular structure
-  -- Remaining plugins (language-specific, utilities) still in plugins.lua
-  { import = "plugins" },
-  -- Import new modular structure (main plugin organization)
-  { import = "plugins_new.core" },
-  { import = "plugins_new.motion" },
-  { import = "plugins_new.ai" },
-  { import = "plugins_new.explorer" },
-  { import = "plugins_new.git" },
-  { import = "plugins_new.editor" },
-  { import = "plugins_new.completion" },
-  { import = "plugins_new.lsp" },
-  { import = "plugins_new.testing" },
-  { import = "plugins_new.debugging" },
-  { import = "plugins_new.ui" },
+  -- Core plugins
+  { import = "plugins.core" },
+  { import = "plugins.ui" },
+  { import = "plugins.editor" },
+  { import = "plugins.motion" },
+
+  -- Development tools
+  { import = "plugins.lsp" },
+  { import = "plugins.completion" },
+  { import = "plugins.debugging" },
+  { import = "plugins.testing" },
+  { import = "plugins.formatters" },
+
+  -- Integration
+  { import = "plugins.ai" },
+  { import = "plugins.git" },
+  { import = "plugins.explorer" },
+
+  -- Language-specific plugins (loaded by filetype)
+  { import = "plugins.languages.rust" },
+  { import = "plugins.languages.python" },
+  { import = "plugins.languages.javascript" },
+  { import = "plugins.languages.csharp" },
 }, {
   defaults = {
     lazy = true,
