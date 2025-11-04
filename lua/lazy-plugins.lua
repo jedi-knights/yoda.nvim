@@ -7,6 +7,7 @@ require("lazy").setup({
   -- Import new modular structure (parallel loading during migration)
   { import = "plugins_new.core" },
   { import = "plugins_new.motion" },
+  { import = "plugins_new.ai" },
 }, {
   defaults = {
     lazy = true,
