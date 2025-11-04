@@ -8,12 +8,17 @@ local logger = require("yoda.logging.logger")
 local M = {}
 
 -- ============================================================================
--- Constants
+-- Constants (configurable via vim.g.yoda_yaml_*)
 -- ============================================================================
 
-local KNOWN_ENVIRONMENTS = { fastly = true, qa = true, prod = true }
-local ENVIRONMENT_INDENT = 2
-local REGION_INDENT = 6
+-- Allow users to extend environments without modifying source (OCP principle)
+local function get_known_environments()
+  return vim.g.yoda_yaml_environments or { fastly = true, qa = true, prod = true }
+end
+
+-- Allow users to override YAML indentation if their file format differs
+local ENVIRONMENT_INDENT = vim.g.yoda_yaml_env_indent or 2
+local REGION_INDENT = vim.g.yoda_yaml_region_indent or 6
 
 -- ============================================================================
 -- Helper Functions (Low Complexity)
@@ -52,7 +57,8 @@ local function extract_environment_name(trimmed, indent)
   end
 
   local env_name = trimmed:match("^-%s*name:%s*(.+)")
-  if env_name and KNOWN_ENVIRONMENTS[env_name] then
+  local known_envs = get_known_environments()
+  if env_name and known_envs[env_name] then
     return env_name
   end
   return nil
@@ -170,6 +176,9 @@ end
 --- @param yaml_path string Path to the YAML file
 --- @return table|nil Table with environment names as keys and region arrays as values
 function M.parse_ingress_mapping(yaml_path)
+  -- Input validation
+  assert(type(yaml_path) == "string" and yaml_path ~= "", "yaml_path must be a non-empty string")
+  
   -- Read file
   local ok, content = read_yaml_file(yaml_path)
   if not ok then

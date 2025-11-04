@@ -30,6 +30,12 @@ end
 --- @param match_fn function Function that receives (win, buf, buf_name, filetype) and returns boolean
 --- @return table Array of {win = number, buf = number} pairs
 function M.find_all_windows(match_fn)
+  -- Input validation (assertive programming)
+  if type(match_fn) ~= "function" then
+    vim.notify("find_all_windows: match_fn must be a function, got " .. type(match_fn), vim.log.levels.ERROR, { title = "Window Utils Error" })
+    return {}
+  end
+
   local matches = {}
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
@@ -47,6 +53,12 @@ end
 --- @param match_fn function Function that receives (win, buf, buf_name, filetype) and returns boolean
 --- @return boolean True if window was found and focused
 function M.focus_window(match_fn)
+  -- Input validation (assertive programming)
+  if type(match_fn) ~= "function" then
+    vim.notify("focus_window: match_fn must be a function, got " .. type(match_fn), vim.log.levels.ERROR, { title = "Window Utils Error" })
+    return false
+  end
+
   local win, _ = M.find_window(match_fn)
   if win then
     vim.api.nvim_set_current_win(win)
@@ -60,6 +72,12 @@ end
 --- @param force boolean|nil Force close even if modified
 --- @return number Number of windows closed
 function M.close_windows(match_fn, force)
+  -- Input validation (assertive programming)
+  if type(match_fn) ~= "function" then
+    vim.notify("close_windows: match_fn must be a function, got " .. type(match_fn), vim.log.levels.ERROR, { title = "Window Utils Error" })
+    return 0
+  end
+
   local windows = M.find_all_windows(match_fn)
   local count = 0
 

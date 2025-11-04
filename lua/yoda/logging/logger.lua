@@ -108,24 +108,36 @@ end
 --- Set logging strategy
 --- @param strategy string Strategy name ("console", "file", "notify", "multi")
 function M.set_strategy(strategy)
+  assert(type(strategy) == "string", "strategy must be a string")
+  local valid_strategies = { console = true, file = true, notify = true, multi = true }
+  assert(valid_strategies[strategy], "invalid strategy: " .. strategy .. " (expected: console, file, notify, or multi)")
   require("yoda.logging.config").set_strategy(strategy)
 end
 
 --- Set log level
 --- @param level number|string Level (number or name like "debug")
 function M.set_level(level)
+  assert(type(level) == "number" or type(level) == "string", "level must be number or string")
+  if type(level) == "string" then
+    local valid_names = { trace = true, debug = true, info = true, warn = true, error = true }
+    assert(valid_names[level:lower()], "invalid level name: " .. level)
+  elseif type(level) == "number" then
+    assert(level >= 0 and level <= 4, "level must be between 0 and 4")
+  end
   require("yoda.logging.config").set_level(level)
 end
 
 --- Set log file path (for file strategy)
 --- @param path string Log file path
 function M.set_file_path(path)
+  assert(type(path) == "string" and path ~= "", "path must be a non-empty string")
   require("yoda.logging.config").set_log_file(path)
 end
 
 --- Configure logger
 --- @param opts table Configuration options
 function M.setup(opts)
+  assert(type(opts) == "table", "opts must be a table")
   require("yoda.logging.config").update(opts)
 end
 

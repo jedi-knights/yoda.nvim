@@ -60,9 +60,7 @@ end
 --- Update configuration (deep merge)
 --- @param opts table Configuration options to merge
 function M.update(opts)
-  if type(opts) ~= "table" then
-    return
-  end
+  assert(type(opts) == "table", "opts must be a table")
 
   -- Deep merge with current config
   current_config = vim.tbl_deep_extend("force", current_config, opts)
@@ -82,9 +80,8 @@ end
 --- Set log file path
 --- @param path string New log file path
 function M.set_log_file(path)
-  if type(path) == "string" and path ~= "" then
-    current_config.file.path = path
-  end
+  assert(type(path) == "string" and path ~= "", "path must be a non-empty string")
+  current_config.file.path = path
 end
 
 --- Get current log level
@@ -96,6 +93,8 @@ end
 --- Set log level
 --- @param level number|string Level (number or name like "debug")
 function M.set_level(level)
+  assert(type(level) == "number" or type(level) == "string", "level must be number or string")
+
   -- Convert string to number if needed
   if type(level) == "string" then
     local level_upper = level:upper()
@@ -105,7 +104,9 @@ function M.set_level(level)
         return
       end
     end
+    error("invalid level name: " .. level .. " (expected: trace, debug, info, warn, error)")
   elseif type(level) == "number" then
+    assert(level >= 0 and level <= 4, "level must be between 0 and 4")
     current_config.level = level
   end
 end
@@ -119,11 +120,10 @@ end
 --- Set logging strategy
 --- @param strategy string Strategy name ("console", "file", "notify", "multi")
 function M.set_strategy(strategy)
+  assert(type(strategy) == "string", "strategy must be a string")
   local valid_strategies = { console = true, file = true, notify = true, multi = true }
-
-  if type(strategy) == "string" and valid_strategies[strategy] then
-    current_config.strategy = strategy
-  end
+  assert(valid_strategies[strategy], "invalid strategy: " .. strategy .. " (expected: console, file, notify, or multi)")
+  current_config.strategy = strategy
 end
 
 return M
