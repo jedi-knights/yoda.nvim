@@ -1,5 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
+
+  // 1) Keep your reusable instruction files
   "instructions": [
     "AGENTS.md",
     "CLAUDE.md",
@@ -8,51 +10,36 @@
     ".opencode/knowledge/nvim_api.md",
     ".opencode/knowledge/plugin_architecture.md"
   ],
-  "system": [
-    "You are an expert in Lua and Neovim plugin development (Lua API).",
-    "Prefer modern Neovim Lua APIs: vim.api.nvim_create_autocmd, vim.keymap.set, vim.opt.",
-    "Avoid Vimscript and deprecated patterns unless asked.",
-    "When uncertain about an API, suggest ':h {topic}' and avoid guessing.",
-    "Infer indentation and style from existing files; keep code blocks self-contained.",
-    "When editing, preserve module structure, require paths, and naming conventions already in the repo."
-  ],
-  "context": {
-    "include": [
-      "init.lua",
-      "lua/**/*.lua",
-      "README.md",
-      ".opencode/knowledge/*.md"
-    ],
-    "ignore": [
-      "plugin/packer_compiled.lua",
-      "lazy-lock.json",
-      "**/node_modules/**",
-      "**/.git/**",
-      "**/.venv/**"
-    ],
-    "max_tokens": 40000,
-    "retrieval": {
-      "useEmbeddings": true,
-      "topK": 5
+
+  // 2) Define a mode that supplies the "system prompt" from a file
+  "mode": {
+    "neovim-lua": {
+      "prompt": "{file:.opencode/prompts/neovim-lua.txt}"
     }
   },
-  "routing": {
-    "rules": [
-      {
-        "pattern": "\\.lua$",
-        "model": "claude-sonnet-4-5"
-      }
-    ],
-    "truncateStrategy": "smart-head",
-    "keepLastMessages": 10,
-    "maxInputTokens": 185000,
-    "reserveForOutput": 5000
+
+  // 3) (Optional) Enable useful built-in tools so the model can read your repo
+  "tools": {
+    "read": true,
+    "grep": true,
+    "glob": true,
+    "list": true,
+    "bash": true
   },
+
+  // 4) Provider/model config (Anthropic)
   "provider": {
     "anthropic": {
-      "options": {
-        "max_tokens": 1200
+      "options": { "max_tokens": 1200 },
+      "models": {
+        "claude-3-5-sonnet-latest": {
+          "name": "Claude Sonnet 4.5",
+          "options": { "max_tokens": 1200 }
+        }
       }
     }
   }
+
+  // Note: If you want this mode to be the default, set it in your UI/CLI,
+  // or just invoke:  opencode --mode neovim-lua
 }
