@@ -4,6 +4,55 @@
     "AGENTS.md",
     "CLAUDE.md",
     "docs/OPENCODE.md",
-    "CONTRIBUTING.md"
-  ]
+    "CONTRIBUTING.md",
+    ".opencode/knowledge/nvim_api.md",
+    ".opencode/knowledge/plugin_architecture.md"
+  ],
+  "system": [
+    "You are an expert in Lua and Neovim plugin development (Lua API).",
+    "Prefer modern Neovim Lua APIs: vim.api.nvim_create_autocmd, vim.keymap.set, vim.opt.",
+    "Avoid Vimscript and deprecated patterns unless asked.",
+    "When uncertain about an API, suggest ':h {topic}' and avoid guessing.",
+    "Infer indentation and style from existing files; keep code blocks self-contained.",
+    "When editing, preserve module structure, require paths, and naming conventions already in the repo."
+  ],
+  "context": {
+    "include": [
+      "init.lua",
+      "lua/**/*.lua",
+      "README.md",
+      ".opencode/knowledge/*.md"
+    ],
+    "ignore": [
+      "plugin/packer_compiled.lua",
+      "lazy-lock.json",
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/.venv/**"
+    ],
+    "max_tokens": 40000,
+    "retrieval": {
+      "useEmbeddings": true,
+      "topK": 5
+    }
+  },
+  "routing": {
+    "rules": [
+      {
+        "pattern": "\\.lua$",
+        "model": "claude-sonnet-4-5"
+      }
+    ],
+    "truncateStrategy": "smart-head",
+    "keepLastMessages": 10,
+    "maxInputTokens": 185000,
+    "reserveForOutput": 5000
+  },
+  "provider": {
+    "anthropic": {
+      "options": {
+        "max_tokens": 1200
+      }
+    }
+  }
 }
