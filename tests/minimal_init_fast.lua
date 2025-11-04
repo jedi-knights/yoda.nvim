@@ -18,7 +18,7 @@ vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.undofile = false
 
--- Disable notifications during fast tests for speed  
+-- Disable notifications during fast tests for speed
 vim.notify = function() end -- No-op notifications
 
 -- Disable file watching and change detection
