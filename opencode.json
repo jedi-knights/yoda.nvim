@@ -1,9 +1,45 @@
 {
   "$schema": "https://opencode.ai/config.json",
+
+  // 1) Keep your reusable instruction files
   "instructions": [
     "AGENTS.md",
     "CLAUDE.md",
     "docs/OPENCODE.md",
-    "CONTRIBUTING.md"
-  ]
+    "CONTRIBUTING.md",
+    ".opencode/knowledge/nvim_api.md",
+    ".opencode/knowledge/plugin_architecture.md"
+  ],
+
+  // 2) Define a mode that supplies the "system prompt" from a file
+  "mode": {
+    "neovim-lua": {
+      "prompt": "{file:.opencode/prompts/neovim-lua.txt}"
+    }
+  },
+
+  // 3) (Optional) Enable useful built-in tools so the model can read your repo
+  "tools": {
+    "read": true,
+    "grep": true,
+    "glob": true,
+    "list": true,
+    "bash": true
+  },
+
+  // 4) Provider/model config (Anthropic)
+  "provider": {
+    "anthropic": {
+      "options": { "max_tokens": 1200 },
+      "models": {
+        "claude-3-5-sonnet-latest": {
+          "name": "Claude Sonnet 4.5",
+          "options": { "max_tokens": 1200 }
+        }
+      }
+    }
+  }
+
+  // Note: If you want this mode to be the default, set it in your UI/CLI,
+  // or just invoke:  opencode --mode neovim-lua
 }

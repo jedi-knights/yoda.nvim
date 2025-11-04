@@ -20,7 +20,27 @@ return {
   -- ============================================================================
   -- MOTION & NAVIGATION
   -- ============================================================================
-  -- MIGRATED to plugins_new/motion.lua
+
+  -- Leap - Fast motion between visible targets
+  {
+    "ggandor/leap.nvim",
+    event = "VeryLazy",
+    config = function()
+      require("leap").add_default_mappings()
+    end,
+  },
+
+  -- Vim Tmux Navigator - Seamless navigation between vim and tmux
+  {
+    "christoomey/vim-tmux-navigator",
+    keys = {
+      { "<C-h>", "<cmd>TmuxNavigateLeft<cr>", desc = "Navigate left" },
+      { "<C-j>", "<cmd>TmuxNavigateDown<cr>", desc = "Navigate down" },
+      { "<C-k>", "<cmd>TmuxNavigateUp<cr>", desc = "Navigate up" },
+      { "<C-l>", "<cmd>TmuxNavigateRight<cr>", desc = "Navigate right" },
+      { "<C-\\>", "<cmd>TmuxNavigatePrevious<cr>", desc = "Navigate previous" },
+    },
+  },
 
   -- ============================================================================
   -- UI & COLORS
@@ -34,7 +54,38 @@ return {
   },
 
   -- Snacks - Modern UI framework
-  -- MIGRATED to plugins_new/explorer.lua
+  {
+    "folke/snacks.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("snacks").setup({
+        explorer = {
+          enabled = true,
+          show_hidden = true,
+          win = {
+            position = "left",
+            width = 30,
+            wo = {
+              winfixwidth = true,
+            },
+          },
+        },
+        picker = {
+          enabled = true,
+        },
+        terminal = {
+          enabled = true,
+        },
+        input = {
+          enabled = true,
+          win = {
+            border = "rounded",
+          },
+        },
+      })
+    end,
+  },
 
   -- Bufferline - Visual buffer tabs
   {
@@ -214,7 +265,16 @@ return {
   },
 
   -- Devicons - File type icons
-  -- MIGRATED to plugins_new/explorer.lua
+  {
+    "nvim-tree/nvim-web-devicons",
+    event = "VeryLazy",
+    config = function()
+      require("nvim-web-devicons").setup({
+        default = true,
+        strict = false,
+      })
+    end,
+  },
 
   -- Lualine - Statusline with git branch display
   {
@@ -481,7 +541,25 @@ return {
   -- ============================================================================
 
   -- nvim-tree - File explorer
-  -- MIGRATED to plugins_new/explorer.lua
+  {
+    "nvim-tree/nvim-tree.lua",
+    lazy = true,
+    cmd = { "NvimTreeToggle", "NvimTreeOpen" },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("nvim-tree").setup({
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = false,
+        },
+      })
+    end,
+  },
 
   -- Telescope - Fuzzy finder
   {
@@ -517,7 +595,58 @@ return {
   -- ============================================================================
   -- AI INTEGRATION
   -- ============================================================================
-  -- MIGRATED to plugins_new/ai.lua
+
+  -- GitHub Copilot
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        panel = {
+          enabled = true,
+          auto_refresh = false,
+          keymap = {
+            jump_prev = "[[",
+            jump_next = "]]",
+            accept = "<CR>",
+            refresh = "gr",
+            open = "<M-CR>",
+          },
+          layout = {
+            position = "bottom",
+            ratio = 0.4,
+          },
+        },
+        suggestion = {
+          enabled = true,
+          auto_trigger = false,
+          debounce = 75,
+          keymap = {
+            accept = false, -- Disable built-in, we use custom keymaps
+            accept_word = false,
+            accept_line = false,
+            next = false, -- Disable built-in, we use custom keymaps
+            prev = false, -- Disable built-in, we use custom keymaps
+            dismiss = false, -- Disable built-in, we use custom keymaps
+          },
+        },
+        filetypes = {
+          yaml = false,
+          markdown = false,
+          help = false,
+          gitcommit = false,
+          gitrebase = false,
+          hgcommit = false,
+          svn = false,
+          cvs = false,
+          ["."] = false,
+        },
+        copilot_node_command = "node",
+        server_opts_overrides = {},
+      })
+    end,
+  },
 
   -- ============================================================================
   -- DEVELOPMENT TOOLS
@@ -550,9 +679,218 @@ return {
   -- ============================================================================
   -- GIT INTEGRATION
   -- ============================================================================
-  -- MIGRATED to plugins_new/git.lua
 
   -- Git signs
+  {
+    "lewis6991/gitsigns.nvim",
+    lazy = true,
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("gitsigns").setup({
+        signs = {
+          add = { text = "│" },
+          change = { text = "│" },
+          delete = { text = "_" },
+          topdelete = { text = "‾" },
+          changedelete = { text = "~" },
+          untracked = { text = "┆" },
+        },
+        signcolumn = true,
+        numhl = false,
+        linehl = false,
+        word_diff = false,
+        watch_gitdir = {
+          interval = 1000,
+          follow_files = true,
+        },
+        attach_to_untracked = true,
+        current_line_blame = false,
+        current_line_blame_opts = {
+          virt_text = true,
+          virt_text_pos = "eol",
+          delay = 1000,
+          ignore_whitespace = false,
+        },
+        sign_priority = 6,
+        update_debounce = 100,
+        status_formatter = nil,
+        max_file_length = 40000,
+        preview_config = {
+          border = "single",
+          style = "minimal",
+          relative = "cursor",
+          row = 0,
+          col = 1,
+        },
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+
+          -- Refresh git signs after git operations
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "NeogitStatusRefreshed",
+            callback = function()
+              gs.refresh()
+            end,
+          })
+
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "NeogitCommitComplete",
+            callback = function()
+              gs.refresh()
+            end,
+          })
+
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "NeogitPushComplete",
+            callback = function()
+              gs.refresh()
+            end,
+          })
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map("n", "]c", function()
+            if vim.wo.diff then
+              return "]c"
+            end
+            vim.schedule(function()
+              gs.next_hunk()
+            end)
+            return "<Ignore>"
+          end, { expr = true })
+
+          map("n", "[c", function()
+            if vim.wo.diff then
+              return "[c"
+            end
+            vim.schedule(function()
+              gs.prev_hunk()
+            end)
+            return "<Ignore>"
+          end, { expr = true })
+
+          -- Actions
+          map({ "n", "v" }, "<leader>hs", ":Gitsigns stage_hunk<CR>")
+          map({ "n", "v" }, "<leader>hr", ":Gitsigns reset_hunk<CR>")
+          map("n", "<leader>hS", gs.stage_buffer)
+          map("n", "<leader>hu", gs.undo_stage_hunk)
+          map("n", "<leader>hR", gs.reset_buffer)
+          map("n", "<leader>hp", gs.preview_hunk)
+          map("n", "<leader>hb", function()
+            gs.blame_line({ full = true })
+          end)
+          map("n", "<leader>tb", gs.toggle_current_line_blame)
+          map("n", "<leader>hd", gs.diffthis)
+          map("n", "<leader>hD", function()
+            gs.diffthis("~")
+          end)
+          map("n", "<leader>td", gs.toggle_deleted)
+
+          -- Text object
+          map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>")
+        end,
+      })
+    end,
+  },
+
+  -- Diffview - Git diff viewer
+  {
+    "sindrets/diffview.nvim",
+    lazy = true,
+    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewRefresh" },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("diffview").setup({
+        view = {
+          default = {
+            layout = "diff2_horizontal",
+          },
+          merge_tool = {
+            layout = "diff3_horizontal",
+          },
+        },
+      })
+    end,
+  },
+
+  -- ============================================================================
+  -- TESTING & DEBUGGING
+  -- ============================================================================
+
+  -- Neogit - Git interface
+  {
+    "TimUntersberger/neogit",
+    lazy = true,
+    cmd = "Neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "sindrets/diffview.nvim", -- Required for neogit diff integration
+    },
+    config = function()
+      require("neogit").setup({
+        disable_signs = false,
+        disable_context_highlighting = false,
+        disable_commit_confirmation = false,
+        auto_refresh = true,
+        sort_branches = "-committerdate",
+        disable_builtin_notifications = false,
+        use_magit_keybindings = false,
+        commit_popup = {
+          kind = "split",
+        },
+        popup = {
+          kind = "split",
+        },
+        signs = {
+          hunk = { "", "" },
+          item = { ">", "v" },
+          section = { ">", "v" },
+        },
+        integrations = {
+          diffview = true,
+        },
+        sections = {
+          untracked = {
+            folded = false,
+            hidden = false,
+          },
+          unstaged = {
+            folded = false,
+            hidden = false,
+          },
+          staged = {
+            folded = false,
+            hidden = false,
+          },
+          stashes = {
+            folded = true,
+            hidden = false,
+          },
+          unpulled = {
+            folded = true,
+            hidden = false,
+          },
+          unmerged = {
+            folded = false,
+            hidden = false,
+          },
+          recent = {
+            folded = true,
+            hidden = false,
+          },
+        },
+        -- Use default mappings to avoid configuration errors
+        -- Custom mappings can be added later once we know the correct command names
+      })
+    end,
+  },
+
   -- Pytest Atlas - Pytest runner with environment/marker selection
   {
     "ocrosby/pytest-atlas.nvim",
@@ -744,7 +1082,52 @@ return {
   -- ============================================================================
   -- AI INTEGRATION (ADDITIONAL)
   -- ============================================================================
-  -- MIGRATED to plugins_new/ai.lua
+
+  -- OpenCode - AI assistant integration
+  {
+    "NickvanDyke/opencode.nvim",
+    lazy = true,
+    cmd = { "OpencodePrompt", "OpencodeAsk", "OpencodeSelect", "OpencodeToggle" },
+    dependencies = {
+      "folke/snacks.nvim", -- Required for toggle functionality
+    },
+    config = function()
+      vim.g.opencode_opts = {
+        -- Auto-reload buffers edited by opencode
+        auto_reload = true,
+
+        -- Window configuration
+        window = {
+          width = 0.4, -- 40% of screen width
+          height = 0.8, -- 80% of screen height
+          position = "right", -- "left", "right", "top", "bottom"
+        },
+
+        -- Default provider and model
+        -- provider = "anthropic",
+        -- model = "claude-3-5-sonnet-20241022",
+
+        -- Custom prompts
+        prompts = {
+          explain = "Explain @thisnd its context in detail",
+          optimize = "Suggest optimizations for @this",
+          test = "Write comprehensive tests for @this",
+        },
+      }
+
+      -- Required for enhanced buffer management
+      vim.opt.autoread = true
+      vim.opt.autowrite = true -- Auto-write buffers when switching
+
+      -- Setup OpenCode integration
+      local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
+      if ok then
+        vim.defer_fn(function()
+          opencode_integration.setup()
+        end, 100)
+      end
+    end,
+  },
 
   -- ============================================================================
   -- UTILITIES

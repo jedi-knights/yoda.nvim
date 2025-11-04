@@ -221,7 +221,7 @@ create_autocmd("BufEnter", {
       if ok then
         opencode_integration.handle_debounced_buffer_refresh(buf, autocmd_logger)
       else
-        gitsigns.refresh()
+        gitsigns.refresh_debounced()
       end
 
       autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
@@ -319,7 +319,7 @@ create_autocmd("FocusGained", {
   callback = function()
     if buffer_state.can_reload_buffer() then
       pcall(vim.cmd, "checktime")
-      gitsigns.refresh()
+      gitsigns.refresh_debounced()
     end
   end,
 })
@@ -408,7 +408,7 @@ create_autocmd("FocusGained", {
     else
       if buffer_state.can_reload_buffer() then
         pcall(vim.cmd, "checktime")
-        gitsigns.refresh()
+        gitsigns.refresh_debounced()
       end
     end
   end,
@@ -424,7 +424,7 @@ create_autocmd("BufWritePost", {
       opencode_integration.refresh_git_signs()
     else
       if vim.bo.buftype == "" then
-        gitsigns.refresh()
+        gitsigns.refresh_debounced()
       end
     end
   end,
@@ -450,7 +450,7 @@ create_autocmd("FileChangedShell", {
       -- Fallback behavior
       vim.schedule(function()
         pcall(vim.cmd, "checktime")
-        gitsigns.refresh()
+        gitsigns.refresh_debounced()
       end)
     end
   end,
@@ -462,18 +462,12 @@ create_autocmd("FileChangedShellPost", {
   desc = "Post-process file changes from external tools",
   callback = function()
     vim.schedule(function()
-      -- Ensure UI is properly updated
-      vim.cmd("redraw!")
-
-      -- Final git signs refresh for consistency
+      -- Final git signs refresh for consistency (debounced)
       local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
       if ok then
         opencode_integration.refresh_git_signs()
       else
-        local gs = package.loaded.gitsigns
-        if gs and vim.bo.buftype == "" then
-          gs.refresh()
-        end
+        gitsigns.refresh_debounced()
       end
     end)
   end,
