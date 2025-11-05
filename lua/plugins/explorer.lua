@@ -21,6 +21,7 @@ return {
         },
         picker = {
           enabled = true,
+          ui_select = false, -- TEMP DISABLED: Testing if Snacks picker is causing crashes
           sources = {
             explorer = {
               hidden = true, -- Show hidden files/folders by default
