@@ -57,8 +57,7 @@ return {
   -- OpenCode - AI assistant integration
   {
     "NickvanDyke/opencode.nvim",
-    lazy = true,
-    cmd = { "OpencodePrompt", "OpencodeAsk", "OpencodeSelect", "OpencodeToggle" },
+    lazy = false,
     dependencies = {
       "folke/snacks.nvim", -- Required for toggle functionality
     },
