@@ -5,17 +5,34 @@ return {
   -- Pytest Atlas - Pytest runner with environment/marker selection
   {
     "ocrosby/pytest-atlas.nvim",
-    lazy = false, -- Load immediately to ensure keymap is registered
+    lazy = false,
     dependencies = {
       "folke/snacks.nvim",
     },
     config = function()
-      require("pytest-atlas").setup({
-        keymap = "<leader>tt",
-        enable_keymap = true,
-        picker = "snacks", -- Use snacks.nvim for picker
-        debug = false, -- Set to true for debugging picker issues
-      })
+      local compat_ok = pcall(require("yoda.pytest_atlas_compat").setup)
+      if not compat_ok then
+        vim.notify("Failed to setup pytest-atlas compatibility layer", vim.log.levels.WARN)
+      end
+
+      local ok, pytest_atlas = pcall(require, "pytest-atlas")
+      if not ok then
+        vim.notify("Failed to load pytest-atlas: " .. tostring(pytest_atlas), vim.log.levels.ERROR)
+        return
+      end
+
+      local success, err = pcall(function()
+        pytest_atlas.setup({
+          keymap = "<leader>tt",
+          enable_keymap = true,
+          picker = "snacks",
+          debug = true, -- Enable debug logging
+        })
+      end)
+
+      if not success then
+        vim.notify("pytest-atlas setup failed: " .. tostring(err), vim.log.levels.ERROR)
+      end
     end,
   },
 
