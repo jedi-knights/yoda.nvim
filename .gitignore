@@ -43,3 +43,9 @@ node_modules/
 
 # Benchmark temporary files
 benchmarks/temp/
+
+# Development/Testing repositories (not part of distribution)
+# These are symlinks to external repos
+neovim
+pytest-atlas.nvim
+snacks.nvim
