@@ -5,6 +5,7 @@ return {
   -- Pytest Atlas - Pytest runner with environment/marker selection
   {
     "ocrosby/pytest-atlas.nvim",
+    dir = "/Users/omar.crosby/src/github/ocrosby/pytest-atlas.nvim", -- Use local version
     lazy = false,
     dependencies = {
       "folke/snacks.nvim",
