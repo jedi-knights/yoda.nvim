@@ -130,25 +130,31 @@ return {
     end,
   },
 
-  -- Noice - Enhanced UI components
+  -- Noice - Enhanced UI components (minimal config for LSP only)
   {
     "folke/noice.nvim",
     event = "VeryLazy",
+    enabled = true, -- Set to false to completely disable noice
     dependencies = {
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
     },
     config = function()
       require("noice").setup({
+        -- Disable all UI overrides that conflict with other plugins
         cmdline = {
-          enabled = false, -- DISABLED: Conflicts with Snacks picker causing crashes
+          enabled = false, -- Use native cmdline
         },
         messages = {
-          enabled = true, -- Keep messages enabled
+          enabled = false, -- Use native messages to avoid conflicts
+        },
+        popupmenu = {
+          enabled = false, -- Use native completion menu
         },
         notify = {
-          enabled = false, -- Disable noice vim.notify override to prevent conflicts
+          enabled = false, -- Don't override vim.notify
         },
+        -- Keep only LSP enhancements (safe and useful)
         lsp = {
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -157,7 +163,7 @@ return {
           },
           hover = {
             enabled = true,
-            silent = false, -- set to true to not show a message if hover is not available
+            silent = false,
             view = "hover",
           },
           signature = {
@@ -182,11 +188,11 @@ return {
           },
         },
         presets = {
-          bottom_search = true,
-          command_palette = true,
-          long_message_to_split = true,
+          bottom_search = false, -- Use native search
+          command_palette = false, -- Use native command palette
+          long_message_to_split = true, -- Keep this - splits long messages
           inc_rename = false,
-          lsp_doc_border = true,
+          lsp_doc_border = true, -- Keep this - adds borders to LSP docs
         },
       })
     end,
