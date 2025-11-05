@@ -83,10 +83,66 @@ end, { desc = "Test: Run current file" })
 map("n", "<leader>tS", function()
   local ok, pytest_atlas = pcall(require, "pytest-atlas")
   if ok then
-    pytest_atlas.show_status()
+    local success, err = pcall(pytest_atlas.show_status)
+    if not success then
+      notify.notify("Error showing pytest-atlas status: " .. tostring(err), "error")
+    end
   else
     local env = vim.env.TEST_ENVIRONMENT or "qa"
     local region = vim.env.TEST_REGION or "auto"
     notify.notify(string.format("Current test environment: %s (%s)", env, region), "info")
   end
 end, { desc = "Test: Show environment status" })
+
+map("n", "<leader>tt", function()
+  local ok, pytest_atlas = pcall(require, "pytest-atlas")
+  if not ok then
+    notify.notify("pytest-atlas not loaded: " .. tostring(pytest_atlas), "error")
+    return
+  end
+
+  local success, err = pcall(pytest_atlas.run_tests)
+  if not success then
+    notify.notify("pytest-atlas error: " .. tostring(err), "error")
+    vim.notify("Debug info:\n" .. vim.inspect({
+      snacks_loaded = pcall(require, "snacks.picker"),
+      cwd = vim.fn.getcwd(),
+    }), vim.log.levels.DEBUG)
+  end
+end, { desc = "Test: Run pytest with configuration picker" })
+
+map("n", "<leader>tD", function()
+  local ok, debug = pcall(require, "yoda.pytest_atlas_debug")
+  if ok then
+    debug.test_integration()
+  else
+    notify.notify("Debug utility not available", "error")
+  end
+end, { desc = "Test: Debug pytest-atlas integration" })
+
+map("n", "<leader>tL", function()
+  local ok, logger = pcall(require, "pytest-atlas.logger")
+  if ok then
+    logger.open_log_tail(100) -- Show last 100 lines (most recent session)
+  else
+    notify.notify("pytest-atlas not available", "error")
+  end
+end, { desc = "Test: Open pytest-atlas log (tail)" })
+
+map("n", "<leader>tLA", function()
+  local ok, pytest_atlas = pcall(require, "pytest-atlas")
+  if ok then
+    pytest_atlas.open_log() -- Show full log (all sessions)
+  else
+    notify.notify("pytest-atlas not available", "error")
+  end
+end, { desc = "Test: Open pytest-atlas log (full)" })
+
+map("n", "<leader>tX", function()
+  local ok, pytest_atlas = pcall(require, "pytest-atlas")
+  if ok then
+    pytest_atlas.clear_log()
+  else
+    notify.notify("pytest-atlas not available", "error")
+  end
+end, { desc = "Test: Clear pytest-atlas log" })
