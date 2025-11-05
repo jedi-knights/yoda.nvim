@@ -166,20 +166,27 @@ return {
     },
     config = function()
       require("noice").setup({
-        -- Disable all UI overrides that conflict with other plugins
+        -- UI overrides (with dressing.nvim handling vim.ui.select, these should be safe)
         cmdline = {
-          enabled = false, -- Use native cmdline
+          enabled = true, -- Re-enable noice cmdline (dressing handles vim.ui.select)
+          view = "cmdline_popup", -- Use popup view
+          opts = {}, -- Default options
         },
         messages = {
-          enabled = false, -- Use native messages to avoid conflicts
+          enabled = true, -- Re-enable messages
+          view = "notify", -- Use notify view
+          view_error = "notify", -- Errors in notify
+          view_warn = "notify", -- Warnings in notify
         },
         popupmenu = {
-          enabled = false, -- Use native completion menu
+          enabled = true, -- Use noice popup menu for completion
+          backend = "nui", -- Use nui backend
         },
         notify = {
-          enabled = false, -- Don't override vim.notify
+          enabled = true, -- Enable noice notify (for better notifications)
+          view = "notify",
         },
-        -- Keep only LSP enhancements (safe and useful)
+        -- LSP enhancements
         lsp = {
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -213,11 +220,21 @@ return {
           },
         },
         presets = {
-          bottom_search = false, -- Use native search
-          command_palette = false, -- Use native command palette
-          long_message_to_split = true, -- Keep this - splits long messages
+          bottom_search = true, -- Noice bottom search
+          command_palette = true, -- Noice command palette
+          long_message_to_split = true, -- Split long messages
           inc_rename = false,
-          lsp_doc_border = true, -- Keep this - adds borders to LSP docs
+          lsp_doc_border = true, -- Borders on LSP docs
+        },
+        routes = {
+          -- Route vim.ui.select to dressing (prevent noice from intercepting)
+          {
+            filter = {
+              event = "msg_show",
+              kind = "confirm",
+            },
+            opts = { skip = true }, -- Skip noice, let dressing handle
+          },
         },
       })
     end,
