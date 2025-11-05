@@ -96,16 +96,17 @@ vim.schedule(function()
   end
 
   -- Load diagnostic tools (lazy load on command use)
-  vim.api.nvim_create_autocmd("CmdlineEnter", {
-    pattern = ":",
-    once = true,
-    callback = function()
-      vim.schedule(function()
-        safe_require("yoda.diagnose_flickering")
-        safe_require("yoda.diagnose_signs")
-      end)
-    end,
-  })
+  -- DISABLED: CmdlineEnter causing crashes in Neovim 0.11.4
+  -- vim.api.nvim_create_autocmd("CmdlineEnter", {
+  --   pattern = ":",
+  --   once = true,
+  --   callback = function()
+  --     vim.schedule(function()
+  --       safe_require("yoda.diagnose_flickering")
+  --       safe_require("yoda.diagnose_signs")
+  --     end)
+  --   end,
+  -- })
 end)
 
 -- ============================================================================

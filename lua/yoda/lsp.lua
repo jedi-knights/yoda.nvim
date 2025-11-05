@@ -597,13 +597,14 @@ function M.setup()
     M._setup_debug_commands()
   end
 
-  vim.api.nvim_create_autocmd("CmdlineEnter", {
-    pattern = ":",
-    once = true,
-    callback = function()
-      vim.schedule(ensure_debug_commands)
-    end,
-  })
+  -- DISABLED: CmdlineEnter causing crashes in Neovim 0.11.4
+  -- vim.api.nvim_create_autocmd("CmdlineEnter", {
+  --   pattern = ":",
+  --   once = true,
+  --   callback = function()
+  --     vim.schedule(ensure_debug_commands)
+  --   end,
+  -- })
 
   vim.api.nvim_create_autocmd("LspAttach", {
     once = true,

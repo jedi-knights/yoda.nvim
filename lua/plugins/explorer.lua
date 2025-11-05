@@ -11,7 +11,6 @@ return {
       require("snacks").setup({
         explorer = {
           enabled = true,
-          show_hidden = true,
           win = {
             position = "left",
             width = 30,
@@ -22,6 +21,11 @@ return {
         },
         picker = {
           enabled = true,
+          sources = {
+            explorer = {
+              hidden = true, -- Show hidden files/folders by default
+            },
+          },
         },
         terminal = {
           enabled = true,
@@ -32,27 +36,6 @@ return {
           win = {
             border = "rounded",
           },
-        },
-      })
-    end,
-  },
-
-  -- nvim-tree - File explorer
-  {
-    "nvim-tree/nvim-tree.lua",
-    lazy = true,
-    cmd = { "NvimTreeToggle", "NvimTreeOpen" },
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require("nvim-tree").setup({
-        view = {
-          width = 30,
-        },
-        renderer = {
-          group_empty = true,
-        },
-        filters = {
-          dotfiles = false,
         },
       })
     end,

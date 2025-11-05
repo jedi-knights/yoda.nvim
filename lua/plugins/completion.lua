@@ -5,7 +5,7 @@ return {
   -- nvim-cmp - Reliable completion engine
   {
     "hrsh7th/nvim-cmp",
-    event = { "InsertEnter", "CmdlineEnter" },
+    event = "InsertEnter", -- Removed CmdlineEnter due to crashes in Neovim 0.11.4
     dependencies = {
       -- Snippet engine
       {
@@ -128,32 +128,32 @@ return {
         },
       })
 
-      -- Command line completion (performance optimized)
-      cmp.setup.cmdline({ "/", "?" }, {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = "buffer" },
-        },
-        performance = {
-          debounce = 60,
-          throttle = 30,
-          fetching_timeout = 200,
-        },
-      })
+      -- Command line completion DISABLED due to crashes in Neovim 0.11.4
+      -- cmp.setup.cmdline({ "/", "?" }, {
+      --   mapping = cmp.mapping.preset.cmdline(),
+      --   sources = {
+      --     { name = "buffer" },
+      --   },
+      --   performance = {
+      --     debounce = 60,
+      --     throttle = 30,
+      --     fetching_timeout = 200,
+      --   },
+      -- })
 
-      cmp.setup.cmdline(":", {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-          { name = "path", max_item_count = 20 },
-        }, {
-          { name = "cmdline", max_item_count = 20 },
-        }),
-        performance = {
-          debounce = 60,
-          throttle = 30,
-          fetching_timeout = 200,
-        },
-      })
+      -- cmp.setup.cmdline(":", {
+      --   mapping = cmp.mapping.preset.cmdline(),
+      --   sources = cmp.config.sources({
+      --     { name = "path", max_item_count = 20 },
+      --   }, {
+      --     { name = "cmdline", max_item_count = 20 },
+      --   }),
+      --   performance = {
+      --     debounce = 60,
+      --     throttle = 30,
+      --     fetching_timeout = 200,
+      --   },
+      -- })
     end,
   },
 }

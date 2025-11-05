@@ -140,6 +140,12 @@ return {
     },
     config = function()
       require("noice").setup({
+        cmdline = {
+          enabled = true, -- Re-enable noice cmdline (works without cmp cmdline completion)
+        },
+        messages = {
+          enabled = true, -- Re-enable messages
+        },
         notify = {
           enabled = false, -- Disable noice vim.notify override to prevent conflicts
         },
@@ -227,7 +233,7 @@ return {
           lualine_y = {},
           lualine_z = {},
         },
-        extensions = { "nvim-tree", "trouble", "aerial" },
+        extensions = { "trouble", "aerial" },
       })
     end,
   },
