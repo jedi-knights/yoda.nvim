@@ -25,6 +25,7 @@ return {
         },
         terminal = {
           enabled = true,
+          auto_close = true, -- Auto-close terminal buffer when process exits (no "Process Exited" message)
         },
         input = {
           enabled = true,
