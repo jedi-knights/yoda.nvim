@@ -1,6 +1,6 @@
 # Makefile for Yoda.nvim
 
-.PHONY: test test-watch test-unit test-integration lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
+.PHONY: test test-watch test-unit test-integration test-property lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
 
 # Default target
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  make test-watch        - Run tests in watch mode" 
 	@echo "  make test-unit         - Run unit tests only"
 	@echo "  make test-integration  - Run integration tests only"
+	@echo "  make test-property     - Run property-based tests (advanced)"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint              - Run linter (stylua --check)"
@@ -58,6 +59,12 @@ test-unit:
 # Run only integration tests
 test-integration:
 	nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/integration')" -c "quitall!"
+
+# Run property-based tests (advanced)
+test-property:
+	@echo "Running property-based tests (200+ runs per test)..."
+	@echo "This will take longer than unit tests..."
+	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/property')" -c "quitall!"
 
 # Lint code with stylua (excluding files with goto labels)
 lint:

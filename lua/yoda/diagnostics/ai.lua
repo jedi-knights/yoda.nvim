@@ -55,17 +55,31 @@ function M.check_status()
   return status
 end
 
---- Get detailed AI configuration
+--- Check if API key is set (Complexity: 1)
+--- @param key string|nil API key to check
+--- @return boolean is_set Whether key is set
+local function is_api_key_set(key)
+  return key ~= nil and key ~= ""
+end
+
+--- Get API key length (Complexity: 1)
+--- @param key string|nil API key
+--- @return number length Key length (0 if not set)
+local function get_key_length(key)
+  return key and #key or 0
+end
+
+--- Get detailed AI configuration (Complexity: 1)
 --- @return table Configuration details
 function M.get_config()
   local openai_key = vim.env.OPENAI_API_KEY
   local claude_key = vim.env.CLAUDE_API_KEY
 
   return {
-    openai_key_set = openai_key ~= nil and openai_key ~= "",
-    openai_key_length = openai_key and #openai_key or 0,
-    claude_key_set = claude_key ~= nil and claude_key ~= "",
-    claude_key_length = claude_key and #claude_key or 0,
+    openai_key_set = is_api_key_set(openai_key),
+    openai_key_length = get_key_length(openai_key),
+    claude_key_set = is_api_key_set(claude_key),
+    claude_key_length = get_key_length(claude_key),
     yoda_env = vim.env.YODA_ENV or "not set",
   }
 end
