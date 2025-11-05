@@ -48,7 +48,7 @@ do
           return false
         end
         local buftype = vim.bo[buf].buftype
-        return not buf_name:match("[Oo]pen[Cc]ode") and not buf_name:match("NvimTree") and buftype == "" and buf_name ~= ""
+        return not buf_name:match("[Oo]pen[Cc]ode") and buftype == "" and buf_name ~= ""
       end)
 
       if win then

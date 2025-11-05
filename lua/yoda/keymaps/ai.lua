@@ -91,11 +91,7 @@ map({ "n", "i" }, "<A-q>", function()
     local current_win = vim.api.nvim_get_current_win()
 
     local found = win_utils.focus_window(function(win, buf, buf_name, ft)
-      return win ~= current_win
-        and not buf_name:match("[Oo]pen[Cc]ode")
-        and not buf_name:match("NvimTree")
-        and vim.bo[buf].buftype == ""
-        and buf_name ~= ""
+      return win ~= current_win and not buf_name:match("[Oo]pen[Cc]ode") and vim.bo[buf].buftype == "" and buf_name ~= ""
     end)
 
     if found then
