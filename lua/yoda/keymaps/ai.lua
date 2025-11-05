@@ -33,7 +33,7 @@ map(
         vim.cmd("startinsert")
       end)
     else
-      require("opencode").toggle()
+      vim.cmd("OpencodeToggle")
       vim.defer_fn(function()
         local new_win, _ = win_utils.find_opencode()
         if new_win then
@@ -113,6 +113,7 @@ map(
   { "n", "x" },
   "<leader>oa",
   with_auto_save(function()
+    require("lazy").load({ plugins = { "opencode.nvim" } })
     require("opencode").ask("@this: ", { submit = true })
   end),
   { desc = "OpenCode: Ask about this (auto-save)" }
@@ -122,6 +123,7 @@ map(
   { "n", "x" },
   "<leader>o+",
   with_auto_save(function()
+    require("lazy").load({ plugins = { "opencode.nvim" } })
     require("opencode").prompt("@this")
   end),
   { desc = "OpenCode: Add this to prompt (auto-save)" }
@@ -131,6 +133,7 @@ map(
   { "n", "x" },
   "<leader>oe",
   with_auto_save(function()
+    require("lazy").load({ plugins = { "opencode.nvim" } })
     require("opencode").prompt("Explain @this and its context", { submit = true })
   end),
   { desc = "OpenCode: Explain this (auto-save)" }
@@ -140,7 +143,7 @@ map(
   { "n", "x" },
   "<leader>os",
   with_auto_save(function()
-    require("opencode").select()
+    vim.cmd("OpencodeSelect")
   end),
   { desc = "OpenCode: Select prompt (auto-save)" }
 )
@@ -156,7 +159,7 @@ map(
         vim.cmd("startinsert")
       end)
     else
-      require("opencode").toggle()
+      vim.cmd("OpencodeToggle")
       vim.defer_fn(function()
         local new_win, _ = win_utils.find_opencode()
         if new_win then
@@ -170,10 +173,12 @@ map(
 )
 
 map("n", "<S-C-u>", function()
+  require("lazy").load({ plugins = { "opencode.nvim" } })
   require("opencode").command("messages_half_page_up")
 end, { desc = "OpenCode: Messages half page up" })
 
 map("n", "<S-C-d>", function()
+  require("lazy").load({ plugins = { "opencode.nvim" } })
   require("opencode").command("messages_half_page_down")
 end, { desc = "OpenCode: Messages half page down" })
 
