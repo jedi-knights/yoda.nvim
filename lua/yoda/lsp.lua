@@ -38,7 +38,9 @@ function M.setup()
   safe_setup("gopls", {
     cmd = { "gopls" },
     filetypes = { "go", "gomod", "gowork", "gotmpl" },
-    root_markers = { "go.work", "go.mod", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { "go.work", "go.mod", ".git" })
+    end,
     capabilities = capabilities,
     settings = {
       gopls = {
@@ -88,7 +90,9 @@ function M.setup()
   safe_setup("lua_ls", {
     cmd = { "lua-language-server" },
     filetypes = { "lua" },
-    root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" })
+    end,
     capabilities = capabilities,
     settings = {
       Lua = {
@@ -118,7 +122,9 @@ function M.setup()
   safe_setup("ts_ls", {
     cmd = { "typescript-language-server", "--stdio" },
     filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
-    root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { "tsconfig.json", "package.json", "jsconfig.json", ".git" })
+    end,
     capabilities = capabilities,
   })
 
@@ -130,7 +136,9 @@ function M.setup()
   safe_setup("basedpyright", {
     cmd = { "basedpyright-langserver", "--stdio" },
     filetypes = { "python" },
-    root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" })
+    end,
     capabilities = python_capabilities,
     on_init = function(client)
       -- Disable document highlight immediately when server initializes
@@ -241,7 +249,9 @@ function M.setup()
   safe_setup("yamlls", {
     cmd = { "yaml-language-server", "--stdio" },
     filetypes = { "yaml", "yaml.docker-compose", "yaml.gitlab" },
-    root_markers = { ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { ".git" })
+    end,
     capabilities = capabilities,
     settings = {
       yaml = {
@@ -257,7 +267,9 @@ function M.setup()
   safe_setup("omnisharp", {
     cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
     filetypes = { "cs", "vb" },
-    root_markers = { "*.sln", "*.csproj", "omnisharp.json", "function.json", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { "*.sln", "*.csproj", "omnisharp.json", "function.json", ".git" })
+    end,
     capabilities = capabilities,
   })
 
@@ -265,7 +277,9 @@ function M.setup()
   safe_setup("helm_ls", {
     cmd = { "helm_ls", "serve" },
     filetypes = { "helm" },
-    root_markers = { "Chart.yaml", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { "Chart.yaml", ".git" })
+    end,
     capabilities = capabilities,
   })
 
@@ -273,7 +287,9 @@ function M.setup()
   safe_setup("jdtls", {
     cmd = { "jdtls" },
     filetypes = { "java", "groovy" },
-    root_markers = { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" })
+    end,
     capabilities = capabilities,
     settings = {
       java = {
@@ -349,7 +365,9 @@ function M.setup()
   safe_setup("marksman", {
     cmd = { "marksman", "server" },
     filetypes = { "markdown", "markdown.mdx" },
-    root_markers = { ".git", ".marksman.toml" },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { ".git", ".marksman.toml" })
+    end,
     capabilities = capabilities,
   })
 
