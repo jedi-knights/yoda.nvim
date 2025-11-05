@@ -141,10 +141,10 @@ return {
     config = function()
       require("noice").setup({
         cmdline = {
-          enabled = true, -- Re-enable noice cmdline (works without cmp cmdline completion)
+          enabled = false, -- DISABLED: Conflicts with Snacks picker causing crashes
         },
         messages = {
-          enabled = true, -- Re-enable messages
+          enabled = true, -- Keep messages enabled
         },
         notify = {
           enabled = false, -- Disable noice vim.notify override to prevent conflicts
