@@ -309,8 +309,8 @@ describe("terminal.builder", function()
       local opened = false
 
       package.loaded["yoda.terminal.config"] = {
-        make_config = function()
-          return { cmd = { "sh" } }
+        make_win_opts = function(title, overrides)
+          return { title = title }
         end,
       }
 

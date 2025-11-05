@@ -45,19 +45,20 @@ function M.new(deps)
       vim.notify(msg, level or vim.log.levels.INFO)
     end
 
-    local shell = opts.cmd or { instance.get_default(), "-i" }
+    local cmd = opts.cmd or { instance.get_default(), "-i" }
     local title = opts.title or " Terminal "
-
-    local term_config = config.make_config(shell, title, opts)
 
     -- Try snacks terminal (preferred)
     local ok, snacks = pcall(require, "snacks")
     if ok and snacks.terminal then
-      snacks.terminal.open(term_config)
+      local term_opts = {
+        win = config.make_win_opts(title, opts.win or {}),
+      }
+      snacks.terminal.open(cmd, term_opts)
     else
       -- Fallback to native terminal
       notify("Using native terminal (snacks not available)", vim.log.levels.INFO)
-      vim.cmd("terminal " .. table.concat(term_config.cmd, " "))
+      vim.cmd("terminal " .. table.concat(cmd, " "))
     end
   end
 
