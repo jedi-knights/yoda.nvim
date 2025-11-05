@@ -54,51 +54,96 @@ function M.is_available()
   return ok
 end
 
---- Save all modified buffers with progress notification
+--- Check if buffer should be saved (complexity: 3)
+--- @param buf number Buffer handle
+--- @return boolean should_save Whether buffer should be saved
+--- @return string|nil buf_name Buffer name if should save
+local function should_save_buffer(buf)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+
+  if not vim.bo[buf].modified or vim.bo[buf].buftype ~= "" then
+    return false
+  end
+
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+  if buf_name == "" then
+    return false
+  end
+
+  -- Skip large files if configured
+  local ok, large_file = pcall(require, "yoda.large_file")
+  if ok and large_file.should_skip_autosave(buf) then
+    return false
+  end
+
+  return true, buf_name
+end
+
+--- Check if error is keyboard interrupt (complexity: 2)
+--- @param err any Error object
+--- @return boolean is_interrupt Whether error is keyboard interrupt
+local function is_keyboard_interrupt(err)
+  return err and type(err) == "string" and err:match("Keyboard interrupt") ~= nil
+end
+
+--- Extract error message from error object (complexity: 1)
+--- @param err any Error object
+--- @return string error_message Short error message
+local function extract_error_message(err)
+  return err and tostring(err):match("^[^\n]+") or "unknown error"
+end
+
+--- Save single buffer (complexity: 2)
+--- @param buffer_info table Buffer info {buf, name}
+--- @return string result "success", "cancelled", or "error"
+local function save_single_buffer(buffer_info)
+  local ok, err = pcall(function()
+    vim.api.nvim_buf_call(buffer_info.buf, function()
+      vim.cmd("silent write")
+    end)
+  end)
+
+  if ok then
+    return "success"
+  end
+
+  if is_keyboard_interrupt(err) then
+    notify.notify("Auto-save cancelled by user", "info")
+    return "cancelled"
+  end
+
+  local short_err = extract_error_message(err)
+  notify.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. short_err, "warn")
+  return "error"
+end
+
+--- Save all modified buffers with progress notification (complexity: 3)
 --- @return boolean success Whether all buffers were saved
 function M.save_all_buffers()
   local saved_count = 0
   local error_count = 0
-  local buffers_to_save = {}
 
   -- Collect modified buffers first
+  local buffers_to_save = {}
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].modified and vim.bo[buf].buftype == "" then
-      local buf_name = vim.api.nvim_buf_get_name(buf)
-      if buf_name ~= "" then
-        -- Skip large files if configured
-        local ok, large_file = pcall(require, "yoda.large_file")
-        if ok and large_file.should_skip_autosave(buf) then
-          -- Don't auto-save large files
-        else
-          table.insert(buffers_to_save, { buf = buf, name = buf_name })
-        end
-      end
+    local should_save, buf_name = should_save_buffer(buf)
+    if should_save then
+      table.insert(buffers_to_save, { buf = buf, name = buf_name })
     end
   end
 
   -- Save each buffer
   for _, buffer_info in ipairs(buffers_to_save) do
-    local ok, err = pcall(function()
-      vim.api.nvim_buf_call(buffer_info.buf, function()
-        vim.cmd("silent write")
-      end)
-    end)
+    local result = save_single_buffer(buffer_info)
 
-    if ok then
+    if result == "success" then
       saved_count = saved_count + 1
+    elseif result == "cancelled" then
+      return false
     else
       error_count = error_count + 1
-      -- Check if error is from keyboard interrupt (Ctrl-C)
-      if err and type(err) == "string" and err:match("Keyboard interrupt") then
-        -- User cancelled with Ctrl-C, stop processing
-        notify.notify("Auto-save cancelled by user", "info")
-        return false
-      else
-        -- Extract just the error message, not the full stack trace
-        local short_err = err and tostring(err):match("^[^\n]+") or "unknown error"
-        notify.notify("Failed to auto-save " .. vim.fn.fnamemodify(buffer_info.name, ":t") .. ": " .. short_err, "warn")
-      end
     end
   end
 
@@ -164,31 +209,50 @@ function M.refresh_buffer(buf)
   return true
 end
 
---- Refresh all buffers that might have been changed externally
+--- Check if buffer should be refreshed (Complexity: 3)
+--- @param buf number Buffer handle
+--- @return boolean should_refresh Whether buffer should be refreshed
+local function should_refresh_buffer(buf)
+  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "" then
+    return false
+  end
+
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+  if buf_name == "" or vim.fn.filereadable(buf_name) ~= 1 then
+    return false
+  end
+
+  if should_skip_refresh(buf_name) then
+    return false
+  end
+
+  return true
+end
+
+--- Refresh single buffer with checktime (Complexity: 1)
+--- @param buf number Buffer handle
+--- @return boolean success Whether refresh succeeded
+local function refresh_buffer_checktime(buf)
+  local ok = pcall(function()
+    vim.api.nvim_buf_call(buf, function()
+      vim.cmd("silent checktime")
+    end)
+  end)
+  return ok
+end
+
+--- Refresh all buffers that might have been changed externally (Complexity: 2)
 --- @return number count Number of buffers processed
 function M.refresh_all_buffers()
   local processed_count = 0
   local refreshed_count = 0
 
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" then
-      local buf_name = vim.api.nvim_buf_get_name(buf)
-      if buf_name ~= "" and vim.fn.filereadable(buf_name) == 1 then
-        -- Skip special git files that shouldn't be auto-refreshed
-        if not should_skip_refresh(buf_name) then
-          processed_count = processed_count + 1
+    if should_refresh_buffer(buf) then
+      processed_count = processed_count + 1
 
-          -- Use checktime to detect changes
-          local ok = pcall(function()
-            vim.api.nvim_buf_call(buf, function()
-              vim.cmd("silent checktime")
-            end)
-          end)
-
-          if ok then
-            refreshed_count = refreshed_count + 1
-          end
-        end
+      if refresh_buffer_checktime(buf) then
+        refreshed_count = refreshed_count + 1
       end
     end
   end

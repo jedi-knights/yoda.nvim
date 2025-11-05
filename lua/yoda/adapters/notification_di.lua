@@ -85,6 +85,52 @@ function M.new(deps)
   end
 
   -- ============================================================================
+  -- Level Conversion Helpers (Complexity: 2 each)
+  -- ============================================================================
+
+  --- Convert level to numeric format (for native backend)
+  --- @param level string|number Level to convert
+  --- @return number Numeric level
+  local function convert_to_numeric_level(level)
+    if type(level) == "number" then
+      return level
+    end
+
+    local level_map = {
+      trace = vim.log.levels.TRACE,
+      debug = vim.log.levels.DEBUG,
+      info = vim.log.levels.INFO,
+      warn = vim.log.levels.WARN,
+      error = vim.log.levels.ERROR,
+    }
+    return level_map[level:lower()] or vim.log.levels.INFO
+  end
+
+  --- Convert level to string format (for snacks/noice backends)
+  --- @param level string|number Level to convert
+  --- @return string String level
+  local function convert_to_string_level(level)
+    if type(level) == "string" then
+      return level
+    end
+
+    local level_names = { [0] = "trace", "debug", "info", "warn", "error" }
+    return level_names[level] or "info"
+  end
+
+  --- Convert level for specific backend (Complexity: 1)
+  --- @param level string|number Level to convert
+  --- @param backend_name string Backend name
+  --- @return string|number Converted level
+  local function convert_level_for_backend(level, backend_name)
+    if backend_name == "native" then
+      return convert_to_numeric_level(level)
+    else
+      return convert_to_string_level(level)
+    end
+  end
+
+  -- ============================================================================
   -- Public API
   -- ============================================================================
 
@@ -111,7 +157,7 @@ function M.new(deps)
     initialized = false
   end
 
-  --- Send notification
+  --- Send notification (Complexity: 2)
   --- @param msg string Message to display
   --- @param level string|number Log level ("info", "warn", "error") or vim.log.levels
   --- @param opts table|nil Additional options
@@ -122,33 +168,13 @@ function M.new(deps)
     level = level or "info"
     opts = opts or {}
 
-    -- Get and use appropriate backend
+    -- Get backend and convert level
     local backend_name = detect_backend()
+    local converted_level = convert_level_for_backend(level, backend_name)
     local notify_fn = backends[backend_name]
 
-    -- Convert level to appropriate format for backend
-    if backend_name == "native" then
-      -- Native expects numeric level
-      if type(level) == "string" then
-        local level_map = {
-          trace = vim.log.levels.TRACE,
-          debug = vim.log.levels.DEBUG,
-          info = vim.log.levels.INFO,
-          warn = vim.log.levels.WARN,
-          error = vim.log.levels.ERROR,
-        }
-        level = level_map[level:lower()] or vim.log.levels.INFO
-      end
-    else
-      -- Snacks/Noice prefer string levels
-      if type(level) == "number" then
-        local level_names = { [0] = "trace", "debug", "info", "warn", "error" }
-        level = level_names[level] or "info"
-      end
-    end
-
     -- Call backend with error handling
-    local ok, err = pcall(notify_fn, msg, level, opts)
+    local ok, err = pcall(notify_fn, msg, converted_level, opts)
     if not ok then
       -- Fallback to native if backend fails
       vim.notify(msg, vim.log.levels.INFO, opts)
