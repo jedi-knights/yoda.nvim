@@ -130,6 +130,31 @@ return {
     end,
   },
 
+  -- Dressing.nvim - Better default UI for vim.ui.select and vim.ui.input
+  {
+    "stevearc/dressing.nvim",
+    event = "VeryLazy",
+    opts = {
+      input = {
+        enabled = true,
+        border = "rounded",
+      },
+      select = {
+        enabled = true,
+        backend = { "builtin" }, -- Use simple builtin (no fancy UI that might crash)
+        builtin = {
+          border = "rounded",
+          relative = "editor",
+          mappings = {
+            ["<Esc>"] = "Close",
+            ["<C-c>"] = "Close",
+            ["<CR>"] = "Confirm",
+          },
+        },
+      },
+    },
+  },
+
   -- Noice - Enhanced UI components (minimal config for LSP only)
   {
     "folke/noice.nvim",

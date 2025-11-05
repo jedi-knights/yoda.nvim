@@ -21,15 +21,7 @@ return {
         },
         picker = {
           enabled = true,
-          ui_select = true, -- Re-enable to test with noice cmdline disabled
-          win = {
-            input = {
-              keys = {
-                ["<Esc>"] = { "close", mode = { "n", "i" } },
-                ["<C-c>"] = { "close", mode = { "n", "i" } },
-              },
-            },
-          },
+          ui_select = false, -- Disabled: Using dressing.nvim instead (Snacks picker causes crashes)
           sources = {
             explorer = {
               hidden = true, -- Show hidden files/folders by default
