@@ -151,21 +151,17 @@ end, { desc = "Test: Clear pytest-atlas log" })
 map("n", "<leader>tS", function()
   print("\n=== Testing vim.ui.select ===")
   print("Watch for a picker UI to appear!")
-  
-  vim.ui.select(
-    { "Apple", "Banana", "Cherry" },
-    { prompt = "TEST: Select a fruit:" },
-    function(choice)
-      print("=== CALLBACK INVOKED ===")
-      print("Selected:", tostring(choice))
-      
-      if choice then
-        vim.notify("✅ You selected: " .. choice, vim.log.levels.INFO)
-      else
-        vim.notify("❌ Selection cancelled", vim.log.levels.WARN)
-      end
+
+  vim.ui.select({ "Apple", "Banana", "Cherry" }, { prompt = "TEST: Select a fruit:" }, function(choice)
+    print("=== CALLBACK INVOKED ===")
+    print("Selected:", tostring(choice))
+
+    if choice then
+      vim.notify("✅ You selected: " .. choice, vim.log.levels.INFO)
+    else
+      vim.notify("❌ Selection cancelled", vim.log.levels.WARN)
     end
-  )
-  
+  end)
+
   print("vim.ui.select called (callback is async)")
 end, { desc = "Test: Test vim.ui.select directly" })
