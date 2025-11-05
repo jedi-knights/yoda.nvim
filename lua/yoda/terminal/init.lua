@@ -23,6 +23,23 @@ function M.open_floating(opts)
   opts = opts or {}
   local notify = require("yoda.utils").notify
 
+  -- Wrap everything in pcall for safety
+  local ok, err = pcall(function()
+    M._open_floating_impl(opts)
+  end)
+
+  if not ok then
+    notify("Failed to open terminal: " .. tostring(err), "error")
+    notify("Falling back to simple terminal", "warn")
+    M.shell.open_simple({})
+  end
+end
+
+--- Internal implementation of open_floating
+--- @param opts table Options
+function M._open_floating_impl(opts)
+  local notify = require("yoda.utils").notify
+
   -- If venv_path provided, use it directly
   if opts.venv_path then
     local activate_script = M.venv.get_activate_script_path(opts.venv_path)
@@ -60,7 +77,7 @@ function M.open_floating(opts)
 
   if io.is_dir(default_venv) and M.venv.get_activate_script_path(default_venv) then
     opts.venv_path = default_venv
-    M.open_floating(opts)
+    M._open_floating_impl(opts)
     return
   end
 
@@ -68,7 +85,7 @@ function M.open_floating(opts)
   M.venv.select_virtual_env(function(venv)
     if venv then
       opts.venv_path = venv
-      M.open_floating(opts)
+      M._open_floating_impl(opts)
     else
       -- No venv selected, open simple terminal
       M.shell.open_simple(opts)

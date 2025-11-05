@@ -121,15 +121,25 @@ end
 --- Convenience method: build and open terminal
 --- @return nil
 function M:open()
-  local term_config = self:build()
+  local config = require("yoda.terminal.config")
+
+  -- Use default shell if no command specified
+  local cmd = self._cmd
+  if not cmd then
+    local shell = require("yoda.terminal.shell")
+    cmd = { shell.get_default(), "-i" }
+  end
 
   -- Try snacks terminal (preferred)
   local ok, snacks = pcall(require, "snacks")
   if ok and snacks.terminal then
-    snacks.terminal.open(term_config)
+    local term_opts = {
+      win = config.make_win_opts(self._title, self._win),
+    }
+    snacks.terminal.open(cmd, term_opts)
   else
     -- Fallback to native terminal
-    vim.cmd("terminal " .. table.concat(term_config.cmd, " "))
+    vim.cmd("terminal " .. table.concat(cmd, " "))
   end
 end
 

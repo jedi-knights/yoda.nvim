@@ -40,24 +40,27 @@ function M.open_simple(opts)
   opts = opts or {}
   local config = require("yoda.terminal.config")
 
-  local shell = opts.cmd or { M.get_default(), "-i" }
+  local cmd = opts.cmd or { M.get_default(), "-i" }
   local title = opts.title or " Terminal "
-
-  -- Create minimal config - only pass what snacks.terminal definitely supports
-  local term_config = {
-    cmd = shell,
-    win = config.make_win_opts(title, opts.win or {}),
-  }
 
   -- Try snacks terminal (preferred)
   local ok, snacks = pcall(require, "snacks")
   if ok and snacks.terminal then
-    snacks.terminal.open(term_config)
+    local term_opts = {
+      win = config.make_win_opts(title, opts.win or {}),
+    }
+    local term_ok, term_err = pcall(snacks.terminal.open, cmd, term_opts)
+    if not term_ok then
+      local notify = require("yoda.utils").notify
+      notify("Snacks terminal failed: " .. tostring(term_err), "error")
+      notify("Falling back to native terminal", "warn")
+      vim.cmd("terminal " .. table.concat(cmd, " "))
+    end
   else
     -- Fallback to native terminal
     local notify = require("yoda.utils").notify
     notify("Using native terminal (snacks not available)", "info")
-    vim.cmd("terminal " .. table.concat(term_config.cmd, " "))
+    vim.cmd("terminal " .. table.concat(cmd, " "))
   end
 end
 
