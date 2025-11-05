@@ -5,11 +5,11 @@ end
 
 map("n", "<leader>.", function()
   require("yoda.terminal").open_floating()
-end, { desc = "Terminal: Open floating terminal with venv detection" })
+end, { desc = "Terminal: Open floating terminal with venv detection - Auto-detect Python venv" })
 
 map("i", "<leader>.", function()
   require("yoda.terminal").open_floating()
-end, { desc = "Terminal: Open floating terminal with venv detection" })
+end, { desc = "Terminal: Open floating terminal with venv detection - Auto-detect Python venv" })
 
 map("n", "<leader>vt", function()
   local terminal = require("snacks.terminal")
@@ -29,7 +29,7 @@ map("n", "<leader>vt", function()
       terminal.close("myterm")
     end,
   })
-end, { desc = "Terminal: Floating shell" })
+end, { desc = "Terminal: Floating shell - Open zsh terminal in floating window" })
 
 map("n", "<leader>vr", function()
   local function get_python()
@@ -57,4 +57,4 @@ map("n", "<leader>vr", function()
       terminal.close("python")
     end,
   })
-end, { desc = "Terminal: Python REPL" })
+end, { desc = "Terminal: Python REPL - Open interactive Python shell with venv support" })
