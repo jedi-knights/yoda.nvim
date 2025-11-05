@@ -111,15 +111,6 @@ map("n", "<leader>tt", function()
   end
 end, { desc = "Test: Run pytest with configuration picker" })
 
-map("n", "<leader>tD", function()
-  local ok, debug = pcall(require, "yoda.pytest_atlas_debug")
-  if ok then
-    debug.test_integration()
-  else
-    notify.notify("Debug utility not available", "error")
-  end
-end, { desc = "Test: Debug pytest-atlas integration" })
-
 map("n", "<leader>tL", function()
   local ok, logger = pcall(require, "pytest-atlas.logger")
   if ok then

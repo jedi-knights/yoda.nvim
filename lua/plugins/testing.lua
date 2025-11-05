@@ -11,11 +11,6 @@ return {
       "folke/snacks.nvim",
     },
     config = function()
-      local compat_ok = pcall(require("yoda.pytest_atlas_compat").setup)
-      if not compat_ok then
-        vim.notify("Failed to setup pytest-atlas compatibility layer", vim.log.levels.WARN)
-      end
-
       local ok, pytest_atlas = pcall(require, "pytest-atlas")
       if not ok then
         vim.notify("Failed to load pytest-atlas: " .. tostring(pytest_atlas), vim.log.levels.ERROR)
