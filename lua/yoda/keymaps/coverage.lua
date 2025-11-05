@@ -6,8 +6,8 @@ end
 map("n", "<leader>cv", function()
   require("coverage").load()
   require("coverage").show()
-end, { desc = "Coverage: Show" })
+end, { desc = "Coverage: Show - Display test coverage indicators in gutter" })
 
 map("n", "<leader>cx", function()
   require("coverage").hide()
-end, { desc = "Coverage: Hide" })
+end, { desc = "Coverage: Hide - Remove test coverage indicators" })
