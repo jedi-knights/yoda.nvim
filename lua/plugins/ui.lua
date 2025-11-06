@@ -159,7 +159,7 @@ return {
   {
     "folke/noice.nvim",
     event = "VeryLazy",
-    enabled = true, -- Set to false to completely disable noice
+    enabled = false, -- Disabled: causes crashes with pickers in Neovim 0.11.x
     dependencies = {
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",

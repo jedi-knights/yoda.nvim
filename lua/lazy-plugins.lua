@@ -19,6 +19,7 @@ require("lazy").setup({
   { import = "plugins.ai" },
   { import = "plugins.git" },
   { import = "plugins.explorer" },
+  { import = "plugins.finding" },
 
   -- Language-specific plugins (loaded by filetype)
   { import = "plugins.languages.rust" },
