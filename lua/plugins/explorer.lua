@@ -20,13 +20,8 @@ return {
           },
         },
         picker = {
-          enabled = true,
-          ui_select = false, -- Disabled: Using dressing.nvim instead (Snacks picker causes crashes)
-          sources = {
-            explorer = {
-              hidden = true, -- Show hidden files/folders by default
-            },
-          },
+          enabled = false, -- Disabled: Snacks picker causes crashes in Neovim 0.11.x - use Telescope instead
+          ui_select = false, -- Disabled: Using dressing.nvim instead
         },
         terminal = {
           enabled = true,
