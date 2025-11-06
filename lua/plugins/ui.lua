@@ -159,7 +159,7 @@ return {
   {
     "folke/noice.nvim",
     event = "VeryLazy",
-    enabled = false, -- Disabled: causes crashes with pickers in Neovim 0.11.x
+    enabled = true, -- Re-enabled: works with fzf-lua (fzf-lua doesn't conflict like Snacks/Telescope)
     dependencies = {
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
