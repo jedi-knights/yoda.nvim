@@ -162,7 +162,6 @@ return {
     enabled = true, -- Re-enabled: works with fzf-lua (fzf-lua doesn't conflict like Snacks/Telescope)
     dependencies = {
       "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
     },
     config = function()
       require("noice").setup({
