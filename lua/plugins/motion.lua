@@ -6,9 +6,11 @@ return {
   {
     "ggandor/leap.nvim",
     event = "VeryLazy",
-    config = function()
-      require("leap").add_default_mappings()
-    end,
+    keys = {
+      { "s", "<Plug>(leap-forward)", mode = { "n", "x", "o" }, desc = "Leap forward" },
+      { "S", "<Plug>(leap-backward)", mode = { "n", "x", "o" }, desc = "Leap backward" },
+      { "gs", "<Plug>(leap-from-window)", mode = { "n", "x", "o" }, desc = "Leap from windows" },
+    },
   },
 
   -- Vim Tmux Navigator - Seamless navigation between vim and tmux

@@ -51,8 +51,8 @@ end)
 
 -- Defer keymaps and autocmds for better startup performance
 vim.schedule(function()
-  require("keymaps")   -- Contains some expensive setup logic
-  require("autocmds")  -- Contains complex autocommands
+  require("keymaps") -- Contains some expensive setup logic
+  require("autocmds") -- Contains complex autocommands
 end)
 
 -- ============================================================================
@@ -63,11 +63,7 @@ end)
 local function safe_require(module_name)
   local ok, result = pcall(require, module_name)
   if not ok then
-    vim.notify(
-      string.format("Failed to load %s: %s", module_name, result),
-      vim.log.levels.ERROR,
-      { title = "Yoda Init Error" }
-    )
+    vim.notify(string.format("Failed to load %s: %s", module_name, result), vim.log.levels.ERROR, { title = "Yoda Init Error" })
     return nil
   end
   return result
