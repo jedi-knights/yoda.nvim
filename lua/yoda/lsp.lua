@@ -524,7 +524,7 @@ function M.setup()
           end)
 
           -- Custom diagnostic handler with debouncing
-          vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+          vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.handlers["textDocument/publishDiagnostics"], {
             update_in_insert = false,
             virtual_text = {
               spacing = 4,
