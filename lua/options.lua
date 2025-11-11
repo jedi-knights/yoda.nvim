@@ -33,6 +33,26 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.colorcolumn = "80"
 
+-- Make colorcolumn more visible and persistent
+local function set_colorcolumn_highlight()
+  -- Schedule to run after other highlights are applied
+  vim.schedule(function()
+    vim.api.nvim_set_hl(0, "ColorColumn", { bg = "#2a2a37" })
+  end)
+end
+
+-- Set up autocmds to ensure colorcolumn stays visible
+vim.api.nvim_create_augroup("ColorColumnPersistent", { clear = true })
+
+vim.api.nvim_create_autocmd({ "ColorScheme", "BufEnter", "BufWinEnter", "WinEnter", "BufReadPost" }, {
+  group = "ColorColumnPersistent",
+  pattern = "*",
+  callback = set_colorcolumn_highlight,
+})
+
+-- Apply colorcolumn highlight immediately
+set_colorcolumn_highlight()
+
 -- ============================================================================
 -- INDENTATION
 -- ============================================================================
