@@ -7,8 +7,9 @@ return {
     "ggandor/leap.nvim",
     event = "VeryLazy",
     keys = {
-      { "s", "<Plug>(leap)", mode = { "n", "x", "o" }, desc = "Leap forward" },
-      { "S", "<Plug>(leap-from-window)", mode = "n", desc = "Leap from window" },
+      { "s", "<Plug>(leap-forward)", mode = { "n", "x", "o" }, desc = "Leap forward" },
+      { "S", "<Plug>(leap-backward)", mode = { "n", "x", "o" }, desc = "Leap backward" },
+      { "gs", "<Plug>(leap-from-window)", mode = { "n", "x", "o" }, desc = "Leap from windows" },
     },
   },
 

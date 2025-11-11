@@ -51,8 +51,8 @@ end)
 
 -- Defer keymaps and autocmds for better startup performance
 vim.schedule(function()
-  require("keymaps")   -- Contains some expensive setup logic
-  require("autocmds")  -- Contains complex autocommands
+  require("keymaps") -- Contains some expensive setup logic
+  require("autocmds") -- Contains complex autocommands
 end)
 
 -- ============================================================================
