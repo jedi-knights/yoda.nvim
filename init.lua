@@ -63,11 +63,8 @@ end)
 local function safe_require(module_name)
   local ok, result = pcall(require, module_name)
   if not ok then
-    vim.notify(
-      string.format("Failed to load %s: %s", module_name, result),
-      vim.log.levels.ERROR,
-      { title = "Yoda Init Error" }
-    )
+    -- Use print for early errors before notification system is ready
+    print(string.format("Yoda Init Error: Failed to load %s: %s", module_name, result))
     return nil
   end
   return result

@@ -3,6 +3,7 @@
 
 local M = {}
 local lsp_perf = require("yoda.lsp_performance")
+local notify = require("yoda.adapters.notification")
 
 --- Setup LSP servers using vim.lsp.config
 function M.setup()
@@ -28,7 +29,7 @@ function M.setup()
       vim.lsp.config(name, config)
     end)
     if not success then
-      vim.notify(string.format("Failed to configure LSP server '%s': %s", name, err), vim.log.levels.WARN)
+      notify.notify(string.format("Failed to configure LSP server '%s': %s", name, err), "warn")
       return false
     end
     return true
@@ -228,7 +229,7 @@ function M.setup()
                 client.config.settings.basedpyright.analysis.pythonPath = venv_python
                 client.config.settings.python.pythonPath = venv_python
                 client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
-                vim.notify(string.format("Python LSP: Using venv at %s", venv_python), vim.log.levels.INFO)
+                notify.notify(string.format("Python LSP: Using venv at %s", venv_python), "info")
               end
             end
             found_venv = true
@@ -239,7 +240,7 @@ function M.setup()
 
         if not found_venv then
           lsp_perf.track_venv_detection(root_dir, venv_start_time, false)
-          vim.notify("Python LSP: No venv found, using system Python", vim.log.levels.INFO)
+          notify.notify("Python LSP: No venv found, using system Python", "info")
         end
       end)
     end,
@@ -340,7 +341,7 @@ function M.setup()
       local function jdtls_setup_commands()
         vim.api.nvim_create_user_command("JdtlsQuiet", function()
           vim.lsp.codelens.run()
-          vim.notify("JDTLS quiet mode toggled")
+          notify.notify("JDTLS quiet mode toggled", "info")
         end, {
           desc = "Toggle JDTLS quiet mode",
         })
@@ -350,7 +351,7 @@ function M.setup()
             command = "java.project.buildWorkspace",
             arguments = { true },
           })
-          vim.notify("JDTLS build initiated")
+          notify.notify("JDTLS build initiated", "info")
         end, {
           desc = "Force JDTLS build",
         })
@@ -409,14 +410,14 @@ function M.setup()
               local is_enabled = vim.lsp.inlay_hint.is_enabled(event.buf)
               vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = event.buf })
               if is_enabled then
-                vim.notify("Inlay hints disabled")
+                notify.notify("Inlay hints disabled", "info")
               else
-                vim.notify("Inlay hints enabled")
+                notify.notify("Inlay hints enabled", "info")
               end
               return
             end
           end
-          vim.notify("Inlay hints not supported by any active LSP server", vim.log.levels.WARN)
+          notify.notify("Inlay hints not supported by any active LSP server", "warn")
         end, { desc = "Toggle Inlay Hints" })
 
         -- Enable inlay hints if available
@@ -572,7 +573,7 @@ function M.setup()
             if #clients > 0 then
               autocmd_logger.log("Python_LSP_Restart", { client_count = #clients, root = current_root })
               lsp_perf.track_lsp_restart("basedpyright")
-              vim.notify(string.format("Restarting Python LSP for project: %s", current_root), vim.log.levels.INFO)
+              notify.notify(string.format("Restarting Python LSP for project: %s", current_root), "info")
               for _, client in ipairs(clients) do
                 client.stop()
               end

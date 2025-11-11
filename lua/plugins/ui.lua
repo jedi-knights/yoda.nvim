@@ -158,13 +158,37 @@ return {
   -- Noice - Enhanced UI components (minimal config for LSP only)
   {
     "folke/noice.nvim",
-    event = "VeryLazy",
+    priority = 1200, -- Load early to ensure vim.notify is set up before other plugins
+    event = "VimEnter", -- Load earlier than VeryLazy to avoid conflicts
     enabled = true, -- Re-enabled: works with fzf-lua (fzf-lua doesn't conflict like Snacks/Telescope)
     dependencies = {
       "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
+      {
+        "rcarriga/nvim-notify",
+        priority = 1300, -- Load before Noice
+        config = function()
+          -- Configure nvim-notify but prevent it from overriding vim.notify
+          -- Store the original vim.notify before requiring notify
+          local original_notify = vim.notify
+          require("notify").setup({
+            -- Basic configuration
+          })
+          -- Restore the original vim.notify (Noice will override it later)
+          vim.notify = original_notify
+        end,
+      },
     },
     config = function()
+      -- Ensure vim.notify is available before setting up noice
+      if not vim.notify then
+        vim.notify = function(msg, level, opts)
+          print(string.format("[%s] %s", level or "INFO", msg))
+        end
+      end
+
+      -- Save reference to detect override conflicts
+      local pre_noice_notify = vim.notify
+
       require("noice").setup({
         -- UI overrides (with dressing.nvim handling vim.ui.select, these should be safe)
         cmdline = {
@@ -185,6 +209,10 @@ return {
         notify = {
           enabled = true, -- Enable noice notify (for better notifications)
           view = "notify",
+        },
+        -- Disable the override warning since we've properly configured the notification system
+        health = {
+          checker = false, -- Disable health checks that might show vim.notify override warnings
         },
         -- LSP enhancements
         lsp = {
@@ -237,6 +265,20 @@ return {
           },
         },
       })
+
+      -- Verify that Noice has properly taken control of vim.notify
+      vim.schedule(function()
+        if vim.notify and type(vim.notify) == "function" and vim.notify ~= pre_noice_notify then
+          -- Force our notification adapter to use noice
+          vim.g.yoda_notify_backend = "noice"
+
+          -- Set a flag to indicate noice is in control
+          vim.g.yoda_noice_initialized = true
+        else
+          -- Fallback if noice didn't properly override
+          vim.g.yoda_notify_backend = "native"
+        end
+      end)
     end,
   },
 

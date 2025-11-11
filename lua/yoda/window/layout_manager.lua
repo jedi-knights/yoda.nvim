@@ -78,9 +78,16 @@ function M.handle_buf_win_enter(buf)
     return
   end
 
-  -- Don't manage layout - let Snacks explorer handle it naturally
-  -- This module is DISABLED to prevent duplicate window creation
-  return
+  -- Re-enable layout management with window protection
+  local current_win = vim.api.nvim_get_current_win()
+  local protection = require("yoda.window.protection")
+
+  -- Check if buffer is trying to enter a protected window
+  if not protection.is_buffer_switch_allowed(current_win, buf) then
+    vim.schedule(function()
+      protection.redirect_buffer_from_protected_window(buf, current_win)
+    end)
+  end
 end
 
 --- Setup window layout management autocmds
