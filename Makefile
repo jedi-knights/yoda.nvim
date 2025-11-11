@@ -1,13 +1,13 @@
 # Makefile for Yoda.nvim
 
-.PHONY: test test-watch test-unit test-integration test-property lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
+.PHONY: test test-verbose test-watch test-unit test-integration test-property lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
 
 # Default target
 help:
 	@echo "Yoda.nvim Development Commands"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make test              - Run all tests (optimized)"
+	@echo "  make test              - Run all tests (optimized, excludes slow tests)"
 	@echo "  make test-verbose      - Run tests with detailed output (for CI)"
 	@echo "  make test-watch        - Run tests in watch mode" 
 	@echo "  make test-unit         - Run unit tests only"
@@ -32,25 +32,21 @@ help:
 	@echo "  make clean             - Clean generated files"
 	@echo "  make help              - Show this help"
 
-# Run all tests (optimized for speed)
+# Run tests (optimized, excludes slow tests)
 test:
-	@echo "Running all tests..."
-	@./scripts/run_tests.sh tests/minimal_init_fast.lua
+	@echo "Running tests..."
+	@./scripts/run_tests_optimized.sh tests/minimal_init_fast.lua
 
-# Verbose test runner for CI/debugging  
+# Verbose test runner for CI/debugging
 test-verbose:
 	@echo "Running tests with detailed output..."
-	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/unit', {minimal_init = './tests/minimal_init.lua'})" -c "quitall!" 2>&1 | tee /tmp/yoda_test_output.txt
+	@./scripts/run_tests_optimized.sh tests/minimal_init_fast.lua 2>&1 | tee /tmp/yoda_test_output.txt
 	@echo ""
 	@echo "================================================================================"
 	@echo "AGGREGATE TEST RESULTS"
 	@echo "================================================================================"
 	@./scripts/test_summary.sh /tmp/yoda_test_output.txt
 	@echo "================================================================================"
-
-# Watch mode (requires snacks.nvim in Neovim session)
-test-watch:
-	@echo "Run ':lua require(\"yoda.plenary\").watch_tests()' in Neovim"
 
 # Run only unit tests
 test-unit:
