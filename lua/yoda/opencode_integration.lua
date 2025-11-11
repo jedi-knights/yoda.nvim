@@ -197,7 +197,7 @@ function M.refresh_buffer(buf)
     vim.api.nvim_buf_call(buf, function()
       -- Reload buffer without triggering most autocmds to prevent BufEnter loop
       vim.cmd("silent noautocmd edit!")
-      
+
       -- Manually re-initialize TreeSitter highlighting without triggering all FileType autocmds
       vim.schedule(function()
         local ok_ts, ts_highlight = pcall(require, "nvim-treesitter.highlight")
