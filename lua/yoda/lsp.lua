@@ -23,6 +23,21 @@ function M.setup()
     capabilities = vim.tbl_deep_extend("force", capabilities, cmp_lsp.default_capabilities())
   end
 
+  -- Global LSP handler optimizations for responsiveness
+  local handlers = {
+    ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded" }),
+    ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded" }),
+    ["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.handlers["textDocument/publishDiagnostics"], {
+      update_in_insert = false,
+      virtual_text = { spacing = 4, prefix = "●" },
+    }),
+  }
+
+  -- Apply handlers globally
+  for method, handler in pairs(handlers) do
+    vim.lsp.handlers[method] = handler
+  end
+
   -- Helper function to safely setup LSP servers using vim.lsp.config
   local function safe_setup(name, config)
     local success, err = pcall(function()
@@ -43,6 +58,9 @@ function M.setup()
       return vim.fs.root(fname, { "go.work", "go.mod", ".git" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
     settings = {
       gopls = {
         analyses = {
@@ -95,6 +113,9 @@ function M.setup()
       return vim.fs.root(fname, { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
     settings = {
       Lua = {
         runtime = {
@@ -127,6 +148,9 @@ function M.setup()
       return vim.fs.root(fname, { "tsconfig.json", "package.json", "jsconfig.json", ".git" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
   })
 
   -- Python setup with virtual environment support
@@ -141,6 +165,9 @@ function M.setup()
       return vim.fs.root(fname, { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" })
     end,
     capabilities = python_capabilities,
+    flags = {
+      debounce_text_changes = 500,
+    },
     on_init = function(client)
       -- Disable document highlight immediately when server initializes
       if client.server_capabilities then
@@ -254,6 +281,9 @@ function M.setup()
       return vim.fs.root(fname, { ".git" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
     settings = {
       yaml = {
         schemas = {
@@ -272,6 +302,9 @@ function M.setup()
       return vim.fs.root(fname, { "*.sln", "*.csproj", "omnisharp.json", "function.json", ".git" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
   })
 
   -- Helm setup
@@ -282,6 +315,9 @@ function M.setup()
       return vim.fs.root(fname, { "Chart.yaml", ".git" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
   })
 
   -- Java setup (also works for Jenkinsfiles/Groovy)
@@ -359,7 +395,9 @@ function M.setup()
 
       jdtls_setup_commands()
     end,
-    debounce_text_changes = 500,
+    flags = {
+      debounce_text_changes = 500,
+    },
   })
 
   -- Markdown setup
@@ -370,6 +408,9 @@ function M.setup()
       return vim.fs.root(fname, { ".git", ".marksman.toml" })
     end,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
   })
 
   -- Setup LSP keymaps on attach with debounced UI updates
