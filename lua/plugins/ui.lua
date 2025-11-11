@@ -163,20 +163,6 @@ return {
     enabled = true, -- Re-enabled: works with fzf-lua (fzf-lua doesn't conflict like Snacks/Telescope)
     dependencies = {
       "MunifTanjim/nui.nvim",
-      {
-        "rcarriga/nvim-notify",
-        priority = 1300, -- Load before Noice
-        config = function()
-          -- Configure nvim-notify but prevent it from overriding vim.notify
-          -- Store the original vim.notify before requiring notify
-          local original_notify = vim.notify
-          require("notify").setup({
-            -- Basic configuration
-          })
-          -- Restore the original vim.notify (Noice will override it later)
-          vim.notify = original_notify
-        end,
-      },
     },
     config = function()
       -- Ensure vim.notify is available before setting up noice
