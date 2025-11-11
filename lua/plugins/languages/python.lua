@@ -15,7 +15,8 @@ return {
       -- Install debugpy using the system python
       local result = vim.fn.system("python -m pip install debugpy")
       if vim.v.shell_error ~= 0 then
-        vim.notify("Failed to install debugpy: " .. result, vim.log.levels.ERROR)
+        local notify = require("yoda.adapters.notification")
+        notify.notify("Failed to install debugpy: " .. result, "error")
       end
     end,
     config = function()

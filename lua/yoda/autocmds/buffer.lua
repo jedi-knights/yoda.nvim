@@ -92,6 +92,7 @@ function M.setup_commands()
   vim.api.nvim_create_user_command("Bd", function(opts)
     local buf = vim.api.nvim_get_current_buf()
     local autocmd_logger = require("yoda.autocmd_logger")
+    local window_protection = require("yoda.window.protection")
 
     autocmd_logger.log("Bd_Start", { buf = buf, bang = opts.bang })
 
@@ -127,8 +128,14 @@ function M.setup_commands()
 
       for _, win in ipairs(windows_with_buf) do
         if vim.api.nvim_win_is_valid(win) then
-          local ok = pcall(vim.api.nvim_win_set_buf, win, target_buf)
-          autocmd_logger.log("Bd_SwitchWindow", { win = win, target = target_buf, success = ok })
+          -- Check if buffer switch is allowed to this window
+          if window_protection.is_buffer_switch_allowed(win, target_buf) then
+            local ok = pcall(vim.api.nvim_win_set_buf, win, target_buf)
+            autocmd_logger.log("Bd_SwitchWindow", { win = win, target = target_buf, success = ok })
+          else
+            autocmd_logger.log("Bd_SkipProtectedWindow", { win = win, target = target_buf })
+            -- Protected window - let it handle the buffer deletion naturally
+          end
         end
       end
     else
