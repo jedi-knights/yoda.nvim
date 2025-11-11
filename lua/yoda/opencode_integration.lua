@@ -15,7 +15,7 @@ end
 
 -- Debounce state for buffer operations
 local buf_debounce = {}
-local BUF_DEBOUNCE_DELAY = 50 -- milliseconds
+local BUF_DEBOUNCE_DELAY = 150 -- milliseconds
 
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
@@ -195,7 +195,17 @@ function M.refresh_buffer(buf)
 
   local ok, err = pcall(function()
     vim.api.nvim_buf_call(buf, function()
-      vim.cmd("silent edit!")
+      -- Reload buffer without triggering most autocmds to prevent BufEnter loop
+      vim.cmd("silent noautocmd edit!")
+      
+      -- Manually re-initialize TreeSitter highlighting without triggering all FileType autocmds
+      vim.schedule(function()
+        local ok_ts, ts_highlight = pcall(require, "nvim-treesitter.highlight")
+        if ok_ts and ts_highlight then
+          -- Re-attach TreeSitter highlighting
+          pcall(ts_highlight.attach, buf)
+        end
+      end)
     end)
   end)
 
@@ -235,7 +245,7 @@ end
 local function refresh_buffer_checktime(buf)
   local ok = pcall(function()
     vim.api.nvim_buf_call(buf, function()
-      vim.cmd("silent checktime")
+      vim.cmd("silent noautocmd checktime")
     end)
   end)
   return ok
@@ -279,8 +289,8 @@ end
 --- Complete refresh cycle after OpenCode edits files
 function M.complete_refresh()
   vim.schedule(function()
-    -- Force global checktime
-    pcall(vim.cmd, "silent checktime")
+    -- Force global checktime without triggering autocmds
+    pcall(vim.cmd, "silent noautocmd checktime")
 
     -- Refresh current buffer
     local current_buf = vim.api.nvim_get_current_buf()
