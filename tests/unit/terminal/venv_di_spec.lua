@@ -1,5 +1,5 @@
 -- Tests for terminal/venv_di.lua (DI version)
-local VenvDI = require("yoda.terminal.venv_di")
+local VenvDI = require("yoda-terminal.venv_di")
 
 describe("terminal.venv_di (with dependency injection)", function()
   -- Mock dependencies

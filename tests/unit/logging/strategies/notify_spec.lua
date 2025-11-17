@@ -10,7 +10,7 @@ describe("logging.strategies.notify", function()
     package.loaded["yoda.logging.strategies.notify"] = nil
     package.loaded["yoda.logging.config"] = nil
 
-    config = require("yoda.logging.config")
+    config = require("yoda-logging.config")
     config.reset()
 
     -- Mock vim.notify
@@ -41,7 +41,7 @@ describe("logging.strategies.notify", function()
       return original_pcall(fn, ...)
     end
 
-    notify_strategy = require("yoda.logging.strategies.notify")
+    notify_strategy = require("yoda-logging.strategies.notify")
   end)
 
   after_each(function()

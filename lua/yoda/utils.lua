@@ -9,10 +9,10 @@ local M = {}
 -- ============================================================================
 
 -- Import focused core modules
-local string_utils = require("yoda.core.string")
-local table_utils = require("yoda.core.table")
-local io_utils = require("yoda.core.io")
-local platform_utils = require("yoda.core.platform")
+local string_utils = require("yoda-core.string")
+local table_utils = require("yoda-core.table")
+local io_utils = require("yoda-core.io")
+local platform_utils = require("yoda-core.platform")
 
 -- Export core modules for direct access
 M.string = string_utils
@@ -174,19 +174,19 @@ end
 --- Get Claude CLI path
 --- @return string|nil
 function M.get_claude_path()
-  return require("yoda.diagnostics.ai_cli").get_claude_path()
+  return require("yoda-diagnostics.ai_cli").get_claude_path()
 end
 
 --- Check if Claude CLI is available
 --- @return boolean
 function M.is_claude_available()
-  return require("yoda.diagnostics.ai_cli").is_claude_available()
+  return require("yoda-diagnostics.ai_cli").is_claude_available()
 end
 
 --- Get version of Claude CLI
 --- @return string|nil, string|nil
 function M.get_claude_version()
-  return require("yoda.diagnostics.ai_cli").get_claude_version()
+  return require("yoda-diagnostics.ai_cli").get_claude_version()
 end
 
 return M

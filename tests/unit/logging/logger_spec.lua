@@ -39,8 +39,8 @@ describe("logging.logger", function()
       return original_require(mod)
     end
 
-    logger = original_require("yoda.logging.logger")
-    config = original_require("yoda.logging.config")
+    logger = original_require("yoda-logging.logger")
+    config = original_require("yoda-logging.config")
     config.reset()
   end)
 

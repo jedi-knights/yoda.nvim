@@ -1,4 +1,4 @@
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
@@ -6,7 +6,7 @@ local function map(mode, lhs, rhs, opts)
 end
 
 map("n", "<leader>xt", function()
-  local win_utils = require("yoda.window_utils")
+  local win_utils = require("yoda-window_utils")
   win_utils.focus_window(function(win, buf, buf_name, ft)
     return buf_name:match("Trouble")
   end)

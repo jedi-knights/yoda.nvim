@@ -1,5 +1,5 @@
 -- Tests for diagnostics/ai_cli.lua
-local ai_cli = require("yoda.diagnostics.ai_cli")
+local ai_cli = require("yoda-diagnostics.ai_cli")
 
 describe("diagnostics.ai_cli", function()
   -- Save originals

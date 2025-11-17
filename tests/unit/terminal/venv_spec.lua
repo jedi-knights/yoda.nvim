@@ -1,5 +1,5 @@
 -- Tests for terminal/venv.lua
-local venv = require("yoda.terminal.venv")
+local venv = require("yoda-terminal.venv")
 
 describe("terminal.venv", function()
   -- Save originals
@@ -50,7 +50,7 @@ describe("terminal.venv", function()
       }
 
       -- Reload venv with mocked platform
-      local venv_mod = require("yoda.terminal.venv")
+      local venv_mod = require("yoda-terminal.venv")
       local path = venv_mod.get_activate_script_path("/venv")
       assert.equals("/venv/Scripts/activate", path)
     end)

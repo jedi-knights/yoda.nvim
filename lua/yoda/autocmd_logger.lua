@@ -3,7 +3,7 @@
 
 local M = {}
 
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 local log_file = vim.fn.stdpath("data") .. "/yoda_autocmd.log"
 local enabled = false

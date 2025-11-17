@@ -17,7 +17,7 @@ function M.load_json_config(path)
     return nil
   end
   
-  local io = require("yoda.core.io")
+  local io = require("yoda-core.io")
   local ok, data = io.parse_json_file(path)
   return ok and data or nil
 end
@@ -26,7 +26,7 @@ end
 --- @return table|nil Parsed environment mapping
 function M.load_ingress_mapping()
   local yaml_path = "ingress-mapping.yaml"
-  local io = require("yoda.core.io")
+  local io = require("yoda-core.io")
   
   if not io.is_file(yaml_path) then
     return nil
@@ -53,7 +53,7 @@ function M.load_env_region()
 
   -- First try to load environments.json
   local file_path = "environments.json"
-  local io = require("yoda.core.io")
+  local io = require("yoda-core.io")
   
   if io.is_file(file_path) then
     local config = M.load_json_config(file_path)

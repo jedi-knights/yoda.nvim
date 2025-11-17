@@ -14,7 +14,7 @@ describe("logging.strategies.console", function()
       table.insert(_G.print_calls, { ... })
     end
 
-    console_strategy = require("yoda.logging.strategies.console")
+    console_strategy = require("yoda-logging.strategies.console")
   end)
 
   after_each(function()

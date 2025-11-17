@@ -1,5 +1,5 @@
 -- Tests for terminal/builder.lua
-local Builder = require("yoda.terminal.builder")
+local Builder = require("yoda-terminal.builder")
 
 describe("terminal.builder", function()
   after_each(function()

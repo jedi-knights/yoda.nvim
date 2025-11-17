@@ -2,6 +2,33 @@
 -- Setup lazy.nvim with plugins
 
 require("lazy").setup({
+  -- Extracted Yoda plugins (foundation)
+  {
+    "jedi-knights/yoda.nvim-adapters",
+    lazy = false,
+    priority = 1000, -- Load early (other plugins depend on it)
+  },
+  {
+    "jedi-knights/yoda-core.nvim",
+    lazy = false,
+    priority = 999,
+  },
+  {
+    "jedi-knights/yoda-logging.nvim",
+    dependencies = { "jedi-knights/yoda.nvim-adapters" },
+  },
+  {
+    "jedi-knights/yoda-terminal.nvim",
+    dependencies = { "jedi-knights/yoda.nvim-adapters" },
+  },
+  {
+    "jedi-knights/yoda-window.nvim",
+    dependencies = { "jedi-knights/yoda.nvim-adapters" },
+  },
+  {
+    "jedi-knights/yoda-diagnostics.nvim",
+  },
+
   -- Core plugins
   { import = "plugins.core" },
   { import = "plugins.ui" },

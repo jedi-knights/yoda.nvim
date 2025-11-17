@@ -3,7 +3,7 @@ local augroup = vim.api.nvim_create_augroup
 
 local large_file = require("yoda.large_file")
 local filetype_detection = require("yoda.filetype.detection")
-local terminal_autocmds = require("yoda.terminal.autocmds")
+local terminal_autocmds = require("yoda-terminal.autocmds")
 local performance_autocmds = require("yoda.performance.autocmds")
 local yoda_autocmds = require("yoda.autocmds")
 

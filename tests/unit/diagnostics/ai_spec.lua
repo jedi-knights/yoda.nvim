@@ -1,5 +1,5 @@
 -- Tests for diagnostics/ai.lua
-local ai = require("yoda.diagnostics.ai")
+local ai = require("yoda-diagnostics.ai")
 
 describe("diagnostics.ai", function()
   -- Save originals

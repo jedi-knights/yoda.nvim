@@ -1,5 +1,5 @@
 -- Tests for core/string.lua
-local str = require("yoda.core.string")
+local str = require("yoda-core.string")
 
 describe("core.string", function()
   describe("trim()", function()
