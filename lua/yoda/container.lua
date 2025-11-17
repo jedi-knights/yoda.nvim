@@ -110,7 +110,7 @@ function M.bootstrap()
   end)
 
   M.register("window_utils", function()
-    return require("yoda-window_utils")
+    return require("yoda-window.utils")
   end)
 
   -- ============================================================================
