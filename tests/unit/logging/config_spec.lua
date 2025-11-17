@@ -5,7 +5,7 @@ describe("logging.config", function()
   before_each(function()
     -- Clear package cache
     package.loaded["yoda.logging.config"] = nil
-    config = require("yoda.logging.config")
+    config = require("yoda-logging.config")
     config.reset()
   end)
 

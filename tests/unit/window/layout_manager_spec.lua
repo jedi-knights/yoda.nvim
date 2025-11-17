@@ -8,7 +8,7 @@ describe("window.layout_manager", function()
 
   before_each(function()
     package.loaded["yoda.window.layout_manager"] = nil
-    layout_manager = require("yoda.window.layout_manager")
+    layout_manager = require("yoda-window.layout_manager")
   end)
 
   describe("handle_buf_win_enter()", function()

@@ -1,5 +1,5 @@
 -- Tests for window_utils.lua
-local window_utils = require("yoda.window_utils")
+local window_utils = require("yoda-window_utils")
 
 describe("window_utils", function()
   -- Save originals

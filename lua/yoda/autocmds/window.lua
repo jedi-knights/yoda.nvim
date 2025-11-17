@@ -2,8 +2,8 @@ local M = {}
 
 local alpha_manager = require("yoda.ui.alpha_manager")
 local filetype_settings = require("yoda.filetype.settings")
-local layout_manager = require("yoda.window.layout_manager")
-local window_protection = require("yoda.window.protection")
+local layout_manager = require("yoda-window.layout_manager")
+local window_protection = require("yoda-window.protection")
 
 function M.setup_all(autocmd, augroup)
   autocmd("BufReadPost", {

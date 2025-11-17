@@ -1,5 +1,5 @@
 -- Tests for core/io.lua
-local io_utils = require("yoda.core.io")
+local io_utils = require("yoda-core.io")
 local helpers = require("tests.helpers")
 
 describe("core.io", function()

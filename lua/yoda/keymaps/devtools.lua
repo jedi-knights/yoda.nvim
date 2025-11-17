@@ -1,4 +1,4 @@
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}

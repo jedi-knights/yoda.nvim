@@ -1,6 +1,6 @@
 local M = {}
 
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 function M.setup_all(autocmd, augroup)
   autocmd("FileType", {

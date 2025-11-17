@@ -1,5 +1,5 @@
 -- Tests for diagnostics/lsp.lua
-local lsp = require("yoda.diagnostics.lsp")
+local lsp = require("yoda-diagnostics.lsp")
 
 describe("diagnostics.lsp", function()
   -- Save originals

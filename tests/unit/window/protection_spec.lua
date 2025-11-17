@@ -29,7 +29,7 @@ describe("window.protection", function()
       end
     end
 
-    protection = require("yoda.window.protection")
+    protection = require("yoda-window.protection")
   end)
 
   after_each(function()
