@@ -8,7 +8,7 @@ local M = {}
 -- ============================================================================
 
 local notify = require("yoda-adapters.notification")
-local win_utils = require("yoda-window_utils")
+local win_utils = require("yoda-window.utils")
 
 -- ============================================================================
 -- Constants

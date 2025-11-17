@@ -12,6 +12,23 @@ vim.opt.runtimepath:append(root .. "/lua")
 package.path = package.path .. ";" .. root .. "/lua/?.lua"
 package.path = package.path .. ";" .. root .. "/lua/?/init.lua"
 
+-- Add extracted plugins to package path
+local plugins = {
+  "yoda-core.nvim",
+  "yoda-window.nvim",
+  "yoda-diagnostics.nvim",
+  "yoda-logging.nvim",
+  "yoda-terminal.nvim",
+  "yoda.nvim-adapters",
+}
+
+for _, plugin in ipairs(plugins) do
+  local plugin_path = root .. "/" .. plugin .. "/lua"
+  package.path = package.path .. ";" .. plugin_path .. "/?.lua"
+  package.path = package.path .. ";" .. plugin_path .. "/?/init.lua"
+  vim.opt.runtimepath:append(root .. "/" .. plugin)
+end
+
 -- Minimal Neovim settings for testing
 vim.opt.swapfile = false
 vim.opt.backup = false

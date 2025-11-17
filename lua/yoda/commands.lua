@@ -8,25 +8,7 @@
 
 --- Setup bufferline debugging commands
 local notify = require("yoda-adapters.notification")
-local function setup_bufferline_debug_commands()
-  local bufferline_debug = require("yoda-diagnostics.bufferline_debug")
-
-  vim.api.nvim_create_user_command("BufferlineDebugStart", function()
-    bufferline_debug.enable()
-  end, { desc = "Start monitoring bufferline events for debugging flickering" })
-
-  vim.api.nvim_create_user_command("BufferlineDebugStop", function()
-    bufferline_debug.disable()
-  end, { desc = "Stop bufferline debugging" })
-
-  vim.api.nvim_create_user_command("BufferlineDebugAnalyze", function()
-    bufferline_debug.analyze()
-  end, { desc = "Analyze bufferline debug log and show insights" })
-
-  vim.api.nvim_create_user_command("BufferlineDebugStatus", function()
-    bufferline_debug.status()
-  end, { desc = "Show current bufferline debugging status" })
-end
+local function setup_bufferline_debug_commands() end
 
 -- ============================================================================
 -- OPENCODE INTEGRATION COMMANDS
@@ -40,7 +22,7 @@ do
     end
 
     vim.schedule(function()
-      local win_utils = require("yoda-window_utils")
+      local win_utils = require("yoda-window.utils")
       local current_win = vim.api.nvim_get_current_win()
 
       local win, buf = win_utils.find_window(function(win, buf, buf_name, ft)
