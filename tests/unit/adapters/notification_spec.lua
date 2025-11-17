@@ -1,5 +1,5 @@
 -- Tests for adapters/notification.lua
-local notification = require("yoda.adapters.notification")
+local notification = require("yoda-adapters.notification")
 
 describe("adapters.notification", function()
   -- Save originals

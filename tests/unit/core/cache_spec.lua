@@ -1,5 +1,5 @@
 -- tests/unit/core/cache_spec.lua
-local cache = require("yoda.core.cache")
+local cache = require("yoda-core.cache")
 
 describe("core.cache", function()
   describe("new()", function()

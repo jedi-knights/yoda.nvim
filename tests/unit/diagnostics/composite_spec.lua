@@ -1,5 +1,5 @@
 -- Tests for diagnostics/composite.lua
-local Composite = require("yoda.diagnostics.composite")
+local Composite = require("yoda-diagnostics.composite")
 
 describe("diagnostics.composite", function()
   -- Helper to create mock diagnostic

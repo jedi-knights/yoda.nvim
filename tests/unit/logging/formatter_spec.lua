@@ -8,8 +8,8 @@ describe("logging.formatter", function()
     package.loaded["yoda.logging.formatter"] = nil
     package.loaded["yoda.logging.config"] = nil
 
-    formatter = require("yoda.logging.formatter")
-    config = require("yoda.logging.config")
+    formatter = require("yoda-logging.formatter")
+    config = require("yoda-logging.config")
   end)
 
   describe("format()", function()

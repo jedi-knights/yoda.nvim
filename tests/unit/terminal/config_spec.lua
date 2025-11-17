@@ -1,5 +1,5 @@
 -- Tests for terminal/config.lua
-local config = require("yoda.terminal.config")
+local config = require("yoda-terminal.config")
 
 describe("terminal.config", function()
   -- Save originals

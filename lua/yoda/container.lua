@@ -71,28 +71,28 @@ function M.bootstrap()
   -- ============================================================================
 
   M.register("core.io", function()
-    local IO = require("yoda.core.io_di")
+    local IO = require("yoda-core.io_di")
     return IO.new({})
   end)
 
   M.register("core.platform", function()
-    local Platform = require("yoda.core.platform_di")
+    local Platform = require("yoda-core.platform_di")
     return Platform.new({})
   end)
 
   M.register("core.string", function()
-    local String = require("yoda.core.string_di")
+    local String = require("yoda-core.string_di")
     return String.new({})
   end)
 
   M.register("core.table", function()
-    local Table = require("yoda.core.table_di")
+    local Table = require("yoda-core.table_di")
     return Table.new({})
   end)
 
   -- Logging (new in this version - provides unified logging across all modules)
   M.register("logging", function()
-    return require("yoda.logging.logger")
+    return require("yoda-logging.logger")
   end)
 
   -- ============================================================================
@@ -100,17 +100,17 @@ function M.bootstrap()
   -- ============================================================================
 
   M.register("adapters.notification", function()
-    local Notification = require("yoda.adapters.notification_di")
+    local Notification = require("yoda-adapters.notification_di")
     return Notification.new({})
   end)
 
   M.register("adapters.picker", function()
-    local Picker = require("yoda.adapters.picker_di")
+    local Picker = require("yoda-adapters.picker_di")
     return Picker.new({})
   end)
 
   M.register("window_utils", function()
-    return require("yoda.window_utils")
+    return require("yoda-window.utils")
   end)
 
   -- ============================================================================
@@ -124,7 +124,7 @@ function M.bootstrap()
   end)
 
   M.register("terminal.config", function()
-    local Config = require("yoda.terminal.config_di")
+    local Config = require("yoda-terminal.config_di")
     return Config.new({
       notify = M.resolve("adapters.notification").notify,
       logger = M.resolve("logging"),
@@ -132,7 +132,7 @@ function M.bootstrap()
   end)
 
   M.register("terminal.shell", function()
-    local Shell = require("yoda.terminal.shell_di")
+    local Shell = require("yoda-terminal.shell_di")
     return Shell.new({
       config = M.resolve("terminal.config"),
       notify = M.resolve("adapters.notification").notify,
@@ -141,7 +141,7 @@ function M.bootstrap()
   end)
 
   M.register("terminal.venv", function()
-    local Venv = require("yoda.terminal.venv_di")
+    local Venv = require("yoda-terminal.venv_di")
     return Venv.new({
       platform = M.resolve("core.platform"),
       io = M.resolve("core.io"),
@@ -151,19 +151,19 @@ function M.bootstrap()
   end)
 
   M.register("terminal.builder", function()
-    return require("yoda.terminal.builder")
+    return require("yoda-terminal.builder")
   end)
 
   M.register("terminal", function()
-    return require("yoda.terminal")
+    return require("yoda-terminal")
   end)
 
   M.register("diagnostics.ai_cli", function()
-    return require("yoda.diagnostics.ai_cli")
+    return require("yoda-diagnostics.ai_cli")
   end)
 
   M.register("diagnostics.lsp", function()
-    local LSP = require("yoda.diagnostics.lsp_di")
+    local LSP = require("yoda-diagnostics.lsp_di")
     return LSP.new({
       notify = M.resolve("adapters.notification").notify,
       logger = M.resolve("logging"),
@@ -171,7 +171,7 @@ function M.bootstrap()
   end)
 
   M.register("diagnostics.ai", function()
-    local AI = require("yoda.diagnostics.ai_di")
+    local AI = require("yoda-diagnostics.ai_di")
     return AI.new({
       ai_cli = M.resolve("diagnostics.ai_cli"),
       notify = M.resolve("adapters.notification").notify,
@@ -180,11 +180,11 @@ function M.bootstrap()
   end)
 
   M.register("diagnostics.composite", function()
-    return require("yoda.diagnostics.composite")
+    return require("yoda-diagnostics.composite")
   end)
 
   M.register("diagnostics", function()
-    return require("yoda.diagnostics")
+    return require("yoda-diagnostics")
   end)
 
   M.register("config_loader", function()

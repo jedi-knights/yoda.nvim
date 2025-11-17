@@ -3,7 +3,7 @@
 -- These tests verify mathematical properties that should ALWAYS hold
 
 local property = require("tests.property_based")
-local string_utils = require("yoda.core.string")
+local string_utils = require("yoda-core.string")
 
 describe("core.string (property-based)", function()
   -- Set seed for reproducibility in CI

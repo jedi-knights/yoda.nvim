@@ -218,7 +218,7 @@ end
 --- @param callback function Callback(selected_markers)
 local function wizard_step_select_markers(callback)
   local markers = load_markers()
-  local picker = require("yoda.adapters.picker")
+  local picker = require("yoda-adapters.picker")
 
   picker.multiselect(markers, {
     prompt = "Select Test Markers (Tab to toggle selection, Enter to confirm):",

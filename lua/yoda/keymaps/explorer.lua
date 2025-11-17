@@ -1,4 +1,4 @@
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
@@ -21,7 +21,7 @@ local function get_snacks_explorer_win()
     return snacks_explorer_cache.win, snacks_explorer_cache.buf
   end
 
-  local win_utils = require("yoda.window_utils")
+  local win_utils = require("yoda-window.utils")
   local win, buf = win_utils.find_snacks_explorer()
 
   if win then
@@ -59,7 +59,7 @@ end, { desc = "Explorer: Focus (if open)" })
 map("n", "<leader>ec", function()
   local win, _ = get_snacks_explorer_win()
   if win then
-    local win_utils = require("yoda.window_utils")
+    local win_utils = require("yoda-window.utils")
     local count = win_utils.close_windows(function(win, buf, buf_name, ft)
       return ft:match("snacks_") or ft == "snacks"
     end, true)

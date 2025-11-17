@@ -4,11 +4,11 @@ local function map(mode, lhs, rhs, opts)
 end
 
 map("n", "<leader>.", function()
-  require("yoda.terminal").open_floating()
+  require("yoda-terminal").open_floating()
 end, { desc = "Terminal: Open floating terminal with venv detection - Auto-detect Python venv" })
 
 map("i", "<leader>.", function()
-  require("yoda.terminal").open_floating()
+  require("yoda-terminal").open_floating()
 end, { desc = "Terminal: Open floating terminal with venv detection - Auto-detect Python venv" })
 
 map("n", "<leader>vt", function()

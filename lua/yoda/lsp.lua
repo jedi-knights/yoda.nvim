@@ -3,7 +3,7 @@
 
 local M = {}
 local lsp_perf = require("yoda.lsp_performance")
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 --- Setup LSP servers using vim.lsp.config
 function M.setup()
