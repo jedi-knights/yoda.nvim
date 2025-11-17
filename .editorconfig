@@ -36,3 +36,8 @@ indent_size = 2
 indent_style = space
 indent_size = 2
 
+# Go files - 4 spaces (gofmt standard uses tabs, but we prefer spaces)
+[*.go]
+indent_style = space
+indent_size = 4
+
