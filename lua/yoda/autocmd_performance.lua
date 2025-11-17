@@ -1,6 +1,6 @@
 local M = {}
 
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 local metrics = {
   autocmd_times = {},

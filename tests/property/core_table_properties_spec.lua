@@ -2,7 +2,7 @@
 -- Property-based tests for core/table.lua
 
 local property = require("tests.property_based")
-local table_utils = require("yoda.core.table")
+local table_utils = require("yoda-core.table")
 
 describe("core.table (property-based)", function()
   before_each(function()

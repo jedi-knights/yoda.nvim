@@ -7,26 +7,8 @@
 -- ============================================================================
 
 --- Setup bufferline debugging commands
-local notify = require("yoda.adapters.notification")
-local function setup_bufferline_debug_commands()
-  local bufferline_debug = require("yoda.diagnostics.bufferline_debug")
-
-  vim.api.nvim_create_user_command("BufferlineDebugStart", function()
-    bufferline_debug.enable()
-  end, { desc = "Start monitoring bufferline events for debugging flickering" })
-
-  vim.api.nvim_create_user_command("BufferlineDebugStop", function()
-    bufferline_debug.disable()
-  end, { desc = "Stop bufferline debugging" })
-
-  vim.api.nvim_create_user_command("BufferlineDebugAnalyze", function()
-    bufferline_debug.analyze()
-  end, { desc = "Analyze bufferline debug log and show insights" })
-
-  vim.api.nvim_create_user_command("BufferlineDebugStatus", function()
-    bufferline_debug.status()
-  end, { desc = "Show current bufferline debugging status" })
-end
+local notify = require("yoda-adapters.notification")
+local function setup_bufferline_debug_commands() end
 
 -- ============================================================================
 -- OPENCODE INTEGRATION COMMANDS
@@ -40,7 +22,7 @@ do
     end
 
     vim.schedule(function()
-      local win_utils = require("yoda.window_utils")
+      local win_utils = require("yoda-window.utils")
       local current_win = vim.api.nvim_get_current_win()
 
       local win, buf = win_utils.find_window(function(win, buf, buf_name, ft)
@@ -294,11 +276,11 @@ end, { desc = "Format Gherkin feature file" })
 
 -- Diagnostic commands (refactored to use new diagnostics module for better SRP)
 vim.api.nvim_create_user_command("YodaDiagnostics", function()
-  require("yoda.diagnostics").run_all()
+  require("yoda-diagnostics").run_all()
 end, { desc = "Run Yoda.nvim diagnostics to check LSP and AI integration" })
 
 vim.api.nvim_create_user_command("YodaAICheck", function()
-  require("yoda.diagnostics.ai").display_detailed_check()
+  require("yoda-diagnostics.ai").display_detailed_check()
 end, { desc = "Check AI API configuration and diagnose issues" })
 
 -- Completion engine status check
@@ -350,7 +332,7 @@ end, { desc = "Check completion engine status" })
 
 -- Rust development setup command
 vim.api.nvim_create_user_command("YodaRustSetup", function()
-  local logger = require("yoda.logging.logger")
+  local logger = require("yoda-logging.logger")
   logger.set_strategy("console")
   logger.set_level("info")
 
@@ -385,7 +367,7 @@ end, { desc = "Install Rust development tools (rust-analyzer, codelldb) via Maso
 
 -- Python development setup command
 vim.api.nvim_create_user_command("YodaPythonSetup", function()
-  local logger = require("yoda.logging.logger")
+  local logger = require("yoda-logging.logger")
   logger.set_strategy("console")
   logger.set_level("info")
 
@@ -452,7 +434,7 @@ end, { desc = "Select Python virtual environment" })
 
 -- JavaScript/TypeScript development setup command
 vim.api.nvim_create_user_command("YodaJavaScriptSetup", function()
-  local logger = require("yoda.logging.logger")
+  local logger = require("yoda-logging.logger")
   logger.set_strategy("console")
   logger.set_level("info")
 
@@ -507,7 +489,7 @@ end, { desc = "Check outdated npm packages" })
 
 -- C# / .NET development setup command
 vim.api.nvim_create_user_command("YodaCSharpSetup", function()
-  local logger = require("yoda.logging.logger")
+  local logger = require("yoda-logging.logger")
   logger.set_strategy("console")
   logger.set_level("info")
 

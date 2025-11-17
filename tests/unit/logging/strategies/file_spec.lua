@@ -18,7 +18,7 @@ describe("logging.strategies.file", function()
     package.loaded["yoda.logging.strategies.file"] = nil
     package.loaded["yoda.logging.config"] = nil
 
-    config = require("yoda.logging.config")
+    config = require("yoda-logging.config")
     config.reset()
     config.set_log_file(test_log_file)
 
@@ -73,7 +73,7 @@ describe("logging.strategies.file", function()
       }
     end
 
-    file_strategy = require("yoda.logging.strategies.file")
+    file_strategy = require("yoda-logging.strategies.file")
   end)
 
   after_each(function()

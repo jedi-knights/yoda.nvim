@@ -1,5 +1,5 @@
 -- Tests for core/table.lua
-local tbl = require("yoda.core.table")
+local tbl = require("yoda-core.table")
 
 describe("core.table", function()
   describe("merge()", function()

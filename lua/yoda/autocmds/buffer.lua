@@ -2,7 +2,7 @@ local M = {}
 
 local autocmd_logger = require("yoda.autocmd_logger")
 local autocmd_perf = require("yoda.autocmd_performance")
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 local alpha_manager = require("yoda.ui.alpha_manager")
 local gitsigns = require("yoda.integrations.gitsigns")
 local buffer_state = require("yoda.buffer.state_checker")
@@ -92,7 +92,7 @@ function M.setup_commands()
   vim.api.nvim_create_user_command("Bd", function(opts)
     local buf = vim.api.nvim_get_current_buf()
     local autocmd_logger = require("yoda.autocmd_logger")
-    local window_protection = require("yoda.window.protection")
+    local window_protection = require("yoda-window.protection")
 
     autocmd_logger.log("Bd_Start", { buf = buf, bang = opts.bang })
 

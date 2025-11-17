@@ -1,5 +1,5 @@
 -- Tests for terminal/shell.lua
-local shell = require("yoda.terminal.shell")
+local shell = require("yoda-terminal.shell")
 
 describe("terminal.shell", function()
   -- Save originals

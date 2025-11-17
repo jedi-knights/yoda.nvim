@@ -2,7 +2,7 @@
 -- Pure Lua YAML parser for ingress-mapping.yaml structure
 -- Uses unified logging system for trace debugging
 
-local logger = require("yoda.logging.logger")
+local logger = require("yoda-logging.logger")
 -- Refactored for low cyclomatic complexity (all functions ≤ 7)
 
 local M = {}

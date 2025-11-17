@@ -1,4 +1,4 @@
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
@@ -6,7 +6,7 @@ local function map(mode, lhs, rhs, opts)
 end
 
 local OPENCODE_STARTUP_DELAY_MS = 100
-local win_utils = require("yoda.window_utils")
+local win_utils = require("yoda-window.utils")
 
 local function with_auto_save(operation_fn)
   return function(...)
@@ -51,7 +51,7 @@ map({ "n", "i" }, "<leader>ab", function()
     vim.cmd("stopinsert")
   end
 
-  local win_utils = require("yoda.window_utils")
+  local win_utils = require("yoda-window.utils")
   local current_win = vim.api.nvim_get_current_win()
 
   local found = win_utils.focus_window(function(win, buf, buf_name, ft)
@@ -68,7 +68,7 @@ map("i", "<C-q>", function()
   if buf_name:match("[Oo]pen[Cc]ode") then
     vim.cmd("stopinsert")
     vim.schedule(function()
-      local win_utils = require("yoda.window_utils")
+      local win_utils = require("yoda-window.utils")
       local found = win_utils.focus_window(function(win, buf, buf_name, ft)
         return not buf_name:match("[Oo]pen[Cc]ode") and vim.bo[buf].buftype == ""
       end)
@@ -87,7 +87,7 @@ map({ "n", "i" }, "<A-q>", function()
   end
 
   vim.schedule(function()
-    local win_utils = require("yoda.window_utils")
+    local win_utils = require("yoda-window.utils")
     local current_win = vim.api.nvim_get_current_win()
 
     local found = win_utils.focus_window(function(win, buf, buf_name, ft)

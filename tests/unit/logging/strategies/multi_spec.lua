@@ -47,7 +47,7 @@ describe("logging.strategies.multi", function()
       end,
     }
 
-    multi_strategy = require("yoda.logging.strategies.multi")
+    multi_strategy = require("yoda-logging.strategies.multi")
   end)
 
   describe("write()", function()

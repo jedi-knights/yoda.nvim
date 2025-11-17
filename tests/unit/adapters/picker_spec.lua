@@ -1,5 +1,5 @@
 -- Tests for adapters/picker.lua
-local picker = require("yoda.adapters.picker")
+local picker = require("yoda-adapters.picker")
 
 describe("adapters.picker", function()
   -- Save originals

@@ -4,7 +4,7 @@
 local M = {}
 
 local gitsigns = require("yoda.integrations.gitsigns")
-local notify = require("yoda.adapters.notification")
+local notify = require("yoda-adapters.notification")
 
 -- Safe require with error handling
 local buffer_state_ok, buffer_state = pcall(require, "yoda.buffer.state_checker")

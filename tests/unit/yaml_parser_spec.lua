@@ -313,7 +313,7 @@ environments:
     -- Note: Debug logging tests removed - yaml_parser now uses unified logger
     -- Logging behavior is tested in logging/logger_spec.lua and strategies/*_spec.lua
     -- To enable debug logging for yaml_parser:
-    --   require("yoda.logging.logger").set_strategy("file")
-    --   require("yoda.logging.logger").set_level("trace")
+    --   require("yoda-logging.logger").set_strategy("file")
+    --   require("yoda-logging.logger").set_level("trace")
   end)
 end)
