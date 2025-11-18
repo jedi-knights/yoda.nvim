@@ -24,6 +24,11 @@ function M.setup_all(autocmd, augroup)
     group = augroup("YodaOpenCodeFocusRefresh", { clear = true }),
     desc = "Refresh buffers and git signs when focus is gained",
     callback = function()
+      local current_ft = vim.bo.filetype
+      if current_ft == "opencode" then
+        return
+      end
+
       vim.schedule(function()
         pcall(vim.cmd, "checktime")
 

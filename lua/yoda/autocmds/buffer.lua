@@ -32,6 +32,12 @@ function M.setup_all(autocmd, augroup)
       local filetype = vim.bo[buf].filetype
       local buflisted = vim.bo[buf].buflisted
 
+      if filetype == "opencode" then
+        autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "opencode_buffer" })
+        autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_opencode" })
+        return
+      end
+
       if buftype ~= "" and buftype ~= "help" then
         autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "special_buftype", buftype = buftype })
         autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_special" })
