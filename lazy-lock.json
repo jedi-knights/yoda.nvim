@@ -59,6 +59,6 @@
   "yoda-diagnostics.nvim": { "branch": "main", "commit": "869395d5204e7c01eb90460b96f799fd546cc097" },
   "yoda-logging.nvim": { "branch": "main", "commit": "bfe322d4927e23e72a143a6f9343d61b12e3a0be" },
   "yoda-terminal.nvim": { "branch": "main", "commit": "eacb118c1045d31a1c01a9815f10001c4e1e524b" },
-  "yoda-window.nvim": { "branch": "main", "commit": "71915cdd3e660311b0fd9c6776ea5f7d44d93d9f" },
+  "yoda-window.nvim": { "branch": "main", "commit": "0c4d14c1afe9e3c99c35674b41d7b8e07a7e3b51" },
   "yoda.nvim-adapters": { "branch": "main", "commit": "1f5ceaa360bd9574ef82a25970de712c63c41cbd" }
 }
