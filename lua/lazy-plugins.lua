@@ -2,42 +2,48 @@
 -- Setup lazy.nvim with plugins
 
 -- Check if we're in local development mode
-local use_local_plugins = vim.env.YODA_DEV_LOCAL or false
+local use_local_plugins = vim.env.YODA_DEV_LOCAL
 local local_plugin_root = vim.env.HOME .. "/src/github/jedi-knights"
+
+local function plugin_spec(name, opts)
+  opts = opts or {}
+  local spec = {
+    name = name,
+  }
+  
+  if use_local_plugins then
+    spec.dir = local_plugin_root .. "/" .. name
+  else
+    spec[1] = "jedi-knights/" .. name
+  end
+  
+  for k, v in pairs(opts) do
+    spec[k] = v
+  end
+  
+  return spec
+end
 
 require("lazy").setup({
   -- Extracted Yoda plugins (foundation)
-  {
-    use_local_plugins and (local_plugin_root .. "/yoda.nvim-adapters") or "jedi-knights/yoda.nvim-adapters",
-    name = "yoda.nvim-adapters",
+  plugin_spec("yoda.nvim-adapters", {
     lazy = false,
     priority = 1000,
-  },
-  {
-    use_local_plugins and (local_plugin_root .. "/yoda-core.nvim") or "jedi-knights/yoda-core.nvim",
-    name = "yoda-core.nvim",
+  }),
+  plugin_spec("yoda-core.nvim", {
     lazy = false,
     priority = 999,
-  },
-  {
-    use_local_plugins and (local_plugin_root .. "/yoda-logging.nvim") or "jedi-knights/yoda-logging.nvim",
-    name = "yoda-logging.nvim",
+  }),
+  plugin_spec("yoda-logging.nvim", {
     dependencies = { "yoda.nvim-adapters" },
-  },
-  {
-    use_local_plugins and (local_plugin_root .. "/yoda-terminal.nvim") or "jedi-knights/yoda-terminal.nvim",
-    name = "yoda-terminal.nvim",
+  }),
+  plugin_spec("yoda-terminal.nvim", {
     dependencies = { "yoda.nvim-adapters" },
-  },
-  {
-    use_local_plugins and (local_plugin_root .. "/yoda-window.nvim") or "jedi-knights/yoda-window.nvim",
-    name = "yoda-window.nvim",
+  }),
+  plugin_spec("yoda-window.nvim", {
     dependencies = { "yoda.nvim-adapters" },
-  },
-  {
-    use_local_plugins and (local_plugin_root .. "/yoda-diagnostics.nvim") or "jedi-knights/yoda-diagnostics.nvim",
-    name = "yoda-diagnostics.nvim",
-  },
+  }),
+  plugin_spec("yoda-diagnostics.nvim", {}),
 
   -- Core plugins
   { import = "plugins.core" },
