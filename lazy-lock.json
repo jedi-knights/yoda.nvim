@@ -54,5 +54,11 @@
   "telescope.nvim": { "branch": "master", "commit": "1d7729cef35ba5e6091b3b03d75e765755219e65" },
   "tokyonight.nvim": { "branch": "main", "commit": "5da1b76e64daf4c5d410f06bcb6b9cb640da7dfd" },
   "venv-selector.nvim": { "branch": "main", "commit": "58bae72c84b9f7f864c879ec1896e384296f9ffb" },
-  "vim-tmux-navigator": { "branch": "master", "commit": "c45243dc1f32ac6bcf6068e5300f3b2b237e576a" }
+  "vim-tmux-navigator": { "branch": "master", "commit": "c45243dc1f32ac6bcf6068e5300f3b2b237e576a" },
+  "yoda-core.nvim": { "branch": "main", "commit": "450d0dce45e6235e82955912a29c61a6bd4f56d6" },
+  "yoda-diagnostics.nvim": { "branch": "main", "commit": "ef2134617e498186370647183850b00d095ad95d" },
+  "yoda-logging.nvim": { "branch": "main", "commit": "2fbe39e7fe745abd6a723d57e172bf247114674c" },
+  "yoda-terminal.nvim": { "branch": "main", "commit": "a96f211803c514851e1d2b6c412da0dda052bc6d" },
+  "yoda-window.nvim": { "branch": "main", "commit": "04f486eafeb1eed9a20a8771b3fe238b911f1d27" },
+  "yoda.nvim-adapters": { "branch": "main", "commit": "deecd0b2c5b18dbb35d3119a735bbc02df67994d" }
 }
