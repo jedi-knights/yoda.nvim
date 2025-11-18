@@ -187,4 +187,3 @@ logger.debug("Operation completed", {
 -- NEW: logger.set_strategy("file") + logger.trace(msg)
 
 return logger
-

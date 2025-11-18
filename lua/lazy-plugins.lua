@@ -10,17 +10,17 @@ local function plugin_spec(name, opts)
   local spec = {
     name = name,
   }
-  
+
   if use_local_plugins then
     spec.dir = local_plugin_root .. "/" .. name
   else
     spec[1] = "jedi-knights/" .. name
   end
-  
+
   for k, v in pairs(opts) do
     spec[k] = v
   end
-  
+
   return spec
 end
 

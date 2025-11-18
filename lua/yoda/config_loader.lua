@@ -9,14 +9,10 @@ local M = {}
 function M.load_json_config(path)
   -- Input validation for perfect assertiveness
   if type(path) ~= "string" or path == "" then
-    vim.notify(
-      "load_json_config: path must be a non-empty string",
-      vim.log.levels.ERROR,
-      { title = "Config Loader Error" }
-    )
+    vim.notify("load_json_config: path must be a non-empty string", vim.log.levels.ERROR, { title = "Config Loader Error" })
     return nil
   end
-  
+
   local io = require("yoda-core.io")
   local ok, data = io.parse_json_file(path)
   return ok and data or nil
@@ -27,7 +23,7 @@ end
 function M.load_ingress_mapping()
   local yaml_path = "ingress-mapping.yaml"
   local io = require("yoda-core.io")
-  
+
   if not io.is_file(yaml_path) then
     return nil
   end
@@ -54,7 +50,7 @@ function M.load_env_region()
   -- First try to load environments.json
   local file_path = "environments.json"
   local io = require("yoda-core.io")
-  
+
   if io.is_file(file_path) then
     local config = M.load_json_config(file_path)
     if config then
@@ -80,9 +76,9 @@ function M.load_marker(cache_file)
     local defaults = require("yoda.testing.defaults")
     return defaults.get_marker_defaults()
   end
-  
+
   local config = M.load_json_config(cache_file)
-  
+
   -- Use testing defaults for fallback (OCP - user-overridable!)
   local defaults = require("yoda.testing.defaults")
   return config or defaults.get_marker_defaults()
@@ -97,11 +93,11 @@ end
 --- @param markers string|nil Markers used
 --- @param open_allure boolean|nil Whether to open Allure report
 function M.save_marker(cache_file, env, region, markers, open_allure)
-  local config = { 
-    environment = env, 
+  local config = {
+    environment = env,
     region = region,
     markers = markers or "bdd",
-    open_allure = open_allure or false
+    open_allure = open_allure or false,
   }
   local Path = require("plenary.path")
   local ok = pcall(function()

@@ -38,6 +38,20 @@ M.show_notification = function()
   end)
 end
 
+--- Show local development notification on startup
+--- Displays when YODA_DEV_LOCAL is set
+M.show_local_dev_notification = function()
+  if not vim.env.YODA_DEV_LOCAL then
+    return
+  end
+
+  vim.schedule(function()
+    local msg = "  Local Development Mode Active"
+    local notify = require("yoda.utils").notify
+    notify(msg, "info", { title = "Yoda Development", timeout = NOTIFICATION_TIMEOUT_MS })
+  end)
+end
+
 --- Get current environment mode
 --- @return string Environment mode (home/work/unknown)
 M.get_mode = function()

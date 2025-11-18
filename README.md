@@ -254,6 +254,31 @@ export YODA_ENV=home
 export YODA_ENV=work
 ```
 
+### Local Plugin Development
+```bash
+# Load all Yoda plugins from local directories instead of GitHub
+export YODA_DEV_LOCAL=1
+
+# Expects plugin repositories in:
+# ~/src/github/jedi-knights/yoda.nvim-adapters
+# ~/src/github/jedi-knights/yoda-core.nvim
+# ~/src/github/jedi-knights/yoda-logging.nvim
+# ~/src/github/jedi-knights/yoda-terminal.nvim
+# ~/src/github/jedi-knights/yoda-window.nvim
+# ~/src/github/jedi-knights/yoda-diagnostics.nvim
+
+# Benefits:
+# ✅ Test plugin changes immediately without pushing to GitHub
+# ✅ Develop multiple plugins simultaneously
+# ✅ Debug plugin interactions locally
+# ✅ Fast iteration cycle
+
+# To switch back to GitHub versions:
+unset YODA_DEV_LOCAL
+```
+
+See [Local Plugin Development Guide](docs/LOCAL_PLUGIN_DEVELOPMENT.md) for more details.
+
 ### Startup Messages
 ```lua
 -- In init.lua
