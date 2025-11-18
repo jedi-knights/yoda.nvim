@@ -178,7 +178,7 @@ end
 function M.parse_ingress_mapping(yaml_path)
   -- Input validation
   assert(type(yaml_path) == "string" and yaml_path ~= "", "yaml_path must be a non-empty string")
-  
+
   -- Read file
   local ok, content = read_yaml_file(yaml_path)
   if not ok then

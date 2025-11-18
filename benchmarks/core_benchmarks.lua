@@ -67,7 +67,12 @@ local function bench_string_split()
     {
       name = "split() - large string",
       func = function()
-        local str = table.concat(vim.tbl_map(function(i) return tostring(i) end, vim.fn.range(100)), ",")
+        local str = table.concat(
+          vim.tbl_map(function(i)
+            return tostring(i)
+          end, vim.fn.range(100)),
+          ","
+        )
         string_utils.split(str, ",")
       end,
     },
@@ -81,7 +86,7 @@ end
 local function bench_table_merge()
   local small_table1 = { a = 1, b = 2, c = 3 }
   local small_table2 = { d = 4, e = 5 }
-  
+
   local large_table1 = {}
   for i = 1, 100 do
     large_table1["key" .. i] = i
@@ -90,7 +95,7 @@ local function bench_table_merge()
   for i = 101, 150 do
     large_table2["key" .. i] = i
   end
-  
+
   benchmark.suite({
     {
       name = "merge() - small tables",
@@ -114,7 +119,7 @@ local function bench_table_deep_copy()
     b = { c = 2, d = { e = 3, f = { g = 4 } } },
     h = { i = 5, j = 6 },
   }
-  
+
   benchmark.suite({
     {
       name = "deep_copy() - shallow table",
@@ -134,7 +139,7 @@ end
 local function bench_table_contains()
   local small_array = { 1, 2, 3, 4, 5 }
   local large_array = vim.fn.range(1, 1000)
-  
+
   benchmark.suite({
     {
       name = "contains() - small array (found)",
@@ -172,7 +177,7 @@ local function bench_io_checks()
   local existing_file = vim.fn.stdpath("config") .. "/init.lua"
   local nonexistent_file = "/tmp/nonexistent_file_12345.txt"
   local existing_dir = vim.fn.stdpath("config")
-  
+
   benchmark.suite({
     {
       name = "is_file() - existing file",
@@ -210,7 +215,7 @@ local function run_all_benchmarks()
   print("CORE UTILITIES PERFORMANCE BENCHMARKS")
   print("========================================")
   print("")
-  
+
   print("--- STRING UTILITIES ---")
   bench_string_trim()
   print("")
@@ -218,7 +223,7 @@ local function run_all_benchmarks()
   print("")
   bench_string_split()
   print("")
-  
+
   print("--- TABLE UTILITIES ---")
   bench_table_merge()
   print("")
@@ -226,11 +231,11 @@ local function run_all_benchmarks()
   print("")
   bench_table_contains()
   print("")
-  
+
   print("--- I/O UTILITIES ---")
   bench_io_checks()
   print("")
-  
+
   print("========================================")
   print("BENCHMARKS COMPLETE")
   print("========================================")

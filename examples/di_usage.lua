@@ -142,4 +142,3 @@ print("\nExample 4: Custom Composition")
 example_custom_composition()
 
 print("\n=== Examples Complete ===")
-

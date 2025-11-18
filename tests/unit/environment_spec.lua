@@ -4,16 +4,19 @@ local environment = require("yoda.environment")
 describe("environment", function()
   -- Save originals
   local original_env_yoda = vim.env.YODA_ENV
+  local original_env_dev_local = vim.env.YODA_DEV_LOCAL
   local original_config = vim.g.yoda_config
   local original_schedule = vim.schedule
 
   before_each(function()
     vim.env.YODA_ENV = nil
+    vim.env.YODA_DEV_LOCAL = nil
     vim.g.yoda_config = nil
   end)
 
   after_each(function()
     vim.env.YODA_ENV = original_env_yoda
+    vim.env.YODA_DEV_LOCAL = original_env_dev_local
     vim.g.yoda_config = original_config
     vim.schedule = original_schedule
     package.loaded["yoda.utils"] = nil
@@ -186,6 +189,94 @@ describe("environment", function()
       end
 
       environment.show_notification()
+      assert.is_true(scheduled)
+    end)
+  end)
+
+  describe("show_local_dev_notification()", function()
+    it("does not notify when YODA_DEV_LOCAL is not set", function()
+      vim.env.YODA_DEV_LOCAL = nil
+
+      local scheduled_fn = nil
+      vim.schedule = function(fn)
+        scheduled_fn = fn
+      end
+
+      environment.show_local_dev_notification()
+      assert.is_nil(scheduled_fn)
+    end)
+
+    it("notifies when YODA_DEV_LOCAL is set", function()
+      vim.env.YODA_DEV_LOCAL = "1"
+
+      local notified = false
+      local captured_msg = nil
+
+      package.loaded["yoda.utils"] = {
+        notify = function(msg, level, opts)
+          notified = true
+          captured_msg = msg
+        end,
+      }
+
+      vim.schedule = function(fn)
+        fn()
+      end
+
+      environment.show_local_dev_notification()
+      assert.is_true(notified)
+      assert.matches("Local Development Mode", captured_msg)
+      assert.matches("", captured_msg)
+    end)
+
+    it("passes correct options to notify", function()
+      vim.env.YODA_DEV_LOCAL = "1"
+
+      local captured_opts = nil
+
+      package.loaded["yoda.utils"] = {
+        notify = function(msg, level, opts)
+          captured_opts = opts
+        end,
+      }
+
+      vim.schedule = function(fn)
+        fn()
+      end
+
+      environment.show_local_dev_notification()
+      assert.equals("Yoda Development", captured_opts.title)
+      assert.equals(2000, captured_opts.timeout)
+    end)
+
+    it("uses info level for notifications", function()
+      vim.env.YODA_DEV_LOCAL = "1"
+
+      local captured_level = nil
+
+      package.loaded["yoda.utils"] = {
+        notify = function(msg, level, opts)
+          captured_level = level
+        end,
+      }
+
+      vim.schedule = function(fn)
+        fn()
+      end
+
+      environment.show_local_dev_notification()
+      assert.equals("info", captured_level)
+    end)
+
+    it("schedules notification asynchronously", function()
+      vim.env.YODA_DEV_LOCAL = "1"
+
+      local scheduled = false
+      vim.schedule = function(fn)
+        scheduled = true
+      end
+
+      environment.show_local_dev_notification()
       assert.is_true(scheduled)
     end)
   end)
