@@ -44,6 +44,12 @@ require("lazy-bootstrap")
 require("options") -- Fastest - just vim option settings
 require("lazy-plugins") -- Load plugins early to allow lazy loading to work
 
+-- Setup yoda plugins after lazy.nvim loads them
+vim.schedule(function()
+  local yoda_setup = require("yoda-setup")
+  yoda_setup.setup_yoda_plugins()
+end)
+
 -- Load local configuration if it exists (deferred)
 vim.schedule(function()
   pcall(require, "local")
@@ -115,5 +121,6 @@ vim.schedule(function()
   local environment = safe_require("yoda.environment")
   if environment then
     environment.show_notification()
+    environment.show_local_dev_notification()
   end
 end)
