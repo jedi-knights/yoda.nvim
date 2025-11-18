@@ -166,6 +166,12 @@ function M.refresh_buffer(buf)
     return false
   end
 
+  -- Skip OpenCode buffers to avoid interfering with prompt input
+  local ft = vim.bo[buf].filetype
+  if ft == "opencode" then
+    return false
+  end
+
   -- Prevent recursive calls
   if refresh_in_progress[buf] then
     return false
@@ -219,11 +225,16 @@ function M.refresh_buffer(buf)
   return true
 end
 
---- Check if buffer should be refreshed (Complexity: 3)
+--- Check if buffer should be refreshed (Complexity: 4)
 --- @param buf number Buffer handle
 --- @return boolean should_refresh Whether buffer should be refreshed
 local function should_refresh_buffer(buf)
   if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "" then
+    return false
+  end
+
+  local ft = vim.bo[buf].filetype
+  if ft == "opencode" then
     return false
   end
 
@@ -352,6 +363,18 @@ end
 --- @param buf number Buffer number
 --- @param logger table Optional logger instance
 function M.handle_debounced_buffer_refresh(buf, logger)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
+
+  local ft = vim.bo[buf].filetype
+  if ft == "opencode" then
+    if logger then
+      logger.log("Refresh_Skip", { buf = buf, reason = "opencode_buffer" })
+    end
+    return
+  end
+
   -- Cancel any pending debounce for this buffer
   if buf_debounce[buf] then
     pcall(vim.fn.timer_stop, buf_debounce[buf])
@@ -428,6 +451,11 @@ function M.setup_autocmds(autocmd, augroup, gitsigns, buffer_state)
     group = augroup("YodaOpenCodeFocusRefresh", { clear = true }),
     desc = "Refresh buffers and git signs when focus is gained",
     callback = function()
+      local current_ft = vim.bo.filetype
+      if current_ft == "opencode" then
+        return
+      end
+
       vim.schedule(function()
         pcall(vim.cmd, "checktime")
         if buffer_state and buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
