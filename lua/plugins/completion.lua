@@ -42,6 +42,14 @@ return {
       local luasnip = require("luasnip")
 
       cmp.setup({
+        enabled = function()
+          -- Disable completion in git commit buffers
+          local ft = vim.bo.filetype
+          if ft == "gitcommit" or ft == "NeogitCommitMessage" then
+            return false
+          end
+          return true
+        end,
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)

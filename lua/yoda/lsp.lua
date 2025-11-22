@@ -411,6 +411,16 @@ function M.setup()
     flags = {
       debounce_text_changes = 300,
     },
+    on_attach = function(client, bufnr)
+      -- Don't attach to git commit buffers
+      local ft = vim.bo[bufnr].filetype
+      if ft == "gitcommit" or ft == "NeogitCommitMessage" then
+        vim.schedule(function()
+          vim.lsp.buf_detach_client(bufnr, client.id)
+        end)
+        return
+      end
+    end,
   })
 
   -- Setup LSP keymaps on attach with debounced UI updates

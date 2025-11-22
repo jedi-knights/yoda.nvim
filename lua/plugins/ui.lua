@@ -343,4 +343,15 @@ return {
       })
     end,
   },
+
+  -- Showkeys - Minimal keys screencaster
+  {
+    "nvzone/showkeys",
+    cmd = { "ShowkeysToggle", "Showkeys" },
+    opts = {
+      timeout = 1,
+      maxkeys = 5,
+      position = "top-right",
+    },
+  },
 }
