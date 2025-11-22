@@ -95,3 +95,138 @@ else
 end
 
 -- Note: vim.cmd mocking removed - was causing exit code issues in CI
+
+-- Mock external yoda plugins for testing (extracted modules)
+package.preload["yoda-adapters"] = function()
+  return {}
+end
+
+package.preload["yoda-adapters.notification"] = function()
+  return {
+    notify = function(msg, level) end,
+    reset_backend = function() end,
+    detect_backend = function()
+      return "native"
+    end,
+  }
+end
+
+package.preload["yoda-adapters.picker"] = function()
+  return {
+    select = function(items, opts, on_choice)
+      if on_choice then
+        on_choice(items[1], 1)
+      end
+    end,
+    multiselect = function(items, opts, on_choice)
+      if on_choice then
+        on_choice(items)
+      end
+    end,
+  }
+end
+
+package.preload["yoda-core"] = function()
+  return {}
+end
+
+package.preload["yoda-core.io"] = function()
+  return {
+    file_exists = function(path)
+      return vim.fn.filereadable(path) == 1
+    end,
+    is_file = function(path)
+      return vim.fn.filereadable(path) == 1
+    end,
+    read_file = function(path)
+      local f = io.open(path, "r")
+      if not f then
+        return nil
+      end
+      local content = f:read("*all")
+      f:close()
+      return content
+    end,
+    parse_json_file = function(path)
+      if vim.fn.filereadable(path) == 0 then
+        return nil
+      end
+      local ok, content = pcall(vim.fn.readfile, path)
+      if not ok or #content == 0 then
+        return nil
+      end
+      local json_ok, result = pcall(vim.fn.json_decode, table.concat(content, "\n"))
+      if not json_ok then
+        return nil
+      end
+      return result
+    end,
+  }
+end
+
+package.preload["yoda-logging"] = function()
+  return {
+    LEVELS = { DEBUG = 0, INFO = 1, WARN = 2, ERROR = 3 },
+    setup = function() end,
+  }
+end
+
+package.preload["yoda-logging.config"] = function()
+  return {
+    LEVELS = {
+      TRACE = 0,
+      DEBUG = 1,
+      INFO = 2,
+      WARN = 3,
+      ERROR = 4,
+    },
+    get_level = function()
+      return 2
+    end,
+    set_level = function() end,
+  }
+end
+
+package.preload["yoda-logging.formatter"] = function()
+  return {
+    format = function(level, message, context)
+      return message
+    end,
+  }
+end
+
+package.preload["yoda-terminal"] = function()
+  return {
+    setup = function() end,
+  }
+end
+
+package.preload["yoda-window"] = function()
+  return {
+    setup = function() end,
+  }
+end
+
+package.preload["yoda-window.utils"] = function()
+  return {
+    is_special_buffer = function()
+      return false
+    end,
+    is_protected_buffer = function()
+      return false
+    end,
+  }
+end
+
+package.preload["yoda-diagnostics"] = function()
+  return {
+    setup = function() end,
+    run_all = function() end,
+  }
+end
+
+package.preload["yoda-diagnostics.ai"] = function()
+  return {
+    display_detailed_check = function() end,
+  }
+end

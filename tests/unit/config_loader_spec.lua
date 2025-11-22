@@ -12,7 +12,7 @@ describe("config_loader", function()
     vim.notify = original_notify
     vim.json.decode = original_json_decode
     vim.json.encode = original_json_encode
-    package.loaded["yoda.core.io"] = nil
+    package.loaded["yoda-core.io"] = nil
     package.loaded["yoda.yaml_parser"] = nil
     package.loaded["yoda.testing.defaults"] = nil
     package.loaded["plenary.path"] = nil
@@ -21,7 +21,7 @@ describe("config_loader", function()
   describe("load_json_config()", function()
     it("loads valid JSON config", function()
       -- Mock core.io
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         parse_json_file = function(path)
           if path == "/test/config.json" then
             return true, { key = "value" }
@@ -35,7 +35,7 @@ describe("config_loader", function()
     end)
 
     it("returns nil when file not found", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         parse_json_file = function()
           return false, "File not found"
         end,
@@ -81,7 +81,7 @@ describe("config_loader", function()
 
   describe("load_ingress_mapping()", function()
     it("loads valid ingress mapping YAML", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function(path)
           return path == "ingress-mapping.yaml"
         end,
@@ -104,7 +104,7 @@ describe("config_loader", function()
     end)
 
     it("returns nil when file not found", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function()
           return false
         end,
@@ -115,7 +115,7 @@ describe("config_loader", function()
     end)
 
     it("returns nil when YAML parsing fails", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function()
           return true
         end,
@@ -132,7 +132,7 @@ describe("config_loader", function()
     end)
 
     it("returns nil when environments is empty", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function()
           return true
         end,
@@ -154,7 +154,7 @@ describe("config_loader", function()
         notified = true
       end
 
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function()
           return true
         end,
@@ -173,7 +173,7 @@ describe("config_loader", function()
 
   describe("load_env_region()", function()
     it("loads from environments.json when available", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function(path)
           return path == "environments.json"
         end,
@@ -191,7 +191,7 @@ describe("config_loader", function()
     end)
 
     it("falls back to YAML when JSON not found", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function(path)
           return path == "ingress-mapping.yaml"
         end,
@@ -209,7 +209,7 @@ describe("config_loader", function()
     end)
 
     it("falls back to defaults when no config files", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function()
           return false
         end,
@@ -231,7 +231,7 @@ describe("config_loader", function()
 
     it("prefers JSON over YAML", function()
       local loaded_from = nil
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         is_file = function(path)
           return true -- Both exist
         end,
@@ -249,7 +249,7 @@ describe("config_loader", function()
 
   describe("load_marker()", function()
     it("loads marker from cache file", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         parse_json_file = function(path)
           if path == "/cache/marker.json" then
             return true,
@@ -270,7 +270,7 @@ describe("config_loader", function()
     end)
 
     it("returns defaults when cache file not found", function()
-      package.loaded["yoda.core.io"] = {
+      package.loaded["yoda-core.io"] = {
         parse_json_file = function()
           return false, "Not found"
         end,
