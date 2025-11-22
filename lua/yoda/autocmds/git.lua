@@ -14,7 +14,7 @@ function M.setup_all(autocmd, augroup)
       vim.cmd("autocmd! BufWritePost <buffer>")
       vim.cmd("autocmd! CompleteChanged,CompleteDone <buffer>")
 
-      vim.opt_local.timeoutlen = 0
+      vim.opt_local.timeoutlen = 50
 
       notify.notify("🔥 Disabled expensive autocmds for git commit buffer", "debug")
     end,
