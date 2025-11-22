@@ -27,7 +27,7 @@ describe("commands", function()
     end
 
     -- Mock diagnostics modules BEFORE loading commands
-    package.loaded["yoda.diagnostics"] = {
+    package.loaded["yoda-diagnostics"] = {
       run_all = function()
         -- Fast mock implementation
         vim.notify("🔍 Running Yoda diagnostics...", vim.log.levels.INFO)
@@ -48,7 +48,7 @@ describe("commands", function()
       },
     }
 
-    package.loaded["yoda.diagnostics.ai"] = {
+    package.loaded["yoda-diagnostics.ai"] = {
       display_detailed_check = function()
         -- Fast mock implementation
       end,
@@ -97,7 +97,7 @@ describe("commands", function()
       local called = false
 
       -- Override the mocked function to track calls
-      package.loaded["yoda.diagnostics"].run_all = function()
+      package.loaded["yoda-diagnostics"].run_all = function()
         called = true
       end
 
@@ -108,7 +108,7 @@ describe("commands", function()
 
     it("handles missing diagnostics module", function()
       -- Clear the mocked module to simulate missing module
-      package.loaded["yoda.diagnostics"] = nil
+      package.loaded["yoda-diagnostics"] = nil
 
       -- Should not crash
       local ok = pcall(function()
@@ -125,7 +125,7 @@ describe("commands", function()
       local called = false
 
       -- Override the mocked function to track calls
-      package.loaded["yoda.diagnostics.ai"].display_detailed_check = function()
+      package.loaded["yoda-diagnostics.ai"].display_detailed_check = function()
         called = true
       end
 
