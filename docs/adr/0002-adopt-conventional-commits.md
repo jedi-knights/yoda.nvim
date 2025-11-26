@@ -21,7 +21,7 @@ Examples:
 
 ```
 feat: add treesitter integration for better syntax highlighting
-fix: correct nvim-cmp setup error when no LSP is attached
+fix: correct blink.cmp setup error when no LSP is attached
 docs: add installation guide to README
 refactor: simplify LSP config setup
 chore: update lazy.nvim to latest version
