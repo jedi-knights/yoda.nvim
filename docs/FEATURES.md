@@ -29,7 +29,7 @@ Comprehensive overview of Yoda.nvim's features, capabilities, and technical arch
 ### Language Server Protocol (LSP)
 - **Automatic LSP setup** with Mason integration
 - **Multi-language support** (Lua, Go, TypeScript, Python, etc.)
-- **Intelligent completion** with nvim-cmp
+- **Intelligent completion** with blink.cmp (Rust-based, high performance)
 - **Real-time diagnostics** and error highlighting
 - **Code actions** and quick fixes
 - **File watching** for better IDE experience
@@ -202,7 +202,7 @@ end
 
 **Capabilities:**
 - File watching for better IDE experience
-- Proper capability merging with nvim-cmp
+- Proper capability merging with blink.cmp
 - Server-specific configurations
 - Error handling and fallbacks
 

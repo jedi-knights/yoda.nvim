@@ -84,7 +84,7 @@ Key Components~
 
 1. nvim-lspconfig: Core LSP client
 2. mason.nvim: Language server installer
-3. nvim-cmp: Completion engine with LSP integration
+3. blink.cmp: High-performance Rust-based completion engine with LSP integration
 4. Custom configuration: Yoda-specific enhancements
 
 File Structure~
@@ -151,7 +151,7 @@ LSP settings are configured in lua/yoda/lsp.lua.
 Common Configuration Pattern~
 >
     require("lspconfig").server_name.setup({
-      capabilities = capabilities,      -- From nvim-cmp
+      capabilities = capabilities,      -- From blink.cmp
       on_attach = on_attach,           -- Set keymaps and options
       settings = {
         -- Server-specific settings
@@ -162,8 +162,8 @@ Common Configuration Pattern~
 Capabilities~
 
 Yoda.nvim automatically configures LSP capabilities for:
-  • Completion (nvim-cmp integration)
-  • Snippets (LuaSnip support)
+  • Completion (blink.cmp integration)
+  • Snippets (friendly-snippets support)
   • File watching
   • Workspace folders
 
@@ -234,7 +234,7 @@ Check server installation:
 No Completions~
 
 1. Check if server supports completion
-2. Verify nvim-cmp is configured
+2. Verify blink.cmp is configured
 3. Check capabilities are set correctly
 
 Diagnostics Not Showing~
