@@ -13,22 +13,22 @@ vim.g.dbs = vim.g.dbs or {}
 -- ============================================================================
 
 vim.opt.number = true
-vim.opt.relativenumber = true
+vim.opt.relativenumber = false
 vim.opt.mouse = "a"
 vim.opt.showmode = false
-vim.opt.clipboard = "unnamedplus"
+vim.opt.clipboard = ""
 vim.opt.breakindent = true
 vim.opt.undofile = true
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
-vim.opt.updatetime = 250
-vim.opt.timeoutlen = 300
+vim.opt.updatetime = 1000
+vim.opt.timeoutlen = 200
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-vim.opt.inccommand = "split"
+vim.opt.inccommand = "nosplit"
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.colorcolumn = "80"
@@ -44,7 +44,7 @@ end
 -- Set up autocmds to ensure colorcolumn stays visible
 vim.api.nvim_create_augroup("ColorColumnPersistent", { clear = true })
 
-vim.api.nvim_create_autocmd({ "ColorScheme", "BufEnter", "BufWinEnter", "WinEnter", "BufReadPost" }, {
+vim.api.nvim_create_autocmd("ColorScheme", {
   group = "ColorColumnPersistent",
   pattern = "*",
   callback = set_colorcolumn_highlight,
@@ -128,9 +128,9 @@ vim.opt.termguicolors = true
 -- FOLDING
 -- ============================================================================
 
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldmethod = "manual"
 vim.opt.foldenable = false
+vim.opt.foldlevel = 99
 
 -- ============================================================================
 -- YODA SPECIFIC
