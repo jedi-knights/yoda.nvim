@@ -2,166 +2,57 @@
 -- Completion and snippet plugins
 
 return {
-  -- nvim-cmp - Reliable completion engine
   {
-    "hrsh7th/nvim-cmp",
-    event = "InsertEnter", -- Removed CmdlineEnter due to crashes in Neovim 0.11.4
-    dependencies = {
-      -- Snippet engine
-      {
-        "L3MON4D3/LuaSnip",
-        build = "make install_jsregexp",
-        event = "InsertEnter",
-        config = function()
-          -- Configure LuaSnip here to ensure it loads properly
-          local luasnip = require("luasnip")
+    "saghen/blink.cmp",
+    -- optional: provides snippets for the snippet source
+    dependencies = { "rafamadriz/friendly-snippets" },
 
-          -- Enable better snippet expansion
-          luasnip.config.setup({
-            history = true,
-            updateevents = "TextChanged,TextChangedI",
-            delete_check_events = "TextChanged,InsertLeave",
-          })
-        end,
-        dependencies = {
-          "rafamadriz/friendly-snippets",
-          config = function()
-            require("luasnip.loaders.from_vscode").lazy_load()
-          end,
-        },
+    -- use a release tag to download pre-built binaries
+    version = "1.*",
+    -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
+    -- build = 'cargo build --release',
+    -- If you use nix, you can build from source using latest nightly rust with:
+    -- build = 'nix run .#build-plugin',
+
+    ---@module 'blink.cmp'
+    ---@type blink.cmp.Config
+    opts = {
+      -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
+      -- 'super-tab' for mappings similar to vscode (tab to accept)
+      -- 'enter' for enter to accept
+      -- 'none' for no mappings
+      --
+      -- All presets have the following mappings:
+      -- C-space: Open menu or open docs if already open
+      -- C-n/C-p or Up/Down: Select next/previous item
+      -- C-e: Hide menu
+      -- C-k: Toggle signature help (if signature.enabled = true)
+      --
+      -- See :h blink-cmp-config-keymap for defining your own keymap
+      keymap = { preset = "default" },
+
+      appearance = {
+        -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+        -- Adjusts spacing to ensure icons are aligned
+        nerd_font_variant = "mono",
       },
-      -- Completion sources
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-path",
-      "hrsh7th/cmp-cmdline",
-      "saadparwaiz1/cmp_luasnip",
+
+      -- (Default) Only show the documentation popup when manually triggered
+      completion = { documentation = { auto_show = false } },
+
+      -- Default list of enabled providers defined so that you can extend it
+      -- elsewhere in your config, without redefining it, due to `opts_extend`
+      sources = {
+        default = { "lsp", "path", "snippets", "buffer" },
+      },
+
+      -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
+      -- You may use a lua implementation instead by using `implementation = "lua"` or fallback to the lua implementation,
+      -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
+      --
+      -- See the fuzzy documentation for more information
+      fuzzy = { implementation = "prefer_rust_with_warning" },
     },
-    config = function()
-      local cmp = require("cmp")
-      local luasnip = require("luasnip")
-
-      cmp.setup({
-        enabled = function()
-          -- Disable completion in git commit buffers
-          local ft = vim.bo.filetype
-          if ft == "gitcommit" or ft == "NeogitCommitMessage" then
-            return false
-          end
-          return true
-        end,
-        snippet = {
-          expand = function(args)
-            luasnip.lsp_expand(args.body)
-          end,
-        },
-        window = {
-          completion = cmp.config.window.bordered(),
-          documentation = cmp.config.window.bordered(),
-        },
-        mapping = cmp.mapping.preset.insert({
-          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-          ["<C-f>"] = cmp.mapping.scroll_docs(4),
-          ["<C-Space>"] = cmp.mapping.complete(),
-          ["<C-e>"] = cmp.mapping.abort(),
-          ["<CR>"] = cmp.mapping.confirm({ select = true }),
-          -- Snippet navigation
-          ["<Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-              luasnip.expand_or_jump()
-            else
-              fallback()
-            end
-          end, { "i", "s" }),
-          ["<S-Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-              luasnip.jump(-1)
-            else
-              fallback()
-            end
-          end, { "i", "s" }),
-        }),
-        sources = cmp.config.sources({
-          { name = "nvim_lsp" },
-          { name = "luasnip" },
-        }, {
-          { name = "buffer" },
-          { name = "path" },
-        }),
-        formatting = {
-          format = function(entry, vim_item)
-            -- Kind icons
-            local kind_icons = {
-              Text = "󰉿",
-              Method = "󰆧",
-              Function = "󰊕",
-              Constructor = "",
-              Field = "󰜢",
-              Variable = "󰀫",
-              Class = "󰠱",
-              Interface = "",
-              Module = "",
-              Property = "󰜢",
-              Unit = "󰑭",
-              Value = "󰎠",
-              Enum = "",
-              Keyword = "󰌋",
-              Snippet = "",
-              Color = "󰏘",
-              File = "󰈙",
-              Reference = "󰈇",
-              Folder = "󰉋",
-              EnumMember = "",
-              Constant = "󰏿",
-              Struct = "󰙅",
-              Event = "",
-              Operator = "󰆕",
-              TypeParameter = "",
-            }
-            -- Set the icon
-            vim_item.kind = string.format("%s %s", kind_icons[vim_item.kind], vim_item.kind)
-            -- Source name
-            vim_item.menu = ({
-              nvim_lsp = "[LSP]",
-              luasnip = "[Snippet]",
-              buffer = "[Buffer]",
-              path = "[Path]",
-            })[entry.source.name]
-            return vim_item
-          end,
-        },
-      })
-
-      -- Command line completion DISABLED due to crashes in Neovim 0.11.4
-      -- cmp.setup.cmdline({ "/", "?" }, {
-      --   mapping = cmp.mapping.preset.cmdline(),
-      --   sources = {
-      --     { name = "buffer" },
-      --   },
-      --   performance = {
-      --     debounce = 60,
-      --     throttle = 30,
-      --     fetching_timeout = 200,
-      --   },
-      -- })
-
-      -- cmp.setup.cmdline(":", {
-      --   mapping = cmp.mapping.preset.cmdline(),
-      --   sources = cmp.config.sources({
-      --     { name = "path", max_item_count = 20 },
-      --   }, {
-      --     { name = "cmdline", max_item_count = 20 },
-      --   }),
-      --   performance = {
-      --     debounce = 60,
-      --     throttle = 30,
-      --     fetching_timeout = 200,
-      --   },
-      -- })
-    end,
+    opts_extend = { "sources.default" },
   },
 }
