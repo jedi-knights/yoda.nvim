@@ -79,6 +79,27 @@ return {
           vim.bo.commentstring = "# %s"
         end,
       })
+
+      -- Enable treesitter folding only for code files where it's useful
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = {
+          "lua",
+          "python",
+          "rust",
+          "go",
+          "javascript",
+          "typescript",
+          "c",
+          "cpp",
+          "java",
+          "json",
+          "yaml",
+        },
+        callback = function()
+          vim.opt_local.foldmethod = "expr"
+          vim.opt_local.foldexpr = "nvim_treesitter#foldexpr()"
+        end,
+      })
     end,
   },
 

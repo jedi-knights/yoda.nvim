@@ -55,8 +55,8 @@ return {
         typescriptreact = { "biome" },
       }
 
-      -- Auto-lint on certain events
-      vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+      -- Auto-lint on certain events (removed BufEnter for performance)
+      vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
         callback = function()
           -- Only lint if linters are configured
           local linters = lint.linters_by_ft[vim.bo.filetype]
