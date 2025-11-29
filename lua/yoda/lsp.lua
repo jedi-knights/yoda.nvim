@@ -17,10 +17,10 @@ function M.setup()
   -- Setup completion capabilities
   local capabilities = vim.lsp.protocol.make_client_capabilities()
 
-  -- Add nvim-cmp capabilities if available
-  local cmp_ok, cmp_lsp = pcall(require, "cmp_nvim_lsp")
-  if cmp_ok then
-    capabilities = vim.tbl_deep_extend("force", capabilities, cmp_lsp.default_capabilities())
+  -- Prefer blink.cmp over nvim-cmp
+  local blink_ok, blink = pcall(require, "blink.cmp")
+  if blink_ok then
+    capabilities = blink.get_lsp_capabilities(capabilities)
   end
 
   -- Global LSP handler optimizations for responsiveness
