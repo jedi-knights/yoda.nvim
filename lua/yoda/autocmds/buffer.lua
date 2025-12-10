@@ -9,7 +9,7 @@ local buffer_state = require("yoda.buffer.state_checker")
 
 local DELAYS = {
   ALPHA_CLOSE = 50,
-  BUF_ENTER_DEBOUNCE = 150,
+  BUF_ENTER_DEBOUNCE = 50,
 }
 
 function M.setup_all(autocmd, augroup)
