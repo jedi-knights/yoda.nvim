@@ -35,6 +35,17 @@ function M.setup_all(autocmd, augroup)
       end
     end,
   })
+
+  autocmd("FileType", {
+    group = augroup("YodaGitCommitInsertMode", { clear = true }),
+    desc = "Auto-enter insert mode for git commit messages",
+    pattern = { "gitcommit", "NeogitCommitMessage" },
+    callback = function()
+      vim.schedule(function()
+        vim.cmd("startinsert")
+      end)
+    end,
+  })
 end
 
 return M
