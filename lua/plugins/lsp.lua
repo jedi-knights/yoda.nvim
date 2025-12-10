@@ -30,8 +30,6 @@ return {
           "ts_ls",
           "basedpyright",
           "yamlls",
-          "omnisharp",
-          "helm_ls",
           "marksman", -- Markdown LSP server
         },
         -- Prevent mason from auto-configuring pyright (we use basedpyright)
