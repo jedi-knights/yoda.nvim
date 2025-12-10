@@ -35,7 +35,9 @@ luac.out
 *.hex
 
 .DS_Store
-output.log
+
+# Log files in root directory
+/*.log
 
 node_modules/
 
