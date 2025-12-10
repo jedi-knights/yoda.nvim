@@ -294,32 +294,6 @@ function M.setup()
     },
   })
 
-  -- C# setup
-  safe_setup("omnisharp", {
-    cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
-    filetypes = { "cs", "vb" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { "*.sln", "*.csproj", "omnisharp.json", "function.json", ".git" })
-    end,
-    capabilities = capabilities,
-    flags = {
-      debounce_text_changes = 300,
-    },
-  })
-
-  -- Helm setup
-  safe_setup("helm_ls", {
-    cmd = { "helm_ls", "serve" },
-    filetypes = { "helm" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { "Chart.yaml", ".git" })
-    end,
-    capabilities = capabilities,
-    flags = {
-      debounce_text_changes = 300,
-    },
-  })
-
   -- Java setup (also works for Jenkinsfiles/Groovy)
   safe_setup("jdtls", {
     cmd = { "jdtls" },
@@ -706,8 +680,6 @@ function M._setup_debug_commands()
       "ts_ls",
       "basedpyright",
       "yamlls",
-      "omnisharp",
-      "helm_ls",
       "jdtls",
       "marksman",
     }
