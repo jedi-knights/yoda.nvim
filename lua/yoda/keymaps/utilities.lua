@@ -88,3 +88,32 @@ map("n", "<leader>sk", function()
     end
   end
 end, { desc = "Util: Toggle showkeys display" })
+
+map("n", "<leader>nm", function()
+  local success = pcall(vim.cmd, "Noice")
+  if not success then
+    notify.notify("❌ Noice is not available - using :messages instead", "warn")
+    vim.cmd("messages")
+  end
+end, { desc = "Util: Show message history" })
+
+map("n", "<leader>nl", function()
+  local success = pcall(vim.cmd, "Noice last")
+  if not success then
+    notify.notify("❌ Noice is not available", "warn")
+  end
+end, { desc = "Util: Show last message" })
+
+map("n", "<leader>nh", function()
+  local success = pcall(vim.cmd, "Noice history")
+  if not success then
+    notify.notify("❌ Noice is not available", "warn")
+  end
+end, { desc = "Util: Show notification history" })
+
+map("n", "<leader>nd", function()
+  local success = pcall(vim.cmd, "Noice dismiss")
+  if not success then
+    notify.notify("❌ Noice is not available", "warn")
+  end
+end, { desc = "Util: Dismiss all notifications" })
