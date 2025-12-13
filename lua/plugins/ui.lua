@@ -196,6 +196,19 @@ return {
           enabled = true, -- Enable noice notify (for better notifications)
           view = "notify",
         },
+        history = {
+          view = "split",
+          opts = { enter = true, format = "details" },
+          filter = {
+            any = {
+              { event = "notify" },
+              { error = true },
+              { warning = true },
+              { event = "msg_show", kind = { "" } },
+              { event = "lsp", kind = "message" },
+            },
+          },
+        },
         -- Disable the override warning since we've properly configured the notification system
         health = {
           checker = false, -- Disable health checks that might show vim.notify override warnings
