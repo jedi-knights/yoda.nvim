@@ -11,6 +11,8 @@ return {
       require("snacks").setup({
         explorer = {
           enabled = true,
+          show_hidden = true,
+          show_ignored = true,
           win = {
             position = "left",
             width = 30,

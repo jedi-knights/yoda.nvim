@@ -5,79 +5,9 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
-local snacks_explorer_cache = {}
-
-local function invalidate_cache()
-  snacks_explorer_cache = {}
-end
-
-vim.api.nvim_create_autocmd("WinClosed", {
-  callback = function(ev)
-    local win_id = tonumber(ev.match)
-    if snacks_explorer_cache.win == win_id then
-      invalidate_cache()
-    end
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufWinLeave", {
-  callback = function(ev)
-    if snacks_explorer_cache.buf and ev.buf == snacks_explorer_cache.buf then
-      invalidate_cache()
-    end
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufDelete", {
-  callback = function(ev)
-    if snacks_explorer_cache.buf and ev.buf == snacks_explorer_cache.buf then
-      invalidate_cache()
-    end
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufEnter", {
-  pattern = "*",
-  callback = function(ev)
-    if snacks_explorer_cache.win and vim.api.nvim_win_is_valid(snacks_explorer_cache.win) then
-      local current_buf = vim.api.nvim_win_get_buf(snacks_explorer_cache.win)
-      if current_buf ~= snacks_explorer_cache.buf then
-        local ft = vim.bo[current_buf].filetype
-        if ft ~= "snacks-explorer" then
-          invalidate_cache()
-        else
-          snacks_explorer_cache.buf = current_buf
-        end
-      end
-    end
-  end,
-})
-
 local function get_snacks_explorer_win()
-  if snacks_explorer_cache.win and vim.api.nvim_win_is_valid(snacks_explorer_cache.win) then
-    local buf = vim.api.nvim_win_get_buf(snacks_explorer_cache.win)
-    if vim.api.nvim_buf_is_valid(buf) then
-      local ft = vim.bo[buf].filetype
-      if ft == "snacks-explorer" and snacks_explorer_cache.buf == buf then
-        return snacks_explorer_cache.win, buf
-      else
-        invalidate_cache()
-      end
-    else
-      invalidate_cache()
-    end
-  end
-
   local win_utils = require("yoda-window.utils")
-  local win, buf = win_utils.find_snacks_explorer()
-
-  if win and vim.api.nvim_buf_is_valid(buf) then
-    snacks_explorer_cache = { win = win, buf = buf }
-    return win, buf
-  end
-
-  snacks_explorer_cache = {}
-  return nil, nil
+  return win_utils.find_snacks_explorer()
 end
 
 map("n", "<leader>eo", function()
@@ -95,21 +25,52 @@ map("n", "<leader>eo", function()
 end, { desc = "Explorer: Open (only if closed)" })
 
 map("n", "<leader>ef", function()
-  local win, _ = get_snacks_explorer_win()
-  if win then
-    vim.api.nvim_set_current_win(win)
-  else
-    notify.notify("Snacks Explorer is not open. Use <leader>eo to open it.", "info")
+  local win_utils = require("yoda-window.utils")
+  
+  local all_explorer_wins = win_utils.find_all_windows(function(win, buf, buf_name, ft)
+    return ft == "snacks_picker_list" 
+      or ft == "snacks_picker_input"
+      or ft == "snacks_layout_box"
+      or ft == "snacks-explorer" 
+      or ft == "snacks_explorer"
+  end)
+  
+  if #all_explorer_wins > 0 then
+    local list_win = nil
+    for _, win_data in ipairs(all_explorer_wins) do
+      local ft = vim.bo[win_data.buf].filetype
+      if ft == "snacks_picker_list" then
+        list_win = win_data.win
+        break
+      end
+    end
+    
+    if list_win then
+      vim.api.nvim_set_current_win(list_win)
+    end
+    return
   end
-end, { desc = "Explorer: Focus (if open)" })
+  
+  local success = pcall(function()
+    require("snacks").explorer.open()
+  end)
+  if not success then
+    notify.notify("Snacks Explorer could not be opened", "error")
+  end
+end, { desc = "Explorer: Focus or open" })
 
 map("n", "<leader>ec", function()
-  local win, _ = get_snacks_explorer_win()
-  if win then
-    local win_utils = require("yoda-window.utils")
-    local count = win_utils.close_windows(function(win, buf, buf_name, ft)
-      return ft == "snacks-explorer"
-    end, true)
+  local win_utils = require("yoda-window.utils")
+  local count = win_utils.close_windows(function(win, buf, buf_name, ft)
+    return ft == "snacks_picker_list" 
+      or ft == "snacks_picker_input"
+      or ft == "snacks_layout_box"
+      or ft == "snacks-explorer" 
+      or ft == "snacks_explorer"
+  end, true)
+  
+  if count > 0 then
+    notify.notify("Closed " .. count .. " explorer window(s)", "info")
   else
     notify.notify("Snacks Explorer is not open", "info")
   end
@@ -154,15 +115,23 @@ map("n", "<leader>ed", function()
   local debug_info = {
     "Explorer Debug Info:",
     "",
-    "Cached state:",
-    "  win: " .. tostring(snacks_explorer_cache.win),
-    "  buf: " .. tostring(snacks_explorer_cache.buf),
-    "",
     "Search results:",
     "  found_win: " .. tostring(found_win),
     "  found_buf: " .. tostring(found_buf),
     "",
+    "All windows:",
   }
+  
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.bo[buf].filetype
+    local bt = vim.bo[buf].buftype
+    local buf_name = vim.api.nvim_buf_get_name(buf)
+    table.insert(debug_info, string.format("  win=%d buf=%d ft='%s' bt='%s' name='%s'", 
+      win, buf, ft, bt, buf_name))
+  end
+  
+  table.insert(debug_info, "")
   
   if found_win then
     local buf = vim.api.nvim_win_get_buf(found_win)
