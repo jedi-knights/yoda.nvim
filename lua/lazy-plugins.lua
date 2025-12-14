@@ -35,15 +35,24 @@ require("lazy").setup({
     priority = 999,
   }),
   plugin_spec("yoda-logging.nvim", {
+    lazy = false,
+    priority = 997,
     dependencies = { "yoda.nvim-adapters" },
   }),
   plugin_spec("yoda-terminal.nvim", {
+    lazy = false,
+    priority = 996,
     dependencies = { "yoda.nvim-adapters" },
   }),
   plugin_spec("yoda-window.nvim", {
+    lazy = false,
+    priority = 995,
     dependencies = { "yoda.nvim-adapters" },
   }),
-  plugin_spec("yoda-diagnostics.nvim", {}),
+  plugin_spec("yoda-diagnostics.nvim", {
+    lazy = false,
+    priority = 994,
+  }),
 
   -- Core plugins
   { import = "plugins.core" },
