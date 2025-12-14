@@ -26,15 +26,15 @@ end, { desc = "Explorer: Open (only if closed)" })
 
 map("n", "<leader>ef", function()
   local win_utils = require("yoda-window.utils")
-  
+
   local all_explorer_wins = win_utils.find_all_windows(function(win, buf, buf_name, ft)
-    return ft == "snacks_picker_list" 
+    return ft == "snacks_picker_list"
       or ft == "snacks_picker_input"
       or ft == "snacks_layout_box"
-      or ft == "snacks-explorer" 
+      or ft == "snacks-explorer"
       or ft == "snacks_explorer"
   end)
-  
+
   if #all_explorer_wins > 0 then
     local list_win = nil
     for _, win_data in ipairs(all_explorer_wins) do
@@ -44,13 +44,13 @@ map("n", "<leader>ef", function()
         break
       end
     end
-    
+
     if list_win then
       vim.api.nvim_set_current_win(list_win)
     end
     return
   end
-  
+
   local success = pcall(function()
     require("snacks").explorer.open()
   end)
@@ -62,13 +62,13 @@ end, { desc = "Explorer: Focus or open" })
 map("n", "<leader>ec", function()
   local win_utils = require("yoda-window.utils")
   local count = win_utils.close_windows(function(win, buf, buf_name, ft)
-    return ft == "snacks_picker_list" 
+    return ft == "snacks_picker_list"
       or ft == "snacks_picker_input"
       or ft == "snacks_layout_box"
-      or ft == "snacks-explorer" 
+      or ft == "snacks-explorer"
       or ft == "snacks_explorer"
   end, true)
-  
+
   if count > 0 then
     notify.notify("Closed " .. count .. " explorer window(s)", "info")
   else
@@ -111,7 +111,7 @@ end, { desc = "Explorer: Show help" })
 map("n", "<leader>ed", function()
   local win_utils = require("yoda-window.utils")
   local found_win, found_buf = win_utils.find_snacks_explorer()
-  
+
   local debug_info = {
     "Explorer Debug Info:",
     "",
@@ -121,18 +121,17 @@ map("n", "<leader>ed", function()
     "",
     "All windows:",
   }
-  
+
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.bo[buf].filetype
     local bt = vim.bo[buf].buftype
     local buf_name = vim.api.nvim_buf_get_name(buf)
-    table.insert(debug_info, string.format("  win=%d buf=%d ft='%s' bt='%s' name='%s'", 
-      win, buf, ft, bt, buf_name))
+    table.insert(debug_info, string.format("  win=%d buf=%d ft='%s' bt='%s' name='%s'", win, buf, ft, bt, buf_name))
   end
-  
+
   table.insert(debug_info, "")
-  
+
   if found_win then
     local buf = vim.api.nvim_win_get_buf(found_win)
     local ft = vim.bo[buf].filetype
@@ -144,6 +143,6 @@ map("n", "<leader>ed", function()
   else
     table.insert(debug_info, "No explorer window found")
   end
-  
+
   notify.notify(table.concat(debug_info, "\n"), "info", { title = "Explorer Debug" })
 end, { desc = "Explorer: Debug state" })
