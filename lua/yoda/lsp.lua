@@ -397,25 +397,70 @@ function M.setup()
     end,
   })
 
-  -- Setup LSP keymaps on attach with debounced UI updates
+  -- Consolidated LSP attach handler (optimized - single autocmd)
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("YodaLspConfig", { clear = true }),
     callback = function(event)
+      local client = vim.lsp.get_client_by_id(event.data.client_id)
+      if not client then return end
+      
+      -- 1. Client optimizations (immediate)
+      -- Silently stop pyright if it somehow still attaches
+      if client.name == "pyright" then
+        vim.schedule(function()
+          vim.lsp.stop_client(client.id, true)
+        end)
+        return
+      end
+      
+      -- Disable semantic tokens for all LSP servers (major performance win)
+      client.server_capabilities.semanticTokensProvider = nil
+      
+      -- Python-specific optimizations
+      if client.name == "basedpyright" then
+        client.server_capabilities.documentHighlightProvider = false
+        
+        -- Keep document highlight disabled
+        local timer = vim.loop.new_timer()
+        if timer then
+          local timer_active = true
+          timer:start(100, 100, vim.schedule_wrap(function()
+            if not timer_active then return end
+            if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
+              client.server_capabilities.documentHighlightProvider = false
+            end
+          end))
+          
+          vim.api.nvim_create_autocmd("LspDetach", {
+            callback = function(args)
+              if args.data.client_id == client.id and timer_active then
+                timer_active = false
+                if timer and not timer:is_closing() then
+                  timer:stop()
+                  timer:close()
+                end
+              end
+            end,
+          })
+        end
+        
+        vim.schedule(function()
+          vim.lsp.buf.clear_references()
+        end)
+      end
+      
+      -- 2. Setup keymaps and UI (deferred to prevent flickering)
       local opts = { buffer = event.buf }
-
-      -- Defer UI-affecting operations to prevent flickering
       vim.schedule(function()
         -- Keymaps
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
         vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
         vim.keymap.set("n", "gI", vim.lsp.buf.implementation, opts)
         vim.keymap.set("n", "K", function()
-          -- Try LSP hover first, fallback to help
           local clients = vim.lsp.get_clients({ bufnr = 0 })
           if #clients > 0 then
             vim.lsp.buf.hover()
           else
-            -- Fallback to help for the word under cursor
             local word = vim.fn.expand("<cword>")
             if word ~= "" then
               pcall(vim.cmd, "help " .. word)
@@ -428,29 +473,17 @@ function M.setup()
 
         -- Toggle inlay hints
         vim.keymap.set("n", "<leader>th", function()
-          -- Check if inlay hints are supported and enabled
           local clients = vim.lsp.get_clients({ bufnr = event.buf })
           for _, client in ipairs(clients) do
             if client.supports_method("textDocument/inlayHint") then
               local is_enabled = vim.lsp.inlay_hint.is_enabled(event.buf)
               vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = event.buf })
-              if is_enabled then
-                notify.notify("Inlay hints disabled", "info")
-              else
-                notify.notify("Inlay hints enabled", "info")
-              end
+              notify.notify(is_enabled and "Inlay hints disabled" or "Inlay hints enabled", "info")
               return
             end
           end
           notify.notify("Inlay hints not supported by any active LSP server", "warn")
         end, { desc = "Toggle Inlay Hints" })
-
-        -- Enable inlay hints if available
-        if vim.lsp.inlay_hint then
-          vim.keymap.set("n", "<leader>th", function()
-            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-          end, opts)
-        end
       end)
     end,
   })
@@ -490,79 +523,6 @@ function M.setup()
     },
   })
 
-  vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("YodaLspOptimizations", { clear = true }),
-    callback = function(args)
-      local start_time = vim.loop.hrtime()
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      if client then
-        -- Silently stop pyright if it somehow still attaches
-        if client.name == "pyright" then
-          vim.schedule(function()
-            vim.lsp.stop_client(client.id, true) -- true = force stop
-          end)
-          return
-        end
-
-        -- Disable semantic tokens for all LSP servers (major performance win)
-        client.server_capabilities.semanticTokensProvider = nil
-
-        -- Python-specific optimizations
-        if client.name == "basedpyright" then
-          -- Aggressively disable document highlight to prevent cursor movement updates
-          client.server_capabilities.documentHighlightProvider = false
-
-          -- Keep it disabled - some servers re-enable it
-          local timer = vim.loop.new_timer()
-          if timer then
-            local timer_active = true
-
-            timer:start(
-              100,
-              100,
-              vim.schedule_wrap(function()
-                if not timer_active then
-                  return
-                end
-                if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
-                  client.server_capabilities.documentHighlightProvider = false
-                end
-              end)
-            )
-
-            -- Stop timer when client stops
-            vim.api.nvim_create_autocmd("LspDetach", {
-              callback = function(args)
-                if args.data.client_id == client.id and timer_active then
-                  timer_active = false
-                  if timer and not timer:is_closing() then
-                    timer:stop()
-                    timer:close()
-                  end
-                end
-              end,
-            })
-          end
-
-          -- Also clear any existing document highlights
-          vim.schedule(function()
-            vim.lsp.buf.clear_references()
-          end)
-
-          -- Custom diagnostic handler with debouncing
-          vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.handlers["textDocument/publishDiagnostics"], {
-            update_in_insert = false,
-            virtual_text = {
-              spacing = 4,
-              prefix = "●",
-            },
-          })
-        end
-
-        lsp_perf.track_lsp_attach(client.name, start_time)
-      end
-    end,
-  })
 
   -- Auto-restart Python LSP when entering different Python projects
   local python_lsp_restart_timer = nil
@@ -632,12 +592,9 @@ function M.setup()
   --   end,
   -- })
 
-  vim.api.nvim_create_autocmd("LspAttach", {
-    once = true,
-    callback = function()
-      vim.schedule(ensure_debug_commands)
-    end,
-  })
+  -- NOTE: Debug commands setup moved to consolidated LspAttach above
+  -- Setup debug commands immediately instead of waiting for attach
+  vim.schedule(ensure_debug_commands)
 
   lsp_perf.setup_commands()
 end
