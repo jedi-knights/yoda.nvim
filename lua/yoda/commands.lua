@@ -3,37 +3,11 @@
 -- ============================================================================
 
 local notify = require("yoda-adapters.notification")
+local utils = require("yoda.commands.utils")
+local get_console_logger = utils.get_console_logger
 
--- Helper to get logger (lazy-loaded to avoid test failures)
-local function get_logger()
-  local ok, logger = pcall(require, "yoda-logging.logger")
-  if not ok then
-    -- Fallback logger for tests
-    return {
-      set_strategy = function() end,
-      set_level = function() end,
-      debug = function(msg)
-        print(msg)
-      end,
-      info = function(msg)
-        print(msg)
-      end,
-      error = function(msg)
-        print(msg)
-      end,
-    }
-  end
-  return logger
-end
-
--- Helper to get configured logger (reduces duplication)
-local function get_console_logger(level)
-  level = level or "info"
-  local logger = get_logger()
-  logger.set_strategy("console")
-  logger.set_level(level)
-  return logger
-end
+-- Load command modules
+require("yoda.commands.lazy").setup()
 
 -- ============================================================================
 -- OPENCODE INTEGRATION COMMANDS
@@ -229,66 +203,6 @@ end
 -- ============================================================================
 -- COMMAND REGISTRATION
 -- ============================================================================
-
--- Add debugging and troubleshooting commands
-vim.api.nvim_create_user_command("YodaDebugLazy", function()
-  local logger = get_console_logger("debug")
-
-  logger.info("=== Lazy.nvim Debug Information ===")
-  logger.debug("Lazy.nvim path", { path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" })
-  logger.debug("Plugin state path", { path = vim.fn.stdpath("state") .. "/lazy" })
-
-  -- Check if Lazy.nvim is loaded
-  local ok, lazy = pcall(require, "lazy")
-  if ok then
-    logger.info("Lazy.nvim loaded successfully")
-
-    -- Check plugin status
-    local plugins = lazy.get_plugins()
-    logger.info("Total plugins", { count = #plugins })
-
-    -- Check for problematic plugins
-    for _, plugin in ipairs(plugins) do
-      if plugin._.loaded and plugin._.load_error then
-        logger.error("Plugin with error", { plugin = plugin.name, error = plugin._.load_error })
-      end
-    end
-  else
-    logger.error("Lazy.nvim failed to load", { error = lazy })
-  end
-end, { desc = "Debug Lazy.nvim plugin manager" })
-
-vim.api.nvim_create_user_command("YodaCleanLazy", function()
-  local logger = get_console_logger("info")
-
-  -- Clean up Lazy.nvim cache and state
-  local lazy_state = vim.fn.stdpath("state") .. "/lazy"
-
-  logger.info("Cleaning Lazy.nvim cache...")
-
-  -- Clean readme directory
-  local readme_dir = lazy_state .. "/readme"
-  if vim.fn.isdirectory(readme_dir) == 1 then
-    vim.fn.delete(readme_dir, "rf")
-    logger.info("Cleaned readme directory", { path = readme_dir })
-  end
-
-  -- Clean lock file
-  local lock_file = lazy_state .. "/lock.json"
-  if vim.fn.filereadable(lock_file) == 1 then
-    vim.fn.delete(lock_file)
-    logger.info("Cleaned lock file", { path = lock_file })
-  end
-
-  -- Clean cache directory
-  local cache_dir = lazy_state .. "/cache"
-  if vim.fn.isdirectory(cache_dir) == 1 then
-    vim.fn.delete(cache_dir, "rf")
-    logger.info("Cleaned cache directory", { path = cache_dir })
-  end
-
-  logger.info("Lazy.nvim cache cleaned. Restart Neovim to reload plugins.")
-end, { desc = "Clean Lazy.nvim cache and state" })
 
 -- Feature file formatting commands
 vim.api.nvim_create_user_command("FormatFeature", function()
