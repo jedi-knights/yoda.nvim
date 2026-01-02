@@ -1,13 +1,6 @@
 -- lua/yoda/config/options.lua
 -- All vim.opt settings in one place (kickstart-style)
 
--- Leader key
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
--- Database configuration (can be overridden in local config)
-vim.g.dbs = vim.g.dbs or {}
-
 -- ============================================================================
 -- GENERAL SETTINGS
 -- ============================================================================
@@ -136,9 +129,9 @@ vim.opt.foldlevel = 99
 -- YODA SPECIFIC
 -- ============================================================================
 
--- Configuration for Yoda.nvim
-vim.g.yoda_config = vim.g.yoda_config
-  or {
+-- Configuration for Yoda.nvim (only set if not already configured)
+if not vim.g.yoda_config then
+  vim.g.yoda_config = {
     verbose_startup = false,
     show_loading_messages = false,
     show_environment_notification = true,
@@ -146,6 +139,7 @@ vim.g.yoda_config = vim.g.yoda_config
     show_startup_report = false,
     profiling_verbose = false,
   }
+end
 
 -- Suppress LSP deprecation warning
 vim.g.lspconfig_deprecation_warning = false

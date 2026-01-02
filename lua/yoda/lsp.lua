@@ -402,8 +402,10 @@ function M.setup()
     group = vim.api.nvim_create_augroup("YodaLspConfig", { clear = true }),
     callback = function(event)
       local client = vim.lsp.get_client_by_id(event.data.client_id)
-      if not client then return end
-      
+      if not client then
+        return
+      end
+
       -- 1. Client optimizations (immediate)
       -- Silently stop pyright if it somehow still attaches
       if client.name == "pyright" then
@@ -412,25 +414,31 @@ function M.setup()
         end)
         return
       end
-      
+
       -- Disable semantic tokens for all LSP servers (major performance win)
       client.server_capabilities.semanticTokensProvider = nil
-      
+
       -- Python-specific optimizations
       if client.name == "basedpyright" then
         client.server_capabilities.documentHighlightProvider = false
-        
+
         -- Keep document highlight disabled
         local timer = vim.loop.new_timer()
         if timer then
           local timer_active = true
-          timer:start(100, 100, vim.schedule_wrap(function()
-            if not timer_active then return end
-            if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
-              client.server_capabilities.documentHighlightProvider = false
-            end
-          end))
-          
+          timer:start(
+            100,
+            100,
+            vim.schedule_wrap(function()
+              if not timer_active then
+                return
+              end
+              if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
+                client.server_capabilities.documentHighlightProvider = false
+              end
+            end)
+          )
+
           vim.api.nvim_create_autocmd("LspDetach", {
             callback = function(args)
               if args.data.client_id == client.id and timer_active then
@@ -443,12 +451,12 @@ function M.setup()
             end,
           })
         end
-        
+
         vim.schedule(function()
           vim.lsp.buf.clear_references()
         end)
       end
-      
+
       -- 2. Setup keymaps and UI (deferred to prevent flickering)
       local opts = { buffer = event.buf }
       vim.schedule(function()
@@ -522,7 +530,6 @@ function M.setup()
       source = "always",
     },
   })
-
 
   -- Auto-restart Python LSP when entering different Python projects
   local python_lsp_restart_timer = nil
