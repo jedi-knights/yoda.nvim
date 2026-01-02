@@ -26,6 +26,15 @@ local function get_logger()
   return logger
 end
 
+-- Helper to get configured logger (reduces duplication)
+local function get_console_logger(level)
+  level = level or "info"
+  local logger = get_logger()
+  logger.set_strategy("console")
+  logger.set_level(level)
+  return logger
+end
+
 -- ============================================================================
 -- OPENCODE INTEGRATION COMMANDS
 -- ============================================================================
@@ -223,10 +232,7 @@ end
 
 -- Add debugging and troubleshooting commands
 vim.api.nvim_create_user_command("YodaDebugLazy", function()
-  local logger = get_logger()
-  -- Use logger for debug output
-  logger.set_strategy("console")
-  logger.set_level("debug")
+  local logger = get_console_logger("debug")
 
   logger.info("=== Lazy.nvim Debug Information ===")
   logger.debug("Lazy.nvim path", { path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" })
@@ -253,10 +259,7 @@ vim.api.nvim_create_user_command("YodaDebugLazy", function()
 end, { desc = "Debug Lazy.nvim plugin manager" })
 
 vim.api.nvim_create_user_command("YodaCleanLazy", function()
-  local logger = get_logger()
-  -- Use logger for output
-  logger.set_strategy("console")
-  logger.set_level("info")
+  local logger = get_console_logger("info")
 
   -- Clean up Lazy.nvim cache and state
   local lazy_state = vim.fn.stdpath("state") .. "/lazy"
@@ -303,9 +306,7 @@ end, { desc = "Check AI API configuration and diagnose issues" })
 
 -- Completion engine status check
 vim.api.nvim_create_user_command("YodaCmpStatus", function()
-  local logger = get_logger()
-  logger.set_strategy("console")
-  logger.set_level("info")
+  local logger = get_console_logger("info")
 
   logger.info("🔍 Checking completion engine status...")
 
@@ -351,9 +352,7 @@ end, { desc = "Check completion engine status" })
 
 -- Rust development setup command
 vim.api.nvim_create_user_command("YodaRustSetup", function()
-  local logger = require("yoda-logging.logger")
-  logger.set_strategy("console")
-  logger.set_level("info")
+  local logger = get_console_logger("info")
 
   logger.info("🦀 Setting up Rust development environment...")
 
@@ -386,9 +385,7 @@ end, { desc = "Install Rust development tools (rust-analyzer, codelldb) via Maso
 
 -- Python development setup command
 vim.api.nvim_create_user_command("YodaPythonSetup", function()
-  local logger = require("yoda-logging.logger")
-  logger.set_strategy("console")
-  logger.set_level("info")
+  local logger = get_console_logger("info")
 
   logger.info("🐍 Setting up Python development environment...")
 
@@ -453,9 +450,7 @@ end, { desc = "Select Python virtual environment" })
 
 -- JavaScript/TypeScript development setup command
 vim.api.nvim_create_user_command("YodaJavaScriptSetup", function()
-  local logger = require("yoda-logging.logger")
-  logger.set_strategy("console")
-  logger.set_level("info")
+  local logger = get_console_logger("info")
 
   logger.info("🟨 Setting up JavaScript/TypeScript development environment...")
 
@@ -508,9 +503,7 @@ end, { desc = "Check outdated npm packages" })
 
 -- C# / .NET development setup command
 vim.api.nvim_create_user_command("YodaCSharpSetup", function()
-  local logger = require("yoda-logging.logger")
-  logger.set_strategy("console")
-  logger.set_level("info")
+  local logger = get_console_logger("info")
 
   logger.info("⚡ Setting up C# / .NET development environment...")
 
