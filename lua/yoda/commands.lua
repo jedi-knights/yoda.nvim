@@ -2,13 +2,29 @@
 -- FEATURE FILE FORMATTING COMMANDS
 -- ============================================================================
 
--- ============================================================================
--- BUFFERLINE DEBUGGING COMMANDS
--- ============================================================================
-
---- Setup bufferline debugging commands
 local notify = require("yoda-adapters.notification")
-local function setup_bufferline_debug_commands() end
+
+-- Helper to get logger (lazy-loaded to avoid test failures)
+local function get_logger()
+  local ok, logger = pcall(require, "yoda-logging.logger")
+  if not ok then
+    -- Fallback logger for tests
+    return {
+      set_strategy = function() end,
+      set_level = function() end,
+      debug = function(msg)
+        print(msg)
+      end,
+      info = function(msg)
+        print(msg)
+      end,
+      error = function(msg)
+        print(msg)
+      end,
+    }
+  end
+  return logger
+end
 
 -- ============================================================================
 -- OPENCODE INTEGRATION COMMANDS
@@ -207,6 +223,7 @@ end
 
 -- Add debugging and troubleshooting commands
 vim.api.nvim_create_user_command("YodaDebugLazy", function()
+  local logger = get_logger()
   -- Use logger for debug output
   logger.set_strategy("console")
   logger.set_level("debug")
@@ -236,6 +253,7 @@ vim.api.nvim_create_user_command("YodaDebugLazy", function()
 end, { desc = "Debug Lazy.nvim plugin manager" })
 
 vim.api.nvim_create_user_command("YodaCleanLazy", function()
+  local logger = get_logger()
   -- Use logger for output
   logger.set_strategy("console")
   logger.set_level("info")
@@ -285,6 +303,7 @@ end, { desc = "Check AI API configuration and diagnose issues" })
 
 -- Completion engine status check
 vim.api.nvim_create_user_command("YodaCmpStatus", function()
+  local logger = get_logger()
   logger.set_strategy("console")
   logger.set_level("info")
 
@@ -554,9 +573,6 @@ end, { nargs = "?", desc = "Create new .NET project/file" })
 vim.api.nvim_create_user_command("YodaLspInfo", show_lsp_clients, { desc = "Show LSP clients for current buffer" })
 vim.api.nvim_create_user_command("YodaHelmDebug", debug_helm_setup, { desc = "Debug Helm template detection and LSP" })
 
--- Setup bufferline debugging commands
-setup_bufferline_debug_commands()
-
 -- ============================================================================
 -- PERFORMANCE OPTIMIZATION TRACKING COMMANDS
 -- ============================================================================
@@ -810,25 +826,29 @@ vim.api.nvim_create_user_command("YodaProfile", function()
     vim.cmd("restart")
     return
   end
-  
+
   vim.notify("Performance profiling enabled. Restarting Neovim...", vim.log.levels.INFO)
   vim.cmd("restart")
 end, { desc = "Profile Yoda startup performance" })
 
 vim.api.nvim_create_user_command("YodaProfileStats", function()
-  local ok, stats = pcall(vim.api.nvim_exec_lua, [[
+  local ok, stats = pcall(
+    vim.api.nvim_exec_lua,
+    [[
     local loader_stats = vim.loader.find("")
     if not loader_stats or #loader_stats == 0 then
       return nil
     end
     return loader_stats
-  ]], {})
-  
+  ]],
+    {}
+  )
+
   if not ok or not stats then
     vim.notify("No profiling data available. Run :YodaProfile first.", vim.log.levels.WARN)
     return
   end
-  
+
   vim.notify("Profiling stats: " .. vim.inspect(stats), vim.log.levels.INFO)
 end, { desc = "Show Yoda profiling statistics" })
 
@@ -848,4 +868,3 @@ vim.api.nvim_create_user_command("YodaStartupTime", function()
     border = "rounded",
   })
 end, { desc = "Show Neovim startup time breakdown" })
-
