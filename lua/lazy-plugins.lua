@@ -77,7 +77,6 @@ require("lazy").setup({
   { import = "plugins.languages.rust" },
   { import = "plugins.languages.python" },
   { import = "plugins.languages.javascript" },
-  { import = "plugins.languages.csharp" },
 }, {
   defaults = {
     lazy = true,
