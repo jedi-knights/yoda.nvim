@@ -20,7 +20,7 @@ return {
             vim.notify("pytest-atlas not loaded: " .. tostring(pytest_atlas), vim.log.levels.ERROR)
             return
           end
-          
+
           local success, err = pcall(pytest_atlas.run_tests)
           if not success then
             vim.notify("pytest-atlas error: " .. tostring(err), vim.log.levels.ERROR)

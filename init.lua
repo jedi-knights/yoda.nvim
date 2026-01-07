@@ -79,19 +79,12 @@ vim.schedule(function()
   -- 4. Load non-critical commands (can be used after keymaps are set)
   safe_require("yoda.commands")
   
-  -- 5. Initialize large file detection system
-  local large_file = safe_require("yoda.large_file")
-  if large_file then
-    large_file.setup(vim.g.yoda_large_file or {})
-    large_file.setup_commands()
-  end
-  
-  -- 6. Load test utilities (development mode only)
+  -- 5. Load test utilities (development mode only)
   if vim.env.YODA_DEV then
     safe_require("yoda.plenary")
   end
   
-  -- 7. Show environment notifications (last, after everything is ready)
+  -- 6. Show environment notifications (last, after everything is ready)
   local environment = safe_require("yoda.environment")
   if environment then
     environment.show_notification()

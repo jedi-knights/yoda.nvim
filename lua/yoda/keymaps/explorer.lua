@@ -16,12 +16,12 @@ map("n", "<leader>eo", function()
     notify.notify("Snacks Explorer is already open", "info")
     return
   end
-  local success = pcall(function()
-    require("snacks").explorer.open()
-  end)
-  if not success then
-    notify.notify("Snacks Explorer could not be opened", "error")
+  local ok, snacks = pcall(require, "snacks")
+  if not ok or not snacks.explorer then
+    notify.notify("Snacks Explorer not available", "error")
+    return
   end
+  snacks.explorer.open()
 end, { desc = "Explorer: Open (only if closed)" })
 
 map("n", "<leader>ef", function()
@@ -51,12 +51,12 @@ map("n", "<leader>ef", function()
     return
   end
 
-  local success = pcall(function()
-    require("snacks").explorer.open()
-  end)
-  if not success then
-    notify.notify("Snacks Explorer could not be opened", "error")
+  local ok, snacks = pcall(require, "snacks")
+  if not ok or not snacks.explorer then
+    notify.notify("Snacks Explorer not available", "error")
+    return
   end
+  snacks.explorer.open()
 end, { desc = "Explorer: Focus or open" })
 
 map("n", "<leader>ec", function()
@@ -77,13 +77,13 @@ map("n", "<leader>ec", function()
 end, { desc = "Explorer: Close (if open)" })
 
 map("n", "<leader>er", function()
-  local success = pcall(function()
-    require("snacks").explorer.refresh()
-    notify.notify("Explorer refreshed", "info")
-  end)
-  if not success then
-    notify.notify("Explorer not available or not open", "warn")
+  local ok, snacks = pcall(require, "snacks")
+  if not ok or not snacks.explorer then
+    notify.notify("Explorer not available", "warn")
+    return
   end
+  snacks.explorer.refresh()
+  notify.notify("Explorer refreshed", "info")
 end, { desc = "Explorer: Refresh" })
 
 map("n", "<leader>e?", function()
