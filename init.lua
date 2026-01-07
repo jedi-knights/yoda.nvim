@@ -44,23 +44,6 @@ require("lazy-bootstrap")
 require("options") -- Fastest - just vim option settings
 require("lazy-plugins") -- Load plugins early to allow lazy loading to work
 
--- Setup yoda plugins after lazy.nvim loads them
-vim.schedule(function()
-  local yoda_setup = require("yoda-setup")
-  yoda_setup.setup_yoda_plugins()
-end)
-
--- Load local configuration if it exists (deferred)
-vim.schedule(function()
-  pcall(require, "local")
-end)
-
--- Defer keymaps and autocmds for better startup performance
-vim.schedule(function()
-  require("keymaps") -- Contains some expensive setup logic
-  require("autocmds") -- Contains complex autocommands
-end)
-
 -- ============================================================================
 -- Yoda Modules
 -- ============================================================================
@@ -79,25 +62,35 @@ end
 -- Load colorscheme (must be after plugins to ensure plugin availability)
 safe_require("yoda.colorscheme")
 
--- Defer loading of non-critical modules (performance optimization)
--- These modules provide commands and utilities that aren't needed immediately at startup
+-- Consolidated deferred initialization (fixes race conditions)
+-- All scheduled tasks run in a single, ordered block to ensure proper dependency chain
 vim.schedule(function()
-  -- Load user commands (deferred - only needed when user invokes them)
+  -- 1. Setup foundation plugins first (highest priority)
+  local yoda_setup = require("yoda-setup")
+  yoda_setup.setup_yoda_plugins()
+  
+  -- 2. Load local configuration (may override plugin settings)
+  pcall(require, "local")
+  
+  -- 3. Setup keymaps and autocmds (depends on plugins being ready)
+  require("keymaps")
+  require("autocmds")
+  
+  -- 4. Load non-critical commands (can be used after keymaps are set)
   safe_require("yoda.commands")
-
-  -- Initialize large file detection system
-  local large_file = safe_require("yoda.large_file")
-  if large_file then
-    -- Setup with default config (can be overridden in local.lua)
-    large_file.setup(vim.g.yoda_large_file or {})
-    large_file.setup_commands()
-  end
-
-  -- Load test utilities (only in development mode)
+  
+  -- 5. Load test utilities (development mode only)
   if vim.env.YODA_DEV then
     safe_require("yoda.plenary")
   end
-
+  
+  -- 6. Show environment notifications (last, after everything is ready)
+  local environment = safe_require("yoda.environment")
+  if environment then
+    environment.show_notification()
+    environment.show_local_dev_notification()
+  end
+  
   -- Load diagnostic tools (lazy load on command use)
   -- DISABLED: CmdlineEnter causing crashes in Neovim 0.11.4
   -- vim.api.nvim_create_autocmd("CmdlineEnter", {
@@ -110,17 +103,4 @@ vim.schedule(function()
   --     end)
   --   end,
   -- })
-end)
-
--- ============================================================================
--- Environment Setup
--- ============================================================================
-
--- Show environment notification if configured (deferred to ensure all modules loaded)
-vim.schedule(function()
-  local environment = safe_require("yoda.environment")
-  if environment then
-    environment.show_notification()
-    environment.show_local_dev_notification()
-  end
 end)

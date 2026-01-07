@@ -12,7 +12,7 @@ local function trim_trailing_whitespace()
   local updated = {}
 
   for _, line in ipairs(lines) do
-    table.insert(updated, line:gsub("%s+$", ""))
+    table.insert(updated, (line:gsub("%s+$", "")))
   end
 
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, updated)

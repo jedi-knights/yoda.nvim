@@ -1,28 +1,28 @@
-local autocmd = vim.api.nvim_create_autocmd
-local augroup = vim.api.nvim_create_augroup
+local M = {}
+local _autocmds_loaded = false
 
-local large_file = require("yoda.large_file")
-local filetype_detection = require("yoda.filetype.detection")
-local performance_autocmds = require("yoda.performance.autocmds")
-local yoda_autocmds = require("yoda.autocmds")
+function M.setup()
+  if _autocmds_loaded then
+    return
+  end
+  _autocmds_loaded = true
 
-local function create_autocmd(events, opts)
-  opts.group = opts.group or augroup("YodaAutocmd", { clear = true })
-  autocmd(events, opts)
+  local autocmd = vim.api.nvim_create_autocmd
+  local augroup = vim.api.nvim_create_augroup
+
+  local filetype_detection = require("yoda.filetype.detection")
+  local performance_autocmds = require("yoda.performance.autocmds")
+  local yoda_autocmds = require("yoda.autocmds")
+
+  filetype_detection.setup_all(autocmd, augroup)
+
+  performance_autocmds.setup_all(autocmd, augroup)
+
+  yoda_autocmds.setup_all()
+
+  yoda_autocmds.setup_commands()
 end
 
-filetype_detection.setup_all(autocmd, augroup)
+M.setup()
 
-create_autocmd("BufReadPre", {
-  group = augroup("YodaLargeFile", { clear = true }),
-  desc = "Detect and optimize for large files",
-  callback = function(args)
-    large_file.on_buf_read(args.buf)
-  end,
-})
-
-performance_autocmds.setup_all(autocmd, augroup)
-
-yoda_autocmds.setup_all()
-
-yoda_autocmds.setup_commands()
+return M

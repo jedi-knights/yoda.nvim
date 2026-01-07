@@ -5,18 +5,27 @@ local notify = require("yoda-adapters.notification")
 function M.setup_all(autocmd, augroup)
   autocmd("FileType", {
     group = augroup("YodaGitCommitPerformance", { clear = true }),
-    desc = "Disable expensive autocmds for git commit buffers to prevent typing lag",
+    desc = "Optimize git commit buffers to prevent typing lag",
     pattern = { "gitcommit", "NeogitCommitMessage" },
-    callback = function()
-      vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
-      vim.cmd("autocmd! CursorMoved,CursorMovedI <buffer>")
-      vim.cmd("autocmd! InsertEnter,InsertLeave <buffer>")
-      vim.cmd("autocmd! BufWritePost <buffer>")
-      vim.cmd("autocmd! CompleteChanged,CompleteDone <buffer>")
+    callback = function(args)
+      local bufnr = args.buf
 
+      -- Use buffer-local augroups that auto-cleanup when buffer is deleted
+      -- This is safer than vim.cmd("autocmd!") which can affect other buffers
+      local buf_group = augroup("YodaGitCommitBuffer_" .. bufnr, { clear = true })
+
+      -- Instead of disabling autocmds globally, we simply don't create heavy ones
+      -- for git commit buffers. Most autocmds check filetype anyway.
+
+      -- Set performance options
       vim.opt_local.timeoutlen = 50
+      vim.opt_local.updatetime = 1000
 
-      notify.notify("🔥 Disabled expensive autocmds for git commit buffer", "debug")
+      -- Disable some heavy features for commit buffers
+      vim.b[bufnr].yoda_disable_lsp_diagnostics = true
+      vim.b[bufnr].yoda_commit_buffer = true
+
+      notify.notify("🔥 Optimized git commit buffer for fast typing", "debug")
     end,
   })
 

@@ -289,12 +289,16 @@ end
 
 --- Refresh file explorer if Snacks explorer is available
 function M.refresh_explorer()
-  local snacks = package.loaded.snacks
-  if snacks and snacks.explorer then
-    vim.schedule(function()
-      pcall(snacks.explorer.refresh)
-    end)
+  local ok, snacks = pcall(require, "snacks")
+  if not ok or not snacks.explorer then
+    return
   end
+  vim.schedule(function()
+    local refresh_ok = pcall(snacks.explorer.refresh)
+    if not refresh_ok then
+      vim.notify("Failed to refresh explorer", vim.log.levels.DEBUG)
+    end
+  end)
 end
 
 --- Complete refresh cycle after OpenCode edits files

@@ -13,44 +13,77 @@ local DELAYS = {
 }
 
 function M.setup_all(autocmd, augroup)
+  -- Split into three focused handlers for better stability
+
+  -- Handler 1: Critical early filtering (runs immediately, minimal work)
   autocmd("BufEnter", {
-    group = augroup("YodaConsolidatedBufEnter", { clear = true }),
-    desc = "Consolidated buffer enter handler for alpha, refresh, and git signs",
+    group = augroup("YodaBufEnterFilter", { clear = true }),
+    desc = "Fast buffer enter filtering",
     callback = function(args)
-      local perf_start_time = vim.loop.hrtime()
-      local start_time = autocmd_logger.log_start("BufEnter", { buf = args.buf })
       local buf = args.buf
 
+      -- Quick checks that need to block further processing
       local bufname = vim.api.nvim_buf_get_name(buf)
       if bufname:match("snacks_") or bufname:match("^%[.-%]$") then
-        autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "snacks_buffer" })
-        autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_snacks" })
+        return
+      end
+
+      local filetype = vim.bo[buf].filetype
+      if filetype == "opencode" then
         return
       end
 
       local buftype = vim.bo[buf].buftype
-      local filetype = vim.bo[buf].filetype
-      local buflisted = vim.bo[buf].buflisted
-
-      if filetype == "opencode" then
-        autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "opencode_buffer" })
-        autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_opencode" })
-        return
-      end
-
       if buftype ~= "" and buftype ~= "help" then
-        autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "special_buftype", buftype = buftype })
-        autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_special" })
         return
       end
+
+      -- Trigger the actual work in scheduled context
+      vim.schedule(function()
+        -- Revalidate buffer is still valid
+        if not vim.api.nvim_buf_is_valid(buf) then
+          return
+        end
+
+        -- Post processing event for other handlers
+        vim.api.nvim_exec_autocmds("User", {
+          pattern = "YodaBufEnterProcessed",
+          data = { buf = buf },
+        })
+      end)
+    end,
+  })
+
+  -- Handler 2: Real buffer processing (scheduled, non-blocking)
+  autocmd("User", {
+    group = augroup("YodaBufEnterRealBuffer", { clear = true }),
+    pattern = "YodaBufEnterProcessed",
+    desc = "Handle real buffer entry (alpha close, git refresh)",
+    callback = vim.schedule_wrap(function(args)
+      local buf = args.data.buf
+      local perf_start_time = vim.loop.hrtime()
+      local start_time = autocmd_logger.log_start("BufEnter_RealBuffer", { buf = buf })
+
+      -- Revalidate buffer state
+      if not vim.api.nvim_buf_is_valid(buf) then
+        return
+      end
+
+      local bufname = vim.api.nvim_buf_get_name(buf)
+      local buftype = vim.bo[buf].buftype
+      local filetype = vim.bo[buf].filetype
 
       local is_real_buffer = buftype == "" and filetype ~= "" and filetype ~= "alpha" and bufname ~= ""
 
       if is_real_buffer then
         autocmd_logger.log("BufEnter_REAL_BUFFER", { buf = buf, filetype = filetype })
 
-        alpha_manager.handle_alpha_close_for_real_buffer(buf, DELAYS.ALPHA_CLOSE, autocmd_logger)
+        -- Alpha close - schedule to avoid blocking
+        vim.schedule(function()
+          alpha_manager.handle_alpha_close_for_real_buffer(buf, DELAYS.ALPHA_CLOSE, autocmd_logger)
+        end)
 
+        -- Git refresh - already debounced internally
         local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
         if ok then
           opencode_integration.handle_debounced_buffer_refresh(buf, autocmd_logger)
@@ -58,24 +91,50 @@ function M.setup_all(autocmd, augroup)
           gitsigns.refresh_debounced()
         end
 
-        autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
-        autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+        autocmd_logger.log_end("BufEnter_RealBuffer", start_time, { action = "refresh_scheduled" })
+        autocmd_perf.track_autocmd("BufEnter_RealBuffer", perf_start_time)
+      end
+    end),
+  })
+
+  -- Handler 3: Alpha dashboard display (scheduled, lowest priority)
+  autocmd("User", {
+    group = augroup("YodaBufEnterAlpha", { clear = true }),
+    pattern = "YodaBufEnterProcessed",
+    desc = "Handle alpha dashboard display",
+    callback = vim.schedule_wrap(function(args)
+      local buf = args.data.buf
+      local perf_start_time = vim.loop.hrtime()
+      local start_time = autocmd_logger.log_start("BufEnter_Alpha", { buf = buf })
+
+      -- Revalidate buffer state
+      if not vim.api.nvim_buf_is_valid(buf) then
         return
       end
 
-      alpha_manager.handle_alpha_dashboard_display({
-        buf = buf,
-        buftype = buftype,
-        filetype = filetype,
-        buflisted = buflisted,
-        start_time = start_time,
-        perf_start_time = perf_start_time,
-        logger = autocmd_logger,
-        perf_tracker = autocmd_perf,
-        is_buffer_empty_fn = buffer_state.is_buffer_empty,
-        delay = DELAYS.BUF_ENTER_DEBOUNCE,
-      })
-    end,
+      local buftype = vim.bo[buf].buftype
+      local filetype = vim.bo[buf].filetype
+      local buflisted = vim.bo[buf].buflisted
+
+      -- Only process if not a real buffer (for alpha display)
+      local bufname = vim.api.nvim_buf_get_name(buf)
+      local is_real_buffer = buftype == "" and filetype ~= "" and filetype ~= "alpha" and bufname ~= ""
+
+      if not is_real_buffer then
+        alpha_manager.handle_alpha_dashboard_display({
+          buf = buf,
+          buftype = buftype,
+          filetype = filetype,
+          buflisted = buflisted,
+          start_time = start_time,
+          perf_start_time = perf_start_time,
+          logger = autocmd_logger,
+          perf_tracker = autocmd_perf,
+          is_buffer_empty_fn = buffer_state.is_buffer_empty,
+          delay = DELAYS.BUF_ENTER_DEBOUNCE,
+        })
+      end
+    end),
   })
 
   autocmd({ "BufDelete", "BufWipeout" }, {

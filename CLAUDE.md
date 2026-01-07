@@ -53,6 +53,43 @@ make help             # Show all available commands
 - Adapter pattern for external integrations
 - Comprehensive logging system with multiple strategies
 
+## External Dependencies Reference
+
+### Neovim Core
+- **Minimum version**: 0.10.1+
+- **API Documentation**: https://neovim.io/doc/user/api.html
+- **Lua API Guide**: https://neovim.io/doc/user/lua-guide.html
+- **Latest releases**: https://github.com/neovim/neovim/releases
+- **Key APIs used**: `vim.keymap`, `vim.diagnostic`, `vim.lsp`, `vim.fs`
+
+### Snacks.nvim
+- **Current commit**: fe7cfe9800a182274d0f868a74b7263b8c0c020b
+- **Repository**: https://github.com/folke/snacks.nvim
+- **Documentation**: https://github.com/folke/snacks.nvim/blob/main/README.md
+- **Purpose**: Modern UI components and utilities
+- **Update policy**: Keep aligned with latest stable releases
+
+### Getting Latest Information
+
+When needing current information about dependencies:
+
+1. **For Neovim APIs**: Provide URL to specific API documentation
+   ```
+   Check https://neovim.io/doc/user/lua-guide.html for the latest vim.keymap patterns
+   ```
+
+2. **For snacks.nvim features**: Request live fetches
+   ```
+   Fetch https://github.com/folke/snacks.nvim/blob/main/README.md 
+   and compare to our usage in lua/plugins/ui.lua
+   ```
+
+3. **For breaking changes**: Reference release notes
+   ```
+   Check https://github.com/neovim/neovim/releases/tag/v0.11.0 
+   for breaking changes affecting our config
+   ```
+
 ## When Making Changes
 
 1. Always run `make lint` after changes
