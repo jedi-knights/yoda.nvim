@@ -54,6 +54,13 @@ describe("commands", function()
       end,
     }
 
+    -- Mock notification adapter
+    package.loaded["yoda-adapters.notification"] = {
+      notify = function(msg, level)
+        -- No-op during tests
+      end,
+    }
+
     -- Load commands module
     package.loaded["yoda.commands"] = nil
     require("yoda.commands")
