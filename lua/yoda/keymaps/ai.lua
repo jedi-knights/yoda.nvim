@@ -190,28 +190,33 @@ map("n", "<leader>cop", function()
   end
 end, { desc = "Copilot: Toggle/Dismiss" })
 
+-- Setup Copilot insert mode keymaps (non-blocking)
+-- Use defer_fn with 0 delay to avoid blocking first InsertEnter
 vim.api.nvim_create_autocmd("InsertEnter", {
   once = true,
   callback = function()
-    local ok, copilot_suggestion = pcall(require, "copilot.suggestion")
-    if not ok then
-      return
-    end
+    -- Defer to next event loop cycle to avoid blocking mode transition
+    vim.defer_fn(function()
+      local ok, copilot_suggestion = pcall(require, "copilot.suggestion")
+      if not ok then
+        return
+      end
 
-    map("i", "<leader>a", function()
-      copilot_suggestion.accept()
-    end, { silent = true, desc = "Copilot: Accept" })
+      map("i", "<leader>a", function()
+        copilot_suggestion.accept()
+      end, { silent = true, desc = "Copilot: Accept" })
 
-    map("i", "<leader>n", function()
-      copilot_suggestion.next()
-    end, { silent = true, desc = "Copilot: Next" })
+      map("i", "<leader>n", function()
+        copilot_suggestion.next()
+      end, { silent = true, desc = "Copilot: Next" })
 
-    map("i", "<leader>p", function()
-      copilot_suggestion.prev()
-    end, { silent = true, desc = "Copilot: Previous" })
+      map("i", "<leader>p", function()
+        copilot_suggestion.prev()
+      end, { silent = true, desc = "Copilot: Previous" })
 
-    map("i", "<leader>d", function()
-      copilot_suggestion.dismiss()
-    end, { silent = true, desc = "Copilot: Dismiss" })
+      map("i", "<leader>d", function()
+        copilot_suggestion.dismiss()
+      end, { silent = true, desc = "Copilot: Dismiss" })
+    end, 0)
   end,
 })

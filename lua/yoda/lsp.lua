@@ -420,38 +420,11 @@ function M.setup()
 
       -- Python-specific optimizations
       if client.name == "basedpyright" then
+        -- Disable document highlight once at initialization
+        -- No need for polling timer - the capability is set and won't change
         client.server_capabilities.documentHighlightProvider = false
 
-        -- Keep document highlight disabled
-        local timer = vim.loop.new_timer()
-        if timer then
-          local timer_active = true
-          timer:start(
-            100,
-            100,
-            vim.schedule_wrap(function()
-              if not timer_active then
-                return
-              end
-              if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
-                client.server_capabilities.documentHighlightProvider = false
-              end
-            end)
-          )
-
-          vim.api.nvim_create_autocmd("LspDetach", {
-            callback = function(args)
-              if args.data.client_id == client.id and timer_active then
-                timer_active = false
-                if timer and not timer:is_closing() then
-                  timer:stop()
-                  timer:close()
-                end
-              end
-            end,
-          })
-        end
-
+        -- Clear any existing references (one-time cleanup)
         vim.schedule(function()
           vim.lsp.buf.clear_references()
         end)
