@@ -94,23 +94,6 @@ map("n", "<leader>tS", function()
   end
 end, { desc = "Test: Show environment status" })
 
-map("n", "<leader>tt", function()
-  local ok, pytest_atlas = pcall(require, "pytest-atlas")
-  if not ok then
-    notify.notify("pytest-atlas not loaded: " .. tostring(pytest_atlas), "error")
-    return
-  end
-
-  local success, err = pcall(pytest_atlas.run_tests)
-  if not success then
-    notify.notify("pytest-atlas error: " .. tostring(err), "error")
-    vim.notify("Debug info:\n" .. vim.inspect({
-      snacks_loaded = pcall(require, "snacks.picker"),
-      cwd = vim.fn.getcwd(),
-    }), vim.log.levels.DEBUG)
-  end
-end, { desc = "Test: Run pytest with configuration picker" })
-
 map("n", "<leader>tL", function()
   local ok, logger = pcall(require, "pytest-atlas.logger")
   if ok then
@@ -138,8 +121,8 @@ map("n", "<leader>tX", function()
   end
 end, { desc = "Test: Clear pytest-atlas log" })
 
--- Test vim.ui.select directly
-map("n", "<leader>tS", function()
+-- Test vim.ui.select directly (debug keymap - use different key to avoid conflict)
+map("n", "<leader>tU", function()
   print("\n=== Testing vim.ui.select ===")
   print("Watch for a picker UI to appear!")
 

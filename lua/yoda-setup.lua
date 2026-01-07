@@ -1,6 +1,13 @@
 local M = {}
 
+local _setup_done = false
+
 function M.setup_yoda_plugins()
+  if _setup_done then
+    vim.notify("yoda-setup: setup_yoda_plugins() already called", vim.log.levels.WARN)
+    return
+  end
+  _setup_done = true
   local ok, adapters = pcall(require, "yoda-adapters")
   if ok and adapters and adapters.setup then
     adapters.setup({
