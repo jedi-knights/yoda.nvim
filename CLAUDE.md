@@ -53,6 +53,32 @@ make help             # Show all available commands
 - Adapter pattern for external integrations
 - Comprehensive logging system with multiple strategies
 
+## Distribution Stability Preferences
+
+**IMPORTANT**: Yoda.nvim prioritizes stability and reliability over bleeding-edge features.
+
+### Plugin Management
+- **Prefer stable releases** over latest commits or nightly builds
+- **Pin plugin versions** in `lazy-lock.json` - only update intentionally
+- **Test thoroughly** before adopting new plugins or major version updates
+- **Avoid experimental features** unless explicitly requested by user
+- **Maintain backwards compatibility** when making internal changes
+
+### Update Policy
+- **Conservative updates**: Only update when fixing bugs or adding requested features
+- **No breaking changes** without clear migration path and documentation
+- **Validate after updates**: Always run full test suite and manual smoke tests
+- **Document changes**: Update ADRs and changelog for significant updates
+
+### Decision Framework
+When considering changes, ask:
+1. Does this improve stability or introduce risk?
+2. Is this feature proven and well-tested in the community?
+3. Can we achieve the same goal with existing stable tools?
+4. What's the rollback plan if this causes issues?
+
+**Priority order**: Stability > Functionality > Performance > Latest Features
+
 ## When Making Changes
 
 1. Always run `make lint` after changes
