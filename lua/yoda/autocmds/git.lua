@@ -36,27 +36,29 @@ function M.setup_all(autocmd, augroup)
     end,
   })
 
-  autocmd("FileType", {
-    group = augroup("YodaGitCommitInsertMode", { clear = true }),
-    desc = "Auto-enter insert mode for git commit messages",
-    pattern = { "gitcommit", "NeogitCommitMessage" },
-    callback = function()
-      vim.schedule(function()
-        vim.cmd("startinsert")
-      end)
-    end,
-  })
+  -- Disabled: Auto-insert mode causes keymap instability when transitioning
+  -- from Neogit back to editing buffers
+  -- autocmd("FileType", {
+  --   group = augroup("YodaGitCommitInsertMode", { clear = true }),
+  --   desc = "Auto-enter insert mode for git commit messages",
+  --   pattern = { "gitcommit", "NeogitCommitMessage" },
+  --   callback = function()
+  --     vim.schedule(function()
+  --       vim.cmd("startinsert")
+  --     end)
+  --   end,
+  -- })
 
-  autocmd("FileType", {
-    group = augroup("YodaNeogitStatusInsertMode", { clear = true }),
-    desc = "Auto-enter insert mode for Neogit status buffer",
-    pattern = "NeogitStatus",
-    callback = function()
-      vim.schedule(function()
-        vim.cmd("startinsert")
-      end)
-    end,
-  })
+  -- autocmd("FileType", {
+  --   group = augroup("YodaNeogitStatusInsertMode", { clear = true }),
+  --   desc = "Auto-enter insert mode for Neogit status buffer",
+  --   pattern = "NeogitStatus",
+  --   callback = function()
+  --     vim.schedule(function()
+  --       vim.cmd("startinsert")
+  --     end)
+  --   end,
+  -- })
 end
 
 return M
