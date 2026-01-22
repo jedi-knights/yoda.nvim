@@ -1,6 +1,11 @@
 local M = {}
 
 function M.setup_yoda_plugins()
+  local ok_timer, timer_manager = pcall(require, "yoda.timer_manager")
+  if ok_timer and timer_manager and timer_manager.setup_cleanup then
+    timer_manager.setup_cleanup()
+  end
+
   local ok, adapters = pcall(require, "yoda-adapters")
   if ok and adapters and adapters.setup then
     adapters.setup({

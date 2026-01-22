@@ -2,6 +2,7 @@ local M = {}
 
 local gitsigns = require("yoda.integrations.gitsigns")
 local buffer_state = require("yoda.buffer.state_checker")
+local focus_handler = require("yoda.autocmds.focus")
 
 function M.setup_all(autocmd, augroup)
   local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
@@ -20,31 +21,12 @@ function M.setup_all(autocmd, augroup)
     end,
   })
 
-  autocmd("FocusGained", {
-    group = augroup("YodaOpenCodeFocusRefresh", { clear = true }),
-    desc = "Refresh buffers and git signs when focus is gained",
-    callback = function()
-      local current_ft = vim.bo.filetype
-      if current_ft == "opencode" then
-        return
-      end
-
-      vim.schedule(function()
-        pcall(vim.cmd, "checktime")
-
-        if buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
-          local current_buf = vim.api.nvim_get_current_buf()
-          opencode_integration.refresh_buffer(current_buf)
-        end
-
-        opencode_integration.refresh_git_signs()
-      end)
-    end,
-  })
+  -- Use consolidated focus handler
+  focus_handler.setup_all(autocmd, augroup)
 
   autocmd("BufWritePost", {
     group = augroup("YodaGitSignsWriteRefresh", { clear = true }),
-    desc = "Refresh git signs after buffer is written",
+    desc = "Refresh git signs after buffer is written (batched)",
     callback = function()
       opencode_integration.refresh_git_signs()
     end,
@@ -66,7 +48,7 @@ function M.setup_all(autocmd, augroup)
 
   autocmd("FileChangedShellPost", {
     group = augroup("YodaOpenCodeFileChangePost", { clear = true }),
-    desc = "Post-process file changes from external tools",
+    desc = "Post-process file changes from external tools (batched)",
     callback = function()
       vim.schedule(function()
         opencode_integration.refresh_git_signs()
@@ -78,44 +60,36 @@ function M.setup_all(autocmd, augroup)
 end
 
 function M.setup_fallback(autocmd, augroup)
-  autocmd("FocusGained", {
-    group = augroup("YodaOpenCodeFocusRefreshFallback", { clear = true }),
-    desc = "Fallback: Refresh buffers and git signs when focus is gained",
-    callback = function()
-      if buffer_state.can_reload_buffer() then
-        pcall(vim.cmd, "checktime")
-        gitsigns.refresh_debounced()
-      end
-    end,
-  })
+  -- Use consolidated focus handler
+  focus_handler.setup_all(autocmd, augroup)
 
   autocmd("BufWritePost", {
     group = augroup("YodaGitSignsWriteRefreshFallback", { clear = true }),
-    desc = "Fallback: Refresh git signs after buffer is written",
+    desc = "Fallback: Refresh git signs after buffer is written (batched)",
     callback = function()
       if vim.bo.buftype == "" then
-        gitsigns.refresh_debounced()
+        gitsigns.refresh_batched()
       end
     end,
   })
 
   autocmd("FileChangedShell", {
     group = augroup("YodaOpenCodeFileChangeFallback", { clear = true }),
-    desc = "Fallback: Handle files changed by external tools",
+    desc = "Fallback: Handle files changed by external tools (batched)",
     callback = function()
       vim.schedule(function()
         pcall(vim.cmd, "checktime")
-        gitsigns.refresh_debounced()
+        gitsigns.refresh_batched()
       end)
     end,
   })
 
   autocmd("FileChangedShellPost", {
     group = augroup("YodaOpenCodeFileChangePostFallback", { clear = true }),
-    desc = "Fallback: Post-process file changes",
+    desc = "Fallback: Post-process file changes (batched)",
     callback = function()
       vim.schedule(function()
-        gitsigns.refresh_debounced()
+        gitsigns.refresh_batched()
       end)
     end,
   })

@@ -10,6 +10,20 @@ local buffer_state = require("yoda.buffer.state_checker")
 local DELAYS = {
   ALPHA_CLOSE = 50,
   BUF_ENTER_DEBOUNCE = 50,
+  GLOBAL_DEBOUNCE = 50, -- Skip processing if < 50ms since last BufEnter
+}
+
+local RECURSION_LIMITS = {
+  MAX_DEPTH = 3,
+  TIMEOUT_MS = 5000,
+}
+
+local buf_enter_state = {
+  depth = 0,
+  last_entry_time = 0,
+  last_processed_time = 0,
+  entry_count = 0,
+  debounced_count = 0,
 }
 
 function M.setup_all(autocmd, augroup)
@@ -20,11 +34,56 @@ function M.setup_all(autocmd, augroup)
       local perf_start_time = vim.loop.hrtime()
       local start_time = autocmd_logger.log_start("BufEnter", { buf = args.buf })
       local buf = args.buf
+      local current_time = vim.loop.hrtime() / 1000000
+
+      buf_enter_state.depth = buf_enter_state.depth + 1
+      buf_enter_state.entry_count = buf_enter_state.entry_count + 1
+
+      -- Global debounce: skip if too soon since last BufEnter
+      if buf_enter_state.last_processed_time > 0 then
+        local elapsed = current_time - buf_enter_state.last_processed_time
+        if elapsed < DELAYS.GLOBAL_DEBOUNCE then
+          buf_enter_state.debounced_count = buf_enter_state.debounced_count + 1
+          autocmd_logger.log("BufEnter_DEBOUNCE_SKIP", {
+            buf = buf,
+            elapsed_ms = elapsed,
+            threshold_ms = DELAYS.GLOBAL_DEBOUNCE,
+            debounced_count = buf_enter_state.debounced_count,
+          })
+          autocmd_logger.log_end("BufEnter", start_time, { action = "debounced" })
+          buf_enter_state.depth = buf_enter_state.depth - 1
+          return
+        end
+      end
+
+      if buf_enter_state.depth > RECURSION_LIMITS.MAX_DEPTH then
+        autocmd_logger.log("BufEnter_RECURSION_LIMIT", {
+          buf = buf,
+          depth = buf_enter_state.depth,
+          max_depth = RECURSION_LIMITS.MAX_DEPTH,
+        })
+        buf_enter_state.depth = buf_enter_state.depth - 1
+        return
+      end
+
+      if buf_enter_state.last_entry_time > 0 and (current_time - buf_enter_state.last_entry_time) > RECURSION_LIMITS.TIMEOUT_MS then
+        buf_enter_state.depth = 0
+        buf_enter_state.entry_count = 0
+        buf_enter_state.debounced_count = 0
+        autocmd_logger.log("BufEnter_TIMEOUT_RESET", {
+          buf = buf,
+          elapsed_ms = current_time - buf_enter_state.last_entry_time,
+        })
+      end
+
+      buf_enter_state.last_entry_time = current_time
+      buf_enter_state.last_processed_time = current_time
 
       local bufname = vim.api.nvim_buf_get_name(buf)
       if bufname:match("snacks_") or bufname:match("^%[.-%]$") then
         autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "snacks_buffer" })
         autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_snacks" })
+        buf_enter_state.depth = buf_enter_state.depth - 1
         return
       end
 
@@ -35,12 +94,14 @@ function M.setup_all(autocmd, augroup)
       if filetype == "opencode" then
         autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "opencode_buffer" })
         autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_opencode" })
+        buf_enter_state.depth = buf_enter_state.depth - 1
         return
       end
 
       if buftype ~= "" and buftype ~= "help" then
         autocmd_logger.log("BufEnter_SKIP", { buf = buf, reason = "special_buftype", buftype = buftype })
         autocmd_logger.log_end("BufEnter", start_time, { action = "skipped_special" })
+        buf_enter_state.depth = buf_enter_state.depth - 1
         return
       end
 
@@ -55,11 +116,12 @@ function M.setup_all(autocmd, augroup)
         if ok then
           opencode_integration.handle_debounced_buffer_refresh(buf, autocmd_logger)
         else
-          gitsigns.refresh_debounced()
+          gitsigns.refresh_batched()
         end
 
         autocmd_logger.log_end("BufEnter", start_time, { action = "refresh_scheduled" })
         autocmd_perf.track_autocmd("BufEnter", perf_start_time)
+        buf_enter_state.depth = buf_enter_state.depth - 1
         return
       end
 
@@ -75,12 +137,14 @@ function M.setup_all(autocmd, augroup)
         is_buffer_empty_fn = buffer_state.is_buffer_empty,
         delay = DELAYS.BUF_ENTER_DEBOUNCE,
       })
+
+      buf_enter_state.depth = buf_enter_state.depth - 1
     end,
   })
 
-  autocmd({ "BufDelete", "BufWipeout" }, {
+  autocmd({ "BufDelete", "BufWipeout", "BufNew", "BufAdd" }, {
     group = augroup("YodaBufferCacheInvalidation", { clear = true }),
-    desc = "Invalidate buffer caches when buffers are removed",
+    desc = "Invalidate buffer caches when buffers are created or removed",
     callback = function(args)
       local buf = args.buf
       if vim.api.nvim_buf_is_valid(buf) then
@@ -92,6 +156,24 @@ function M.setup_all(autocmd, augroup)
       end
     end,
   })
+end
+
+function M.get_buf_enter_state()
+  return {
+    depth = buf_enter_state.depth,
+    last_entry_time = buf_enter_state.last_entry_time,
+    last_processed_time = buf_enter_state.last_processed_time,
+    entry_count = buf_enter_state.entry_count,
+    debounced_count = buf_enter_state.debounced_count,
+  }
+end
+
+function M.reset_buf_enter_state()
+  buf_enter_state.depth = 0
+  buf_enter_state.last_entry_time = 0
+  buf_enter_state.last_processed_time = 0
+  buf_enter_state.entry_count = 0
+  buf_enter_state.debounced_count = 0
 end
 
 function M.setup_commands()

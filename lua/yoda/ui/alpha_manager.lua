@@ -38,6 +38,7 @@ local alpha_cache = {
   last_alpha_check_time = 0,
   check_interval = CACHE_CONFIG.CHECK_INTERVAL_MS,
   alpha_check_interval = CACHE_CONFIG.ALPHA_CHECK_INTERVAL_MS,
+  creation_in_progress = false,
 }
 
 -- ============================================================================
@@ -57,6 +58,10 @@ end
 --- Check if alpha dashboard is already open (optimized with caching)
 --- @return boolean
 function M.has_alpha_buffer()
+  if alpha_cache.creation_in_progress then
+    return true
+  end
+
   local current_time = vim.loop.hrtime() / 1000000
 
   if alpha_cache.has_alpha_buffer ~= nil and (current_time - alpha_cache.last_alpha_check_time) < alpha_cache.alpha_check_interval then
@@ -227,13 +232,21 @@ end
 --- Start the alpha dashboard with proper configuration
 --- @return boolean success Whether alpha started successfully
 function M.start_alpha_dashboard()
+  if alpha_cache.creation_in_progress then
+    return false
+  end
+
+  alpha_cache.creation_in_progress = true
+
   local ok, alpha = pcall(require, "alpha")
   if not ok or not alpha or not alpha.start then
+    alpha_cache.creation_in_progress = false
     return false
   end
 
   local dashboard_ok, dashboard = pcall(require, "alpha.themes.dashboard")
   if not dashboard_ok or not dashboard then
+    alpha_cache.creation_in_progress = false
     return false
   end
 
@@ -243,6 +256,12 @@ function M.start_alpha_dashboard()
   }
 
   local config_ok = pcall(alpha.start, alpha_config)
+
+  vim.schedule(function()
+    alpha_cache.creation_in_progress = false
+    M.invalidate_cache()
+  end)
+
   return config_ok
 end
 
@@ -258,16 +277,68 @@ end
 -- Handler Functions (for autocmds)
 -- ============================================================================
 
+--- Check if buffer is valid for alpha close operation
+--- @param buf number Buffer number
+--- @param logger table|nil Optional logger
+--- @return boolean valid Whether buffer is valid
+local function is_buffer_valid_for_close(buf, logger)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    if logger then
+      logger.log("Alpha_Close_Skip", { buf = buf, reason = "invalid_buffer" })
+    end
+    return false
+  end
+  return true
+end
+
+--- Check if there are alpha buffers to close
+--- @param buf number Buffer number
+--- @param logger table|nil Optional logger
+--- @return boolean has_alpha Whether there are alpha buffers
+local function has_alpha_to_close(buf, logger)
+  if not M.has_alpha_buffer() then
+    if logger then
+      logger.log("Alpha_Close_Skip", { buf = buf, reason = "no_alpha_buffer" })
+    end
+    return false
+  end
+  return true
+end
+
+--- Try to delete an alpha buffer
+--- @param b number Buffer number
+--- @param logger table|nil Optional logger
+local function try_delete_alpha_buffer(b, logger)
+  local ok, ft = pcall(function()
+    return vim.bo[b].filetype
+  end)
+
+  if ok and ft == "alpha" and vim.bo[b].buflisted then
+    if logger then
+      logger.log("Alpha_Close_Delete", { buf = b })
+    end
+    pcall(vim.api.nvim_buf_delete, b, { force = true })
+  end
+end
+
+--- Close alpha buffers for the given buffer
+--- @param buf number Buffer number
+--- @param logger table|nil Optional logger
+local function close_alpha_buffers(buf, logger)
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(b) and b ~= buf then
+      try_delete_alpha_buffer(b, logger)
+    end
+  end
+end
+
 --- Handle closing alpha dashboard for real file buffers
 --- @param buf number Buffer number
 --- @param delay number Delay in milliseconds
 --- @param logger table|nil Optional logger
 function M.handle_alpha_close_for_real_buffer(buf, delay, logger)
   vim.defer_fn(function()
-    if not vim.api.nvim_buf_is_valid(buf) then
-      if logger then
-        logger.log("Alpha_Close_Skip", { buf = buf, reason = "invalid_buffer" })
-      end
+    if not is_buffer_valid_for_close(buf, logger) then
       return
     end
 
@@ -275,31 +346,62 @@ function M.handle_alpha_close_for_real_buffer(buf, delay, logger)
       logger.log("Alpha_Close_Check", { buf = buf, delay = delay })
     end
 
-    if not M.has_alpha_buffer() then
-      if logger then
-        logger.log("Alpha_Close_Skip", { buf = buf, reason = "no_alpha_buffer" })
-      end
+    if not has_alpha_to_close(buf, logger) then
       return
     end
 
-    for _, b in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(b) and b ~= buf then
-        local ok, ft = pcall(function()
-          return vim.bo[b].filetype
-        end)
-
-        if ok and ft == "alpha" then
-          local is_listed = vim.bo[b].buflisted
-          if is_listed then
-            if logger then
-              logger.log("Alpha_Close_Delete", { buf = b })
-            end
-            pcall(vim.api.nvim_buf_delete, b, { force = true })
-          end
-        end
-      end
-    end
+    close_alpha_buffers(buf, logger)
   end, delay)
+end
+
+--- Track autocmd end for context
+--- @param ctx table Context object
+--- @param action string Action description
+local function track_autocmd_end(ctx, action)
+  if ctx.logger then
+    ctx.logger.log_end("BufEnter", ctx.start_time, { action = action })
+  end
+  if ctx.perf_tracker then
+    ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
+  end
+end
+
+--- Check if should skip alpha display
+--- @param ctx table Context object
+--- @return boolean should_skip Whether to skip
+--- @return string|nil reason Skip reason
+local function should_skip_alpha_display(ctx)
+  if ctx.filetype == "alpha" then
+    return true, "alpha_skip"
+  end
+
+  if not ctx.buflisted then
+    return true, "not_listed"
+  end
+
+  if ctx.buftype ~= "" then
+    return true, nil
+  end
+
+  if M.should_skip_alpha_for_filetype(ctx.filetype) then
+    return true, nil
+  end
+
+  if not M.should_show_alpha(ctx.is_buffer_empty_fn) then
+    return true, nil
+  end
+
+  return false, nil
+end
+
+--- Schedule alpha dashboard display
+--- @param ctx table Context object
+local function schedule_alpha_display(ctx)
+  vim.defer_fn(function()
+    if M.should_show_alpha(ctx.is_buffer_empty_fn) then
+      M.show_alpha_dashboard()
+    end
+  end, ctx.delay)
 end
 
 --- Handle alpha dashboard display logic
@@ -315,52 +417,20 @@ end
 ---   - is_buffer_empty_fn: function Function to check if buffer is empty
 ---   - delay: number Delay for showing alpha
 function M.handle_alpha_dashboard_display(ctx)
-  if ctx.filetype == "alpha" then
-    if ctx.logger then
-      ctx.logger.log_end("BufEnter", ctx.start_time, { action = "alpha_skip" })
-    end
-    if ctx.perf_tracker then
-      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
+  local should_skip, reason = should_skip_alpha_display(ctx)
+
+  if should_skip then
+    if reason then
+      track_autocmd_end(ctx, reason)
+    else
+      if ctx.perf_tracker then
+        ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
+      end
     end
     return
   end
 
-  if not ctx.buflisted then
-    if ctx.logger then
-      ctx.logger.log_end("BufEnter", ctx.start_time, { action = "not_listed" })
-    end
-    if ctx.perf_tracker then
-      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
-    end
-    return
-  end
-
-  if ctx.buftype ~= "" then
-    if ctx.perf_tracker then
-      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
-    end
-    return
-  end
-
-  if M.should_skip_alpha_for_filetype(ctx.filetype) then
-    if ctx.perf_tracker then
-      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
-    end
-    return
-  end
-
-  if not M.should_show_alpha(ctx.is_buffer_empty_fn) then
-    if ctx.perf_tracker then
-      ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)
-    end
-    return
-  end
-
-  vim.defer_fn(function()
-    if M.should_show_alpha(ctx.is_buffer_empty_fn) then
-      M.show_alpha_dashboard()
-    end
-  end, ctx.delay)
+  schedule_alpha_display(ctx)
 
   if ctx.perf_tracker then
     ctx.perf_tracker.track_autocmd("BufEnter", ctx.perf_start_time)

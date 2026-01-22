@@ -6,7 +6,23 @@ Yoda.nvim is a comprehensive Neovim distribution focused on providing an excelle
 
 ## Validation Commands
 
-**IMPORTANT**: After making any code changes, always run these validation commands:
+**IMPORTANT**: Run validation commands strategically to save time and tokens:
+
+### When to Run Tests and Lint
+
+**Run validation when:**
+- ✅ Completing a logical unit of work (feature, bug fix, refactor)
+- ✅ Before marking a task as complete
+- ✅ User explicitly requests validation
+- ✅ Making changes that could break existing functionality
+- ✅ Adding new test files or modifying test infrastructure
+
+**Skip validation for:**
+- ❌ Fine-grained incremental changes (single line edits, typo fixes)
+- ❌ Documentation-only changes (*.md files)
+- ❌ Intermediate steps in a multi-step task
+- ❌ Adding comments or whitespace changes
+- ❌ Changes to non-code files (.gitignore, etc.)
 
 ### Testing  
 ```bash
@@ -81,7 +97,8 @@ When considering changes, ask:
 
 ## When Making Changes
 
-1. Always run `make lint` after changes
-2. Always run `make test` to ensure nothing breaks
-3. Fix any linting or test failures before considering changes complete
+1. Make incremental changes efficiently
+2. Run `make lint` and `make test` when completing a logical unit of work
+3. Fix any linting or test failures before marking task complete
 4. Add tests for new functionality when appropriate
+5. Inform user when validation is skipped for efficiency
