@@ -17,7 +17,6 @@ This document describes performance optimizations applied to eliminate buffer la
 - TypeScript (ts_ls): 300ms
 - Python (basedpyright): 500ms (higher due to complexity)
 - YAML (yamlls): 300ms
-- C# (omnisharp): 300ms
 - Helm (helm_ls): 300ms
 - Java (jdtls): 500ms
 - Markdown (marksman): 300ms
@@ -106,7 +105,6 @@ Different LSP servers have different debounce times based on their complexity:
 | **Go** | 300ms | Fast server with moderate complexity |
 | **Lua** | 300ms | Fast but needs time for workspace indexing |
 | **YAML** | 300ms | Schema validation can be expensive |
-| **C#** | 300ms | OmniSharp can be resource-intensive |
 | **Helm** | 300ms | Template validation overhead |
 | **Markdown** | 300ms | Link checking and heading analysis |
 
