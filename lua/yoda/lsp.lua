@@ -425,16 +425,11 @@ function M.setup()
 
         -- Keep document highlight disabled
         local timer_id = "basedpyright_highlight_" .. client.id
-        local timer, id = timer_manager.create_timer(
-          function()
-            if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
-              client.server_capabilities.documentHighlightProvider = false
-            end
-          end,
-          100,
-          100,
-          timer_id
-        )
+        local timer, id = timer_manager.create_timer(function()
+          if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
+            client.server_capabilities.documentHighlightProvider = false
+          end
+        end, 100, 100, timer_id)
 
         if timer then
           vim.api.nvim_create_autocmd("LspDetach", {
@@ -527,50 +522,34 @@ function M.setup()
 
   -- Auto-restart Python LSP when entering different Python projects
   local python_lsp_restart_timer = nil
-  local autocmd_logger = require("yoda.autocmd_logger")
 
   vim.api.nvim_create_autocmd("DirChanged", {
     group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", {}),
     callback = function()
-      autocmd_logger.log("Python_LSP_Check", { event = "DirChanged" })
-
       local timer_id = "python_lsp_restart"
 
-      -- Cancel any pending restart
       if timer_manager.is_vim_timer_active(timer_id) then
-        autocmd_logger.log("Python_LSP_Cancel_Pending", {})
         timer_manager.stop_vim_timer(timer_id)
         python_lsp_restart_timer = nil
       end
 
-      -- Debounce the restart check
       python_lsp_restart_timer = timer_manager.create_vim_timer(function()
-        autocmd_logger.log("Python_LSP_Debounce_Fire", {})
         python_lsp_restart_timer = nil
 
-        -- Only restart if we detect a new Python project root
         local current_root = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
         if current_root and vim.g.last_python_root ~= current_root then
-          autocmd_logger.log("Python_LSP_Root_Change", { old = vim.g.last_python_root or "none", new = current_root })
           vim.g.last_python_root = current_root
 
-          -- Schedule restart to avoid UI flicker
           vim.schedule(function()
-            -- Restart Python LSP clients
             local clients = vim.lsp.get_clients({ name = "basedpyright" })
             if #clients > 0 then
-              autocmd_logger.log("Python_LSP_Restart", { client_count = #clients, root = current_root })
               lsp_perf.track_lsp_restart("basedpyright")
               notify.notify(string.format("Restarting Python LSP for project: %s", current_root), "info")
               for _, client in ipairs(clients) do
                 client.stop()
               end
-            else
-              autocmd_logger.log("Python_LSP_No_Clients", { root = current_root })
             end
           end)
-        else
-          autocmd_logger.log("Python_LSP_Same_Root", { root = current_root or "none" })
         end
       end, 1000, timer_id)
     end,

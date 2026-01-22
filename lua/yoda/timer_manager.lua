@@ -10,6 +10,7 @@ local M = {}
 local active_timers = {}
 local active_vim_timers = {}
 local timer_id_counter = 0
+local total_timers_created = 0
 
 -- ============================================================================
 -- Helper Functions
@@ -66,6 +67,8 @@ function M.create_timer(callback, timeout, repeat_interval, timer_id)
   }
 
   timer:start(timeout, repeat_interval, vim.schedule_wrap(wrapped_callback))
+
+  total_timers_created = total_timers_created + 1
 
   return timer, timer_id
 end
@@ -124,6 +127,8 @@ function M.create_vim_timer(callback, delay, timer_id)
     callback = callback,
     delay = delay,
   }
+
+  total_timers_created = total_timers_created + 1
 
   return timer_handle, timer_id
 end
@@ -186,8 +191,15 @@ function M.get_stats()
   return {
     loop_timers = vim.tbl_keys(active_timers),
     vim_timers = vim.tbl_keys(active_vim_timers),
-    total_created = timer_id_counter,
+    total_created = total_timers_created,
   }
+end
+
+--- Reset timer manager state (for testing)
+function M.reset()
+  M.stop_all_timers()
+  timer_id_counter = 0
+  total_timers_created = 0
 end
 
 -- ============================================================================
