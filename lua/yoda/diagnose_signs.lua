@@ -64,33 +64,7 @@ function M.diagnose()
 
   -- Check for performance issues
   print("5. Autocmd Performance:")
-  local ok, perf = pcall(require, "yoda.autocmd_performance")
-  if ok then
-    local report = perf.get_report()
-    if report then
-      local high_freq = {}
-      for event, data in pairs(report) do
-        if data.count > 20 then
-          table.insert(high_freq, { event = event, count = data.count, avg = data.avg_time })
-        end
-      end
-
-      if #high_freq > 0 then
-        print("   ⚠️  High frequency events:")
-        table.sort(high_freq, function(a, b)
-          return a.count > b.count
-        end)
-        for i = 1, math.min(5, #high_freq) do
-          local item = high_freq[i]
-          print(string.format("      %s: %d times, avg %.2fms", item.event, item.count, item.avg))
-        end
-      else
-        print("   ✅ No high frequency events detected")
-      end
-    end
-  else
-    print("   ⚠️  Performance tracking not available")
-  end
+  print("   ℹ️  Performance tracking removed - use :profile for diagnostics")
   print("")
 
   -- Recommendations

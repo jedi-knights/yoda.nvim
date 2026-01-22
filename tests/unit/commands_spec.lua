@@ -26,6 +26,13 @@ describe("commands", function()
       -- No-op during tests
     end
 
+    -- Mock notification adapter BEFORE loading commands
+    package.loaded["yoda-adapters.notification"] = {
+      notify = function(msg, level)
+        -- No-op during tests
+      end,
+    }
+
     -- Mock diagnostics modules BEFORE loading commands
     package.loaded["yoda-diagnostics"] = {
       run_all = function()
@@ -148,11 +155,15 @@ describe("commands", function()
       })
 
       -- Should not crash
-      local ok = pcall(function()
+      local ok, err = pcall(function()
         vim.cmd("FormatFeature")
       end)
 
-      assert.is_true(ok)
+      if not ok then
+        print("FormatFeature error: " .. tostring(err))
+      end
+
+      assert.is_true(ok, "FormatFeature should execute without error: " .. tostring(err or ""))
 
       -- Clean up
       vim.api.nvim_buf_delete(bufnr, { force = true })

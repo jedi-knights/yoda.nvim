@@ -12,10 +12,11 @@ describe("timer_manager", function()
     original_timer_start = vim.fn.timer_start
 
     timer_manager = require("yoda.timer_manager")
+    timer_manager.reset()
   end)
 
   after_each(function()
-    timer_manager.stop_all_timers()
+    timer_manager.reset()
     vim.loop.new_timer = original_loop_new_timer
     vim.fn.timer_start = original_timer_start
     package.loaded["yoda.timer_manager"] = nil
@@ -165,7 +166,9 @@ describe("timer_manager", function()
       assert.is_not_nil(stats.loop_timers)
       assert.is_not_nil(stats.vim_timers)
       assert.is_not_nil(stats.total_created)
-      assert.is_true(stats.total_created > 0, "total_created should be greater than 0, got " .. stats.total_created)
+      assert.equals(2, stats.total_created)
+      assert.equals(1, #stats.loop_timers)
+      assert.equals(1, #stats.vim_timers)
     end)
   end)
 
