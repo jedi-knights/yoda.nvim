@@ -4,6 +4,7 @@
 local M = {}
 local lsp_perf = require("yoda.lsp_performance")
 local notify = require("yoda-adapters.notification")
+local timer_manager = require("yoda.timer_manager")
 
 --- Setup LSP servers using vim.lsp.config
 function M.setup()
@@ -423,30 +424,23 @@ function M.setup()
         client.server_capabilities.documentHighlightProvider = false
 
         -- Keep document highlight disabled
-        local timer = vim.loop.new_timer()
-        if timer then
-          local timer_active = true
-          timer:start(
-            100,
-            100,
-            vim.schedule_wrap(function()
-              if not timer_active then
-                return
-              end
-              if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
-                client.server_capabilities.documentHighlightProvider = false
-              end
-            end)
-          )
+        local timer_id = "basedpyright_highlight_" .. client.id
+        local timer, id = timer_manager.create_timer(
+          function()
+            if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
+              client.server_capabilities.documentHighlightProvider = false
+            end
+          end,
+          100,
+          100,
+          timer_id
+        )
 
+        if timer then
           vim.api.nvim_create_autocmd("LspDetach", {
             callback = function(args)
-              if args.data.client_id == client.id and timer_active then
-                timer_active = false
-                if timer and not timer:is_closing() then
-                  timer:stop()
-                  timer:close()
-                end
+              if args.data.client_id == client.id then
+                timer_manager.stop_timer(id)
               end
             end,
           })
@@ -540,15 +534,17 @@ function M.setup()
     callback = function()
       autocmd_logger.log("Python_LSP_Check", { event = "DirChanged" })
 
+      local timer_id = "python_lsp_restart"
+
       -- Cancel any pending restart
-      if python_lsp_restart_timer then
+      if timer_manager.is_vim_timer_active(timer_id) then
         autocmd_logger.log("Python_LSP_Cancel_Pending", {})
-        vim.fn.timer_stop(python_lsp_restart_timer)
+        timer_manager.stop_vim_timer(timer_id)
         python_lsp_restart_timer = nil
       end
 
       -- Debounce the restart check
-      python_lsp_restart_timer = vim.fn.timer_start(1000, function()
+      python_lsp_restart_timer = timer_manager.create_vim_timer(function()
         autocmd_logger.log("Python_LSP_Debounce_Fire", {})
         python_lsp_restart_timer = nil
 
@@ -576,7 +572,7 @@ function M.setup()
         else
           autocmd_logger.log("Python_LSP_Same_Root", { root = current_root or "none" })
         end
-      end)
+      end, 1000, timer_id)
     end,
   })
 

@@ -5,6 +5,7 @@ local M = {}
 
 local gitsigns = require("yoda.integrations.gitsigns")
 local notify = require("yoda-adapters.notification")
+local timer_manager = require("yoda.timer_manager")
 
 -- Safe require with error handling
 local buffer_state_ok, buffer_state = pcall(require, "yoda.buffer.state_checker")
@@ -284,7 +285,7 @@ end
 -- Debounce state for git signs refresh
 --- Refresh git signs if gitsigns is available (debounced to prevent flickering)
 function M.refresh_git_signs()
-  gitsigns.refresh_debounced()
+  gitsigns.refresh_batched()
 end
 
 --- Refresh file explorer if Snacks explorer is available
@@ -376,13 +377,14 @@ function M.handle_debounced_buffer_refresh(buf, logger)
   end
 
   -- Cancel any pending debounce for this buffer
-  if buf_debounce[buf] then
-    pcall(vim.fn.timer_stop, buf_debounce[buf])
+  local timer_id = "buf_refresh_" .. buf
+  if timer_manager.is_vim_timer_active(timer_id) then
+    timer_manager.stop_vim_timer(timer_id)
     buf_debounce[buf] = nil
   end
 
   -- Schedule debounced operation
-  buf_debounce[buf] = vim.fn.timer_start(BUF_DEBOUNCE_DELAY, function()
+  local timer_handle = timer_manager.create_vim_timer(function()
     if not vim.api.nvim_buf_is_valid(buf) then
       if logger then
         logger.log("Refresh_Skip", { buf = buf, reason = "invalid_buffer" })
@@ -415,7 +417,9 @@ function M.handle_debounced_buffer_refresh(buf, logger)
       end
       M.refresh_git_signs()
     end)
-  end)
+  end, BUF_DEBOUNCE_DELAY, timer_id)
+
+  buf_debounce[buf] = timer_handle
 end
 
 --- Setup OpenCode integration autocmds
@@ -434,6 +438,7 @@ function M.setup_autocmds(autocmd, augroup, gitsigns, buffer_state)
     end,
   })
 
+  -- Note: FocusGained handler moved to yoda.autocmds.focus for consolidation
   -- Auto-save on OpenCode start
   autocmd("User", {
     group = augroup("YodaOpenCodeAutoSave", { clear = true }),
@@ -442,26 +447,6 @@ function M.setup_autocmds(autocmd, augroup, gitsigns, buffer_state)
     callback = function()
       vim.schedule(function()
         pcall(M.save_all_buffers)
-      end)
-    end,
-  })
-
-  -- Focus gained - refresh buffers
-  autocmd("FocusGained", {
-    group = augroup("YodaOpenCodeFocusRefresh", { clear = true }),
-    desc = "Refresh buffers and git signs when focus is gained",
-    callback = function()
-      local current_ft = vim.bo.filetype
-      if current_ft == "opencode" then
-        return
-      end
-
-      vim.schedule(function()
-        pcall(vim.cmd, "checktime")
-        if buffer_state and buffer_state.can_reload_buffer() and vim.fn.filereadable(vim.fn.expand("%")) == 1 then
-          M.refresh_buffer(vim.api.nvim_get_current_buf())
-        end
-        M.refresh_git_signs()
       end)
     end,
   })
