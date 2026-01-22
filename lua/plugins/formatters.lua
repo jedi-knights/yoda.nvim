@@ -11,14 +11,13 @@ return {
         formatters_by_ft = {
           rust = { "rustfmt" },
           lua = { "stylua" },
-          python = { "ruff_format" }, -- Ruff handles formatting, linting, and import sorting
-          javascript = { "biome", "prettier" }, -- Try biome first, fallback to prettier
+          python = { "ruff_format" },
+          javascript = { "biome", "prettier" },
           javascriptreact = { "biome", "prettier" },
           typescript = { "biome", "prettier" },
           typescriptreact = { "biome", "prettier" },
           json = { "biome", "prettier" },
           jsonc = { "biome", "prettier" },
-          cs = { "csharpier" }, -- C# formatter
         },
         format_on_save = {
           timeout_ms = 500,
@@ -137,7 +136,7 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter", "netcoredbg" },
+        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter" },
         automatic_installation = true,
         handlers = {},
       })
