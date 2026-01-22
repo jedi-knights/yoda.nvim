@@ -71,7 +71,6 @@
 ## 🧑‍💻 For Developers
 
 ### Language-Specific
-- **[csharp_development.md](csharp_development.md)** - C# development setup
 - **[javascript_development.md](javascript_development.md)** - JavaScript/TypeScript setup
 - **[PYTHON_DEBUGGING.md](PYTHON_DEBUGGING.md)** - Python debugging with DAP
 
