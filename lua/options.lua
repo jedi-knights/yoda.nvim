@@ -6,7 +6,7 @@
 -- ============================================================================
 
 vim.opt.number = true
-vim.opt.relativenumber = false
+vim.opt.relativenumber = true
 vim.opt.mouse = "a"
 vim.opt.showmode = false
 vim.opt.clipboard = ""
