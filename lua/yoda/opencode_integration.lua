@@ -18,6 +18,9 @@ end
 local buf_debounce = {}
 local BUF_DEBOUNCE_DELAY = 150 -- milliseconds
 
+-- Recursion guard for FileChangedShell events
+local file_changed_in_progress = false
+
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
 --- @return boolean should_skip Whether to skip refreshing this file
@@ -252,11 +255,13 @@ local function should_refresh_buffer(buf)
 end
 
 --- Refresh single buffer with checktime (Complexity: 1)
+--- Uses noautocmd to prevent FileChangedShell recursion
 --- @param buf number Buffer handle
 --- @return boolean success Whether refresh succeeded
 local function refresh_buffer_checktime(buf)
   local ok = pcall(function()
     vim.api.nvim_buf_call(buf, function()
+      -- noautocmd prevents triggering FileChangedShell during checktime
       vim.cmd("silent noautocmd checktime")
     end)
   end)
@@ -301,18 +306,10 @@ end
 --- Complete refresh cycle after OpenCode edits files
 function M.complete_refresh()
   vim.schedule(function()
-    -- Force global checktime without triggering autocmds
-    pcall(vim.cmd, "silent noautocmd checktime")
-
-    -- Refresh current buffer
-    local current_buf = vim.api.nvim_get_current_buf()
-    M.refresh_buffer(current_buf)
-
-    -- Refresh all buffers
+    -- Refresh all buffers without triggering recursive autocmds
     M.refresh_all_buffers()
 
-    -- Refresh integrations
-    M.refresh_git_signs()
+    -- Refresh integrations (git signs handled by autocmd)
     M.refresh_explorer()
 
     -- Force redraw to ensure UI is updated
@@ -425,9 +422,7 @@ end
 --- Setup OpenCode integration autocmds
 --- @param autocmd function vim.api.nvim_create_autocmd
 --- @param augroup function vim.api.nvim_create_augroup
---- @param gitsigns table GitSigns module
---- @param buffer_state table Buffer state checker module
-function M.setup_autocmds(autocmd, augroup, gitsigns, buffer_state)
+function M.setup_autocmds(autocmd, augroup)
   -- OpenCode exit handler
   autocmd("User", {
     group = augroup("YodaOpenCodeIntegration", { clear = true }),
@@ -451,37 +446,55 @@ function M.setup_autocmds(autocmd, augroup, gitsigns, buffer_state)
     end,
   })
 
-  -- Buffer written - refresh git signs
+  -- Consolidated git refresh autocmds
+  local git_refresh_group = augroup("YodaGitRefresh", { clear = true })
+
+  -- Refresh on buffer write
   autocmd("BufWritePost", {
-    group = augroup("YodaGitSignsWriteRefresh", { clear = true }),
+    group = git_refresh_group,
     desc = "Refresh git signs after buffer is written",
     callback = function()
-      M.refresh_git_signs()
+      if vim.bo.buftype == "" then
+        M.refresh_git_signs()
+      end
     end,
   })
 
-  -- File changed externally
+  -- Refresh on external file changes
   autocmd("FileChangedShell", {
-    group = augroup("YodaOpenCodeFileChange", { clear = true }),
-    desc = "Handle files changed by external tools",
+    group = git_refresh_group,
+    desc = "Refresh buffer and git signs when files changed externally",
     callback = function(args)
+      -- Prevent recursive FileChangedShell events
+      if file_changed_in_progress then
+        return
+      end
+
+      file_changed_in_progress = true
+
       vim.schedule(function()
-        if args.buf and vim.api.nvim_buf_is_valid(args.buf) then
+        if args.buf and vim.api.nvim_buf_is_valid(args.buf) and vim.bo[args.buf].buftype == "" then
           M.refresh_buffer(args.buf)
+          M.refresh_git_signs()
         end
-        M.complete_refresh()
+
+        -- Reset guard after operation completes
+        vim.schedule(function()
+          file_changed_in_progress = false
+        end)
       end)
     end,
   })
 
-  -- Post-process file changes
-  autocmd("FileChangedShellPost", {
-    group = augroup("YodaOpenCodeFileChangePost", { clear = true }),
-    desc = "Post-process file changes from external tools",
+  -- Refresh on focus gained
+  autocmd("FocusGained", {
+    group = git_refresh_group,
+    desc = "Refresh git signs when Neovim gains focus",
     callback = function()
       vim.schedule(function()
-        vim.cmd("redraw!")
-        M.refresh_git_signs()
+        if vim.bo.buftype == "" then
+          M.refresh_git_signs()
+        end
       end)
     end,
   })
