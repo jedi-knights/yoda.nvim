@@ -22,28 +22,33 @@ autocmd("BufReadPre", {
 
 performance_autocmds.setup_all(autocmd, augroup)
 
-autocmd("BufEnter", {
-  group = augroup("YodaBufEnter", { clear = true }),
-  desc = "Handle buffer enter - close alpha for real files",
+local function should_close_alpha_for_buffer(buf)
+  local buftype = vim.bo[buf].buftype
+  local filetype = vim.bo[buf].filetype
+  local bufname = vim.api.nvim_buf_get_name(buf)
+
+  if buftype ~= "" and buftype ~= "help" then
+    return false
+  end
+
+  if filetype == "opencode" or filetype == "alpha" or filetype == "" then
+    return false
+  end
+
+  if bufname == "" or bufname:match("snacks_") or bufname:match("^%[.-%]$") then
+    return false
+  end
+
+  return buffer_state.is_real_file_buffer(buf)
+end
+
+autocmd({ "BufEnter", "BufReadPost", "BufNewFile", "WinEnter" }, {
+  group = augroup("YodaAlphaClose", { clear = true }),
+  desc = "Close alpha dashboard when opening real files",
   callback = function(args)
-    local buf = args.buf
-    local buftype = vim.bo[buf].buftype
-    local filetype = vim.bo[buf].filetype
-    local bufname = vim.api.nvim_buf_get_name(buf)
+    local buf = args.buf or vim.api.nvim_get_current_buf()
 
-    if buftype ~= "" and buftype ~= "help" then
-      return
-    end
-
-    if filetype == "opencode" or filetype == "alpha" then
-      return
-    end
-
-    if bufname == "" or bufname:match("snacks_") or bufname:match("^%[.-%]$") then
-      return
-    end
-
-    if buffer_state.is_real_file_buffer(buf) then
+    if should_close_alpha_for_buffer(buf) then
       vim.schedule(function()
         alpha_manager.close_all_alpha_buffers()
       end)
@@ -51,27 +56,31 @@ autocmd("BufEnter", {
   end,
 })
 
-autocmd({ "FocusGained", "BufWritePost", "FileChangedShell" }, {
+autocmd({ "BufWritePost", "FileChangedShell" }, {
   group = augroup("YodaGitRefresh", { clear = true }),
-  desc = "Refresh git signs on focus/write/external changes",
+  desc = "Refresh git signs on write/external changes",
   callback = function()
     if vim.bo.buftype == "" then
       vim.schedule(function()
-        gitsigns.refresh()
+        gitsigns.refresh_batched()
       end)
     end
   end,
 })
 
 autocmd("FocusGained", {
-  group = augroup("YodaFocusRefresh", { clear = true }),
-  desc = "Check for external file changes on focus",
+  group = augroup("YodaFocusGained", { clear = true }),
+  desc = "Handle focus gained - check for file changes and refresh git signs",
   callback = function()
-    if vim.bo.filetype ~= "opencode" then
-      vim.schedule(function()
+    vim.schedule(function()
+      if vim.bo.filetype ~= "opencode" then
         pcall(vim.cmd, "checktime")
-      end)
-    end
+      end
+
+      if vim.bo.buftype == "" then
+        gitsigns.refresh_batched()
+      end
+    end)
   end,
 })
 
@@ -108,37 +117,6 @@ autocmd("VimEnter", {
   end,
 })
 
-autocmd({ "BufReadPost", "BufNewFile" }, {
-  group = augroup("YodaAlphaCloseOnFile", { clear = true }),
-  desc = "Close alpha when opening files",
-  callback = function(args)
-    local filetype = vim.bo[args.buf].filetype
-    local bufname = vim.api.nvim_buf_get_name(args.buf)
-
-    if filetype == "alpha" or filetype == "" or bufname == "" then
-      return
-    end
-
-    vim.schedule(function()
-      alpha_manager.close_all_alpha_buffers()
-    end)
-  end,
-})
-
-autocmd("WinEnter", {
-  group = augroup("YodaAlphaCloseOnWinEnter", { clear = true }),
-  desc = "Close alpha when entering non-alpha windows",
-  callback = function()
-    local current_filetype = vim.bo.filetype
-
-    if current_filetype ~= "alpha" and current_filetype ~= "" and vim.api.nvim_buf_get_name(0) ~= "" then
-      vim.schedule(function()
-        alpha_manager.close_all_alpha_buffers()
-      end)
-    end
-  end,
-})
-
 autocmd("BufReadPost", {
   group = augroup("YodaRestoreCursor", { clear = true }),
   desc = "Restore cursor to last position",
@@ -158,11 +136,23 @@ autocmd("BufReadPost", {
 
 autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
-  desc = "Resize splits and recenter alpha",
+  desc = "Resize splits equally and recenter alpha dashboard",
   callback = function()
-    vim.cmd("tabdo wincmd =")
-
     vim.schedule(function()
+      for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
+        local current_tab = vim.api.nvim_get_current_tabpage()
+
+        if tabpage ~= current_tab then
+          vim.api.nvim_set_current_tabpage(tabpage)
+        end
+
+        pcall(vim.cmd, "wincmd =")
+
+        if tabpage ~= current_tab then
+          vim.api.nvim_set_current_tabpage(current_tab)
+        end
+      end
+
       alpha_manager.recenter_alpha_dashboard()
     end)
   end,
@@ -176,16 +166,44 @@ autocmd("FileType", {
   end,
 })
 
+local git_commit_augroup = augroup("YodaGitCommitPerformance", { clear = true })
+
 autocmd("FileType", {
-  group = augroup("YodaGitCommitPerformance", { clear = true }),
+  group = git_commit_augroup,
   desc = "Disable expensive autocmds for git commit buffers",
   pattern = { "gitcommit", "NeogitCommitMessage" },
-  callback = function()
-    vim.cmd("autocmd! TextChanged,TextChangedI,TextChangedP <buffer>")
-    vim.cmd("autocmd! CursorMoved,CursorMovedI <buffer>")
-    vim.cmd("autocmd! InsertEnter,InsertLeave <buffer>")
-    vim.cmd("autocmd! BufWritePost <buffer>")
-    vim.cmd("autocmd! CompleteChanged,CompleteDone <buffer>")
+  callback = function(args)
+    local bufnr = args.buf
+
+    vim.api.nvim_clear_autocmds({
+      group = git_commit_augroup,
+      buffer = bufnr,
+      event = { "TextChanged", "TextChangedI", "TextChangedP" },
+    })
+
+    vim.api.nvim_clear_autocmds({
+      group = git_commit_augroup,
+      buffer = bufnr,
+      event = { "CursorMoved", "CursorMovedI" },
+    })
+
+    vim.api.nvim_clear_autocmds({
+      group = git_commit_augroup,
+      buffer = bufnr,
+      event = { "InsertEnter", "InsertLeave" },
+    })
+
+    vim.api.nvim_clear_autocmds({
+      group = git_commit_augroup,
+      buffer = bufnr,
+      event = "BufWritePost",
+    })
+
+    vim.api.nvim_clear_autocmds({
+      group = git_commit_augroup,
+      buffer = bufnr,
+      event = { "CompleteChanged", "CompleteDone" },
+    })
 
     vim.opt_local.timeoutlen = 50
   end,
@@ -194,13 +212,20 @@ autocmd("FileType", {
 autocmd("LspAttach", {
   group = augroup("YodaGitCommitNoLSP", { clear = true }),
   desc = "Prevent LSP from attaching to git commit buffers",
-  pattern = { "gitcommit", "NeogitCommitMessage" },
   callback = function(args)
     local bufnr = args.buf
+    local filetype = vim.bo[bufnr].filetype
+
+    if not vim.tbl_contains({ "gitcommit", "NeogitCommitMessage" }, filetype) then
+      return
+    end
+
     local client = vim.lsp.get_client_by_id(args.data.client_id)
     if client then
       vim.schedule(function()
-        vim.lsp.buf_detach_client(bufnr, client.id)
+        if vim.api.nvim_buf_is_valid(bufnr) then
+          vim.lsp.buf_detach_client(bufnr, client.id)
+        end
       end)
     end
   end,
