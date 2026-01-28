@@ -14,6 +14,7 @@ local timer_manager = require("yoda.timer_manager")
 local RESIZE_DEBOUNCE_DELAY = 300
 local ALPHA_STARTUP_DELAY = 200
 local GIT_COMMIT_TIMEOUT = 50
+local BUFENTER_DEBOUNCE_DELAY = 100
 
 filetype_detection.setup_all(autocmd, augroup)
 
@@ -53,13 +54,31 @@ end
 
 autocmd("BufEnter", {
   group = augroup("YodaAlphaClose", { clear = true }),
-  desc = "Close alpha dashboard when opening real files (BufEnter is sufficient - fires on all buffer switches)",
+  desc = "Close alpha dashboard when opening real files (debounced to reduce overhead on rapid buffer switches)",
   callback = function(args)
+    -- Early exit: skip if no alpha buffers exist
+    if not alpha_manager.has_alpha_buffer() then
+      return
+    end
+
     local buf = args.buf or vim.api.nvim_get_current_buf()
 
-    if should_close_alpha_for_buffer(buf) then
-      alpha_manager.close_all_alpha_buffers()
+    -- Debounce to reduce overhead during rapid buffer switching
+    local timer_id = "bufenter_alpha_check"
+    if timer_manager.is_vim_timer_active(timer_id) then
+      timer_manager.stop_vim_timer(timer_id)
     end
+
+    timer_manager.create_vim_timer(function()
+      -- Recheck alpha exists before expensive should_close check
+      if not alpha_manager.has_alpha_buffer() then
+        return
+      end
+
+      if vim.api.nvim_buf_is_valid(buf) and should_close_alpha_for_buffer(buf) then
+        alpha_manager.close_all_alpha_buffers()
+      end
+    end, BUFENTER_DEBOUNCE_DELAY, timer_id)
   end,
 })
 
