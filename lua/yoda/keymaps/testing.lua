@@ -38,7 +38,12 @@ map("n", "<leader>tv", function()
 end, { desc = "Test: View test output" })
 
 map("n", "<leader>tO", function()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    notify.notify("yoda-window.utils not available", "error")
+    return
+  end
+
   local found = win_utils.focus_window(function(win, buf, buf_name, ft)
     return buf_name:match("Neotest Output Panel") or ft == "neotest-output-panel"
   end)
@@ -48,7 +53,12 @@ map("n", "<leader>tO", function()
 end, { desc = "Test: Focus output panel" })
 
 map("n", "<leader>tF", function()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    notify.notify("yoda-window.utils not available", "error")
+    return
+  end
+
   local found = win_utils.focus_window(function(win, buf, buf_name, ft)
     return ft == "neotest-summary"
   end)
