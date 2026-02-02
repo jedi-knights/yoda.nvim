@@ -6,7 +6,10 @@ local function map(mode, lhs, rhs, opts)
 end
 
 local function get_snacks_explorer_win()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    return nil, nil
+  end
   return win_utils.find_snacks_explorer()
 end
 
@@ -25,7 +28,11 @@ map("n", "<leader>eo", function()
 end, { desc = "Explorer: Open (only if closed)" })
 
 map("n", "<leader>ef", function()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    notify.notify("yoda-window.utils not available", "error")
+    return
+  end
 
   local all_explorer_wins = win_utils.find_all_windows(function(win, buf, buf_name, ft)
     return ft == "snacks_picker_list"
@@ -38,15 +45,20 @@ map("n", "<leader>ef", function()
   if #all_explorer_wins > 0 then
     local list_win = nil
     for _, win_data in ipairs(all_explorer_wins) do
-      local ft = vim.bo[win_data.buf].filetype
-      if ft == "snacks_picker_list" then
-        list_win = win_data.win
-        break
+      if vim.api.nvim_buf_is_valid(win_data.buf) then
+        local ft = vim.bo[win_data.buf].filetype
+        if ft == "snacks_picker_list" then
+          list_win = win_data.win
+          break
+        end
       end
     end
 
-    if list_win then
-      vim.api.nvim_set_current_win(list_win)
+    if list_win and vim.api.nvim_win_is_valid(list_win) then
+      local ok_set = pcall(vim.api.nvim_set_current_win, list_win)
+      if not ok_set then
+        notify.notify("Could not focus explorer window", "warn")
+      end
     end
     return
   end
@@ -60,7 +72,12 @@ map("n", "<leader>ef", function()
 end, { desc = "Explorer: Focus or open" })
 
 map("n", "<leader>ec", function()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    notify.notify("yoda-window.utils not available", "error")
+    return
+  end
+
   local count = win_utils.close_windows(function(win, buf, buf_name, ft)
     return ft == "snacks_picker_list"
       or ft == "snacks_picker_input"
@@ -109,7 +126,12 @@ map("n", "<leader>e?", function()
 end, { desc = "Explorer: Show help" })
 
 map("n", "<leader>ed", function()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    notify.notify("yoda-window.utils not available", "error")
+    return
+  end
+
   local found_win, found_buf = win_utils.find_snacks_explorer()
 
   local debug_info = {

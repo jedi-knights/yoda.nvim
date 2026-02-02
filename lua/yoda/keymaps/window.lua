@@ -6,7 +6,12 @@ local function map(mode, lhs, rhs, opts)
 end
 
 map("n", "<leader>xt", function()
-  local win_utils = require("yoda-window.utils")
+  local ok, win_utils = pcall(require, "yoda-window.utils")
+  if not ok then
+    notify.notify("yoda-window.utils not available", "error")
+    return
+  end
+
   win_utils.focus_window(function(win, buf, buf_name, ft)
     return buf_name:match("Trouble")
   end)
