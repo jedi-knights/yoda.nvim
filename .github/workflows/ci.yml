@@ -28,11 +28,6 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        nvim-version:
-          - stable
-          - nightly
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,7 +36,7 @@ jobs:
         uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
-          version: ${{ matrix.nvim-version }}
+          version: stable
 
       - name: Show Neovim version
         run: nvim --version
@@ -53,7 +48,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.nvim-version }}
+          name: test-results
           path: /tmp/yoda_test_output.txt
           if-no-files-found: warn
 
