@@ -4,7 +4,7 @@
 return {
   -- Leap - Fast motion between visible targets
   {
-    "ggandor/leap.nvim",
+    "https://codeberg.org/andyg/leap.nvim",
     event = "VeryLazy",
     keys = {
       { "s", "<Plug>(leap-forward)", mode = { "n", "x", "o" }, desc = "Leap forward" },
