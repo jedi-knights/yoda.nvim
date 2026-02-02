@@ -21,7 +21,7 @@ return {
           keymap = "<leader>tt",
           enable_keymap = true,
           picker = "snacks",
-          debug = true, -- Enable debug logging
+          debug = false,
         })
       end)
 
