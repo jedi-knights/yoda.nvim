@@ -239,6 +239,26 @@ autocmd("LspAttach", {
   end,
 })
 
+autocmd({ "BufEnter", "FocusGained", "WinEnter" }, {
+  group = augroup("YodaNumberToggle", { clear = true }),
+  desc = "Switch to relative line numbers when buffer is focused",
+  callback = function()
+    if vim.wo.number then
+      vim.wo.relativenumber = true
+    end
+  end,
+})
+
+autocmd({ "BufLeave", "FocusLost", "WinLeave" }, {
+  group = augroup("YodaNumberToggle", { clear = false }),
+  desc = "Switch to absolute line numbers when buffer loses focus",
+  callback = function()
+    if vim.wo.number then
+      vim.wo.relativenumber = false
+    end
+  end,
+})
+
 local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
 if ok then
   opencode_integration.setup_autocmds(autocmd, augroup)
