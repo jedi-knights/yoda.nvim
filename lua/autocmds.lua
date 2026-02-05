@@ -6,6 +6,7 @@ local filetype_detection = require("yoda.filetype.detection")
 local performance_autocmds = require("yoda.performance.autocmds")
 local alpha_manager = require("yoda.ui.alpha_manager")
 local buffer_state = require("yoda.buffer.state_checker")
+local buffer_cache = require("yoda.buffer.type_cache")
 local gitsigns = require("yoda.integrations.gitsigns")
 local filetype_settings = require("yoda.filetype.settings")
 local notify = require("yoda-adapters.notification")
@@ -33,9 +34,10 @@ local function should_close_alpha_for_buffer(buf)
     return false
   end
 
-  local buftype = vim.bo[buf].buftype
-  local filetype = vim.bo[buf].filetype
-  local bufname = vim.api.nvim_buf_get_name(buf)
+  -- Use cached buffer properties for performance
+  local buftype = buffer_cache.get_buftype(buf)
+  local filetype = buffer_cache.get_filetype(buf)
+  local bufname = buffer_cache.get_bufname(buf)
 
   if buftype ~= "" and buftype ~= "help" then
     return false
@@ -45,11 +47,11 @@ local function should_close_alpha_for_buffer(buf)
     return false
   end
 
-  if bufname == "" or bufname:match("snacks_") or bufname:match("^%[.-%]$") then
+  if bufname == "" or buffer_cache.is_snacks_buffer(buf) or buffer_cache.get_bufname(buf):match("^%[.-%]$") then
     return false
   end
 
-  return buffer_state.is_real_file_buffer(buf)
+  return buffer_cache.is_real_file_buffer(buf)
 end
 
 autocmd("BufEnter", {
@@ -259,8 +261,10 @@ autocmd({ "BufLeave", "FocusLost", "WinLeave" }, {
   end,
 })
 
+-- Setup OpenCode integration autocmds only if OpenCode is installed
+-- This defers loading the heavy notification and gitsigns adapters until needed
 local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
-if ok then
+if ok and opencode_integration.is_available() then
   opencode_integration.setup_autocmds(autocmd, augroup)
 end
 
@@ -317,3 +321,7 @@ vim.cmd([[
   cnoreabbrev <expr> bd getcmdtype() == ':' && getcmdline() == 'bd' ? 'Bd' : 'bd'
   cnoreabbrev <expr> bdelete getcmdtype() == ':' && getcmdline() == 'bdelete' ? 'Bd' : 'bdelete'
 ]])
+
+-- Setup buffer type caching
+buffer_cache.setup_autocmds()
+buffer_cache.setup_commands()

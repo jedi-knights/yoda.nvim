@@ -91,18 +91,36 @@ require("lazy").setup({
     notify = false,
   },
   performance = {
+    cache = {
+      enabled = true,
+    },
+    reset_packpath = true,
     rtp = {
-      reset = false,
+      reset = true,
+      paths = {},
       disabled_plugins = {
         "gzip",
         "matchit",
+        "matchparen",
         "netrwPlugin",
         "rplugin",
         "tarPlugin",
         "tohtml",
         "tutor",
         "zipPlugin",
+        "spellfile",
+        "2html_plugin",
+        "getscript",
+        "getscriptPlugin",
+        "logipat",
+        "rrhelper",
+        "vimball",
+        "vimballPlugin",
       },
     },
+  },
+  ui = {
+    border = "rounded",
+    backdrop = 100,
   },
 })

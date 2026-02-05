@@ -61,12 +61,10 @@ return {
   -- Alpha - Dashboard
   {
     "goolord/alpha-nvim",
-    event = function()
-      -- Only load alpha if no files were opened at startup
-      if vim.fn.argc() == 0 then
-        return "VimEnter"
-      end
-      return nil
+    lazy = false,
+    priority = 50,
+    cond = function()
+      return vim.fn.argc() == 0
     end,
     config = function()
       local alpha = require("alpha")
@@ -158,9 +156,9 @@ return {
   -- Noice - Enhanced UI components (minimal config for LSP only)
   {
     "folke/noice.nvim",
-    priority = 1200, -- Load early to ensure vim.notify is set up before other plugins
-    event = "VimEnter", -- Load earlier than VeryLazy to avoid conflicts
-    enabled = true, -- Re-enabled: works with fzf-lua (fzf-lua doesn't conflict like Snacks/Telescope)
+    lazy = false,
+    priority = 1200,
+    enabled = true,
     dependencies = {
       "MunifTanjim/nui.nvim",
     },

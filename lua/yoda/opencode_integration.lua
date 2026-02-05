@@ -3,15 +3,35 @@
 
 local M = {}
 
-local gitsigns = require("yoda.integrations.gitsigns")
-local notify = require("yoda-adapters.notification")
-local timer_manager = require("yoda.timer_manager")
+-- Lazy-loaded dependencies (loaded on first use)
+local gitsigns
+local notify
+local timer_manager
+local buffer_state
 
--- Safe require with error handling
-local buffer_state_ok, buffer_state = pcall(require, "yoda.buffer.state_checker")
-if not buffer_state_ok then
-  vim.notify("Failed to load buffer.state_checker: " .. tostring(buffer_state), vim.log.levels.ERROR)
-  buffer_state = nil
+-- Track if module has been initialized
+local _initialized = false
+
+--- Lazy load dependencies on first use
+local function ensure_dependencies()
+  if _initialized then
+    return
+  end
+
+  gitsigns = require("yoda.integrations.gitsigns")
+  notify = require("yoda-adapters.notification")
+  timer_manager = require("yoda.timer_manager")
+
+  -- Safe require with error handling
+  local buffer_state_ok, result = pcall(require, "yoda.buffer.state_checker")
+  if not buffer_state_ok then
+    vim.notify("Failed to load buffer.state_checker: " .. tostring(result), vim.log.levels.ERROR)
+    buffer_state = nil
+  else
+    buffer_state = result
+  end
+
+  _initialized = true
 end
 
 -- Debounce state for buffer operations
@@ -47,6 +67,7 @@ end
 --- Handle OpenCode exit
 --- This function is called when OpenCode window is closed
 function M.on_opencode_exit()
+  ensure_dependencies()
   -- Auto-save all modified buffers
   M.save_all_buffers()
 end
@@ -126,6 +147,7 @@ end
 --- Save all modified buffers with progress notification (complexity: 3)
 --- @return boolean success Whether all buffers were saved
 function M.save_all_buffers()
+  ensure_dependencies()
   local saved_count = 0
   local error_count = 0
 
@@ -166,6 +188,7 @@ local refresh_in_progress = {}
 
 --- @return boolean success Whether the buffer was refreshed
 function M.refresh_buffer(buf)
+  ensure_dependencies()
   if not vim.api.nvim_buf_is_valid(buf) then
     return false
   end
@@ -290,6 +313,7 @@ end
 -- Debounce state for git signs refresh
 --- Refresh git signs if gitsigns is available (debounced to prevent flickering)
 function M.refresh_git_signs()
+  ensure_dependencies()
   gitsigns.refresh_batched()
 end
 
@@ -305,6 +329,7 @@ end
 
 --- Complete refresh cycle after OpenCode edits files
 function M.complete_refresh()
+  ensure_dependencies()
   vim.schedule(function()
     -- Refresh all buffers without triggering recursive autocmds
     M.refresh_all_buffers()
@@ -322,6 +347,8 @@ function M.setup()
   if not M.is_available() then
     return
   end
+
+  ensure_dependencies()
 
   -- Create user commands with auto-save functionality
   local opencode_commands = {
@@ -361,6 +388,7 @@ end
 --- @param buf number Buffer number
 --- @param logger table Optional logger instance
 function M.handle_debounced_buffer_refresh(buf, logger)
+  ensure_dependencies()
   if not vim.api.nvim_buf_is_valid(buf) then
     return
   end
@@ -423,6 +451,7 @@ end
 --- @param autocmd function vim.api.nvim_create_autocmd
 --- @param augroup function vim.api.nvim_create_augroup
 function M.setup_autocmds(autocmd, augroup)
+  ensure_dependencies()
   -- OpenCode exit handler
   autocmd("User", {
     group = augroup("YodaOpenCodeIntegration", { clear = true }),
