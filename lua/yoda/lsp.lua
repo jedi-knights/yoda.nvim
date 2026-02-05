@@ -237,40 +237,9 @@ function M.setup()
         config.settings.python.analysis.extraPaths = python_paths
       end
 
-      vim.schedule(function()
-        local venv_start_time = vim.loop.hrtime()
-        local possible_venv_paths = {
-          join_path(root_dir, ".venv", "bin", "python"),
-          join_path(root_dir, "venv", "bin", "python"),
-          join_path(root_dir, "env", "bin", "python"),
-          join_path(vim.fn.getcwd(), ".venv", "bin", "python"),
-          join_path(vim.fn.getcwd(), "venv", "bin", "python"),
-          join_path(vim.fn.getcwd(), "env", "bin", "python"),
-        }
-
-        local found_venv = false
-        for _, venv_python in ipairs(possible_venv_paths) do
-          if vim.fn.executable(venv_python) == 1 then
-            local clients = vim.lsp.get_clients({ name = "basedpyright" })
-            for _, client in ipairs(clients) do
-              if client.config.root_dir == root_dir then
-                client.config.settings.basedpyright.analysis.pythonPath = venv_python
-                client.config.settings.python.pythonPath = venv_python
-                client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
-                notify.notify(string.format("Python LSP: Using venv at %s", venv_python), "info")
-              end
-            end
-            found_venv = true
-            lsp_perf.track_venv_detection(root_dir, venv_start_time, true)
-            return
-          end
-        end
-
-        if not found_venv then
-          lsp_perf.track_venv_detection(root_dir, venv_start_time, false)
-          notify.notify("Python LSP: No venv found, using system Python", "info")
-        end
-      end)
+      -- Use async venv detection for better performance
+      local python_venv = require("yoda.python_venv")
+      python_venv.detect_and_apply(root_dir)
     end,
   })
 
@@ -579,6 +548,10 @@ function M.setup()
   vim.schedule(ensure_debug_commands)
 
   lsp_perf.setup_commands()
+
+  -- Setup Python venv commands
+  local python_venv = require("yoda.python_venv")
+  python_venv.setup_commands()
 end
 
 --- Setup debug commands for LSP troubleshooting

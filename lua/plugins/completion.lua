@@ -33,6 +33,7 @@ return {
           draw = {
             columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } },
           },
+          max_height = 15,
         },
         ghost_text = {
           enabled = true,
@@ -42,7 +43,7 @@ return {
           show_on_x_blocked_trigger_characters = { " ", "\n", "\t" },
         },
         list = {
-          max_items = 200,
+          max_items = 50,
         },
       },
 
@@ -60,11 +61,20 @@ return {
         providers = {
           lsp = {
             score_offset = 100,
-            max_items = 200,
+            max_items = 50,
+            async = true,
+            timeout_ms = 500,
           },
           buffer = {
             score_offset = -3,
+            max_items = 5,
+            min_keyword_length = 3,
+          },
+          path = {
             max_items = 10,
+          },
+          snippets = {
+            max_items = 15,
           },
         },
       },

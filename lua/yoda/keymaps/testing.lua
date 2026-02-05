@@ -103,22 +103,7 @@ map("n", "<leader>tS", function()
   end
 end, { desc = "Test: Show environment status" })
 
-map("n", "<leader>tt", function()
-  local ok, pytest_atlas = pcall(require, "pytest-atlas")
-  if not ok then
-    notify.notify("pytest-atlas not loaded: " .. tostring(pytest_atlas), "error")
-    return
-  end
-
-  local success, err = pcall(pytest_atlas.run_tests)
-  if not success then
-    notify.notify("pytest-atlas error: " .. tostring(err), "error")
-    vim.notify("Debug info:\n" .. vim.inspect({
-      snacks_loaded = pcall(require, "snacks.picker"),
-      cwd = vim.fn.getcwd(),
-    }), vim.log.levels.DEBUG)
-  end
-end, { desc = "Test: Run pytest with configuration picker" })
+-- Note: <leader>tt keymap is now defined in lua/plugins/testing.lua for lazy loading
 
 map("n", "<leader>tL", function()
   local ok, logger = pcall(require, "pytest-atlas.logger")

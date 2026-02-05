@@ -5,7 +5,22 @@ return {
   -- Pytest Atlas - Pytest runner with environment/marker selection
   {
     "ocrosby/pytest-atlas.nvim",
-    lazy = false,
+    lazy = true,
+    keys = {
+      {
+        "<leader>tt",
+        function()
+          local ok, pytest_atlas = pcall(require, "pytest-atlas")
+          if ok then
+            pytest_atlas.run_tests()
+          else
+            vim.notify("Failed to load pytest-atlas: " .. tostring(pytest_atlas), vim.log.levels.ERROR)
+          end
+        end,
+        desc = "Test: Run pytest with picker",
+      },
+    },
+    cmd = { "PytestAtlasRun", "PytestAtlasStatus" },
     dependencies = {
       "folke/snacks.nvim",
     },
@@ -19,7 +34,7 @@ return {
       local success, err = pcall(function()
         pytest_atlas.setup({
           keymap = "<leader>tt",
-          enable_keymap = true,
+          enable_keymap = false,
           picker = "snacks",
           debug = false,
         })

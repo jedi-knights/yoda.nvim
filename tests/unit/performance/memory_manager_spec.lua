@@ -1,0 +1,173 @@
+local helpers = require("tests.helpers")
+
+describe("memory_manager", function()
+  local memory_manager
+
+  before_each(function()
+    package.loaded["yoda.performance.memory_manager"] = nil
+    memory_manager = require("yoda.performance.memory_manager")
+  end)
+
+  after_each(function()
+    memory_manager.cleanup()
+  end)
+
+  describe("setup()", function()
+    it("initializes with default config", function()
+      memory_manager.setup()
+      local stats = memory_manager.get_stats()
+      assert.is_not_nil(stats)
+      assert.equals(0, stats.gc_count)
+    end)
+
+    it("accepts custom config", function()
+      memory_manager.setup({
+        gc_interval = 60000,
+        memory_threshold_mb = 100,
+        auto_gc_enabled = false,
+      })
+      local stats = memory_manager.get_stats()
+      assert.equals(false, stats.auto_gc_enabled)
+    end)
+
+    it("creates user commands", function()
+      memory_manager.setup()
+      local commands = vim.api.nvim_get_commands({})
+      assert.is_not_nil(commands.MemoryGC)
+      assert.is_not_nil(commands.MemoryStats)
+    end)
+  end)
+
+  describe("start() and stop()", function()
+    it("starts periodic GC timer", function()
+      memory_manager.setup({ auto_gc_enabled = true })
+      memory_manager.start()
+      memory_manager.stop()
+    end)
+
+    it("stops GC timer when called", function()
+      memory_manager.setup({ auto_gc_enabled = true })
+      memory_manager.start()
+      memory_manager.stop()
+    end)
+
+    it("does not start timer when already started", function()
+      memory_manager.setup({ auto_gc_enabled = true })
+      memory_manager.start()
+      memory_manager.start()
+      memory_manager.stop()
+    end)
+  end)
+
+  describe("force_gc()", function()
+    it("runs garbage collection", function()
+      memory_manager.setup()
+      local freed = memory_manager.force_gc()
+      assert.is_number(freed)
+      assert.is_true(freed >= 0)
+    end)
+
+    it("updates metrics after GC", function()
+      memory_manager.setup()
+      memory_manager.force_gc()
+      local stats = memory_manager.get_stats()
+      assert.equals(1, stats.gc_count)
+      assert.is_number(stats.avg_freed_mb)
+    end)
+
+    it("tracks multiple GC runs", function()
+      memory_manager.setup()
+      memory_manager.force_gc()
+      memory_manager.force_gc()
+      memory_manager.force_gc()
+      local stats = memory_manager.get_stats()
+      assert.equals(3, stats.gc_count)
+    end)
+  end)
+
+  describe("get_stats()", function()
+    it("returns current memory stats", function()
+      memory_manager.setup()
+      local stats = memory_manager.get_stats()
+      assert.is_number(stats.current_memory_mb)
+      assert.equals(0, stats.gc_count)
+      assert.equals("never", stats.last_gc_ago)
+    end)
+
+    it("shows average freed memory after GC runs", function()
+      memory_manager.setup()
+      memory_manager.force_gc()
+      memory_manager.force_gc()
+      local stats = memory_manager.get_stats()
+      assert.is_number(stats.avg_freed_mb)
+      assert.is_true(stats.avg_freed_mb >= 0)
+    end)
+
+    it("formats time since last GC", function()
+      memory_manager.setup()
+      memory_manager.force_gc()
+      local stats = memory_manager.get_stats()
+      assert.is_not_nil(stats.last_gc_ago)
+      assert.is_string(stats.last_gc_ago)
+      assert.is_not.equals("never", stats.last_gc_ago)
+    end)
+  end)
+
+  describe("cleanup()", function()
+    it("stops timer and resets metrics", function()
+      memory_manager.setup({ auto_gc_enabled = true })
+      memory_manager.start()
+      memory_manager.force_gc()
+      memory_manager.cleanup()
+      local stats = memory_manager.get_stats()
+      assert.equals(0, stats.gc_count)
+    end)
+
+    it("can be called multiple times safely", function()
+      memory_manager.setup()
+      memory_manager.cleanup()
+      memory_manager.cleanup()
+    end)
+  end)
+
+  describe("user commands", function()
+    it("MemoryGC runs manual GC", function()
+      memory_manager.setup()
+      vim.cmd("MemoryGC")
+      local stats = memory_manager.get_stats()
+      assert.equals(1, stats.gc_count)
+    end)
+
+    it("MemoryStats displays stats", function()
+      memory_manager.setup()
+      memory_manager.force_gc()
+      local ok = pcall(vim.cmd, "MemoryStats")
+      assert.is_true(ok)
+    end)
+  end)
+
+  describe("edge cases", function()
+    it("handles nil config gracefully", function()
+      memory_manager.setup(nil)
+      local stats = memory_manager.get_stats()
+      assert.is_not_nil(stats)
+    end)
+
+    it("limits metrics history to 10 entries", function()
+      memory_manager.setup()
+      for _ = 1, 15 do
+        memory_manager.force_gc()
+      end
+      local stats = memory_manager.get_stats()
+      assert.equals(15, stats.gc_count)
+    end)
+
+    it("handles zero memory threshold", function()
+      memory_manager.setup({
+        memory_threshold_mb = 0,
+        aggressive_gc_threshold_mb = 0,
+      })
+      memory_manager.force_gc()
+    end)
+  end)
+end)
