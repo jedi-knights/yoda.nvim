@@ -83,8 +83,7 @@ map("n", "<leader>tc", function()
       notify.notify("Neotest not available. Install via :Lazy sync", "error")
     end
   elseif filetype == "lua" then
-    local plenary = require("yoda.plenary")
-    plenary.run_current_test()
+    notify.notify("Run tests with: make test", "info")
   else
     notify.notify("No test runner configured for filetype: " .. filetype, "warn")
   end
