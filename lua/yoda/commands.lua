@@ -3,10 +3,8 @@
 
 -- Load command modules
 require("yoda.commands.lazy").setup()
-require("yoda.commands.profiling").setup()
 require("yoda.commands.dev_setup").setup()
 require("yoda.commands.diagnostics").setup()
 require("yoda.commands.formatting").setup()
 require("yoda.commands.opencode").setup()
 require("yoda.commands.lsp").setup()
-require("yoda.commands.performance").setup()

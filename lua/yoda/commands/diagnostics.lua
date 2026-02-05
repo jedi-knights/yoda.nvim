@@ -63,26 +63,6 @@ function M.setup()
       end
     end
   end, { desc = "Check completion engine status" })
-
-  -- Go LSP diagnostic
-  vim.api.nvim_create_user_command("DiagnoseGoLSP", function()
-    local ok, diagnostic = pcall(require, "yoda.diagnose_go_lsp")
-    if ok then
-      diagnostic.diagnose()
-    else
-      notify.notify("❌ Go LSP diagnostic module not loaded", "error")
-    end
-  end, { desc = "Diagnose Go LSP attachment issues" })
-
-  -- Flickering diagnostic
-  vim.api.nvim_create_user_command("DiagnoseFlickering", function()
-    local ok, diagnostic = pcall(require, "yoda.diagnose_flickering")
-    if ok then
-      diagnostic.diagnose()
-    else
-      notify.notify("❌ Flickering diagnostic module not loaded", "error")
-    end
-  end, { desc = "Diagnose flickering issues" })
 end
 
 return M

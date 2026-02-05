@@ -92,15 +92,10 @@
 
 ### Performance
 - **[PERFORMANCE_GUIDE.md](PERFORMANCE_GUIDE.md)** - General performance guide
-- **[PERFORMANCE_OPTIMIZATION_COMPLETE.md](PERFORMANCE_OPTIMIZATION_COMPLETE.md)** - Complete optimization
-- **[PHASE1_AUTOCMD_OPTIMIZATION_SUMMARY.md](PHASE1_AUTOCMD_OPTIMIZATION_SUMMARY.md)** - Autocmd optimization
-- **[PHASE2_LSP_OPTIMIZATION_SUMMARY.md](PHASE2_LSP_OPTIMIZATION_SUMMARY.md)** - LSP optimization
-- **[PYTHON_LSP_OPTIMIZATION.md](PYTHON_LSP_OPTIMIZATION.md)** - Python LSP performance
+- **[archive/performance/](archive/performance/)** - Historical optimization documentation (archived)
 
 ### Refactoring History
 - **[refactoring/GLOBAL_CONFIG_REFACTOR.md](refactoring/GLOBAL_CONFIG_REFACTOR.md)** - Config refactoring
-- **[BUFENTER_DEBOUNCING_ANALYSIS.md](BUFENTER_DEBOUNCING_ANALYSIS.md)** - Event debouncing
-- **[PYTHON_FLICKERING_FIX.md](PYTHON_FLICKERING_FIX.md)** - Python flickering fix
 
 ### System Integration
 - **[AUTOCMDS.md](AUTOCMDS.md)** - Autocommand system
@@ -216,8 +211,7 @@ docs/
 │
 ├── 🐛 Troubleshooting
 │   ├── TROUBLESHOOTING.md
-│   ├── PERFORMANCE_GUIDE.md
-│   └── PYTHON_FLICKERING_FIX.md
+│   └── PERFORMANCE_GUIDE.md
 │
 ├── 📚 Guides
 │   ├── guides/ (tutorials)
@@ -299,7 +293,7 @@ Found outdated docs? Want to improve something?
 **By Topic:**
 - Architecture → `diagrams/`, `DESIGN_PATTERNS.md`, `DEPENDENCY_INJECTION.md`
 - Configuration → `USER_CONFIGURATION.md`, `CONFIGURATION.md`, `AI_SETUP.md`
-- Performance → `PERFORMANCE_GUIDE.md`, `PHASE1_*`, `PHASE2_*`
+- Performance → `PERFORMANCE_GUIDE.md`, `archive/performance/`
 - Testing → `QUICK_START.md`, `tests/`, code standards docs
 
 **By Audience:**
