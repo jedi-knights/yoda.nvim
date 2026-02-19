@@ -84,12 +84,12 @@ autocmd("BufEnter", {
   end,
 })
 
-autocmd("FocusGained", {
-  group = augroup("YodaFocusGained", { clear = true }),
-  desc = "Handle focus gained - check for external file changes",
+autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+  group = augroup("YodaCheckExternalChanges", { clear = true }),
+  desc = "Check for external file changes",
   callback = function()
     vim.schedule(function()
-      if vim.bo.filetype ~= "opencode" then
+      if vim.bo.buftype == "" and vim.bo.filetype ~= "opencode" then
         pcall(vim.cmd, "checktime")
       end
     end)
@@ -163,7 +163,19 @@ autocmd("VimResized", {
           if vim.api.nvim_tabpage_is_valid(tabpage) then
             local wins = vim.api.nvim_tabpage_list_wins(tabpage)
 
-            if #wins > 0 and vim.api.nvim_win_is_valid(wins[1]) then
+            -- Skip if tab contains OpenCode window (it manages its own size)
+            local has_opencode = false
+            for _, win in ipairs(wins) do
+              if vim.api.nvim_win_is_valid(win) then
+                local buf = vim.api.nvim_win_get_buf(win)
+                if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "opencode" then
+                  has_opencode = true
+                  break
+                end
+              end
+            end
+
+            if not has_opencode and #wins > 0 and vim.api.nvim_win_is_valid(wins[1]) then
               local ok = pcall(vim.api.nvim_win_call, wins[1], function()
                 vim.cmd("wincmd =")
               end)
