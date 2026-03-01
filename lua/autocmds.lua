@@ -52,44 +52,19 @@ autocmd("BufEnter", {
   end,
 })
 
-autocmd("FocusGained", {
-  group = augroup("YodaCheckExternalChanges", { clear = true }),
-  desc = "Check for external file changes when Neovim gains focus",
-  callback = function()
-    if vim.bo.buftype == "" and vim.bo.filetype ~= "opencode" then
-      pcall(vim.cmd, "checktime")
-    end
-  end,
-})
-
-autocmd({ "BufDelete", "BufWipeout" }, {
-  group = augroup("YodaAlphaCacheInvalidation", { clear = true }),
-  desc = "Invalidate alpha cache when buffers are deleted",
-  callback = function(args)
-    if vim.api.nvim_buf_is_valid(args.buf) then
-      local filetype = vim.bo[args.buf].filetype
-      if filetype == "alpha" or (vim.bo[args.buf].buftype == "" and filetype ~= "") then
-        alpha_manager.invalidate_cache()
-      end
-    end
-  end,
-})
-
 autocmd("VimEnter", {
   group = augroup("YodaStartup", { clear = true }),
-  desc = "Show alpha dashboard on startup if no files (double-check prevents race conditions)",
+  desc = "Show alpha dashboard on startup if no files",
   callback = function()
     if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
       vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
     end
 
-    if alpha_manager.should_show_alpha(buffer_state.is_buffer_empty) then
-      vim.defer_fn(function()
-        if alpha_manager.should_show_alpha(buffer_state.is_buffer_empty) then
-          alpha_manager.show_alpha_dashboard()
-        end
-      end, ALPHA_STARTUP_DELAY)
-    end
+    vim.defer_fn(function()
+      if alpha_manager.should_show_alpha(buffer_state.is_buffer_empty) then
+        alpha_manager.show_alpha_dashboard()
+      end
+    end, ALPHA_STARTUP_DELAY)
   end,
 })
 
@@ -121,7 +96,6 @@ autocmd("VimResized", {
 
     timer_manager.create_vim_timer(function()
       pcall(vim.cmd, "wincmd =")
-      alpha_manager.recenter_alpha_dashboard()
     end, RESIZE_DEBOUNCE_DELAY, timer_id)
   end,
 })
@@ -131,20 +105,6 @@ autocmd("FileType", {
   desc = "Apply filetype-specific settings",
   callback = function()
     filetype_settings.apply(vim.bo.filetype)
-  end,
-})
-
-autocmd("LspAttach", {
-  group = augroup("YodaGitCommitOptimization", { clear = true }),
-  desc = "Detach LSP from git commit buffers for faster editing",
-  callback = function(args)
-    local filetype = vim.bo[args.buf].filetype
-    if vim.tbl_contains({ "gitcommit", "NeogitCommitMessage" }, filetype) then
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      if client and vim.api.nvim_buf_is_valid(args.buf) then
-        vim.lsp.buf_detach_client(args.buf, client.id)
-      end
-    end
   end,
 })
 
