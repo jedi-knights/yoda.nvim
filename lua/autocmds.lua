@@ -7,15 +7,13 @@ local performance_autocmds = require("yoda.performance.autocmds")
 local alpha_manager = require("yoda.ui.alpha_manager")
 local buffer_state = require("yoda.buffer.state_checker")
 local buffer_cache = require("yoda.buffer.type_cache")
-local gitsigns = require("yoda.integrations.gitsigns")
+local git_refresh = require("yoda.git_refresh")
 local filetype_settings = require("yoda.filetype.settings")
 local notify = require("yoda-adapters.notification")
 local timer_manager = require("yoda.timer_manager")
 
 local RESIZE_DEBOUNCE_DELAY = 300
 local ALPHA_STARTUP_DELAY = 200
-local GIT_COMMIT_TIMEOUT = 50
-local BUFENTER_DEBOUNCE_DELAY = 100
 
 filetype_detection.setup_all(autocmd, augroup)
 
@@ -29,82 +27,48 @@ autocmd("BufReadPre", {
 
 performance_autocmds.setup_all(autocmd, augroup)
 
-local function should_close_alpha_for_buffer(buf)
-  if not vim.api.nvim_buf_is_valid(buf) then
-    return false
-  end
-
-  -- Use cached buffer properties for performance
-  local buftype = buffer_cache.get_buftype(buf)
-  local filetype = buffer_cache.get_filetype(buf)
-  local bufname = buffer_cache.get_bufname(buf)
-
-  if buftype ~= "" and buftype ~= "help" then
-    return false
-  end
-
-  if filetype == "opencode" or filetype == "alpha" or filetype == "" then
-    return false
-  end
-
-  if bufname == "" or buffer_cache.is_snacks_buffer(buf) or buffer_cache.get_bufname(buf):match("^%[.-%]$") then
-    return false
-  end
-
-  return buffer_cache.is_real_file_buffer(buf)
-end
+-- Setup centralized git refresh autocmds
+git_refresh.setup_autocmds(autocmd, augroup)
 
 autocmd("BufEnter", {
   group = augroup("YodaAlphaClose", { clear = true }),
-  desc = "Close alpha dashboard when opening real files (debounced to reduce overhead on rapid buffer switches)",
+  desc = "Close alpha dashboard when opening real files",
   callback = function(args)
-    -- Early exit: skip if no alpha buffers exist
     if not alpha_manager.has_alpha_buffer() then
       return
     end
 
-    local buf = args.buf or vim.api.nvim_get_current_buf()
-
-    -- Debounce to reduce overhead during rapid buffer switching
-    local timer_id = "bufenter_alpha_check"
-    if timer_manager.is_vim_timer_active(timer_id) then
-      timer_manager.stop_vim_timer(timer_id)
+    local buf = args.buf
+    if not vim.api.nvim_buf_is_valid(buf) then
+      return
     end
 
-    timer_manager.create_vim_timer(function()
-      -- Recheck alpha exists before expensive should_close check
-      if not alpha_manager.has_alpha_buffer() then
-        return
-      end
-
-      if vim.api.nvim_buf_is_valid(buf) and should_close_alpha_for_buffer(buf) then
+    -- Close alpha if this is a real file buffer
+    if buffer_cache.is_real_file_buffer(buf) then
+      vim.schedule(function()
         alpha_manager.close_all_alpha_buffers()
-      end
-    end, BUFENTER_DEBOUNCE_DELAY, timer_id)
+      end)
+    end
   end,
 })
 
-autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+autocmd("FocusGained", {
   group = augroup("YodaCheckExternalChanges", { clear = true }),
-  desc = "Check for external file changes",
+  desc = "Check for external file changes when Neovim gains focus",
   callback = function()
-    vim.schedule(function()
-      if vim.bo.buftype == "" and vim.bo.filetype ~= "opencode" then
-        pcall(vim.cmd, "checktime")
-      end
-    end)
+    if vim.bo.buftype == "" and vim.bo.filetype ~= "opencode" then
+      pcall(vim.cmd, "checktime")
+    end
   end,
 })
 
 autocmd({ "BufDelete", "BufWipeout" }, {
-  group = augroup("YodaBufferCache", { clear = true }),
-  desc = "Invalidate alpha cache when normal buffers are deleted (only on delete, not create)",
+  group = augroup("YodaAlphaCacheInvalidation", { clear = true }),
+  desc = "Invalidate alpha cache when buffers are deleted",
   callback = function(args)
-    local buf = args.buf
-    if vim.api.nvim_buf_is_valid(buf) then
-      local buftype = vim.bo[buf].buftype
-      local filetype = vim.bo[buf].filetype
-      if (buftype == "" and filetype ~= "" and filetype ~= "alpha") or filetype == "alpha" then
+    if vim.api.nvim_buf_is_valid(args.buf) then
+      local filetype = vim.bo[args.buf].filetype
+      if filetype == "alpha" or (vim.bo[args.buf].buftype == "" and filetype ~= "") then
         alpha_manager.invalidate_cache()
       end
     end
@@ -148,7 +112,7 @@ autocmd("BufReadPost", {
 
 autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
-  desc = "Resize splits equally and recenter alpha dashboard (debounced to prevent rapid-fire resizing)",
+  desc = "Resize splits equally when Vim is resized",
   callback = function()
     local timer_id = "vim_resized"
     if timer_manager.is_vim_timer_active(timer_id) then
@@ -156,39 +120,8 @@ autocmd("VimResized", {
     end
 
     timer_manager.create_vim_timer(function()
-      vim.schedule(function()
-        local current_tab = vim.api.nvim_get_current_tabpage()
-
-        for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
-          if vim.api.nvim_tabpage_is_valid(tabpage) then
-            local wins = vim.api.nvim_tabpage_list_wins(tabpage)
-
-            -- Skip if tab contains OpenCode window (it manages its own size)
-            local has_opencode = false
-            for _, win in ipairs(wins) do
-              if vim.api.nvim_win_is_valid(win) then
-                local buf = vim.api.nvim_win_get_buf(win)
-                if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "opencode" then
-                  has_opencode = true
-                  break
-                end
-              end
-            end
-
-            if not has_opencode and #wins > 0 and vim.api.nvim_win_is_valid(wins[1]) then
-              local ok = pcall(vim.api.nvim_win_call, wins[1], function()
-                vim.cmd("wincmd =")
-              end)
-
-              if not ok and tabpage == current_tab then
-                pcall(vim.cmd, "wincmd =")
-              end
-            end
-          end
-        end
-
-        alpha_manager.recenter_alpha_dashboard()
-      end)
+      pcall(vim.cmd, "wincmd =")
+      alpha_manager.recenter_alpha_dashboard()
     end, RESIZE_DEBOUNCE_DELAY, timer_id)
   end,
 })
@@ -201,74 +134,16 @@ autocmd("FileType", {
   end,
 })
 
-local git_commit_augroup = augroup("YodaGitCommitPerformance", { clear = true })
-
-autocmd("FileType", {
-  group = git_commit_augroup,
-  desc = "Disable expensive autocmds for git commit buffers (performance optimization)",
-  pattern = { "gitcommit", "NeogitCommitMessage" },
-  callback = function(args)
-    local bufnr = args.buf
-
-    vim.api.nvim_clear_autocmds({
-      group = git_commit_augroup,
-      buffer = bufnr,
-      event = {
-        "TextChanged",
-        "TextChangedI",
-        "TextChangedP",
-        "CursorMoved",
-        "CursorMovedI",
-        "InsertEnter",
-        "InsertLeave",
-        "BufWritePost",
-        "CompleteChanged",
-        "CompleteDone",
-      },
-    })
-
-    vim.opt_local.timeoutlen = GIT_COMMIT_TIMEOUT
-  end,
-})
-
 autocmd("LspAttach", {
-  group = augroup("YodaGitCommitNoLSP", { clear = true }),
-  desc = "Prevent LSP from attaching to git commit buffers (faster commit editing)",
+  group = augroup("YodaGitCommitOptimization", { clear = true }),
+  desc = "Detach LSP from git commit buffers for faster editing",
   callback = function(args)
-    local bufnr = args.buf
-    local filetype = vim.bo[bufnr].filetype
-
-    if not vim.tbl_contains({ "gitcommit", "NeogitCommitMessage" }, filetype) then
-      return
-    end
-
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-    if client then
-      vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(bufnr) then
-          vim.lsp.buf_detach_client(bufnr, client.id)
-        end
-      end)
-    end
-  end,
-})
-
-autocmd({ "BufEnter", "FocusGained", "WinEnter" }, {
-  group = augroup("YodaNumberToggle", { clear = true }),
-  desc = "Switch to relative line numbers when buffer is focused",
-  callback = function()
-    if vim.wo.number then
-      vim.wo.relativenumber = true
-    end
-  end,
-})
-
-autocmd({ "BufLeave", "FocusLost", "WinLeave" }, {
-  group = augroup("YodaNumberToggle", { clear = false }),
-  desc = "Switch to absolute line numbers when buffer loses focus",
-  callback = function()
-    if vim.wo.number then
-      vim.wo.relativenumber = false
+    local filetype = vim.bo[args.buf].filetype
+    if vim.tbl_contains({ "gitcommit", "NeogitCommitMessage" }, filetype) then
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client and vim.api.nvim_buf_is_valid(args.buf) then
+        vim.lsp.buf_detach_client(args.buf, client.id)
+      end
     end
   end,
 })
@@ -333,7 +208,3 @@ vim.cmd([[
   cnoreabbrev <expr> bd getcmdtype() == ':' && getcmdline() == 'bd' ? 'Bd' : 'bd'
   cnoreabbrev <expr> bdelete getcmdtype() == ':' && getcmdline() == 'bdelete' ? 'Bd' : 'bdelete'
 ]])
-
--- Setup buffer type caching
-buffer_cache.setup_autocmds()
-buffer_cache.setup_commands()
