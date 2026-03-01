@@ -4,7 +4,6 @@
 local M = {}
 
 -- Lazy-loaded dependencies (loaded on first use)
-local gitsigns
 local notify
 local timer_manager
 local buffer_state
@@ -18,7 +17,6 @@ local function ensure_dependencies()
     return
   end
 
-  gitsigns = require("yoda.integrations.gitsigns")
   notify = require("yoda-adapters.notification")
   timer_manager = require("yoda.timer_manager")
 
@@ -307,13 +305,6 @@ function M.refresh_all_buffers()
   return processed_count
 end
 
--- Debounce state for git signs refresh
---- Refresh git signs if gitsigns is available (debounced to prevent flickering)
-function M.refresh_git_signs()
-  ensure_dependencies()
-  gitsigns.refresh_batched()
-end
-
 --- Refresh file explorer if Snacks explorer is available
 function M.refresh_explorer()
   local snacks = package.loaded.snacks
@@ -331,7 +322,7 @@ function M.complete_refresh()
     -- Refresh all buffers without triggering recursive autocmds
     M.refresh_all_buffers()
 
-    -- Refresh integrations (git signs handled by autocmd)
+    -- Refresh file explorer (git signs handled by git_refresh.lua autocmds)
     M.refresh_explorer()
 
     -- Force redraw to ensure UI is updated
@@ -433,11 +424,7 @@ function M.handle_debounced_buffer_refresh(buf, logger)
         M.refresh_buffer(buf)
       end
 
-      -- Refresh git signs
-      if logger then
-        logger.log("Refresh_GitSigns", { buf = buf })
-      end
-      M.refresh_git_signs()
+      -- Git signs refresh handled by git_refresh.lua autocmds
     end)
   end, BUF_DEBOUNCE_DELAY, timer_id)
 

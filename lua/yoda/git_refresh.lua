@@ -55,16 +55,17 @@ function M.setup_autocmds(autocmd, augroup)
     end,
   })
 
-  -- Refresh when Neovim gains focus
+  -- Refresh when Neovim gains focus and check for external file changes
   autocmd("FocusGained", {
     group = git_refresh_group,
-    desc = "Refresh git signs when Neovim gains focus",
+    desc = "Check for external changes and refresh git signs when Neovim gains focus",
     callback = function()
-      vim.schedule(function()
-        if vim.bo.buftype == "" then
+      if vim.bo.buftype == "" and vim.bo.filetype ~= "opencode" then
+        pcall(vim.cmd, "checktime")
+        vim.schedule(function()
           gitsigns.refresh_batched()
-        end
-      end)
+        end)
+      end
     end,
   })
 end
