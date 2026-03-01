@@ -309,30 +309,21 @@ end
 -- Setup & Autocmds
 -- ============================================================================
 
---- Setup autocmds for cache invalidation
+--- Setup autocmds for cache invalidation (called automatically on module load)
 function M.setup_autocmds()
   local augroup = vim.api.nvim_create_augroup("YodaBufferTypeCache", { clear = true })
 
-  -- Invalidate on buffer changes
-  vim.api.nvim_create_autocmd({ "BufFilePost", "FileType" }, {
+  -- Invalidate only on FileType changes (more targeted)
+  vim.api.nvim_create_autocmd("FileType", {
     group = augroup,
-    desc = "Invalidate buffer type cache on buffer changes",
+    desc = "Invalidate buffer type cache when filetype changes",
     callback = function(args)
       M.invalidate(args.buf)
     end,
   })
 
-  -- Invalidate on buffer delete
-  vim.api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
-    group = augroup,
-    desc = "Invalidate buffer type cache on buffer deletion",
-    callback = function(args)
-      M.invalidate(args.buf)
-    end,
-  })
-
-  -- Periodic cleanup of expired entries
-  vim.fn.timer_start(10000, function()
+  -- Periodic cleanup of expired entries (30s interval)
+  vim.fn.timer_start(30000, function()
     local now = vim.loop.hrtime()
     for buf, entry in pairs(buffer_cache) do
       local age = (now - entry.timestamp) / 1000000
@@ -377,5 +368,9 @@ function M.setup_commands()
     print(vim.inspect(info))
   end, { desc = "Show detailed buffer cache debug info" })
 end
+
+-- Auto-setup on module load
+M.setup_autocmds()
+M.setup_commands()
 
 return M

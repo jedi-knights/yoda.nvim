@@ -38,9 +38,6 @@ end
 local buf_debounce = {}
 local BUF_DEBOUNCE_DELAY = 150 -- milliseconds
 
--- Recursion guard for FileChangedShell events
-local file_changed_in_progress = false
-
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
 --- @return boolean should_skip Whether to skip refreshing this file
@@ -462,7 +459,6 @@ function M.setup_autocmds(autocmd, augroup)
     end,
   })
 
-  -- Note: FocusGained handler moved to yoda.autocmds.focus for consolidation
   -- Auto-save on OpenCode start
   autocmd("User", {
     group = augroup("YodaOpenCodeAutoSave", { clear = true }),
@@ -475,58 +471,7 @@ function M.setup_autocmds(autocmd, augroup)
     end,
   })
 
-  -- Consolidated git refresh autocmds
-  local git_refresh_group = augroup("YodaGitRefresh", { clear = true })
-
-  -- Refresh on buffer write
-  autocmd("BufWritePost", {
-    group = git_refresh_group,
-    desc = "Refresh git signs after buffer is written",
-    callback = function()
-      if vim.bo.buftype == "" then
-        M.refresh_git_signs()
-      end
-    end,
-  })
-
-  -- Refresh on external file changes
-  autocmd("FileChangedShell", {
-    group = git_refresh_group,
-    desc = "Refresh buffer and git signs when files changed externally",
-    callback = function(args)
-      -- Prevent recursive FileChangedShell events
-      if file_changed_in_progress then
-        return
-      end
-
-      file_changed_in_progress = true
-
-      vim.schedule(function()
-        if args.buf and vim.api.nvim_buf_is_valid(args.buf) and vim.bo[args.buf].buftype == "" then
-          M.refresh_buffer(args.buf)
-          M.refresh_git_signs()
-        end
-
-        -- Reset guard after operation completes
-        vim.schedule(function()
-          file_changed_in_progress = false
-        end)
-      end)
-    end,
-  })
-
-  -- Refresh on focus gained
-  autocmd("FocusGained", {
-    group = git_refresh_group,
-    desc = "Refresh git signs when Neovim gains focus",
-    callback = function()
-      vim.schedule(function()
-        if vim.bo.buftype == "" then
-          M.refresh_git_signs()
-        end
-      end)
-    end,
-  })
+  -- Note: All git refresh autocmds consolidated in lua/yoda/git_refresh.lua
 end
 
 return M
