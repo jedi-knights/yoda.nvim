@@ -59,12 +59,71 @@ local function should_skip_refresh(filepath)
   return false
 end
 
+--- Find OpenCode window
+--- @return number|nil win Window handle or nil if not found
+local function find_opencode_window()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_is_valid(win) then
+      local buf = vim.api.nvim_win_get_buf(win)
+      if vim.api.nvim_buf_is_valid(buf) then
+        local ft = vim.bo[buf].filetype
+        local buf_name = vim.api.nvim_buf_get_name(buf)
+        if ft == "opencode" or buf_name:match("[Oo]pen[Cc]ode") then
+          return win
+        end
+      end
+    end
+  end
+  return nil
+end
+
+--- Close OpenCode window if it exists
+--- @return boolean closed Whether a window was closed
+local function close_opencode_window()
+  local win = find_opencode_window()
+  if win then
+    pcall(vim.api.nvim_win_close, win, true)
+    return true
+  end
+  return false
+end
+
+--- Focus OpenCode window and enter insert mode
+--- @param delay number Optional delay in ms (default: 50)
+local function focus_opencode_window(delay)
+  delay = delay or 50
+  vim.defer_fn(function()
+    local win = find_opencode_window()
+    if win then
+      vim.api.nvim_set_current_win(win)
+      vim.schedule(function()
+        vim.cmd("startinsert")
+      end)
+    end
+  end, delay)
+end
+
 --- Handle OpenCode exit
 --- This function is called when OpenCode window is closed
 function M.on_opencode_exit()
   ensure_dependencies()
-  -- Auto-save all modified buffers
-  M.save_all_buffers()
+
+  vim.schedule(function()
+    M.save_all_buffers()
+
+    local win = find_opencode_window()
+    if win and vim.api.nvim_win_is_valid(win) then
+      local buf = vim.api.nvim_win_get_buf(win)
+      
+      pcall(vim.api.nvim_win_close, win, true)
+      
+      if buf and vim.api.nvim_buf_is_valid(buf) then
+        pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      end
+    end
+
+    vim.cmd("redraw!")
+  end)
 end
 
 --- Check if OpenCode is available
@@ -446,14 +505,15 @@ function M.setup_autocmds(autocmd, augroup)
     end,
   })
 
-  -- Auto-save on OpenCode start
+  -- Auto-save on OpenCode start and focus window
   autocmd("User", {
     group = augroup("YodaOpenCodeAutoSave", { clear = true }),
     pattern = "OpencodeStart",
-    desc = "Auto-save all buffers when OpenCode starts",
+    desc = "Auto-save all buffers when OpenCode starts and focus window",
     callback = function()
       vim.schedule(function()
         pcall(M.save_all_buffers)
+        focus_opencode_window(100)
       end)
     end,
   })
