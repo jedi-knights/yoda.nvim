@@ -152,16 +152,10 @@ function M.on_opencode_exit()
         if vim.api.nvim_buf_is_valid(buf) then
           local ft = vim.bo[buf].filetype
           local buf_name = vim.api.nvim_buf_get_name(buf)
-          local is_empty = buf_name == "" and not vim.bo[buf].modified
           local is_opencode = ft == "opencode" or buf_name:match("[Oo]pen[Cc]ode")
 
-          if is_empty or is_opencode then
-            local buf_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-            local is_truly_empty = #buf_lines == 0 or (#buf_lines == 1 and buf_lines[1] == "")
-
-            if is_truly_empty or is_opencode then
-              pcall(vim.api.nvim_buf_delete, buf, { force = true })
-            end
+          if is_opencode then
+            pcall(vim.api.nvim_buf_delete, buf, { force = true })
           end
         end
       end
@@ -596,16 +590,8 @@ function M.setup_autocmds(autocmd, augroup)
         end
 
         for _, b in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(b) then
-            local b_ft = vim.bo[b].filetype
-            local b_name = vim.api.nvim_buf_get_name(b)
-            local b_lines = vim.api.nvim_buf_get_lines(b, 0, -1, false)
-            local is_empty = b_name == "" and (#b_lines == 0 or (#b_lines == 1 and b_lines[1] == ""))
-            local is_oc = b_ft == "opencode" or b_name:match("[Oo]pen[Cc]ode") ~= nil
-
-            if (is_empty and not vim.bo[b].modified) or is_oc then
-              pcall(vim.api.nvim_buf_delete, b, { force = true })
-            end
+          if vim.api.nvim_buf_is_valid(b) and is_opencode_terminal(b) then
+            pcall(vim.api.nvim_buf_delete, b, { force = true })
           end
         end
 
