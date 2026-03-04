@@ -68,6 +68,20 @@ autocmd("VimEnter", {
   end,
 })
 
+autocmd("User", {
+  pattern = "VeryLazy",
+  group = augroup("YodaExplorerStartup", { clear = true }),
+  desc = "Open Snacks explorer on startup",
+  callback = function()
+    vim.defer_fn(function()
+      local ok, snacks = pcall(require, "snacks")
+      if ok and snacks.explorer and snacks.explorer.open then
+        pcall(snacks.explorer.open)
+      end
+    end, 100)
+  end,
+})
+
 autocmd("BufReadPost", {
   group = augroup("YodaRestoreCursor", { clear = true }),
   desc = "Restore cursor to last position",
