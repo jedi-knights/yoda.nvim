@@ -352,4 +352,146 @@ describe("yoda.opencode_integration", function()
       assert.spy(mock_api.nvim_create_autocmd).was_not_called()
     end)
   end)
+
+  describe("on_opencode_exit()", function()
+    local mock_win_api
+
+    before_each(function()
+      mock_win_api = {
+        nvim_list_wins = helpers.spy(),
+        nvim_win_is_valid = helpers.spy(),
+        nvim_win_get_buf = helpers.spy(),
+        nvim_win_set_buf = helpers.spy(),
+        nvim_win_close = helpers.spy(),
+        nvim_buf_delete = helpers.spy(),
+      }
+
+      for k, v in pairs(mock_win_api) do
+        mock_api[k] = v
+      end
+
+      mock_fn.buflisted = helpers.spy()
+    end)
+
+    it("switches to normal buffer when alpha is present", function()
+      local opencode_win = 1
+      local opencode_buf = 100
+      local alpha_buf = 200
+      local normal_buf = 300
+
+      mock_api.nvim_list_wins.returns({ opencode_win })
+      mock_api.nvim_win_is_valid.returns(true)
+      mock_api.nvim_win_get_buf.returns(opencode_buf)
+      mock_api.nvim_list_bufs.returns({ opencode_buf, alpha_buf, normal_buf })
+      mock_api.nvim_buf_is_valid.returns(true)
+      mock_api.nvim_buf_get_name.returns_values({
+        "opencode://prompt",
+        "/path/to/alpha",
+        "/path/to/normal.lua",
+      })
+      mock_fn.buflisted.returns_values({ 1, 1, 1 })
+
+      mock_bo[opencode_buf] = { filetype = "opencode", buftype = "" }
+      mock_bo[alpha_buf] = { filetype = "alpha", buftype = "" }
+      mock_bo[normal_buf] = { filetype = "lua", buftype = "" }
+
+      mock_vim.schedule.callback(function(fn)
+        fn()
+      end)
+
+      opencode_integration.on_opencode_exit()
+
+      assert.spy(mock_api.nvim_win_set_buf).was_called_with(opencode_win, normal_buf)
+    end)
+
+    it("switches to normal buffer when snacks-explorer is present", function()
+      local opencode_win = 1
+      local opencode_buf = 100
+      local snacks_buf = 200
+      local normal_buf = 300
+
+      mock_api.nvim_list_wins.returns({ opencode_win })
+      mock_api.nvim_win_is_valid.returns(true)
+      mock_api.nvim_win_get_buf.returns(opencode_buf)
+      mock_api.nvim_list_bufs.returns({ opencode_buf, snacks_buf, normal_buf })
+      mock_api.nvim_buf_is_valid.returns(true)
+      mock_api.nvim_buf_get_name.returns_values({
+        "opencode://prompt",
+        "snacks_explorer",
+        "/path/to/normal.lua",
+      })
+      mock_fn.buflisted.returns_values({ 1, 1, 1 })
+
+      mock_bo[opencode_buf] = { filetype = "opencode", buftype = "" }
+      mock_bo[snacks_buf] = { filetype = "snacks-explorer", buftype = "" }
+      mock_bo[normal_buf] = { filetype = "lua", buftype = "" }
+
+      mock_vim.schedule.callback(function(fn)
+        fn()
+      end)
+
+      opencode_integration.on_opencode_exit()
+
+      assert.spy(mock_api.nvim_win_set_buf).was_called_with(opencode_win, normal_buf)
+    end)
+
+    it("excludes buffers with special buftype", function()
+      local opencode_win = 1
+      local opencode_buf = 100
+      local terminal_buf = 200
+      local normal_buf = 300
+
+      mock_api.nvim_list_wins.returns({ opencode_win })
+      mock_api.nvim_win_is_valid.returns(true)
+      mock_api.nvim_win_get_buf.returns(opencode_buf)
+      mock_api.nvim_list_bufs.returns({ opencode_buf, terminal_buf, normal_buf })
+      mock_api.nvim_buf_is_valid.returns(true)
+      mock_api.nvim_buf_get_name.returns_values({
+        "opencode://prompt",
+        "term://shell",
+        "/path/to/normal.lua",
+      })
+      mock_fn.buflisted.returns_values({ 1, 1, 1 })
+
+      mock_bo[opencode_buf] = { filetype = "opencode", buftype = "" }
+      mock_bo[terminal_buf] = { filetype = "terminal", buftype = "terminal" }
+      mock_bo[normal_buf] = { filetype = "lua", buftype = "" }
+
+      mock_vim.schedule.callback(function(fn)
+        fn()
+      end)
+
+      opencode_integration.on_opencode_exit()
+
+      assert.spy(mock_api.nvim_win_set_buf).was_called_with(opencode_win, normal_buf)
+    end)
+
+    it("handles case when only special buffers exist", function()
+      local opencode_win = 1
+      local opencode_buf = 100
+      local alpha_buf = 200
+
+      mock_api.nvim_list_wins.returns({ opencode_win })
+      mock_api.nvim_win_is_valid.returns(true)
+      mock_api.nvim_win_get_buf.returns(opencode_buf)
+      mock_api.nvim_list_bufs.returns({ opencode_buf, alpha_buf })
+      mock_api.nvim_buf_is_valid.returns(true)
+      mock_api.nvim_buf_get_name.returns_values({
+        "opencode://prompt",
+        "/path/to/alpha",
+      })
+      mock_fn.buflisted.returns_values({ 1, 1 })
+
+      mock_bo[opencode_buf] = { filetype = "opencode", buftype = "" }
+      mock_bo[alpha_buf] = { filetype = "alpha", buftype = "" }
+
+      mock_vim.schedule.callback(function(fn)
+        fn()
+      end)
+
+      opencode_integration.on_opencode_exit()
+
+      assert.spy(mock_api.nvim_win_set_buf).was_not_called()
+    end)
+  end)
 end)

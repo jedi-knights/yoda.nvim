@@ -103,6 +103,26 @@ local function focus_opencode_window(delay)
   end, delay)
 end
 
+--- Find a suitable buffer to switch to (Complexity: 5)
+--- @return number|nil buf A valid buffer to switch to, or nil
+local function find_fallback_buffer()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      local bo = vim.bo[buf]
+      local ft = bo.filetype
+      local buftype = bo.buftype
+      local buf_name = vim.api.nvim_buf_get_name(buf)
+      local is_opencode = ft == "opencode" or buf_name:match("[Oo]pen[Cc]ode")
+      local is_special = ft == "alpha" or ft == "snacks-explorer" or ft == "snacks_explorer" or buftype ~= ""
+
+      if not is_opencode and not is_special and vim.fn.buflisted(buf) == 1 then
+        return buf
+      end
+    end
+  end
+  return nil
+end
+
 --- Handle OpenCode exit
 --- This function is called when OpenCode window is closed
 function M.on_opencode_exit()
@@ -114,13 +134,38 @@ function M.on_opencode_exit()
     local win = find_opencode_window()
     if win and vim.api.nvim_win_is_valid(win) then
       local buf = vim.api.nvim_win_get_buf(win)
-      
+
+      local fallback_buf = find_fallback_buffer()
+      if fallback_buf then
+        pcall(vim.api.nvim_win_set_buf, win, fallback_buf)
+      end
+
       pcall(vim.api.nvim_win_close, win, true)
-      
+
       if buf and vim.api.nvim_buf_is_valid(buf) then
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
       end
     end
+
+    vim.schedule(function()
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) then
+          local ft = vim.bo[buf].filetype
+          local buf_name = vim.api.nvim_buf_get_name(buf)
+          local is_empty = buf_name == "" and not vim.bo[buf].modified
+          local is_opencode = ft == "opencode" or buf_name:match("[Oo]pen[Cc]ode")
+
+          if is_empty or is_opencode then
+            local buf_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+            local is_truly_empty = #buf_lines == 0 or (#buf_lines == 1 and buf_lines[1] == "")
+
+            if is_truly_empty or is_opencode then
+              pcall(vim.api.nvim_buf_delete, buf, { force = true })
+            end
+          end
+        end
+      end
+    end)
 
     vim.cmd("redraw!")
   end)
@@ -490,6 +535,35 @@ function M.handle_debounced_buffer_refresh(buf, logger)
   buf_debounce[buf] = timer_handle
 end
 
+--- Check if a buffer is an OpenCode terminal buffer
+--- @param buf number Buffer handle
+--- @return boolean
+local function is_opencode_terminal(buf)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+  local ft = vim.bo[buf].filetype
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+  return ft == "opencode" or buf_name:match("[Oo]pen[Cc]ode") ~= nil
+end
+
+--- Close all windows displaying a given buffer
+--- @param buf number Buffer handle
+--- @return number closed Count of windows closed
+local function close_windows_for_buffer(buf)
+  local closed = 0
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_is_valid(win) then
+      local win_buf = vim.api.nvim_win_get_buf(win)
+      if win_buf == buf then
+        pcall(vim.api.nvim_win_close, win, true)
+        closed = closed + 1
+      end
+    end
+  end
+  return closed
+end
+
 --- Setup OpenCode integration autocmds
 --- @param autocmd function vim.api.nvim_create_autocmd
 --- @param augroup function vim.api.nvim_create_augroup
@@ -505,6 +579,43 @@ function M.setup_autocmds(autocmd, augroup)
     end,
   })
 
+  autocmd("TermClose", {
+    group = augroup("YodaOpenCodeTermClose", { clear = true }),
+    desc = "Clean up OpenCode terminal window on process exit",
+    callback = function(args)
+      local buf = args.buf
+      if not is_opencode_terminal(buf) then
+        return
+      end
+
+      vim.schedule(function()
+        close_windows_for_buffer(buf)
+
+        if vim.api.nvim_buf_is_valid(buf) then
+          pcall(vim.api.nvim_buf_delete, buf, { force = true })
+        end
+
+        for _, b in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(b) then
+            local b_ft = vim.bo[b].filetype
+            local b_name = vim.api.nvim_buf_get_name(b)
+            local b_lines = vim.api.nvim_buf_get_lines(b, 0, -1, false)
+            local is_empty = b_name == "" and (#b_lines == 0 or (#b_lines == 1 and b_lines[1] == ""))
+            local is_oc = b_ft == "opencode" or b_name:match("[Oo]pen[Cc]ode") ~= nil
+
+            if (is_empty and not vim.bo[b].modified) or is_oc then
+              pcall(vim.api.nvim_buf_delete, b, { force = true })
+            end
+          end
+        end
+
+        M.refresh_all_buffers()
+        M.refresh_explorer()
+        vim.cmd("redraw!")
+      end)
+    end,
+  })
+
   -- Auto-save on OpenCode start and focus window
   autocmd("User", {
     group = augroup("YodaOpenCodeAutoSave", { clear = true }),
@@ -517,8 +628,6 @@ function M.setup_autocmds(autocmd, augroup)
       end)
     end,
   })
-
-  -- Note: All git refresh autocmds consolidated in lua/yoda/git_refresh.lua
 end
 
 return M

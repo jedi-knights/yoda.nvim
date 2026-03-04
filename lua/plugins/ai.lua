@@ -77,6 +77,11 @@ return {
           position = "right", -- "left", "right", "top", "bottom"
         },
 
+        -- Terminal configuration (uses Snacks terminal)
+        terminal = {
+          close_on_exit = true, -- Close terminal automatically when OpenCode exits
+        },
+
         -- Default provider and model
         -- provider = "anthropic",
         -- model = "claude-3-5-sonnet-20241022",
