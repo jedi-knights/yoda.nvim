@@ -595,7 +595,6 @@ function M.setup_autocmds(autocmd, augroup)
       end
 
       vim.schedule(function()
-        M.refresh_all_buffers()
         M.refresh_explorer()
         vim.cmd("redraw!")
       end)
