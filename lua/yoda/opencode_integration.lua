@@ -582,19 +582,19 @@ function M.setup_autocmds(autocmd, augroup)
         return
       end
 
+      close_windows_for_buffer(buf)
+
+      if vim.api.nvim_buf_is_valid(buf) then
+        pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      end
+
+      for _, b in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(b) and is_opencode_terminal(b) then
+          pcall(vim.api.nvim_buf_delete, b, { force = true })
+        end
+      end
+
       vim.schedule(function()
-        close_windows_for_buffer(buf)
-
-        if vim.api.nvim_buf_is_valid(buf) then
-          pcall(vim.api.nvim_buf_delete, buf, { force = true })
-        end
-
-        for _, b in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(b) and is_opencode_terminal(b) then
-            pcall(vim.api.nvim_buf_delete, b, { force = true })
-          end
-        end
-
         M.refresh_all_buffers()
         M.refresh_explorer()
         vim.cmd("redraw!")
