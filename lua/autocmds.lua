@@ -1,16 +1,10 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
-local large_file = require("yoda.large_file")
+-- Modules needed immediately at load time to register their own autocmds
 local filetype_detection = require("yoda.filetype.detection")
 local performance_autocmds = require("yoda.performance.autocmds")
-local alpha_manager = require("yoda.ui.alpha_manager")
-local buffer_state = require("yoda.buffer.state_checker")
-local buffer_cache = require("yoda.buffer.type_cache")
 local git_refresh = require("yoda.git_refresh")
-local filetype_settings = require("yoda.filetype.settings")
-local notify = require("yoda-adapters.notification")
-local timer_manager = require("yoda.timer_manager")
 
 local RESIZE_DEBOUNCE_DELAY = 300
 local ALPHA_STARTUP_DELAY = 200
@@ -21,7 +15,7 @@ autocmd("BufReadPre", {
   group = augroup("YodaLargeFile", { clear = true }),
   desc = "Detect and optimize for large files",
   callback = function(args)
-    large_file.on_buf_read(args.buf)
+    require("yoda.large_file").on_buf_read(args.buf)
   end,
 })
 
@@ -34,6 +28,7 @@ autocmd("BufEnter", {
   group = augroup("YodaAlphaClose", { clear = true }),
   desc = "Close alpha dashboard when opening real files",
   callback = function(args)
+    local alpha_manager = require("yoda.ui.alpha_manager")
     if not alpha_manager.has_alpha_buffer() then
       return
     end
@@ -44,7 +39,7 @@ autocmd("BufEnter", {
     end
 
     -- Close alpha if this is a real file buffer
-    if buffer_cache.is_real_file_buffer(buf) then
+    if require("yoda.buffer.type_cache").is_real_file_buffer(buf) then
       vim.schedule(function()
         alpha_manager.close_all_alpha_buffers()
       end)
@@ -61,7 +56,8 @@ autocmd("VimEnter", {
     end
 
     vim.defer_fn(function()
-      if alpha_manager.should_show_alpha(buffer_state.is_buffer_empty) then
+      local alpha_manager = require("yoda.ui.alpha_manager")
+      if alpha_manager.should_show_alpha(require("yoda.buffer.state_checker").is_buffer_empty) then
         alpha_manager.show_alpha_dashboard()
       end
     end, ALPHA_STARTUP_DELAY)
@@ -103,6 +99,7 @@ autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
   desc = "Resize splits equally when Vim is resized",
   callback = function()
+    local timer_manager = require("yoda.timer_manager")
     local timer_id = "vim_resized"
     if timer_manager.is_vim_timer_active(timer_id) then
       timer_manager.stop_vim_timer(timer_id)
@@ -118,7 +115,7 @@ autocmd("FileType", {
   group = augroup("YodaFileTypes", { clear = true }),
   desc = "Apply filetype-specific settings",
   callback = function()
-    filetype_settings.apply(vim.bo.filetype)
+    require("yoda.filetype.settings").apply(vim.bo.filetype)
   end,
 })
 
@@ -170,7 +167,7 @@ vim.api.nvim_create_user_command("Bd", function(opts)
 
   local ok_delete, err = pcall(vim.cmd, delete_cmd)
   if not ok_delete then
-    notify.notify("Buffer delete failed: " .. tostring(err), "error")
+    require("yoda-adapters.notification").notify("Buffer delete failed: " .. tostring(err), "error")
   end
 end, { bang = true, desc = "Smart buffer delete that preserves window layout" })
 

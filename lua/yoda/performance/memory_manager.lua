@@ -16,7 +16,6 @@ local metrics = {
 }
 
 local function get_memory_usage_mb()
-  collectgarbage("collect")
   return collectgarbage("count") / 1024
 end
 

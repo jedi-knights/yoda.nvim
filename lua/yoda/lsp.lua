@@ -392,13 +392,13 @@ function M.setup()
       if client.name == "basedpyright" then
         client.server_capabilities.documentHighlightProvider = false
 
-        -- Keep document highlight disabled
+        -- Re-apply after dynamic capability registration completes (~500ms window)
         local timer_id = "basedpyright_highlight_" .. client.id
         local timer, id = timer_manager.create_timer(function()
           if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
             client.server_capabilities.documentHighlightProvider = false
           end
-        end, 100, 100, timer_id)
+        end, 500, 0, timer_id)
 
         if timer then
           vim.api.nvim_create_autocmd("LspDetach", {
@@ -534,17 +534,6 @@ function M.setup()
     M._setup_debug_commands()
   end
 
-  -- DISABLED: CmdlineEnter causing crashes in Neovim 0.11.4
-  -- vim.api.nvim_create_autocmd("CmdlineEnter", {
-  --   pattern = ":",
-  --   once = true,
-  --   callback = function()
-  --     vim.schedule(ensure_debug_commands)
-  --   end,
-  -- })
-
-  -- NOTE: Debug commands setup moved to consolidated LspAttach above
-  -- Setup debug commands immediately instead of waiting for attach
   vim.schedule(ensure_debug_commands)
 
   lsp_perf.setup_commands()

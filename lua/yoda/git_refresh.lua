@@ -46,11 +46,7 @@ function M.setup_autocmds(autocmd, augroup)
         if args.buf and vim.api.nvim_buf_is_valid(args.buf) and vim.bo[args.buf].buftype == "" then
           gitsigns.refresh_batched()
         end
-
-        -- Reset guard after operation completes
-        vim.schedule(function()
-          file_changed_in_progress = false
-        end)
+        file_changed_in_progress = false
       end)
     end,
   })
