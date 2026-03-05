@@ -30,7 +30,7 @@ local DEFAULT_CONFIG = {
 -- State Management
 -- ============================================================================
 
-local config = vim.deepcopy(DEFAULT_CONFIG)
+local config = DEFAULT_CONFIG
 
 --- Get configuration
 --- @return table Configuration

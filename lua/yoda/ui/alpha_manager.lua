@@ -70,9 +70,12 @@ function M.has_alpha_buffer()
 
   local has_alpha = false
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted and vim.bo[buf].filetype == "alpha" then
-      has_alpha = true
-      break
+    if vim.api.nvim_buf_is_valid(buf) then
+      local bo = vim.bo[buf]
+      if bo.buflisted and bo.filetype == "alpha" then
+        has_alpha = true
+        break
+      end
     end
   end
 
@@ -107,10 +110,13 @@ function M.count_normal_buffers(perf_tracker)
 
   local count = 0
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
-      local buf_ft = vim.bo[buf].filetype
-      if buf_ft ~= "alpha" and buf_ft ~= "" then
-        count = count + 1
+    if vim.api.nvim_buf_is_valid(buf) then
+      local bo = vim.bo[buf]
+      if bo.buflisted then
+        local buf_ft = bo.filetype
+        if buf_ft ~= "alpha" and buf_ft ~= "" then
+          count = count + 1
+        end
       end
     end
   end
@@ -152,29 +158,23 @@ function M.should_show_alpha(is_buffer_empty_fn)
   return M.count_normal_buffers() == 0
 end
 
+local SKIP_FILETYPES = {
+  gitcommit = true,
+  gitrebase = true,
+  gitconfig = true,
+  NeogitCommitMessage = true,
+  NeogitPopup = true,
+  NeogitStatus = true,
+  fugitive = true,
+  fugitiveblame = true,
+  markdown = true,
+}
+
 --- Check if filetype should skip alpha display logic
 --- @param filetype string File type to check
 --- @return boolean true if should skip
 function M.should_skip_alpha_for_filetype(filetype)
-  local skip_filetypes = {
-    "gitcommit",
-    "gitrebase",
-    "gitconfig",
-    "NeogitCommitMessage",
-    "NeogitPopup",
-    "NeogitStatus",
-    "fugitive",
-    "fugitiveblame",
-    "markdown",
-  }
-
-  for _, ft in ipairs(skip_filetypes) do
-    if filetype == ft then
-      return true
-    end
-  end
-
-  return false
+  return SKIP_FILETYPES[filetype] == true
 end
 
 -- ============================================================================
