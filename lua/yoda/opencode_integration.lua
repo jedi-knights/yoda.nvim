@@ -36,27 +36,22 @@ end
 local buf_debounce = {}
 local BUF_DEBOUNCE_DELAY = 150 -- milliseconds
 
+-- Git temporary files that should never be auto-refreshed
+local GIT_TEMP_FILES = {
+  COMMIT_EDITMSG = true,
+  MERGE_MSG = true,
+  SQUASH_MSG = true,
+  TAG_EDITMSG = true,
+  ["git-rebase-todo"] = true,
+  ["addp-hunk-edit.diff"] = true,
+}
+
 --- Check if a file should be excluded from auto-refresh
 --- @param filepath string Full file path
 --- @return boolean should_skip Whether to skip refreshing this file
 local function should_skip_refresh(filepath)
   local filename = vim.fn.fnamemodify(filepath, ":t")
-  local git_files = {
-    "COMMIT_EDITMSG",
-    "MERGE_MSG",
-    "SQUASH_MSG",
-    "TAG_EDITMSG",
-    "git-rebase-todo",
-    "addp-hunk-edit.diff",
-  }
-
-  for _, git_file in ipairs(git_files) do
-    if filename == git_file then
-      return true
-    end
-  end
-
-  return false
+  return GIT_TEMP_FILES[filename] == true
 end
 
 --- Find OpenCode window
