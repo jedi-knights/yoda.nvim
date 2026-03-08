@@ -59,7 +59,6 @@
   - DRY principles
   - CLEAN code principles (C, L, E, A, N)
   - Cyclomatic complexity guidelines
-- **[START_HERE.md](START_HERE.md)** - Code quality achievement story (5.8 → 15/15)
 
 ### Testing
 - **[tests/README.md](../tests/README.md)** - Testing guide (if exists)
@@ -93,10 +92,6 @@
 
 ### Performance
 - **[PERFORMANCE_GUIDE.md](PERFORMANCE_GUIDE.md)** - General performance guide
-- **[archive/performance/](archive/performance/)** - Historical optimization documentation (archived)
-
-### Refactoring History
-- **[refactoring/GLOBAL_CONFIG_REFACTOR.md](refactoring/GLOBAL_CONFIG_REFACTOR.md)** - Config refactoring
 
 ### System Integration
 - **[AUTOCMDS.md](AUTOCMDS.md)** - Autocommand system
@@ -116,7 +111,6 @@
 ### AI & ChatGPT
 - **[overview/CHATGPT.md](overview/CHATGPT.md)** - ChatGPT integration
 - **[AI_SETUP.md](AI_SETUP.md)** - AI tooling setup
-- **[LLM_Prompt.txt](LLM_Prompt.txt)** - LLM prompts
 
 ---
 
@@ -294,7 +288,7 @@ Found outdated docs? Want to improve something?
 **By Topic:**
 - Architecture → `diagrams/`, `DESIGN_PATTERNS.md`, `DEPENDENCY_INJECTION.md`
 - Configuration → `USER_CONFIGURATION.md`, `CONFIGURATION.md`, `AI_SETUP.md`
-- Performance → `PERFORMANCE_GUIDE.md`, `archive/performance/`
+- Performance → `PERFORMANCE_GUIDE.md`
 - Testing → `QUICK_START.md`, `tests/`, code standards docs
 
 **By Audience:**
