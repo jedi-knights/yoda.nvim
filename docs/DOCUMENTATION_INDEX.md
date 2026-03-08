@@ -71,8 +71,9 @@
 ## 🧑‍💻 For Developers
 
 ### Language-Specific
+- **[python_development.md](python_development.md)** - Python development (LSP, debugging, testing, venv)
 - **[javascript_development.md](javascript_development.md)** - JavaScript/TypeScript setup
-- **[PYTHON_DEBUGGING.md](PYTHON_DEBUGGING.md)** - Python debugging with DAP
+- **[PYTHON_DEBUGGING.md](PYTHON_DEBUGGING.md)** - Python performance debugging with autocmd logging
 
 ### Advanced Topics
 - **[overview/LSP.md](overview/LSP.md)** - Language Server Protocol
@@ -157,8 +158,8 @@
 **Fix performance issues**
 → [PERFORMANCE_GUIDE.md](PERFORMANCE_GUIDE.md) → [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
-**Set up Python debugging**
-→ [PYTHON_DEBUGGING.md](PYTHON_DEBUGGING.md) → [overview/DAP.md](overview/DAP.md)
+**Set up Python development**
+→ [python_development.md](python_development.md) → [PYTHON_DEBUGGING.md](PYTHON_DEBUGGING.md)
 
 **Configure AI tools**
 → [AI_SETUP.md](AI_SETUP.md) → [OPENCODE.md](OPENCODE.md)
