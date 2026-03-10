@@ -17,6 +17,7 @@ vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 300
+vim.opt.ttimeoutlen = 0
 vim.opt.autoread = true
 vim.opt.splitright = true
 vim.opt.splitbelow = true
