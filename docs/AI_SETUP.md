@@ -1,12 +1,11 @@
 # 🤖 AI Integration Setup Guide
 
-Complete guide to setting up all AI features in Yoda.nvim: Avante, Copilot, and OpenCode.
+Complete guide to setting up AI features in Yoda.nvim: Claude Code and Avante.
 
 ## 📋 Table of Contents
 - [Prerequisites](#prerequisites)
-- [GitHub Copilot Setup](#github-copilot-setup)
+- [Claude Code Setup](#claude-code-setup)
 - [Avante AI Setup](#avante-ai-setup)
-- [OpenCode Setup](#opencode-setup)
 - [Usage](#usage)
 - [Troubleshooting](#troubleshooting)
 
@@ -14,48 +13,51 @@ Complete guide to setting up all AI features in Yoda.nvim: Avante, Copilot, and 
 
 ### Required Software
 - **Neovim 0.10.1+**
-- **Node.js 18+** (for Copilot and MCP Hub)
-- **Git** (for Copilot authentication)
+- **Node.js 18+** (for MCP Hub)
+- **Git**
 - **Cargo/Rust** (for building Avante components)
 - **Docker** (for MCP servers)
 
 ### API Keys
 You'll need at least one of the following:
-- **GitHub Copilot subscription** (recommended for code completion)
 - **Claude API key** (for Avante AI)
 - **OpenAI API key** (alternative for Avante)
 
-## GitHub Copilot Setup
+## Claude Code Setup
 
-### 1. Authentication
+Claude Code provides agentic AI capabilities directly in your terminal and editor via
+the [claudecode.nvim](https://github.com/coder/claudecode.nvim) plugin.
 
-Start Neovim and run:
-```vim
-:Copilot setup
+### 1. Install Claude Code CLI
+
+```bash
+npm install -g @anthropic-ai/claude-code
 ```
 
-Follow the authentication flow to connect your GitHub account.
+### 2. Authenticate
 
-### 2. Verify Installation
-
-Check Copilot status:
-```vim
-:Copilot status
+```bash
+claude login
 ```
 
-### 3. Basic Usage
+### 3. Verify Installation
+
+```bash
+claude --version
+```
+
+### 4. Usage in Neovim
 
 **Keymaps:**
-- `Alt+l` - Accept suggestion
-- `Alt+]` - Next suggestion
-- `Alt+[` - Previous suggestion  
-- `Ctrl+]` - Dismiss suggestion
-
-**Features:**
-- Real-time code suggestions as you type
-- Context-aware completions
-- Multi-line suggestions
-- Natural language to code conversion
+- `<leader>ac` - Toggle Claude Code terminal
+- `<leader>af` - Focus Claude Code
+- `<leader>ar` - Resume previous session
+- `<leader>aC` - Continue last conversation
+- `<leader>am` - Select Claude model
+- `<leader>aB` - Add current buffer to Claude
+- `<leader>as` - Send selection to Claude (visual mode)
+- `<leader>aa` - Accept diff
+- `<leader>ad` - Deny diff
 
 ## Avante AI Setup
 
@@ -142,50 +144,18 @@ Create or edit `~/.config/mcphub/servers.json`:
 :checkhealth avante
 ```
 
-## OpenCode Setup
-
-OpenCode provides context-aware AI assistance directly in your editor.
-
-### 1. Install OpenCode CLI
-
-Check the [OpenCode releases](https://github.com/NickvanDyke/opencode.nvim) for installation instructions specific to your platform.
-
-### 2. Verify Installation
-
-```bash
-# Check if OpenCode is accessible
-which opencode
-opencode --version
-```
-
-### 3. Usage
-
-OpenCode is pre-configured in Yoda.nvim with auto-reload enabled.
-
 ## Usage
 
 ### Basic Commands
 
+#### Claude Code
+- `<leader>ac` - Toggle Claude Code
+- `<leader>af` - Focus Claude Code
+- `<leader>as` - Send selection to Claude (visual mode)
+
 #### Avante AI
 - `<leader>aa` - Ask Avante (quick question)
-- `<leader>ac` - Open Avante Chat (conversation mode)
 - `<leader>am` - Open MCP Hub (manage servers)
-- `<leader>as` - Send selection to Avante
-
-#### OpenCode
-- `<leader>oa` - Ask about selection/cursor
-- `<leader>o+` - Add context to prompt
-- `<leader>oe` - Explain current code
-- `<leader>os` - Select from prompt library
-- `<leader>ot` - Toggle OpenCode terminal
-- `<leader>on` - New OpenCode session
-- `<leader>oi` - Interrupt current session
-
-#### GitHub Copilot
-- `Alt+l` - Accept suggestion
-- `Alt+]` - Next suggestion
-- `Alt+[` - Previous suggestion
-- `<M-CR>` - Open Copilot panel
 
 ### Verification Commands
 
@@ -193,10 +163,8 @@ OpenCode is pre-configured in Yoda.nvim with auto-reload enabled.
 " Check overall AI status
 :YodaDiagnostics
 
-" Check specific components
-:Copilot status
+" Check Avante
 :checkhealth avante
-:checkhealth copilot
 
 " Check LSP integration
 :LspInfo
@@ -239,35 +207,18 @@ export YODA_ENV="work"
 export YODA_ENV="home"
 ```
 
-### OpenCode Context Placeholders
-
-Use these placeholders in OpenCode prompts:
-
-| Placeholder | Description |
-|-------------|-------------|
-| `@buffer` | Current buffer content |
-| `@buffers` | All open buffers |
-| `@cursor` | Current cursor position |
-| `@selection` | Visual selection |
-| `@this` | Selection or cursor |
-| `@visible` | Visible text |
-| `@diagnostics` | Current diagnostics |
-| `@quickfix` | Quickfix list |
-| `@diff` | Git diff |
-
 ## Troubleshooting
 
-### Copilot Issues
+### Claude Code Issues
 
-**Problem:** Copilot not suggesting
-```vim
-:Copilot status
-:Copilot setup  " Re-authenticate if needed
+**Problem:** `claude` command not found
+```bash
+npm install -g @anthropic-ai/claude-code
 ```
 
-**Problem:** Node.js version
+**Problem:** Authentication errors
 ```bash
-node --version  # Should be 18+
+claude login
 ```
 
 ### Avante Issues
@@ -302,20 +253,6 @@ docker ps
 docker run -i --rm mcp/time
 ```
 
-### OpenCode Issues
-
-**Problem:** Commands not working
-1. Verify OpenCode CLI is installed: `which opencode`
-2. Check plugin installation: `:Lazy` → find opencode.nvim
-3. Verify dependencies: Ensure snacks.nvim is loaded
-
-**Problem:** Auto-reload not working
-```lua
--- Verify in your config
-vim.opt.autoread = true
-vim.g.opencode_opts = { auto_reload = true }
-```
-
 ### LSP Integration Issues
 
 **Problem:** AI features work but LSP doesn't
@@ -343,9 +280,9 @@ vim.g.opencode_opts = { auto_reload = true }
 
 ## Resources
 
+- [Claude Code](https://github.com/anthropics/claude-code) - Claude Code CLI
+- [claudecode.nvim](https://github.com/coder/claudecode.nvim) - Neovim plugin
 - [Avante.nvim](https://github.com/yetone/avante.nvim) - Avante documentation
-- [OpenCode.nvim](https://github.com/NickvanDyke/opencode.nvim) - OpenCode documentation  
-- [GitHub Copilot](https://github.com/features/copilot) - Copilot documentation
 - [MCP Hub](https://github.com/ravitemer/mcphub.nvim) - MCP Hub documentation
 - [Composio MCP](https://mcp.composio.dev) - Managed MCP servers
 - [Model Context Protocol](https://modelcontextprotocol.io/) - MCP specification
@@ -362,4 +299,3 @@ AI capabilities integrate seamlessly with:
 ---
 
 **Need more help?** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
-

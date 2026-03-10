@@ -173,10 +173,10 @@ end
 ### ❌ Bad Example - Code Duplication
 ```lua
 -- keymaps.lua
-local function get_opencode_win()
+local function get_terminal_win()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
-    if vim.api.nvim_buf_get_option(buf, "filetype") == "opencode" then
+    if vim.api.nvim_buf_get_option(buf, "filetype") == "terminal" then
       return win, buf
     end
   end
@@ -184,10 +184,10 @@ local function get_opencode_win()
 end
 
 -- functions.lua
-local function find_opencode_window()
+local function find_terminal_window()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
-    if vim.api.nvim_buf_get_option(buf, "filetype") == "opencode" then
+    if vim.api.nvim_buf_get_option(buf, "filetype") == "terminal" then
       return win, buf
     end
   end
@@ -198,10 +198,10 @@ end
 ### ✅ Good Example - Single Source of Truth
 ```lua
 -- window_utils.lua
-function M.find_opencode()
+function M.find_terminal()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
-    if vim.api.nvim_buf_get_option(buf, "filetype") == "opencode" then
+    if vim.api.nvim_buf_get_option(buf, "filetype") == "terminal" then
       return win, buf
     end
   end
@@ -210,7 +210,7 @@ end
 
 -- Usage everywhere
 local win_utils = require("yoda.window_utils")
-local win, buf = win_utils.find_opencode()
+local win, buf = win_utils.find_terminal()
 ```
 
 ## DRY Violations to Watch For

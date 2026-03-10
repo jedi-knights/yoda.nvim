@@ -381,8 +381,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - [folke/lazy.nvim](https://github.com/folke/lazy.nvim) - Fast plugin manager
 - [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - Beautiful theme
 - [folke/snacks.nvim](https://github.com/folke/snacks.nvim) - Modern UI framework
-- [zbirenbaum/copilot.lua](https://github.com/zbirenbaum/copilot.lua) - GitHub Copilot integration
-- [NickvanDyke/opencode.nvim](https://github.com/NickvanDyke/opencode.nvim) - AI assistant integration
+- [coder/claudecode.nvim](https://github.com/coder/claudecode.nvim) - Claude Code integration
 - [folke/which-key.nvim](https://github.com/folke/which-key.nvim) - Keymap discovery
 - [nvzone/showkeys](https://github.com/nvzone/showkeys) - Minimal keys screencaster
 
