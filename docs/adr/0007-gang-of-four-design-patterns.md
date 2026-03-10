@@ -301,7 +301,7 @@ function M.create_ai_diagnostic()
     "AI",
     function()
       local status = ai.check_status()
-      return status.copilot_available or status.opencode_available
+      return status.claudecode_available
     end,
     function()
       return ai.get_config()
