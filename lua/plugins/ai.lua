@@ -10,6 +10,7 @@ return {
     config = true,
     keys = {
       { "<leader>a", nil, desc = "AI/Claude Code" },
+      { "<leader>ai", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude Code" },
       { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
       { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
       { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
