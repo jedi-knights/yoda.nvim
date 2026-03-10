@@ -119,13 +119,6 @@ autocmd("FileType", {
   end,
 })
 
--- Setup OpenCode integration autocmds only if OpenCode is installed
--- This defers loading the heavy notification and gitsigns adapters until needed
-local ok, opencode_integration = pcall(require, "yoda.opencode_integration")
-if ok and opencode_integration.is_available() then
-  opencode_integration.setup_autocmds(autocmd, augroup)
-end
-
 vim.api.nvim_create_user_command("Bd", function(opts)
   local buf = vim.api.nvim_get_current_buf()
   local window_protection = require("yoda-window.protection")
