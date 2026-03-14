@@ -148,6 +148,81 @@ describe("container", function()
     end)
   end)
 
+  describe("evict()", function()
+    it("removes cached instance so next resolve re-instantiates", function()
+      local call_count = 0
+
+      Container.register("counter", function()
+        call_count = call_count + 1
+        return { count = call_count }
+      end)
+
+      local instance1 = Container.resolve("counter")
+      assert.equals(1, call_count)
+
+      Container.evict("counter")
+
+      local instance2 = Container.resolve("counter")
+      assert.equals(2, call_count)
+      assert.not_equals(instance1, instance2)
+    end)
+
+    it("preserves the factory after eviction", function()
+      Container.register("svc", function()
+        return { value = math.random() }
+      end)
+
+      Container.resolve("svc")
+      Container.evict("svc")
+
+      -- Factory still registered, resolve succeeds
+      assert.is_true(Container.has("svc"))
+      local ok = pcall(Container.resolve, "svc")
+      assert.is_true(ok)
+    end)
+
+    it("is a no-op when service was never resolved", function()
+      Container.register("svc", function()
+        return {}
+      end)
+
+      -- Should not error even though the cache is empty
+      local ok = pcall(Container.evict, "svc")
+      assert.is_true(ok)
+    end)
+
+    it("validates service name is non-empty string", function()
+      local ok1 = pcall(Container.evict, "")
+      local ok2 = pcall(Container.evict, 123)
+      assert.is_false(ok1)
+      assert.is_false(ok2)
+    end)
+
+    it("does not clear other cached services", function()
+      local count_a, count_b = 0, 0
+
+      Container.register("a", function()
+        count_a = count_a + 1
+        return { n = count_a }
+      end)
+      Container.register("b", function()
+        count_b = count_b + 1
+        return { n = count_b }
+      end)
+
+      Container.resolve("a")
+      Container.resolve("b")
+
+      Container.evict("a")
+
+      Container.resolve("a")
+      Container.resolve("b") -- should still be cached
+
+      assert.equals(2, count_a) -- re-instantiated
+      assert.equals(1, count_b) -- still cached
+    end)
+  end)
+
   describe("reset()", function()
     it("clears all services", function()
       Container.register("test", function()

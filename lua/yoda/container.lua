@@ -56,7 +56,18 @@ function M.seal()
   sealed = true
 end
 
---- Reset container (for testing)
+--- Evict a cached service instance so the next resolve() re-instantiates it.
+--- The factory is preserved, making this safe to call at runtime (e.g. when a
+--- plugin reloads or a dependency changes). Unlike reset(), this does NOT clear
+--- other services or unseal the container.
+--- @param name string Service name to evict
+function M.evict(name)
+  assert(type(name) == "string" and name ~= "", "Service name must be a non-empty string")
+  services[name] = nil
+end
+
+--- Reset container state entirely (factories + instances + seal).
+--- Intended for tests only — use evict() for targeted runtime cache invalidation.
 function M.reset()
   services = {}
   factories = {}

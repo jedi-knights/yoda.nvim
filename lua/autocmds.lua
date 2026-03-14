@@ -38,10 +38,12 @@ autocmd("BufEnter", {
       return
     end
 
-    -- Close alpha if this is a real file buffer
+    -- Close alpha if this is a real file buffer, then self-disable this autocmd —
+    -- once alpha is gone it can never re-appear, so the BufEnter check is moot.
     if require("yoda.buffer.type_cache").is_real_file_buffer(buf) then
       vim.schedule(function()
         alpha_manager.close_all_alpha_buffers()
+        pcall(vim.api.nvim_del_augroup_by_name, "YodaAlphaClose")
       end)
     end
   end,
