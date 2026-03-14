@@ -58,18 +58,29 @@ local function build_venv_paths(root_dir)
   }
 end
 
---- Check if a file is executable (async-safe)
---- @param path string File path to check
---- @return boolean executable Whether file is executable
-local function is_executable(path)
-  local stat = vim.loop.fs_stat(path)
-  if not stat then
-    return false
+--- Walk a list of paths using non-blocking libuv fs_stat.
+--- Invokes callback(path) with the first executable found, or callback(nil) if none.
+--- vim.schedule is used for the final invocation so callers can safely call Neovim APIs.
+--- @param paths table List of paths to check
+--- @param idx number Current index (start at 1)
+--- @param callback function Called with first executable path or nil
+local function find_first_executable_async(paths, idx, callback)
+  if idx > #paths then
+    vim.schedule(function()
+      callback(nil)
+    end)
+    return
   end
 
-  -- Check if it's a file and has execute permissions
-  -- mode & 0o111 checks for any execute bit
-  return stat.type == "file" and (stat.mode % 512 >= 64)
+  vim.uv.fs_stat(paths[idx], function(err, stat)
+    if not err and stat and stat.type == "file" and (stat.mode % 512 >= 64) then
+      vim.schedule(function()
+        callback(paths[idx])
+      end)
+    else
+      find_first_executable_async(paths, idx + 1, callback)
+    end
+  end)
 end
 
 --- Detect virtual environment asynchronously
@@ -88,18 +99,7 @@ function M.detect_venv_async(root_dir, callback)
   local venv_start_time = vim.loop.hrtime()
   local possible_paths = build_venv_paths(root_dir)
 
-  -- Use vim.schedule for async execution (vim.loop.new_work not available in test environment)
-  vim.schedule(function()
-    local venv_path = nil
-
-    -- Check each possible path
-    for _, venv_python in ipairs(possible_paths) do
-      if is_executable(venv_python) then
-        venv_path = venv_python
-        break
-      end
-    end
-
+  find_first_executable_async(possible_paths, 1, function(venv_path)
     -- Track performance
     local found = venv_path ~= nil
     lsp_perf.track_venv_detection(root_dir, venv_start_time, found)
