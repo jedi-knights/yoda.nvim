@@ -106,7 +106,6 @@ require("lazy").setup({
         "rplugin",
         "tarPlugin",
         "tohtml",
-        "tutor",
         "zipPlugin",
         "spellfile",
         "2html_plugin",
