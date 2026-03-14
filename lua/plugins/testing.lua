@@ -114,20 +114,6 @@ return {
         table.insert(adapters, neotest_vitest)
       end
 
-      -- Add .NET adapter if available
-      local dotnet_ok, neotest_dotnet = pcall(require, "neotest-dotnet")
-      if dotnet_ok then
-        table.insert(
-          adapters,
-          neotest_dotnet({
-            dap = {
-              adapter_name = "coreclr",
-              args = { justMyCode = false },
-            },
-          })
-        )
-      end
-
       require("neotest").setup({
         adapters = adapters,
         output = {
@@ -206,13 +192,6 @@ return {
     "marilari88/neotest-vitest",
     dependencies = { "nvim-neotest/neotest" },
     ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-  },
-
-  -- Neotest .NET adapter
-  {
-    "Issafalcon/neotest-dotnet",
-    dependencies = { "nvim-neotest/neotest" },
-    ft = "cs",
   },
 
   -- Coverage - Code coverage
