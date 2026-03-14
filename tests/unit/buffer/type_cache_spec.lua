@@ -209,7 +209,7 @@ describe("buffer.type_cache", function()
       local entry = type_cache.get_or_create(buf)
       assert.is_not_nil(entry)
 
-      entry.timestamp = vim.loop.hrtime() - 10000000000
+      entry.timestamp = vim.uv.hrtime() - 10000000000
 
       local expired = type_cache.get(buf)
       assert.is_nil(expired)
@@ -221,7 +221,7 @@ describe("buffer.type_cache", function()
       local buf = vim.api.nvim_create_buf(false, false)
 
       local entry = type_cache.get_or_create(buf)
-      entry.timestamp = vim.loop.hrtime() - 10000000000
+      entry.timestamp = vim.uv.hrtime() - 10000000000
 
       local stats = type_cache.get_stats()
       assert.equals(1, stats.expired)
@@ -299,13 +299,13 @@ describe("buffer.type_cache", function()
       local buf = vim.api.nvim_create_buf(false, false)
       vim.bo[buf].filetype = "lua"
 
-      local start = vim.loop.hrtime()
+      local start = vim.uv.hrtime()
 
       for _ = 1, 100 do
         type_cache.get_or_create(buf)
       end
 
-      local elapsed = (vim.loop.hrtime() - start) / 1000000
+      local elapsed = (vim.uv.hrtime() - start) / 1000000
 
       assert.is_true(elapsed < 10)
 

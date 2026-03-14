@@ -37,15 +37,15 @@ function M.mock(obj, method, implementation)
   end
 end
 
---- Mock vim.loop.fs_stat (and vim.uv.fs_stat, which is the same binding) for file system tests.
+--- Mock vim.uv.fs_stat (and vim.uv.fs_stat, which is the same binding) for file system tests.
 --- Supports both the synchronous form (no callback) and the async callback form used by
 --- find_first_executable_async in python_venv.lua.
 ---@param files table Map of paths to stat results
 ---@return function restore Function to restore original
 function M.mock_fs_stat(files)
-  local original = vim.loop.fs_stat
+  local original = vim.uv.fs_stat
 
-  vim.loop.fs_stat = function(path, callback)
+  vim.uv.fs_stat = function(path, callback)
     local stat = files[path]
     if callback then
       -- Async form: dispatch via vim.schedule so callers get results in the next tick
@@ -64,7 +64,7 @@ function M.mock_fs_stat(files)
   end
 
   return function()
-    vim.loop.fs_stat = original
+    vim.uv.fs_stat = original
   end
 end
 

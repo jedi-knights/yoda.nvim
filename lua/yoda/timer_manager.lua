@@ -51,7 +51,7 @@ function M.create_timer(callback, timeout, repeat_interval, timer_id)
   timer_id = timer_id or generate_timer_id()
   repeat_interval = repeat_interval or 0
 
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
   if not timer then
     vim.notify("Failed to create timer: " .. timer_id, vim.log.levels.ERROR)
     return nil, nil

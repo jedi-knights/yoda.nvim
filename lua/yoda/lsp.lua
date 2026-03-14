@@ -362,7 +362,7 @@ function M.setup()
       local ft = vim.bo[bufnr].filetype
       if ft == "gitcommit" or ft == "NeogitCommitMessage" then
         vim.schedule(function()
-          vim.lsp.buf_detach_client(bufnr, client.id)
+          client:detach(bufnr)
         end)
         return
       end

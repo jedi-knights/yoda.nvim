@@ -6,7 +6,7 @@ local function map(mode, lhs, rhs, opts)
 end
 
 map("n", "<leader>ta", function()
-  require("neotest").run.run(vim.loop.cwd())
+  require("neotest").run.run(vim.uv.cwd())
 end, { desc = "Test: Run all tests" })
 
 map("n", "<leader>tn", function()

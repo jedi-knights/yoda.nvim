@@ -8,10 +8,10 @@ describe("integrations.gitsigns batching", function()
     package.loaded["yoda.integrations.gitsigns"] = nil
     package.loaded["yoda.timer_manager"] = nil
 
-    original_hrtime = vim.loop.hrtime
+    original_hrtime = vim.uv.hrtime
 
     local mock_time = 0
-    vim.loop.hrtime = function()
+    vim.uv.hrtime = function()
       return mock_time
     end
 
@@ -30,7 +30,7 @@ describe("integrations.gitsigns batching", function()
   end)
 
   after_each(function()
-    vim.loop.hrtime = original_hrtime
+    vim.uv.hrtime = original_hrtime
     _G.mock_set_time = nil
     gitsigns.reset_timers()
     gitsigns.reset_batch_stats()

@@ -13,7 +13,7 @@ local metrics = {
 }
 
 function M.track_lsp_attach(server_name, start_time)
-  local elapsed = (vim.loop.hrtime() - start_time) / 1000000
+  local elapsed = (vim.uv.hrtime() - start_time) / 1000000
 
   if not metrics.attach_times[server_name] then
     metrics.attach_times[server_name] = { total = 0, count = 0, max = 0, min = math.huge }
@@ -31,7 +31,7 @@ function M.track_lsp_attach(server_name, start_time)
 end
 
 function M.track_venv_detection(root_dir, start_time, found)
-  local elapsed = (vim.loop.hrtime() - start_time) / 1000000
+  local elapsed = (vim.uv.hrtime() - start_time) / 1000000
 
   if not metrics.venv_detection_times[root_dir] then
     -- Evict the oldest root_dir entry when at capacity
@@ -64,7 +64,7 @@ function M.track_lsp_restart(server_name)
 end
 
 function M.track_config_time(server_name, start_time)
-  local elapsed = (vim.loop.hrtime() - start_time) / 1000000
+  local elapsed = (vim.uv.hrtime() - start_time) / 1000000
 
   if not metrics.config_times[server_name] then
     metrics.config_times[server_name] = { total = 0, count = 0, max = 0 }
