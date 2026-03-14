@@ -22,12 +22,12 @@ describe("keymaps", function()
     local keys = {}
 
     -- map("n", "<key>", ...) or map('n', '<key>', ...)
-    for mode, key in content:gmatch('map%s*%(["\'](%a+)["\']%s*,%s*["\']([^"\']+)["\']') do
+    for mode, key in content:gmatch("map%s*%([\"'](%a+)[\"']%s*,%s*[\"']([^\"']+)[\"']") do
       table.insert(keys, { mode = mode, key = key })
     end
 
     -- vim.keymap.set("n", "<key>", ...) or vim.keymap.set('n', '<key>', ...)
-    for mode, key in content:gmatch('vim%.keymap%.set%s*%(["\'](%a+)["\']%s*,%s*["\']([^"\']+)["\']') do
+    for mode, key in content:gmatch("vim%.keymap%.set%s*%([\"'](%a+)[\"']%s*,%s*[\"']([^\"']+)[\"']") do
       table.insert(keys, { mode = mode, key = key })
     end
 
@@ -55,11 +55,7 @@ describe("keymaps", function()
       end
     end
 
-    assert.equals(
-      0,
-      #violations,
-      "Within-file keymap collisions found:\n  " .. table.concat(violations, "\n  ")
-    )
+    assert.equals(0, #violations, "Within-file keymap collisions found:\n  " .. table.concat(violations, "\n  "))
   end)
 
   it("has no cross-file duplicate keymaps (excluding intentional ones)", function()
@@ -85,11 +81,7 @@ describe("keymaps", function()
       end
     end
 
-    assert.equals(
-      0,
-      #violations,
-      "Cross-file keymap collisions found:\n  " .. table.concat(violations, "\n  ")
-    )
+    assert.equals(0, #violations, "Cross-file keymap collisions found:\n  " .. table.concat(violations, "\n  "))
   end)
 
   it("finds keymap files for all modules listed in init.lua", function()
@@ -107,10 +99,6 @@ describe("keymaps", function()
       end
     end
 
-    assert.equals(
-      0,
-      #missing,
-      "Keymap modules listed in init.lua but missing on disk:\n  " .. table.concat(missing, "\n  ")
-    )
+    assert.equals(0, #missing, "Keymap modules listed in init.lua but missing on disk:\n  " .. table.concat(missing, "\n  "))
   end)
 end)

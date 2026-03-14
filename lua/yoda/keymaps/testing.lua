@@ -131,4 +131,3 @@ map("n", "<leader>tX", function()
     notify.notify("pytest-atlas not available", "error")
   end
 end, { desc = "Test: Clear pytest-atlas log" })
-
