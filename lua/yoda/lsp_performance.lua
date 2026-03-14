@@ -1,5 +1,10 @@
 local M = {}
 
+-- Cap venv_detection_times at this many unique root directories.
+-- Projects accumulate across a session; without a bound this table grows forever.
+local MAX_VENV_ENTRIES = 50
+local venv_key_order = {} -- insertion-order list for FIFO eviction
+
 local metrics = {
   attach_times = {},
   venv_detection_times = {},
@@ -29,7 +34,13 @@ function M.track_venv_detection(root_dir, start_time, found)
   local elapsed = (vim.loop.hrtime() - start_time) / 1000000
 
   if not metrics.venv_detection_times[root_dir] then
+    -- Evict the oldest root_dir entry when at capacity
+    if #venv_key_order >= MAX_VENV_ENTRIES then
+      local oldest = table.remove(venv_key_order, 1)
+      metrics.venv_detection_times[oldest] = nil
+    end
     metrics.venv_detection_times[root_dir] = { total = 0, count = 0, found = 0 }
+    table.insert(venv_key_order, root_dir)
   end
 
   local metric = metrics.venv_detection_times[root_dir]
@@ -81,6 +92,7 @@ function M.reset_metrics()
     restart_counts = {},
     config_times = {},
   }
+  venv_key_order = {}
 end
 
 function M.setup_commands()
