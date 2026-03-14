@@ -7,13 +7,19 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# JohnnyMorganz/stylua-action has no Node.js 24 release yet; opt in explicitly
+# so it runs under Node.js 24 and suppresses the deprecation annotation.
+# Remove once stylua-action publishes a Node.js 24 compatible version.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install StyLua
         uses: JohnnyMorganz/stylua-action@v4
@@ -30,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
@@ -59,4 +65,3 @@ jobs:
     steps:
       - name: All checks passed
         run: echo "✅ All CI checks passed!"
-
