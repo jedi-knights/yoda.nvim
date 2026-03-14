@@ -11,7 +11,7 @@ map("n", "<leader>pr", function()
   local python_cmd = "python3"
 
   if venv_ok then
-    local venvs = venv.find_virtual_envs()
+    local venvs = venv.find_virtual_envs() or {}
     if #venvs > 0 then
       python_cmd = venvs[1] .. "/bin/python"
       notify.notify("Using venv: " .. venvs[1], "info")
@@ -26,7 +26,7 @@ map("n", "<leader>pi", function()
   local python_cmd = "python3"
 
   if venv_ok then
-    local venvs = venv.find_virtual_envs()
+    local venvs = venv.find_virtual_envs() or {}
     if #venvs > 0 then
       python_cmd = venvs[1] .. "/bin/python"
     end

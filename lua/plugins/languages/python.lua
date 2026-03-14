@@ -26,7 +26,7 @@ return {
       -- Check for venv
       local venv_ok, venv = pcall(require, "yoda.terminal.venv")
       if venv_ok then
-        local venvs = venv.find_virtual_envs()
+        local venvs = venv.find_virtual_envs() or {}
         if #venvs > 0 then
           debugpy_path = venvs[1] .. "/bin/python"
         end
