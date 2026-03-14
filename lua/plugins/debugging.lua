@@ -33,7 +33,7 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter", "netcoredbg" },
+        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter" },
         automatic_installation = true,
         handlers = {},
       })
