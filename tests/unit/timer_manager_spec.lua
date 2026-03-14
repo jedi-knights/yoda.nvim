@@ -8,7 +8,7 @@ describe("timer_manager", function()
   before_each(function()
     package.loaded["yoda.timer_manager"] = nil
 
-    original_loop_new_timer = vim.loop.new_timer
+    original_loop_new_timer = vim.uv.new_timer
     original_timer_start = vim.fn.timer_start
 
     timer_manager = require("yoda.timer_manager")
@@ -17,7 +17,7 @@ describe("timer_manager", function()
 
   after_each(function()
     timer_manager.reset()
-    vim.loop.new_timer = original_loop_new_timer
+    vim.uv.new_timer = original_loop_new_timer
     vim.fn.timer_start = original_timer_start
     package.loaded["yoda.timer_manager"] = nil
   end)

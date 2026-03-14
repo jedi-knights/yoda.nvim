@@ -33,7 +33,7 @@ end, { desc = "Terminal: Floating shell - Open zsh terminal in floating window" 
 
 map("n", "<leader>vr", function()
   local function get_python()
-    local cwd = vim.loop.cwd()
+    local cwd = vim.uv.cwd()
     local venv = cwd .. "/.venv/bin/python3"
     if vim.fn.filereadable(venv) == 1 then
       return venv

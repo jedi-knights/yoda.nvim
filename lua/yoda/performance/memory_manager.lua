@@ -25,7 +25,7 @@ local function should_run_gc()
   end
 
   local current_memory = get_memory_usage_mb()
-  local time_since_last_gc = vim.loop.now() - metrics.last_gc_time
+  local time_since_last_gc = vim.uv.now() - metrics.last_gc_time
 
   if current_memory > config.aggressive_gc_threshold_mb then
     return true
@@ -48,7 +48,7 @@ local function perform_gc()
   local freed = memory_before - memory_after
 
   metrics.gc_count = metrics.gc_count + 1
-  metrics.last_gc_time = vim.loop.now()
+  metrics.last_gc_time = vim.uv.now()
   table.insert(metrics.memory_before_gc, memory_before)
   table.insert(metrics.memory_after_gc, memory_after)
 
@@ -100,7 +100,7 @@ function M.start()
     return
   end
 
-  timer = vim.loop.new_timer()
+  timer = vim.uv.new_timer()
   timer:start(config.gc_interval, config.gc_interval, vim.schedule_wrap(gc_callback))
 end
 
@@ -130,7 +130,7 @@ function M.get_stats()
 
   local last_gc_ago = "never"
   if metrics.last_gc_time > 0 then
-    local seconds_ago = (vim.loop.now() - metrics.last_gc_time) / 1000
+    local seconds_ago = (vim.uv.now() - metrics.last_gc_time) / 1000
     if seconds_ago < 60 then
       last_gc_ago = string.format("%.0fs", seconds_ago)
     else

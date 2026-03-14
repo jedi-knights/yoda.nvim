@@ -19,7 +19,7 @@ local function get_cached_venv(root_dir)
     return nil
   end
 
-  local now = vim.loop.hrtime()
+  local now = vim.uv.hrtime()
   if now - cached.timestamp < CACHE_TTL then
     return cached.venv_path
   end
@@ -35,7 +35,7 @@ end
 local function cache_venv(root_dir, venv_path)
   venv_cache[root_dir] = {
     venv_path = venv_path,
-    timestamp = vim.loop.hrtime(),
+    timestamp = vim.uv.hrtime(),
   }
 end
 
@@ -96,7 +96,7 @@ function M.detect_venv_async(root_dir, callback)
     return
   end
 
-  local venv_start_time = vim.loop.hrtime()
+  local venv_start_time = vim.uv.hrtime()
   local possible_paths = build_venv_paths(root_dir)
 
   find_first_executable_async(possible_paths, 1, function(venv_path)
@@ -162,7 +162,7 @@ end
 function M.get_cache_stats()
   local count = 0
   local expired = 0
-  local now = vim.loop.hrtime()
+  local now = vim.uv.hrtime()
 
   for _, cached in pairs(venv_cache) do
     count = count + 1
@@ -206,7 +206,7 @@ function M.setup_commands()
     }
 
     for root_dir, cached in pairs(venv_cache) do
-      local age = (vim.loop.hrtime() - cached.timestamp) / 1000000000
+      local age = (vim.uv.hrtime() - cached.timestamp) / 1000000000
       local status = age < stats.ttl_seconds and "✓" or "✗"
       table.insert(lines, string.format("  %s %s: %s (age: %.1fs)", status, root_dir, cached.venv_path or "none", age))
     end

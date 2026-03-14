@@ -11,13 +11,13 @@ local M = {}
 --- Get high-resolution time in milliseconds
 --- @return number timestamp Current time in milliseconds
 local function get_time_ms()
-  return vim.loop.hrtime() / 1000000
+  return vim.uv.hrtime() / 1000000
 end
 
 --- Get high-resolution time in microseconds
 --- @return number timestamp Current time in microseconds
 local function get_time_us()
-  return vim.loop.hrtime() / 1000
+  return vim.uv.hrtime() / 1000
 end
 
 -- ============================================================================

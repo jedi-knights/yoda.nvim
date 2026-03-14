@@ -62,7 +62,7 @@ function M.has_alpha_buffer()
     return true
   end
 
-  local current_time = vim.loop.hrtime() / 1000000
+  local current_time = vim.uv.hrtime() / 1000000
 
   if alpha_cache.has_alpha_buffer ~= nil and (current_time - alpha_cache.last_alpha_check_time) < alpha_cache.alpha_check_interval then
     return alpha_cache.has_alpha_buffer
@@ -98,7 +98,7 @@ end
 --- @param perf_tracker table|nil Optional performance tracker
 --- @return number
 function M.count_normal_buffers(perf_tracker)
-  local perf_start = vim.loop.hrtime()
+  local perf_start = vim.uv.hrtime()
   local current_time = perf_start / 1000000
 
   if alpha_cache.normal_count and (current_time - alpha_cache.last_check_time) < alpha_cache.check_interval then

@@ -90,7 +90,7 @@ function M.refresh_batched()
     return
   end
 
-  local current_time = vim.loop.hrtime() / 1000000
+  local current_time = vim.uv.hrtime() / 1000000
 
   -- Track the request
   local buf = vim.api.nvim_get_current_buf()

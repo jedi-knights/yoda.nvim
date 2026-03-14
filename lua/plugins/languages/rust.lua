@@ -85,7 +85,7 @@ return {
             local liblldb_path = install_path .. "/extension/lldb/lib/liblldb.dylib" -- macOS path
 
             -- Check if on Linux and adjust liblldb path
-            if vim.loop.os_uname().sysname == "Linux" then
+            if vim.uv.os_uname().sysname == "Linux" then
               liblldb_path = install_path .. "/extension/lldb/lib/liblldb.so"
             end
 

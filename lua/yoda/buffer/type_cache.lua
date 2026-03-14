@@ -60,7 +60,7 @@ local function create_cache_entry(buf)
     is_bracketed = bufname:match("^%[.-%]$") ~= nil,
 
     -- Cache metadata
-    timestamp = vim.loop.hrtime(),
+    timestamp = vim.uv.hrtime(),
     access_count = 0,
   }
 end
@@ -81,7 +81,7 @@ function M.get(buf)
   end
 
   -- Check if entry is expired
-  local age = (vim.loop.hrtime() - entry.timestamp) / 1000000 -- Convert to ms
+  local age = (vim.uv.hrtime() - entry.timestamp) / 1000000 -- Convert to ms
   if age > CACHE_CONFIG.TTL then
     buffer_cache[buf] = nil
     cache_stats.evictions = cache_stats.evictions + 1
@@ -239,7 +239,7 @@ end
 function M.get_stats()
   local cache_size = 0
   local expired_count = 0
-  local now = vim.loop.hrtime()
+  local now = vim.uv.hrtime()
 
   for _, entry in pairs(buffer_cache) do
     cache_size = cache_size + 1
@@ -279,7 +279,7 @@ end
 --- @return table info Detailed cache information
 function M.get_debug_info()
   local entries = {}
-  local now = vim.loop.hrtime()
+  local now = vim.uv.hrtime()
 
   for buf, entry in pairs(buffer_cache) do
     local age = (now - entry.timestamp) / 1000000
@@ -324,7 +324,7 @@ function M.setup_autocmds()
 
   -- Periodic cleanup of expired entries (30s interval)
   vim.fn.timer_start(30000, function()
-    local now = vim.loop.hrtime()
+    local now = vim.uv.hrtime()
     for buf, entry in pairs(buffer_cache) do
       local age = (now - entry.timestamp) / 1000000
       if age > CACHE_CONFIG.TTL then

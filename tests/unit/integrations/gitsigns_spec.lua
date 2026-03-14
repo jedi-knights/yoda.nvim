@@ -232,7 +232,7 @@ describe("integrations.gitsigns", function()
       local refresh_times = {}
       package.loaded.gitsigns = {
         refresh = function()
-          table.insert(refresh_times, vim.loop.hrtime())
+          table.insert(refresh_times, vim.uv.hrtime())
         end,
       }
       vim.bo.buftype = ""

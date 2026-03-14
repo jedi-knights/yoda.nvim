@@ -60,7 +60,7 @@ local function get_file_size(filepath)
     return nil
   end
 
-  local ok, stats = pcall(vim.loop.fs_stat, filepath)
+  local ok, stats = pcall(vim.uv.fs_stat, filepath)
   if ok and stats then
     return stats.size
   end
@@ -111,7 +111,7 @@ local function disable_lsp(buf)
       -- Stop all LSP clients attached to this buffer
       local clients = vim.lsp.get_clients({ bufnr = buf })
       for _, client in ipairs(clients) do
-        vim.lsp.buf_detach_client(buf, client.id)
+        client:detach(buf)
       end
     end
   end)
