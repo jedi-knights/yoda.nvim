@@ -39,13 +39,15 @@ function M.setup()
     vim.lsp.handlers[method] = handler
   end
 
-  -- Helper function to safely setup LSP servers using vim.lsp.config
+  -- Helper function to safely setup LSP servers using vim.lsp.config.
+  -- Uses vim.notify directly (not the adapter) because this runs during setup
+  -- before the notification adapter is guaranteed to be fully initialized.
   local function safe_setup(name, config)
     local success, err = pcall(function()
       vim.lsp.config(name, config)
     end)
     if not success then
-      notify.notify(string.format("Failed to configure LSP server '%s': %s", name, err), "warn")
+      vim.notify(string.format("Failed to configure LSP server '%s': %s", name, err), vim.log.levels.WARN)
       return false
     end
     return true
