@@ -12,12 +12,14 @@ return {
     },
     -- Use a more reliable build command
     build = function()
-      -- Install debugpy using the system python
-      local result = vim.fn.system("python -m pip install debugpy")
-      if vim.v.shell_error ~= 0 then
-        local notify = require("yoda-adapters.notification")
-        notify.notify("Failed to install debugpy: " .. result, "error")
-      end
+      -- Install debugpy asynchronously so the UI is not blocked
+      vim.fn.jobstart({ "python", "-m", "pip", "install", "debugpy" }, {
+        on_exit = function(_, code)
+          if code ~= 0 then
+            vim.notify("Failed to install debugpy (exit " .. code .. ")", vim.log.levels.ERROR)
+          end
+        end,
+      })
     end,
     config = function()
       -- Try to find debugpy in virtual environment first

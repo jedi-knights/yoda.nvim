@@ -125,7 +125,7 @@ end
 function M.apply_venv_to_lsp(root_dir, venv_path)
   local clients = vim.lsp.get_clients({ name = "basedpyright" })
   for _, client in ipairs(clients) do
-    if client.config.root_dir == root_dir then
+    if client.config and client.config.root_dir == root_dir then
       local settings = client.config and client.config.settings
       if settings then
         if settings.basedpyright and settings.basedpyright.analysis then

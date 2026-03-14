@@ -517,7 +517,7 @@ function M.setup()
               lsp_perf.track_lsp_restart("basedpyright")
               notify.notify(string.format("Restarting Python LSP for project: %s", current_root), "info")
               for _, client in ipairs(clients) do
-                client.stop()
+                client:stop()
               end
             end
           end)
@@ -618,9 +618,9 @@ function M._setup_debug_commands()
       local client = clients[1]
       print("Client name:", client.name)
       print("Client ID:", client.id)
-      print("Root dir:", client.config.root_dir or "unknown")
+      print("Root dir:", client.config and client.config.root_dir or "unknown")
 
-      if client.config.settings and client.config.settings.basedpyright then
+      if client.config and client.config.settings and client.config.settings.basedpyright then
         local settings = client.config.settings.basedpyright.analysis
         print("Python path:", settings.pythonPath or "default")
         print("Extra paths:", vim.inspect(settings.extraPaths or {}))
@@ -675,11 +675,11 @@ function M._setup_debug_commands()
       local client = clients[1]
       print("Client name:", client.name)
       print("Client ID:", client.id)
-      print("Root dir:", client.config.root_dir or "unknown")
-      print("Status:", client.is_stopped() and "stopped" or "running")
+      print("Root dir:", client.config and client.config.root_dir or "unknown")
+      print("Status:", client:is_stopped() and "stopped" or "running")
 
       -- Show workspace information
-      if client.config.settings and client.config.settings.java then
+      if client.config and client.config.settings and client.config.settings.java then
         print("Java settings configured: ✅")
       end
 

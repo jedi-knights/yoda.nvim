@@ -84,26 +84,9 @@ return {
         end,
       })
 
-      -- Enable treesitter folding only for code files where it's useful
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = {
-          "lua",
-          "python",
-          "rust",
-          "go",
-          "javascript",
-          "typescript",
-          "c",
-          "cpp",
-          "java",
-          "json",
-          "yaml",
-        },
-        callback = function()
-          vim.opt_local.foldmethod = "expr"
-          vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-        end,
-      })
+      -- Treesitter foldexpr disabled: setting foldmethod=expr causes Neovim to
+      -- re-evaluate the foldexpr on every text change, adding measurable typing
+      -- lag. Manual folding (set in options.lua) is used instead.
     end,
   },
 
