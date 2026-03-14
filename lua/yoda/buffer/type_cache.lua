@@ -20,6 +20,10 @@ local CACHE_CONFIG = {
 -- so weak keys (__mode = "k") would be a no-op. Size is managed by enforce_size_limit().
 local buffer_cache = {}
 
+-- Timer ID for the periodic TTL-cleanup timer; stored so it can be stopped
+-- if setup_autocmds() is called more than once (e.g. in tests).
+local cleanup_timer_id = nil
+
 -- Cache statistics for monitoring
 local cache_stats = {
   hits = 0,
@@ -323,8 +327,13 @@ function M.setup_autocmds()
     end,
   })
 
-  -- Periodic cleanup of expired entries (30s interval)
-  vim.fn.timer_start(30000, function()
+  -- Periodic cleanup of expired entries (30s interval).
+  -- Stop any previous timer before creating a new one so setup_autocmds()
+  -- is safe to call multiple times (e.g. in tests).
+  if cleanup_timer_id then
+    vim.fn.timer_stop(cleanup_timer_id)
+  end
+  cleanup_timer_id = vim.fn.timer_start(30000, function()
     local now = vim.uv.hrtime()
     for buf, entry in pairs(buffer_cache) do
       local age = (now - entry.timestamp) / 1000000

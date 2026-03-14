@@ -195,7 +195,7 @@ end
 function M.recenter_alpha_dashboard()
   local win, buf = win_utils.find_by_filetype("alpha")
 
-  if not win then
+  if not win or not buf then
     return false
   end
 
