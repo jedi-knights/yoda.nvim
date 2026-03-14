@@ -3,7 +3,9 @@
 -- Parses source files directly — no runtime dependencies required.
 
 describe("keymaps", function()
-  local keymap_dir = vim.fn.stdpath("config") .. "/lua/yoda/keymaps"
+  -- Use project root (CWD when tests run) rather than stdpath("config") so
+  -- tests work in CI where the config dir is empty.
+  local keymap_dir = vim.fn.getcwd() .. "/lua/yoda/keymaps"
 
   -- Keys intentionally mapped in multiple files (e.g. <nop> to disable keys)
   local ALLOWED_CROSS_FILE_DUPLICATES = {
