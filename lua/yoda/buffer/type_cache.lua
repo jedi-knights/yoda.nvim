@@ -16,8 +16,9 @@ local CACHE_CONFIG = {
 -- Cache Storage
 -- ============================================================================
 
--- Weak table for automatic garbage collection of deleted buffers
-local buffer_cache = setmetatable({}, { __mode = "k" })
+-- Plain table; buffer numbers are integers and not GC-collectable in LuaJIT
+-- so weak keys (__mode = "k") would be a no-op. Size is managed by enforce_size_limit().
+local buffer_cache = {}
 
 -- Cache statistics for monitoring
 local cache_stats = {
@@ -127,7 +128,7 @@ function M.invalidate(buf)
       cache_stats.invalidations = cache_stats.invalidations + 1
     end
   else
-    buffer_cache = setmetatable({}, { __mode = "k" })
+    buffer_cache = {}
     cache_stats.invalidations = cache_stats.invalidations + 1
   end
 end

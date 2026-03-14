@@ -250,10 +250,19 @@ function M.start_alpha_dashboard()
     return false
   end
 
-  local alpha_config = {
-    redraw_on_resize = true,
-    layout = create_alpha_layout(dashboard),
-  }
+  -- Wrap layout construction in pcall so creation_in_progress is always reset
+  -- even if dashboard.section fields are unexpectedly nil.
+  local layout_ok, alpha_config = pcall(function()
+    return {
+      redraw_on_resize = true,
+      layout = create_alpha_layout(dashboard),
+    }
+  end)
+
+  if not layout_ok then
+    alpha_cache.creation_in_progress = false
+    return false
+  end
 
   local config_ok = pcall(alpha.start, alpha_config)
 
