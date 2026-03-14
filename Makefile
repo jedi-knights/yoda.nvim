@@ -62,13 +62,13 @@ test-property:
 	@echo "This will take longer than unit tests..."
 	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/property')" -c "quitall!"
 
-# Lint code with stylua (excluding files with goto labels)
+# Lint code with stylua
 lint:
-	@find lua tests -name "*.lua" ! -name "yaml_parser.lua" ! -name "config_loader.lua" -type f | xargs stylua --check
+	@find lua tests -name "*.lua" -type f | xargs stylua --check
 
-# Format code with stylua (excluding files with goto labels)  
+# Format code with stylua
 format:
-	@find lua tests -name "*.lua" ! -name "yaml_parser.lua" ! -name "config_loader.lua" -type f | xargs stylua
+	@find lua tests -name "*.lua" -type f | xargs stylua
 
 # Performance benchmarking
 benchmark:

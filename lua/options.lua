@@ -36,17 +36,14 @@ local function set_colorcolumn_highlight()
   end)
 end
 
--- Set up autocmds to ensure colorcolumn stays visible
-vim.api.nvim_create_augroup("ColorColumnPersistent", { clear = true })
-
+-- Re-apply after every colorscheme change so the highlight survives theme switches.
+-- This also fires at startup when lazy.nvim applies the initial colorscheme,
+-- so a separate immediate call is not needed.
 vim.api.nvim_create_autocmd("ColorScheme", {
-  group = "ColorColumnPersistent",
+  group = vim.api.nvim_create_augroup("ColorColumnPersistent", { clear = true }),
   pattern = "*",
   callback = set_colorcolumn_highlight,
 })
-
--- Apply colorcolumn highlight immediately
-set_colorcolumn_highlight()
 
 -- ============================================================================
 -- INDENTATION
