@@ -54,8 +54,9 @@ return {
         typescriptreact = { "biome" },
       }
 
-      -- Auto-lint on certain events (removed BufEnter for performance)
-      vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
+      -- Lint only on save — removed InsertLeave to eliminate typing lag
+      -- (InsertLeave would spawn ruff/biome/clippy on every <Esc>)
+      vim.api.nvim_create_autocmd({ "BufWritePost" }, {
         callback = function()
           -- Only lint if linters are configured
           local linters = lint.linters_by_ft[vim.bo.filetype]

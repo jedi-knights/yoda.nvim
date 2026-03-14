@@ -39,6 +39,9 @@ function M.resolve(name)
 
   -- Instantiate service (factory can call M.resolve for dependencies)
   local service = factory()
+  if service == nil then
+    error(string.format("Factory for service '%s' returned nil", name))
+  end
   services[name] = service
 
   return service
