@@ -43,23 +43,14 @@ map("n", "<leader>rT", function()
   neotest.run.run(vim.fn.expand("%"))
 end, { desc = "Rust: Test file" })
 
+-- rustaceanvim provides :RustLsp debuggables which integrates with DAP
 map("n", "<leader>rd", function()
-  local ok, rt = pcall(require, "rust-tools")
-  if not ok then
-    notify.notify("Rust-tools not available. Opening standard DAP...", "warn")
-    require("dap").continue()
-    return
-  end
-  rt.debuggables.debuggables()
+  vim.cmd.RustLsp("debuggables")
 end, { desc = "Rust: Start debug" })
 
+-- Native Neovim 0.10+ inlay hint toggle (no plugin dependency)
 map("n", "<leader>rh", function()
-  local ok, rt = pcall(require, "rust-tools")
-  if not ok then
-    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
-    return
-  end
-  rt.inlay_hints.toggle()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = "Rust: Toggle inlay hints" })
 
 map("n", "<leader>re", function()
@@ -78,38 +69,19 @@ map("n", "<leader>ro", function()
   end
 end, { desc = "Rust: Toggle outline" })
 
+-- rustaceanvim grouped code actions
 map("n", "<leader>ra", function()
-  local ok, rt = pcall(require, "rust-tools")
-  if not ok then
-    vim.lsp.buf.code_action()
-    return
-  end
-  rt.code_action_group.code_action_group()
+  vim.cmd.RustLsp("codeAction")
 end, { desc = "Rust: Code actions" })
 
 map("n", "<leader>rm", function()
-  local ok, rt = pcall(require, "rust-tools")
-  if not ok then
-    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
-    return
-  end
-  rt.expand_macro.expand_macro()
+  vim.cmd.RustLsp("expandMacro")
 end, { desc = "Rust: Expand macro" })
 
 map("n", "<leader>rp", function()
-  local ok, rt = pcall(require, "rust-tools")
-  if not ok then
-    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
-    return
-  end
-  rt.parent_module.parent_module()
+  vim.cmd.RustLsp("parentModule")
 end, { desc = "Rust: Go to parent module" })
 
 map("n", "<leader>rj", function()
-  local ok, rt = pcall(require, "rust-tools")
-  if not ok then
-    notify.notify("Rust-tools not available. Install via :Lazy sync", "error")
-    return
-  end
-  rt.join_lines.join_lines()
+  vim.cmd.RustLsp("joinLines")
 end, { desc = "Rust: Join lines" })

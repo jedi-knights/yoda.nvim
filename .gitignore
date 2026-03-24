@@ -43,6 +43,10 @@ node_modules/
 
 /plugin_dev.lua
 
+# User customizations (keep the stub but ignore personal plugin files)
+/lua/custom/plugins/*.lua
+!/lua/custom/plugins/init.lua
+
 # Benchmark temporary files
 benchmarks/temp/
 

@@ -65,11 +65,6 @@ vim.schedule(function()
     memory_manager.setup(vim.g.yoda_memory_manager or {})
   end
 
-  -- Initialize adaptive LSP debouncing
-  local lsp_ok, adaptive_lsp = pcall(require, "yoda.performance.adaptive_lsp")
-  if lsp_ok then
-    adaptive_lsp.setup(vim.g.yoda_adaptive_lsp or {})
-  end
 end)
 
 -- ============================================================================

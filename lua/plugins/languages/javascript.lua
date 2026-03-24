@@ -1,4 +1,4 @@
--- lua/plugins_new/languages/javascript.lua
+-- lua/plugins/languages/javascript.lua
 -- JavaScript/TypeScript/Node.js development plugins
 
 return {

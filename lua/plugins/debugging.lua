@@ -1,5 +1,5 @@
--- lua/plugins_new/debugging.lua
--- Debug Adapter Protocol (DAP) plugins
+-- lua/plugins/debugging.lua
+-- Debug Adapter Protocol (DAP) plugins and task runner
 
 return {
   -- DAP - Debug Adapter Protocol
@@ -118,118 +118,43 @@ return {
     end,
   },
 
-  -- nvim-dap-python - Python debugging with debugpy
+  -- Overseer - Task runner for build/run commands (cargo, make, npm, etc.)
   {
-    "mfussenegger/nvim-dap-python",
-    ft = "python",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "rcarriga/nvim-dap-ui",
-    },
-    -- Use a more reliable build command
-    build = function()
-      -- Install debugpy asynchronously so the UI is not blocked
-      vim.fn.jobstart({ "python", "-m", "pip", "install", "debugpy" }, {
-        on_exit = function(_, code)
-          if code ~= 0 then
-            vim.notify("Failed to install debugpy (exit " .. code .. ")", vim.log.levels.ERROR)
-          end
-        end,
-      })
-    end,
+    "stevearc/overseer.nvim",
+    cmd = { "OverseerRun", "OverseerToggle", "OverseerInfo", "OverseerBuild" },
     config = function()
-      -- Try to find debugpy in virtual environment first
-      local debugpy_path = vim.fn.exepath("python")
-
-      -- Check for venv
-      local venv_ok, venv = pcall(require, "yoda.terminal.venv")
-      if venv_ok then
-        local venvs = venv.find_virtual_envs() or {}
-        if #venvs > 0 then
-          debugpy_path = venvs[1] .. "/bin/python"
-        end
-      end
-
-      require("dap-python").setup(debugpy_path)
-
-      -- Configure test runner
-      require("dap-python").test_runner = "pytest"
-
-      -- Add configurations for common scenarios
-      table.insert(require("dap").configurations.python, {
-        type = "python",
-        request = "launch",
-        name = "Launch file with arguments",
-        program = "${file}",
-        args = function()
-          local args_string = vim.fn.input("Arguments: ")
-          return vim.split(args_string, " +")
-        end,
+      require("overseer").setup({
+        templates = { "builtin" },
+        task_list = {
+          direction = "bottom",
+          min_height = 25,
+          max_height = 25,
+          default_detail = 1,
+          bindings = {
+            ["?"] = "ShowHelp",
+            ["g?"] = "ShowHelp",
+            ["<CR>"] = "RunAction",
+            ["<C-e>"] = "Edit",
+            ["o"] = "Open",
+            ["<C-v>"] = "OpenVsplit",
+            ["<C-s>"] = "OpenSplit",
+            ["<C-f>"] = "OpenFloat",
+            ["<C-q>"] = "OpenQuickFix",
+            ["p"] = "TogglePreview",
+            ["<C-l>"] = "IncreaseDetail",
+            ["<C-h>"] = "DecreaseDetail",
+            ["L"] = "IncreaseAllDetail",
+            ["H"] = "DecreaseAllDetail",
+            ["["] = "DecreaseWidth",
+            ["]"] = "IncreaseWidth",
+            ["{"] = "PrevTask",
+            ["}"] = "NextTask",
+            ["<C-k>"] = "ScrollOutputUp",
+            ["<C-j>"] = "ScrollOutputDown",
+          },
+        },
       })
     end,
   },
 
-  -- nvim-dap-vscode-js - VSCode JavaScript debugger
-  {
-    "mxsdev/nvim-dap-vscode-js",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "rcarriga/nvim-dap-ui",
-    },
-    lazy = true,
-    config = function()
-      -- Get vscode-js-debug path from Mason with safety checks
-      local ok, mason_registry = pcall(require, "mason-registry")
-      if not ok then
-        vim.notify("Mason not available for JavaScript debugging", vim.log.levels.WARN)
-        return
-      end
-
-      -- Try to get the js-debug-adapter package
-      local pkg_ok, pkg = pcall(mason_registry.get_package, "js-debug-adapter")
-      if not pkg_ok or not pkg then
-        vim.notify("js-debug-adapter not installed. Run :MasonInstall js-debug-adapter", vim.log.levels.WARN)
-        return
-      end
-
-      -- Get install path
-      local install_ok, debugger_path = pcall(function()
-        return pkg:get_install_path() .. "/js-debug/src/dapDebugServer.js"
-      end)
-
-      if not install_ok or not debugger_path then
-        vim.notify(
-          "js-debug-adapter installation path not found. Try :MasonUninstall js-debug-adapter then :MasonInstall js-debug-adapter",
-          vim.log.levels.WARN
-        )
-        return
-      end
-
-      require("dap-vscode-js").setup({
-        debugger_path = debugger_path,
-        adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" },
-      })
-
-      -- Configure for various JavaScript scenarios
-      for _, language in ipairs({ "typescript", "javascript", "typescriptreact", "javascriptreact" }) do
-        require("dap").configurations[language] = {
-          -- Node.js debugging
-          {
-            type = "pwa-node",
-            request = "launch",
-            name = "Launch file",
-            program = "${file}",
-            cwd = "${workspaceFolder}",
-          },
-          {
-            type = "pwa-node",
-            request = "attach",
-            name = "Attach",
-            processId = require("dap.utils").pick_process,
-            cwd = "${workspaceFolder}",
-          },
-        }
-      end
-    end,
-  },
 }

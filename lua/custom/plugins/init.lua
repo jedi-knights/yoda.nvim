@@ -1,0 +1,26 @@
+-- lua/custom/plugins/init.lua
+--
+-- Add your personal plugin overrides here without modifying yoda's core files.
+-- This keeps your customizations separate from upstream changes, making updates easier.
+--
+-- You can either:
+--   1. Add plugins directly in this file
+--   2. Create additional *.lua files alongside this one (lazy.nvim imports all of them)
+--
+-- Example:
+--
+--   return {
+--     -- Override an existing plugin's config
+--     {
+--       "folke/tokyonight.nvim",
+--       opts = { style = "moon" },
+--     },
+--
+--     -- Add a new plugin
+--     {
+--       "github/user/my-plugin.nvim",
+--       opts = {},
+--     },
+--   }
+
+return {}
