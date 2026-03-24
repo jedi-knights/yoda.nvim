@@ -193,41 +193,6 @@ function M.setup()
         },
       },
     },
-    on_new_config = function(config, root_dir)
-      local function join_path(...)
-        return table.concat({ ... }, "/")
-      end
-
-      if root_dir then
-        local python_paths = { root_dir }
-        local src_dir = join_path(root_dir, "src")
-
-        if vim.fn.isdirectory(src_dir) == 1 then
-          table.insert(python_paths, src_dir)
-        end
-
-        local project_name = vim.fn.fnamemodify(root_dir, ":t")
-        if project_name:match("sun%-qa%-python%-tools") or vim.fn.isdirectory(join_path(root_dir, "sun_qa_python_tools")) == 1 then
-          local package_dirs = {
-            join_path(root_dir, "sun_qa_python_tools"),
-            join_path(root_dir, "src", "sun_qa_python_tools"),
-          }
-
-          for _, pkg_dir in ipairs(package_dirs) do
-            if vim.fn.isdirectory(pkg_dir) == 1 then
-              table.insert(python_paths, pkg_dir)
-            end
-          end
-        end
-
-        config.settings.basedpyright.analysis.extraPaths = python_paths
-        config.settings.python.analysis.extraPaths = python_paths
-      end
-
-      -- Use async venv detection for better performance
-      local python_venv = require("yoda.python_venv")
-      python_venv.detect_and_apply(root_dir)
-    end,
   })
 
   -- YAML setup
@@ -394,6 +359,53 @@ function M.setup()
         vim.schedule(function()
           vim.lsp.buf.clear_references()
         end)
+
+        -- on_new_config is an nvim-lspconfig hook that Neovim 0.11's vim.lsp
+        -- never calls. Replicate its work here: push extraPaths and venv via
+        -- workspace/didChangeConfiguration once the server has attached.
+        local root_dir = client.config and client.config.root_dir
+        if root_dir then
+          local function join_path(...)
+            return table.concat({ ... }, "/")
+          end
+
+          -- Build extraPaths: root + src/ layout + known internal packages
+          local extra_paths = { root_dir }
+          local src_dir = join_path(root_dir, "src")
+          if vim.fn.isdirectory(src_dir) == 1 then
+            table.insert(extra_paths, src_dir)
+          end
+
+          local project_name = vim.fn.fnamemodify(root_dir, ":t")
+          if project_name:match("sun%-qa%-python%-tools") or vim.fn.isdirectory(join_path(root_dir, "sun_qa_python_tools")) == 1 then
+            local package_dirs = {
+              join_path(root_dir, "sun_qa_python_tools"),
+              join_path(root_dir, "src", "sun_qa_python_tools"),
+            }
+            for _, pkg_dir in ipairs(package_dirs) do
+              if vim.fn.isdirectory(pkg_dir) == 1 then
+                table.insert(extra_paths, pkg_dir)
+              end
+            end
+          end
+
+          -- Push extraPaths immediately so imports resolve before venv is found
+          vim.schedule(function()
+            local settings = client.config and client.config.settings
+            if settings then
+              if settings.basedpyright and settings.basedpyright.analysis then
+                settings.basedpyright.analysis.extraPaths = extra_paths
+              end
+              if settings.python and settings.python.analysis then
+                settings.python.analysis.extraPaths = extra_paths
+              end
+              client.notify("workspace/didChangeConfiguration", { settings = settings })
+            end
+          end)
+
+          -- Async venv detection — pushes pythonPath via didChangeConfiguration
+          require("yoda.python_venv").detect_and_apply(root_dir)
+        end
       end
 
       -- 2. Document highlighting: highlight references to the symbol under the
