@@ -15,7 +15,7 @@ map("n", "<leader>D", function()
 end, { desc = "Util: Delete buffer content" })
 
 -- Toggle conform.nvim auto-format on save for the session.
-map("n", "<leader>tf", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
+map("n", "<leader>tu", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
 
 map("n", "<leader>d", function()
   local ok, alpha = pcall(require, "alpha")
