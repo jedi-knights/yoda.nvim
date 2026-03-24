@@ -1,4 +1,4 @@
--- lua/plugins_new/completion.lua
+-- lua/plugins/completion.lua
 -- Completion and snippet plugins
 
 return {

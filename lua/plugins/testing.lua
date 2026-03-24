@@ -1,4 +1,4 @@
--- lua/plugins_new/testing.lua
+-- lua/plugins/testing.lua
 -- Testing framework and adapter plugins
 
 return {
@@ -170,28 +170,6 @@ return {
     "nvim-neotest/neotest-python",
     lazy = true,
     dependencies = { "nvim-neotest/neotest" },
-  },
-
-  -- Neotest Rust adapter
-  {
-    "rouge8/neotest-rust",
-    lazy = true,
-    dependencies = { "nvim-neotest/neotest" },
-    ft = "rust",
-  },
-
-  -- Neotest Jest adapter
-  {
-    "nvim-neotest/neotest-jest",
-    dependencies = { "nvim-neotest/neotest" },
-    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-  },
-
-  -- Neotest Vitest adapter
-  {
-    "marilari88/neotest-vitest",
-    dependencies = { "nvim-neotest/neotest" },
-    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
   },
 
   -- Coverage - Code coverage

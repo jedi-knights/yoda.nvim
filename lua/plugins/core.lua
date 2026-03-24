@@ -1,4 +1,4 @@
--- lua/plugins_new/core.lua
+-- lua/plugins/core.lua
 -- Core utility plugins
 
 return {

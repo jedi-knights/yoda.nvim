@@ -57,6 +57,9 @@ require("lazy").setup({
   -- Core plugins
   { import = "plugins.core" },
   { import = "plugins.ui" },
+  { import = "plugins.notifications" },
+  { import = "plugins.dashboard" },
+  { import = "plugins.statusline" },
   { import = "plugins.editor" },
   { import = "plugins.motion" },
 
@@ -77,6 +80,11 @@ require("lazy").setup({
   { import = "plugins.languages.rust" },
   { import = "plugins.languages.python" },
   { import = "plugins.languages.javascript" },
+
+  -- User customizations: add your own plugins in lua/custom/plugins/
+  -- This directory is gitignored so your changes won't conflict with upstream yoda updates.
+  -- See lua/custom/plugins/init.lua for instructions.
+  { import = "custom.plugins" },
 }, {
   defaults = {
     lazy = true,

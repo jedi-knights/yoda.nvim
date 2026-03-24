@@ -1,4 +1,4 @@
--- lua/plugins_new/motion.lua
+-- lua/plugins/motion.lua
 -- Motion and navigation plugins
 
 return {

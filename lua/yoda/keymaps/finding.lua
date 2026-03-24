@@ -1,3 +1,0 @@
--- Finder keymaps are now defined in lua/plugins/finding.lua
--- This is to ensure they lazy-load with fzf-lua and avoid
--- "module not found" errors during startup

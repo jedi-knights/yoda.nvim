@@ -1,4 +1,4 @@
--- lua/plugins_new/formatters.lua
+-- lua/plugins/formatters.lua
 -- Formatting and linting plugins
 
 return {
@@ -145,60 +145,4 @@ return {
     end,
   },
 
-  -- Overseer.nvim - Task runner for cargo commands
-  {
-    "stevearc/overseer.nvim",
-    cmd = { "OverseerRun", "OverseerToggle", "OverseerInfo", "OverseerBuild" },
-    config = function()
-      require("overseer").setup({
-        templates = { "builtin" },
-        task_list = {
-          direction = "bottom",
-          min_height = 25,
-          max_height = 25,
-          default_detail = 1,
-          bindings = {
-            ["?"] = "ShowHelp",
-            ["g?"] = "ShowHelp",
-            ["<CR>"] = "RunAction",
-            ["<C-e>"] = "Edit",
-            ["o"] = "Open",
-            ["<C-v>"] = "OpenVsplit",
-            ["<C-s>"] = "OpenSplit",
-            ["<C-f>"] = "OpenFloat",
-            ["<C-q>"] = "OpenQuickFix",
-            ["p"] = "TogglePreview",
-            ["<C-l>"] = "IncreaseDetail",
-            ["<C-h>"] = "DecreaseDetail",
-            ["L"] = "IncreaseAllDetail",
-            ["H"] = "DecreaseAllDetail",
-            ["["] = "DecreaseWidth",
-            ["]"] = "IncreaseWidth",
-            ["{"] = "PrevTask",
-            ["}"] = "NextTask",
-            ["<C-k>"] = "ScrollOutputUp",
-            ["<C-j>"] = "ScrollOutputDown",
-          },
-        },
-      })
-    end,
-  },
-
-  -- Mason-nvim-dap - Auto-install DAP adapters via Mason
-  {
-    "jay-babu/mason-nvim-dap.nvim",
-    lazy = true,
-    event = "VeryLazy",
-    dependencies = {
-      "williamboman/mason.nvim",
-      "mfussenegger/nvim-dap",
-    },
-    config = function()
-      require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb", "debugpy", "js-debug-adapter" },
-        automatic_installation = true,
-        handlers = {},
-      })
-    end,
-  },
 }

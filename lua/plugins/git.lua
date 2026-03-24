@@ -1,4 +1,4 @@
--- lua/plugins_new/git.lua
+-- lua/plugins/git.lua
 -- Git integration plugins
 
 return {
@@ -144,7 +144,7 @@ return {
 
   -- Neogit - Git interface
   {
-    "TimUntersberger/neogit",
+    "NeogitOrg/neogit",
     lazy = true,
     cmd = "Neogit",
     dependencies = {

@@ -1,4 +1,4 @@
--- lua/plugins_new/lsp.lua
+-- lua/plugins/lsp.lua
 -- LSP configuration plugins
 
 return {

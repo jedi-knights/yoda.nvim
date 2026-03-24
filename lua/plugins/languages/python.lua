@@ -1,4 +1,4 @@
--- lua/plugins_new/languages/python.lua
+-- lua/plugins/languages/python.lua
 -- Python development plugins
 
 return {

@@ -1,4 +1,4 @@
--- lua/plugins_new/explorer.lua
+-- lua/plugins/explorer.lua
 -- File explorer and navigation plugins
 
 return {
