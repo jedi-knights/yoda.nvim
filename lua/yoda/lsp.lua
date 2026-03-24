@@ -57,9 +57,7 @@ function M.setup()
   safe_setup("gopls", {
     cmd = { "gopls" },
     filetypes = { "go", "gomod", "gowork", "gotmpl" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { "go.work", "go.mod", ".git" })
-    end,
+    root_markers = { "go.work", "go.mod", ".git" },
     capabilities = capabilities,
     flags = {
       debounce_text_changes = 300,
@@ -112,9 +110,7 @@ function M.setup()
   safe_setup("lua_ls", {
     cmd = { "lua-language-server" },
     filetypes = { "lua" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" })
-    end,
+    root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
     capabilities = capabilities,
     flags = {
       debounce_text_changes = 300,
@@ -140,9 +136,7 @@ function M.setup()
   safe_setup("ts_ls", {
     cmd = { "typescript-language-server", "--stdio" },
     filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { "tsconfig.json", "package.json", "jsconfig.json", ".git" })
-    end,
+    root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" },
     capabilities = capabilities,
     flags = {
       debounce_text_changes = 300,
@@ -157,9 +151,7 @@ function M.setup()
   safe_setup("basedpyright", {
     cmd = { "basedpyright-langserver", "--stdio" },
     filetypes = { "python" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" })
-    end,
+    root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
     capabilities = python_capabilities,
     flags = {
       debounce_text_changes = 500,
@@ -242,9 +234,7 @@ function M.setup()
   safe_setup("yamlls", {
     cmd = { "yaml-language-server", "--stdio" },
     filetypes = { "yaml", "yaml.docker-compose", "yaml.gitlab" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { ".git" })
-    end,
+    root_markers = { ".git" },
     capabilities = capabilities,
     flags = {
       debounce_text_changes = 300,
@@ -263,9 +253,7 @@ function M.setup()
   safe_setup("jdtls", {
     cmd = { "jdtls" },
     filetypes = { "java", "groovy" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" })
-    end,
+    root_markers = { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" },
     capabilities = capabilities,
     settings = {
       java = {
@@ -343,9 +331,7 @@ function M.setup()
   safe_setup("marksman", {
     cmd = { "marksman", "server" },
     filetypes = { "markdown", "markdown.mdx" },
-    root_dir = function(fname)
-      return vim.fs.root(fname, { ".git", ".marksman.toml" })
-    end,
+    root_markers = { ".git", ".marksman.toml" },
     capabilities = capabilities,
     flags = {
       debounce_text_changes = 300,
