@@ -5,7 +5,9 @@ return {
   {
     "saghen/blink.cmp",
     -- optional: provides snippets for the snippet source
-    dependencies = { "rafamadriz/friendly-snippets" },
+    dependencies = { "rafamadriz/friendly-snippets", "folke/lazydev.nvim" },
+
+    event = "InsertEnter",
 
     -- use a release tag to download pre-built binaries
     version = "1.*",
@@ -17,7 +19,19 @@ return {
     ---@module 'blink.cmp'
     ---@type blink.cmp.Config
     opts = {
-      keymap = { preset = "default" },
+      keymap = {
+        preset = "default",
+        -- Accept blink item if selected, otherwise fall through to native LSP
+        -- inline completion (e.g. Copilot). Returns true on success to stop the
+        -- chain; false falls through to 'fallback' which passes <C-y> normally.
+        ["<C-y>"] = {
+          "select_and_accept",
+          function()
+            return vim.lsp.inline_completion.get()
+          end,
+          "fallback",
+        },
+      },
 
       appearance = {
         nerd_font_variant = "mono",
@@ -25,8 +39,9 @@ return {
 
       completion = {
         documentation = {
-          auto_show = false,
+          auto_show = true,
           auto_show_delay_ms = 500,
+          window = { border = "rounded" },
         },
         menu = {
           border = "rounded",
@@ -53,9 +68,9 @@ return {
       },
 
       sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { "lsp", "path", "snippets", "buffer", "lazydev" },
         per_filetype = {
-          lua = { "lsp", "path", "snippets" },
+          lua = { "lsp", "path", "snippets", "lazydev" },
           python = { "lsp", "path" },
         },
         providers = {
@@ -75,6 +90,10 @@ return {
           },
           snippets = {
             max_items = 15,
+          },
+          lazydev = {
+            module = "lazydev.integrations.blink",
+            score_offset = 100,
           },
         },
       },
