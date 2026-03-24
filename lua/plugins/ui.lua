@@ -7,6 +7,14 @@ return {
     "folke/tokyonight.nvim",
     lazy = false,
     priority = 1000,
+    config = function()
+      vim.schedule(function()
+        local ok = pcall(vim.cmd, "colorscheme tokyonight")
+        if not ok then
+          vim.notify("Colorscheme 'tokyonight' not found!", vim.log.levels.ERROR)
+        end
+      end)
+    end,
   },
 
   -- Bufferline - Visual buffer tabs

@@ -48,11 +48,6 @@ end)
 -- Yoda Modules
 -- ============================================================================
 
--- Load colorscheme
-vim.schedule(function()
-  pcall(require, "yoda.colorscheme")
-end)
-
 -- Defer loading of non-critical modules
 vim.schedule(function()
   pcall(require, "yoda.commands")
