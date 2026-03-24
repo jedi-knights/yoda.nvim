@@ -43,6 +43,11 @@ return {
           "bash",
           "regex",
           "gherkin",
+          -- "comment" intentionally omitted: it is a pure injection parser
+          -- that runs over every buffer in every language, adding injection
+          -- query overhead on every file open. Per-language comment
+          -- highlighting is already handled natively by each language's own
+          -- parser, so the extra parser provides no benefit.
         },
         auto_install = true,
         highlight = {
@@ -93,5 +98,53 @@ return {
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
     lazy = true,
+  },
+
+  -- vim-sleuth: detect indentation settings (tabstop, shiftwidth, expandtab)
+  -- from the file content and neighbouring files. Silently corrects for
+  -- projects that use tabs when options.lua defaults to spaces and vice-versa.
+  { "tpope/vim-sleuth", event = "BufReadPost" },
+
+  -- which-key: shows pending keymap completions after a brief delay.
+  -- Group labels turn the raw key list into a navigable menu.
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      delay = 0,
+      preset = "helix",
+      icons = { mappings = true, keys = {} },
+      spec = {
+        { "<leader>a", group = "AI" },
+        { "<leader>s", group = "Search" },
+        { "<leader>t", group = "Toggle/Test" },
+        { "<leader>d", group = "Debug" },
+        { "<leader>g", group = "Git" },
+        { "<leader>h", group = "Git Hunk", mode = { "n", "v" } },
+        { "<leader>w", group = "Window" },
+        { "<leader>x", group = "Diagnostics" },
+        -- Explicit entry so leader-D isn't swallowed by the leader-d Debug group
+        { "<leader>D", desc = "Delete buffer content" },
+      },
+    },
+  },
+
+  -- mini.ai: extended text objects using treesitter.
+  -- Adds `an`/`in` (next), `af`/`if` (function), `ac`/`ic` (class), etc.
+  -- n_lines = 50 means it looks up to 50 lines away for the object boundary,
+  -- which handles long functions without missing the closing brace.
+  -- Deferred to InsertEnter because text objects are only relevant while editing.
+  {
+    "echasnovski/mini.ai",
+    event = "InsertEnter",
+    opts = { n_lines = 50 },
+  },
+
+  -- mini.pairs: auto-close brackets, quotes, and other paired characters.
+  -- Loaded on InsertEnter so it does not add to startup time.
+  {
+    "echasnovski/mini.pairs",
+    event = "InsertEnter",
+    opts = {},
   },
 }

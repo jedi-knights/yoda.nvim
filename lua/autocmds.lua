@@ -1,6 +1,77 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
+-- Relative line numbers: show absolute numbers when a window loses focus or
+-- the cursor enters the command line — relative numbers are only meaningful
+-- when navigating in the current buffer.
+local line_numbers_group = augroup("YodaToggleLineNumbers", { clear = true })
+autocmd({ "BufEnter", "FocusGained", "CmdlineLeave", "WinEnter" }, {
+  group = line_numbers_group,
+  desc = "Enable relative line numbers",
+  callback = function()
+    if vim.wo.nu and not vim.startswith(vim.api.nvim_get_mode().mode, "i") then
+      vim.wo.relativenumber = true
+    end
+  end,
+})
+autocmd({ "BufLeave", "FocusLost", "CmdlineEnter", "WinLeave" }, {
+  group = line_numbers_group,
+  desc = "Disable relative line numbers",
+  callback = function(args)
+    if vim.wo.nu then
+      vim.wo.relativenumber = false
+    end
+    if args.event == "CmdlineEnter" then
+      if not vim.tbl_contains({ "@", "-" }, vim.v.event.cmdtype) then
+        vim.cmd.redraw()
+      end
+    end
+  end,
+})
+
+-- Auto-reload files changed outside Neovim. The getcmdwintype guard prevents
+-- checktime from firing inside the command-line window where it is a no-op
+-- and can produce spurious errors.
+autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  group = augroup("YodaChecktime", { clear = true }),
+  desc = "Reload files changed outside Neovim",
+  callback = function()
+    if vim.fn.getcmdwintype() == "" then
+      vim.cmd.checktime()
+    end
+  end,
+})
+
+-- Remove trailing whitespace on save, but only for buffers without a conform
+-- formatter — those formatters already handle whitespace and run after this
+-- autocmd would fire, making the regex redundant.
+autocmd("BufWritePre", {
+  group = augroup("YodaTrimWhitespace", { clear = true }),
+  pattern = "*",
+  desc = "Remove trailing whitespace before saving (skipped when conform formatter present)",
+  callback = function()
+    local ok, conform = pcall(require, "conform")
+    if ok and #conform.list_formatters(0) > 0 then
+      return
+    end
+    vim.cmd([[%s/\s\+$//e]])
+  end,
+})
+
+-- Close ephemeral buffer types with just `q` instead of `:quit`.
+autocmd("FileType", {
+  group = augroup("YodaCloseWithQ", { clear = true }),
+  desc = "Close ephemeral buffers with <q>",
+  pattern = { "help", "man", "qf", "scratch", "git" },
+  callback = function(args)
+    -- For help buffers only bind q when the buffer is not modifiable
+    -- (i.e. it is a rendered help page, not an editable scratch buffer)
+    if args.match ~= "help" or not vim.bo[args.buf].modifiable then
+      vim.keymap.set("n", "q", "<cmd>quit<cr>", { buffer = args.buf, desc = "Close window" })
+    end
+  end,
+})
+
 -- Modules needed immediately at load time to register their own autocmds
 local filetype_detection = require("yoda.filetype.detection")
 local performance_autocmds = require("yoda.performance.autocmds")

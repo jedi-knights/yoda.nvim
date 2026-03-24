@@ -26,11 +26,13 @@ return {
           follow_files = true,
         },
         attach_to_untracked = true,
-        current_line_blame = false,
+        -- Show author/date/commit inline at EOL with no delay so the info
+        -- appears immediately when the cursor lands on a line.
+        current_line_blame = true,
         current_line_blame_opts = {
           virt_text = true,
           virt_text_pos = "eol",
-          delay = 1000,
+          delay = 0,
           ignore_whitespace = false,
         },
         sign_priority = 6,

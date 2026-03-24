@@ -121,24 +121,17 @@ function M.setup()
     },
     settings = {
       Lua = {
-        runtime = {
-          version = "LuaJIT",
-        },
+        runtime = { version = "LuaJIT" },
         diagnostics = {
           globals = { "vim", "describe", "it", "before_each", "after_each" },
         },
-        workspace = {
-          library = vim.tbl_extend("force", vim.api.nvim_get_runtime_file("", true), {
-            "${3rd}/luv/library",
-          }),
-          checkThirdParty = false,
-        },
-        completion = {
-          callSnippet = "Replace",
-        },
-        telemetry = {
-          enable = false,
-        },
+        -- Do NOT set workspace.library here — lazydev.nvim manages it and
+        -- sets it correctly on LspAttach. If we also set it here, lua_ls
+        -- indexes the entire Neovim runtime tree twice on startup, doubling
+        -- startup time and memory for Lua files.
+        workspace = { checkThirdParty = false },
+        completion = { callSnippet = "Replace" },
+        telemetry = { enable = false },
       },
     },
   })
@@ -417,7 +410,32 @@ function M.setup()
         end)
       end
 
-      -- 2. Setup keymaps and UI (deferred to prevent flickering)
+      -- 2. Document highlighting: highlight references to the symbol under the
+      -- cursor. Only on CursorHold — CursorMovedI and CursorHoldI fire "very
+      -- often" (per docs) and would add an LSP round-trip + render + clear on
+      -- every keypress during insert mode with no UX benefit.
+      if client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
+        local hl_group = vim.api.nvim_create_augroup("YodaLspHighlight", { clear = false })
+        vim.api.nvim_create_autocmd("CursorHold", {
+          buffer = event.buf,
+          group = hl_group,
+          callback = vim.lsp.buf.document_highlight,
+        })
+        vim.api.nvim_create_autocmd("CursorMoved", {
+          buffer = event.buf,
+          group = hl_group,
+          callback = vim.lsp.buf.clear_references,
+        })
+        vim.api.nvim_create_autocmd("LspDetach", {
+          group = vim.api.nvim_create_augroup("YodaLspDetach", { clear = true }),
+          callback = function(ev)
+            vim.lsp.buf.clear_references()
+            vim.api.nvim_clear_autocmds({ group = "YodaLspHighlight", buffer = ev.buf })
+          end,
+        })
+      end
+
+      -- 3. Setup keymaps and UI (deferred to prevent flickering)
       local opts = { buffer = event.buf }
       vim.schedule(function()
         -- Keymaps
@@ -458,36 +476,37 @@ function M.setup()
 
   -- Diagnostic configuration (optimized for performance)
   vim.diagnostic.config({
-    virtual_text = {
-      spacing = 4,
-      prefix = "●",
-    },
+    severity_sort = true,
+    -- update_in_insert = false prevents diagnostic re-runs on every keystroke;
+    -- diagnostics refresh on InsertLeave instead, which is the right trade-off.
+    update_in_insert = false,
+    -- underline only on ERROR: warnings and hints underline large swaths of
+    -- code and add visual noise without helping prioritise what to fix first.
+    underline = { severity = vim.diagnostic.severity.ERROR },
     signs = {
       text = {
         [vim.diagnostic.severity.ERROR] = "󰅚 ",
         [vim.diagnostic.severity.WARN] = "󰀪 ",
-        [vim.diagnostic.severity.INFO] = " ",
+        [vim.diagnostic.severity.INFO] = "󰋽 ",
         [vim.diagnostic.severity.HINT] = "󰌶 ",
       },
-      texthl = {
-        [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
-        [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
-        [vim.diagnostic.severity.INFO] = "DiagnosticSignInfo",
-        [vim.diagnostic.severity.HINT] = "DiagnosticSignHint",
-      },
-      numhl = {
-        [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
-        [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
-        [vim.diagnostic.severity.INFO] = "DiagnosticSignInfo",
-        [vim.diagnostic.severity.HINT] = "DiagnosticSignHint",
-      },
     },
-    underline = true,
-    update_in_insert = false,
-    severity_sort = true,
+    -- source = "if_many" shows the diagnostic source only when multiple LSP
+    -- servers are active on the buffer, avoiding redundant "[server]" prefixes
+    -- in single-server contexts.
+    virtual_text = { source = "if_many", spacing = 2 },
     float = {
       border = "rounded",
-      source = "always",
+      source = "if_many",
+    },
+    -- status icons shown in the statuscolumn / sign column
+    status = {
+      text = {
+        [vim.diagnostic.severity.ERROR] = "󰅚",
+        [vim.diagnostic.severity.WARN] = "󰀪",
+        [vim.diagnostic.severity.INFO] = "󰋽",
+        [vim.diagnostic.severity.HINT] = "󰌶",
+      },
     },
   })
 

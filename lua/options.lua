@@ -9,7 +9,11 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
 vim.opt.showmode = false
-vim.opt.clipboard = "unnamedplus"
+-- Deferred to avoid startup cost — clipboard sync with the OS has non-trivial
+-- latency; scheduling it lets the rest of init complete first.
+vim.schedule(function()
+  vim.opt.clipboard = "unnamedplus"
+end)
 vim.opt.breakindent = true
 vim.opt.undofile = true
 vim.opt.ignorecase = true
@@ -23,7 +27,7 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-vim.opt.inccommand = "nosplit"
+vim.opt.inccommand = "split" -- live substitution preview in a split
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.colorcolumn = "80"
@@ -90,6 +94,8 @@ vim.opt.laststatus = 3
 vim.opt.showcmd = true
 vim.opt.cmdheight = 1
 vim.opt.showtabline = 2 -- Always show bufferline/tabline
+vim.opt.confirm = true -- ask to save unsaved changes instead of refusing to quit
+vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
 
 -- ============================================================================
 -- BACKUP & SHADA
@@ -115,6 +121,8 @@ vim.opt.shada = {
 -- ============================================================================
 
 vim.opt.termguicolors = true
+vim.opt.synmaxcol = 240 -- don't syntax-highlight past col 240 (prevents slowdown on minified/generated files)
+vim.opt.modelines = 0 -- don't scan file edges for modeline directives (unused; free per-open win)
 
 -- ============================================================================
 -- FOLDING

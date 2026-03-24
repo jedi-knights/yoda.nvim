@@ -2,6 +2,19 @@
 -- LSP configuration plugins
 
 return {
+  -- lazydev.nvim — fast Lua type annotations and API completion for Neovim plugins.
+  -- Replaces neodev.nvim. Only active for Lua files; blink.cmp sources it via
+  -- the lazydev.integrations.blink module.
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = {
+      library = {
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
+  },
+
   -- Mason - LSP, DAP, and linter installer
   {
     "williamboman/mason.nvim",

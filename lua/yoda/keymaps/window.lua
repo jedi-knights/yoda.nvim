@@ -5,6 +5,13 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
+-- Standard window navigation. Using C-w C-h etc. requires two steps;
+-- these single-chord mappings match the muscle memory most editors use.
+map("n", "<C-h>", "<C-w><C-h>", { desc = "Window: Move to left split" })
+map("n", "<C-j>", "<C-w><C-j>", { desc = "Window: Move to lower split" })
+map("n", "<C-k>", "<C-w><C-k>", { desc = "Window: Move to upper split" })
+map("n", "<C-l>", "<C-w><C-l>", { desc = "Window: Move to right split" })
+
 map("n", "<leader>xt", function()
   local ok, win_utils = pcall(require, "yoda-window.utils")
   if not ok then

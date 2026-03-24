@@ -7,6 +7,16 @@ end
 
 map("n", "<leader>qq", ":qa<cr>", { desc = "Util: Quit Neovim" })
 
+-- Delete all content in the current buffer without touching the clipboard.
+-- Useful for clearing a scratch buffer or starting fresh without clobbering
+-- what was yanked. Uses the black-hole register so undo still works.
+map("n", "<leader>D", function()
+  vim.cmd('silent! normal! gg"_dG')
+end, { desc = "Util: Delete buffer content" })
+
+-- Toggle conform.nvim auto-format on save for the session.
+map("n", "<leader>tf", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
+
 map("n", "<leader>d", function()
   local ok, alpha = pcall(require, "alpha")
   if ok and alpha and alpha.start then

@@ -92,6 +92,15 @@ function M.setup()
   vim.api.nvim_create_user_command("FormatFeature", function()
     format_feature()
   end, { desc = "Format Gherkin feature file" })
+
+  -- Toggle conform.nvim auto-format on save.
+  -- vim.g.autoformat is initialised to true in formatters.lua so the first
+  -- call always disables, matching the common "I need to save without formatting"
+  -- use-case without requiring the user to remember the current state.
+  vim.api.nvim_create_user_command("ToggleFormat", function()
+    vim.g.autoformat = not vim.g.autoformat
+    vim.notify(string.format("%s formatting on save", vim.g.autoformat and "Enabled" or "Disabled"), vim.log.levels.INFO)
+  end, { desc = "Toggle conform.nvim auto-formatting on save" })
 end
 
 return M
