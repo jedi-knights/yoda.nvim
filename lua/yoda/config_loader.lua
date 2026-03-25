@@ -100,11 +100,11 @@ function M.save_marker(cache_file, env, region, markers, open_allure)
     open_allure = open_allure or false,
   }
   local Path = require("plenary.path")
-  local ok = pcall(function()
+  local ok, err = pcall(function()
     Path.new(cache_file):write(vim.json.encode(config), "w")
   end)
   if not ok then
-    vim.notify("Failed to save test picker marker", vim.log.levels.WARN)
+    vim.notify("Failed to save test picker marker: " .. tostring(err), vim.log.levels.WARN)
   end
 end
 

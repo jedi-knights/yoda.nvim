@@ -3,13 +3,9 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
-map("n", "<leader>gp", function()
-  require("gitsigns").preview_hunk()
-end, { desc = "Git: Preview Hunk - Show diff preview of current hunk" })
-
-map("n", "<leader>gt", function()
-  require("gitsigns").toggle_current_line_blame()
-end, { desc = "Git: Toggle Blame - Show/hide git blame for current line" })
+-- NOTE: hunk-level operations (<leader>hp preview, <leader>tb toggle blame, etc.)
+-- are registered as buffer-local keymaps inside the gitsigns on_attach callback
+-- in lua/plugins/git.lua. Global duplicates have been removed.
 
 map("n", "<leader>gg", function()
   require("neogit").open()

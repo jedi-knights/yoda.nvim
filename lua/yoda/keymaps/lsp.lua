@@ -4,6 +4,10 @@ local function map(mode, lhs, rhs, opts)
 end
 
 vim.schedule(function()
+  -- gd is the near-universal muscle memory for go-to-definition.
+  -- Neovim 0.11 does not set gd to LSP definition by default (it still does
+  -- local-variable jump), so we map it explicitly here.
+  map("n", "gd", vim.lsp.buf.definition, { desc = "LSP: Go to Definition" })
   map("n", "<leader>ld", vim.lsp.buf.definition, { desc = "LSP: Go to Definition - Jump to where symbol is defined" })
   map("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "LSP: Go to Declaration - Jump to forward declaration" })
   map("n", "<leader>li", vim.lsp.buf.implementation, { desc = "LSP: Go to Implementation - Find interface implementations" })

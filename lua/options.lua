@@ -20,34 +20,22 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
-vim.opt.timeoutlen = 300
+-- 1000ms: allows leader sequences to be typed without lag on any individual key.
+-- 300ms was too short — it caused a 300ms stall on every 'j' in insert mode due
+-- to the jk→<Esc> mapping waiting for the second key before committing the first.
+vim.opt.timeoutlen = 1000
 vim.opt.ttimeoutlen = 0
 vim.opt.autoread = true
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-vim.opt.inccommand = "split" -- live substitution preview in a split
+vim.opt.inccommand = "nosplit" -- live substitution preview inline (split opens a window, nosplit just highlights)
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.colorcolumn = "80"
-
--- Make colorcolumn more visible and persistent
-local function set_colorcolumn_highlight()
-  -- Schedule to run after other highlights are applied
-  vim.schedule(function()
-    vim.api.nvim_set_hl(0, "ColorColumn", { bg = "#2a2a37" })
-  end)
-end
-
--- Re-apply after every colorscheme change so the highlight survives theme switches.
--- This also fires at startup when lazy.nvim applies the initial colorscheme,
--- so a separate immediate call is not needed.
-vim.api.nvim_create_autocmd("ColorScheme", {
-  group = vim.api.nvim_create_augroup("ColorColumnPersistent", { clear = true }),
-  pattern = "*",
-  callback = set_colorcolumn_highlight,
-})
+-- The ColorColumn highlight is re-applied on every ColorScheme change to
+-- survive theme switches — see autocmds.lua (ColorColumnPersistent).
 
 -- ============================================================================
 -- INDENTATION
@@ -152,26 +140,39 @@ end
 vim.g.lspconfig_deprecation_warning = false
 vim.env.LSPCONFIG_DEPRECATION_WARNING = "0"
 
--- Disable some builtin plugins
+-- Disable built-in plugins via loaded guards.
+--
+-- WHY this approach: setting vim.g["loaded_X"] = 1 fires *synchronously*,
+-- before lazy.setup() runs and resets the rtp. This guards the brief startup
+-- window between Neovim launch and lazy taking control — without these guards
+-- Neovim's own plugin loader could source these files first.
+--
+-- RELATION TO lazy-plugins.lua: several entries here also appear in that
+-- file's `disabled_plugins` list. That is intentional belt-and-suspenders:
+--   1. These loaded guards fire first (early guard, before rtp reset).
+--   2. lazy's disabled_plugins fires after rtp reset (permanent exclusion).
+-- Entries unique to THIS list are not managed by lazy because they require
+-- the early guard (e.g. netrw family, zip, tar) or have a different loaded
+-- guard name than lazy expects (spellfile_plugin vs spellfile).
 local disabled_built_ins = {
-  "netrw",
-  "netrwPlugin",
+  "netrw", -- file explorer — replaced by snacks.explorer
+  "netrwPlugin", -- also in lazy-plugins.lua disabled_plugins
   "netrwSettings",
   "netrwFileHandlers",
-  "gzip",
+  "gzip", -- also in lazy-plugins.lua disabled_plugins
   "zip",
-  "zipPlugin",
+  "zipPlugin", -- also in lazy-plugins.lua disabled_plugins
   "tar",
-  "tarPlugin",
-  "getscript",
-  "getscriptPlugin",
-  "vimball",
-  "vimballPlugin",
-  "2html_plugin",
-  "logipat",
-  "rrhelper",
-  "spellfile_plugin",
-  "matchit",
+  "tarPlugin", -- also in lazy-plugins.lua disabled_plugins
+  "getscript", -- also in lazy-plugins.lua disabled_plugins
+  "getscriptPlugin", -- also in lazy-plugins.lua disabled_plugins
+  "vimball", -- also in lazy-plugins.lua disabled_plugins
+  "vimballPlugin", -- also in lazy-plugins.lua disabled_plugins
+  "2html_plugin", -- also in lazy-plugins.lua disabled_plugins
+  "logipat", -- also in lazy-plugins.lua disabled_plugins
+  "rrhelper", -- also in lazy-plugins.lua disabled_plugins
+  "spellfile_plugin", -- note: lazy uses "spellfile" (filename); guard name differs
+  "matchit", -- also in lazy-plugins.lua disabled_plugins
 }
 
 for _, plugin in pairs(disabled_built_ins) do

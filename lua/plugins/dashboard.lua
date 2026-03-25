@@ -9,6 +9,57 @@ return {
     cond = function()
       return vim.fn.argc() == 0
     end,
+    -- init always runs regardless of cond, so these autocmds are registered
+    -- even when alpha doesn't load (argc > 0). The callbacks are safe:
+    -- should_show_alpha() returns false when a file is already open, and
+    -- has_alpha_buffer() short-circuits the BufEnter check immediately.
+    init = function()
+      local autocmd = vim.api.nvim_create_autocmd
+      local augroup = vim.api.nvim_create_augroup
+
+      -- Show alpha dashboard on startup if no files; cd into a directory arg.
+      autocmd("VimEnter", {
+        group = augroup("YodaStartup", { clear = true }),
+        desc = "Show alpha dashboard on startup if no files",
+        callback = function()
+          if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
+            vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
+          end
+
+          vim.defer_fn(function()
+            local alpha_manager = require("yoda.ui.alpha_manager")
+            if alpha_manager.should_show_alpha(require("yoda.buffer.state_checker").is_buffer_empty) then
+              alpha_manager.show_alpha_dashboard()
+            end
+          end, 200)
+        end,
+      })
+
+      -- Close alpha when a real file opens, then self-disable — once alpha is
+      -- gone it can never re-appear, so the BufEnter check becomes a no-op.
+      autocmd("BufEnter", {
+        group = augroup("YodaAlphaClose", { clear = true }),
+        desc = "Close alpha dashboard when opening real files",
+        callback = function(args)
+          local alpha_manager = require("yoda.ui.alpha_manager")
+          if not alpha_manager.has_alpha_buffer() then
+            return
+          end
+
+          local buf = args.buf
+          if not vim.api.nvim_buf_is_valid(buf) then
+            return
+          end
+
+          if require("yoda.buffer.type_cache").is_real_file_buffer(buf) then
+            vim.schedule(function()
+              alpha_manager.close_all_alpha_buffers()
+              pcall(vim.api.nvim_del_augroup_by_name, "YodaAlphaClose")
+            end)
+          end
+        end,
+      })
+    end,
     config = function()
       local alpha = require("alpha")
       local dashboard = require("alpha.themes.dashboard")

@@ -183,7 +183,6 @@ local dev_tools = Composite:new()
 
 local ai_tools = Composite:new()
   :add(copilot_diagnostic)
-  :add(avante_diagnostic)
 
 -- Composite of composites!
 local all_tools = Composite:new()

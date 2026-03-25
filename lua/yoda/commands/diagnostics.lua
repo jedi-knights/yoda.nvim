@@ -24,32 +24,12 @@ function M.setup()
 
     logger.info("🔍 Checking completion engine status...")
 
-    -- Check if nvim-cmp is loaded
-    local cmp_ok, cmp = pcall(require, "cmp")
-    if cmp_ok then
-      logger.info("✅ nvim-cmp loaded successfully")
-
-      -- Check sources
-      local sources = cmp.get_config().sources
-      if sources then
-        logger.info("📦 Available completion sources:")
-        for _, source_group in ipairs(sources) do
-          for _, source in ipairs(source_group) do
-            logger.info("  • " .. source.name)
-          end
-        end
-      end
+    -- Check if blink.cmp is loaded (replaces nvim-cmp in this distro)
+    local blink_ok, _ = pcall(require, "blink.cmp")
+    if blink_ok then
+      logger.info("✅ blink.cmp loaded successfully")
     else
-      logger.error("❌ nvim-cmp failed to load")
-    end
-
-    -- Check LuaSnip
-    local luasnip_ok, luasnip = pcall(require, "luasnip")
-    if luasnip_ok then
-      logger.info("✅ LuaSnip loaded successfully")
-      logger.info("📝 Snippets available: " .. #luasnip.get_snippets())
-    else
-      logger.error("❌ LuaSnip failed to load")
+      logger.error("❌ blink.cmp failed to load")
     end
 
     -- Check LSP clients for completion capability

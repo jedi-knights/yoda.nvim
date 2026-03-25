@@ -16,7 +16,7 @@ return {
       {
         "<leader>fR",
         "<cmd>FzfLua lsp_document_symbols<CR>",
-        desc = "Find Rust/LSP symbols - Search symbols in current document",
+        desc = "Find document symbols - Search symbols in current file (any language)",
       },
       {
         "<leader>fS",
@@ -60,6 +60,9 @@ return {
   },
 
   -- Telescope - Fuzzy finder (DISABLED: crashes in Neovim 0.11.x)
+  -- NOTE: lazy = false and priority = 900 below are dead code while enabled = false.
+  -- When re-enabling, switch to cmd = { "Telescope" } lazy loading — Telescope is
+  -- heavy and does not need to be in memory until first use.
   {
     "nvim-telescope/telescope.nvim",
     enabled = false,

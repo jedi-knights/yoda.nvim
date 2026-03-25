@@ -144,7 +144,13 @@ function M.setup()
   })
 
   -- Python setup with virtual environment support
-  -- Disable document highlight capability
+  --
+  -- Document highlight is disabled in three places because basedpyright
+  -- re-registers documentHighlightProvider via dynamic capability registration
+  -- after the server initializes, overriding a single disable:
+  --   1. capabilities table (here) — advertise "we don't want it" during handshake
+  --   2. on_init callback        — strip the capability immediately on init
+  --   3. LspAttach + 500ms timer — strip it again after dynamic re-registration
   local python_capabilities = vim.deepcopy(capabilities)
   python_capabilities.textDocument.documentHighlight = nil
 
@@ -215,6 +221,10 @@ function M.setup()
   })
 
   -- Java setup (also works for Jenkinsfiles/Groovy)
+  -- NOTE: jdtls is intentionally absent from mason-lspconfig's ensure_installed.
+  -- The Eclipse JDT Language Server requires a workspace directory and JVM flags
+  -- that Mason cannot configure automatically — it must be installed and managed
+  -- manually (e.g. via Homebrew: `brew install jdtls`).
   safe_setup("jdtls", {
     cmd = { "jdtls" },
     filetypes = { "java", "groovy" },
@@ -424,8 +434,12 @@ function M.setup()
           group = hl_group,
           callback = vim.lsp.buf.clear_references,
         })
+        -- { clear = false } is intentional: LspAttach fires once per client per
+        -- buffer, so multiple clients would each register a detach handler.
+        -- { clear = true } would wipe the previous client's handler on each
+        -- subsequent attach, leaving earlier clients without cleanup.
         vim.api.nvim_create_autocmd("LspDetach", {
-          group = vim.api.nvim_create_augroup("YodaLspDetach", { clear = true }),
+          group = vim.api.nvim_create_augroup("YodaLspDetach", { clear = false }),
           callback = function(ev)
             vim.lsp.buf.clear_references()
             vim.api.nvim_clear_autocmds({ group = "YodaLspHighlight", buffer = ev.buf })
@@ -447,7 +461,10 @@ function M.setup()
           else
             local word = vim.fn.expand("<cword>")
             if word ~= "" then
-              pcall(vim.cmd, "help " .. word)
+              local ok, err = pcall(vim.cmd, "help " .. word)
+              if not ok then
+                vim.notify("No help found for '" .. word .. "': " .. tostring(err), vim.log.levels.WARN)
+              end
             end
           end
         end, opts)
@@ -509,8 +526,6 @@ function M.setup()
   })
 
   -- Auto-restart Python LSP when entering different Python projects
-  local python_lsp_restart_timer = nil
-
   vim.api.nvim_create_autocmd("DirChanged", {
     group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", {}),
     callback = function()
@@ -518,12 +533,9 @@ function M.setup()
 
       if timer_manager.is_vim_timer_active(timer_id) then
         timer_manager.stop_vim_timer(timer_id)
-        python_lsp_restart_timer = nil
       end
 
-      python_lsp_restart_timer = timer_manager.create_vim_timer(function()
-        python_lsp_restart_timer = nil
-
+      timer_manager.create_vim_timer(function()
         local current_root = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
         if current_root and vim.g.last_python_root ~= current_root then
           vim.g.last_python_root = current_root
@@ -543,192 +555,13 @@ function M.setup()
     end,
   })
 
-  local debug_commands_loaded = false
-  local function ensure_debug_commands()
-    if debug_commands_loaded then
-      return
-    end
-
-    debug_commands_loaded = true
-    M._setup_debug_commands()
-  end
-
-  vim.schedule(ensure_debug_commands)
+  require("yoda.commands.lsp").setup()
 
   lsp_perf.setup_commands()
 
   -- Setup Python venv commands
   local python_venv = require("yoda.python_venv")
   python_venv.setup_commands()
-end
-
---- Setup debug commands for LSP troubleshooting
---- @private
-function M._setup_debug_commands()
-  -- LSP Status command
-  vim.api.nvim_create_user_command("LSPStatus", function()
-    local clients = vim.lsp.get_clients()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local filetype = vim.bo[bufnr].filetype
-    local filename = vim.api.nvim_buf_get_name(bufnr)
-
-    print("=== LSP Status Debug ===")
-    print("Current buffer:", bufnr)
-    print("Current filetype:", filetype)
-    print("Filename:", filename)
-    print("Total active LSP clients:", #clients)
-    print("")
-
-    -- Show all running LSP servers
-    print("--- Running LSP Servers ---")
-    if #clients == 0 then
-      print("  No LSP clients are running")
-    else
-      for _, client in ipairs(clients) do
-        local attached = vim.lsp.buf_is_attached(bufnr, client.id)
-        local root_dir = client.config and client.config.root_dir or "unknown"
-        print(string.format("  %s (id:%d): attached=%s, root=%s", client.name, client.id, attached, root_dir))
-      end
-    end
-    print("")
-
-    -- Show LSP server configurations
-    print("--- Available LSP Servers ---")
-    local available_servers = {
-      "gopls",
-      "lua_ls",
-      "ts_ls",
-      "basedpyright",
-      "yamlls",
-      "jdtls",
-      "marksman",
-    }
-    for _, server in ipairs(available_servers) do
-      local cmd_available = vim.fn.executable(server) == 1
-      print(string.format("  %s: %s", server, cmd_available and "✅ available" or "❌ not found"))
-    end
-
-    print("========================")
-  end, { desc = "Show comprehensive LSP status" })
-
-  -- LSP Restart command
-  vim.api.nvim_create_user_command("LSPRestart", function()
-    vim.cmd("LspRestart")
-    print("LSP clients restarted")
-  end, { desc = "Restart LSP clients" })
-
-  -- LSP Info command
-  vim.api.nvim_create_user_command("LSPInfo", function()
-    vim.cmd("LspInfo")
-  end, { desc = "Show LSP information" })
-
-  -- Python-specific LSP debugging command
-  vim.api.nvim_create_user_command("PythonLSPDebug", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local clients = vim.lsp.get_clients({ bufnr = bufnr, name = "basedpyright" })
-
-    print("=== Python LSP Debug ===")
-    print("Buffer filetype:", vim.bo[bufnr].filetype)
-    print("Python LSP clients:", #clients)
-
-    if #clients > 0 then
-      local client = clients[1]
-      print("Client name:", client.name)
-      print("Client ID:", client.id)
-      print("Root dir:", client.config and client.config.root_dir or "unknown")
-
-      if client.config and client.config.settings and client.config.settings.basedpyright then
-        local settings = client.config.settings.basedpyright.analysis
-        print("Python path:", settings.pythonPath or "default")
-        print("Extra paths:", vim.inspect(settings.extraPaths or {}))
-        print("Auto search paths:", settings.autoSearchPaths or false)
-        print("Diagnostic mode:", settings.diagnosticMode or "default")
-      end
-    else
-      print("No Python LSP clients attached!")
-
-      -- Check if basedpyright is available
-      if vim.fn.executable("basedpyright-langserver") == 1 then
-        print("✅ basedpyright-langserver is available")
-      else
-        print("❌ basedpyright-langserver not found in PATH")
-        print("Install with: npm install -g basedpyright")
-      end
-
-      -- Check project root detection
-      local root = vim.fs.root(bufnr, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
-      print("Detected project root:", root or "none")
-
-      -- Check for virtual environments
-      local cwd = vim.fn.getcwd()
-      local possible_venvs = {
-        cwd .. "/.venv/bin/python",
-        cwd .. "/venv/bin/python",
-        cwd .. "/env/bin/python",
-      }
-
-      print("Virtual environment check:")
-      for _, path in ipairs(possible_venvs) do
-        if vim.fn.executable(path) == 1 then
-          print("  ✅", path)
-        else
-          print("  ❌", path)
-        end
-      end
-    end
-    print("========================")
-  end, { desc = "Debug Python LSP configuration" })
-
-  -- Groovy/Java LSP debugging command
-  vim.api.nvim_create_user_command("GroovyLSPDebug", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local clients = vim.lsp.get_clients({ bufnr = bufnr, name = "jdtls" })
-
-    print("=== Groovy/Java LSP Debug ===")
-    print("Buffer filetype:", vim.bo[bufnr].filetype)
-    print("JDTLS clients:", #clients)
-
-    if #clients > 0 then
-      local client = clients[1]
-      print("Client name:", client.name)
-      print("Client ID:", client.id)
-      print("Root dir:", client.config and client.config.root_dir or "unknown")
-      print("Status:", client:is_stopped() and "stopped" or "running")
-
-      -- Show workspace information
-      if client.config and client.config.settings and client.config.settings.java then
-        print("Java settings configured: ✅")
-      end
-
-      -- Check memory usage (if available)
-      local stats = vim.lsp.get_client_by_id(client.id)
-      if stats then
-        print("Client attached buffers:", #vim.lsp.get_buffers_by_client_id(client.id))
-      end
-    else
-      print("No JDTLS clients attached!")
-
-      -- Check if jdtls is available
-      if vim.fn.executable("jdtls") == 1 then
-        print("✅ jdtls is available")
-      else
-        print("❌ jdtls not found in PATH")
-        print("Install Eclipse JDT Language Server")
-      end
-
-      -- Check project root detection
-      local root = vim.fs.root(bufnr, { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" })
-      print("Detected project root:", root or "none")
-
-      -- Check for Java runtime
-      if vim.fn.executable("java") == 1 then
-        print("✅ Java runtime available")
-      else
-        print("❌ Java runtime not found")
-      end
-    end
-    print("========================")
-  end, { desc = "Debug Groovy/Java LSP configuration" })
 end
 
 return M

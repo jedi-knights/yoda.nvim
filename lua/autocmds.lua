@@ -1,6 +1,10 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
+-- ============================================================================
+-- Editor Behavior
+-- ============================================================================
+
 -- Relative line numbers: show absolute numbers when a window loses focus or
 -- the cursor enters the command line — relative numbers are only meaningful
 -- when navigating in the current buffer.
@@ -32,7 +36,10 @@ autocmd({ "BufLeave", "FocusLost", "CmdlineEnter", "WinLeave" }, {
 -- Auto-reload files changed outside Neovim. The getcmdwintype guard prevents
 -- checktime from firing inside the command-line window where it is a no-op
 -- and can produce spurious errors.
-autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+-- CursorHoldI intentionally excluded: with updatetime=250 it fired every 250ms
+-- in insert mode, running checktime (file stat I/O) continuously while typing.
+-- FocusGained and BufEnter already cover the important reload cases.
+autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
   group = augroup("YodaChecktime", { clear = true }),
   desc = "Reload files changed outside Neovim",
   callback = function()
@@ -58,6 +65,21 @@ autocmd("BufWritePre", {
   end,
 })
 
+-- Re-apply the ColorColumn highlight after every colorscheme change so it
+-- survives theme switches. Scheduling defers until after other highlights
+-- settle. The ColorScheme event also fires at startup when lazy.nvim applies
+-- the initial theme, so no separate immediate call is needed.
+autocmd("ColorScheme", {
+  group = augroup("ColorColumnPersistent", { clear = true }),
+  pattern = "*",
+  desc = "Keep ColorColumn highlight visible after theme changes",
+  callback = function()
+    vim.schedule(function()
+      vim.api.nvim_set_hl(0, "ColorColumn", { bg = "#2a2a37" })
+    end)
+  end,
+})
+
 -- Close ephemeral buffer types with just `q` instead of `:quit`.
 autocmd("FileType", {
   group = augroup("YodaCloseWithQ", { clear = true }),
@@ -72,84 +94,30 @@ autocmd("FileType", {
   end,
 })
 
--- Modules needed immediately at load time to register their own autocmds
+-- ============================================================================
+-- Module Delegations
+-- ============================================================================
+
+-- Modules that register their own autocmds via a setup call. Kept here so
+-- all autocmd registration is visible in one place.
 local filetype_detection = require("yoda.filetype.detection")
 local performance_autocmds = require("yoda.performance.autocmds")
 local git_refresh = require("yoda.git_refresh")
 
-local RESIZE_DEBOUNCE_DELAY = 300
-local ALPHA_STARTUP_DELAY = 200
+-- Register VimLeavePre cleanup for all tracked timers.
+-- Lives here because setup_cleanup() is just registering an autocmd.
+local ok_timer, timer_manager = pcall(require, "yoda.timer_manager")
+if ok_timer and timer_manager.setup_cleanup then
+  timer_manager.setup_cleanup()
+end
 
 filetype_detection.setup_all(autocmd, augroup)
-
-autocmd("BufReadPre", {
-  group = augroup("YodaLargeFile", { clear = true }),
-  desc = "Detect and optimize for large files",
-  callback = function(args)
-    require("yoda.large_file").on_buf_read(args.buf)
-  end,
-})
-
 performance_autocmds.setup_all(autocmd, augroup)
-
--- Setup centralized git refresh autocmds
 git_refresh.setup_autocmds(autocmd, augroup)
 
-autocmd("BufEnter", {
-  group = augroup("YodaAlphaClose", { clear = true }),
-  desc = "Close alpha dashboard when opening real files",
-  callback = function(args)
-    local alpha_manager = require("yoda.ui.alpha_manager")
-    if not alpha_manager.has_alpha_buffer() then
-      return
-    end
-
-    local buf = args.buf
-    if not vim.api.nvim_buf_is_valid(buf) then
-      return
-    end
-
-    -- Close alpha if this is a real file buffer, then self-disable this autocmd —
-    -- once alpha is gone it can never re-appear, so the BufEnter check is moot.
-    if require("yoda.buffer.type_cache").is_real_file_buffer(buf) then
-      vim.schedule(function()
-        alpha_manager.close_all_alpha_buffers()
-        pcall(vim.api.nvim_del_augroup_by_name, "YodaAlphaClose")
-      end)
-    end
-  end,
-})
-
-autocmd("VimEnter", {
-  group = augroup("YodaStartup", { clear = true }),
-  desc = "Show alpha dashboard on startup if no files",
-  callback = function()
-    if vim.fn.argc() > 0 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
-      vim.cmd("cd " .. vim.fn.fnameescape(vim.fn.argv(0)))
-    end
-
-    vim.defer_fn(function()
-      local alpha_manager = require("yoda.ui.alpha_manager")
-      if alpha_manager.should_show_alpha(require("yoda.buffer.state_checker").is_buffer_empty) then
-        alpha_manager.show_alpha_dashboard()
-      end
-    end, ALPHA_STARTUP_DELAY)
-  end,
-})
-
-autocmd("User", {
-  pattern = "VeryLazy",
-  group = augroup("YodaExplorerStartup", { clear = true }),
-  desc = "Open Snacks explorer on startup",
-  callback = function()
-    vim.defer_fn(function()
-      local ok, snacks = pcall(require, "snacks")
-      if ok and snacks.explorer and snacks.explorer.open then
-        pcall(snacks.explorer.open)
-      end
-    end, 100)
-  end,
-})
+-- ============================================================================
+-- Buffer
+-- ============================================================================
 
 autocmd("BufReadPost", {
   group = augroup("YodaRestoreCursor", { clear = true }),
@@ -168,21 +136,31 @@ autocmd("BufReadPost", {
   end,
 })
 
+-- ============================================================================
+-- Window
+-- ============================================================================
+
+local RESIZE_DEBOUNCE_DELAY = 300
+
 autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
   desc = "Resize splits equally when Vim is resized",
   callback = function()
-    local timer_manager = require("yoda.timer_manager")
+    local timer_mgr = require("yoda.timer_manager")
     local timer_id = "vim_resized"
-    if timer_manager.is_vim_timer_active(timer_id) then
-      timer_manager.stop_vim_timer(timer_id)
+    if timer_mgr.is_vim_timer_active(timer_id) then
+      timer_mgr.stop_vim_timer(timer_id)
     end
 
-    timer_manager.create_vim_timer(function()
+    timer_mgr.create_vim_timer(function()
       pcall(vim.cmd, "wincmd =")
     end, RESIZE_DEBOUNCE_DELAY, timer_id)
   end,
 })
+
+-- ============================================================================
+-- Filetype
+-- ============================================================================
 
 autocmd("FileType", {
   group = augroup("YodaFileTypes", { clear = true }),
@@ -191,57 +169,3 @@ autocmd("FileType", {
     require("yoda.filetype.settings").apply(vim.bo.filetype)
   end,
 })
-
-vim.api.nvim_create_user_command("Bd", function(opts)
-  local buf = vim.api.nvim_get_current_buf()
-  local window_protection = require("yoda-window.protection")
-
-  if vim.bo[buf].buftype ~= "" then
-    vim.cmd("bdelete" .. (opts.bang and "!" or ""))
-    return
-  end
-
-  local windows_with_buf = vim.fn.win_findbuf(buf)
-
-  local normal_buffers = {}
-  for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(b) and b ~= buf and vim.bo[b].buflisted and vim.bo[b].buftype == "" then
-      table.insert(normal_buffers, b)
-    end
-  end
-
-  if #normal_buffers > 0 then
-    local alt = vim.fn.bufnr("#")
-    local target_buf
-
-    if alt ~= -1 and alt ~= buf and vim.api.nvim_buf_is_valid(alt) and vim.bo[alt].buftype == "" then
-      target_buf = alt
-    else
-      target_buf = normal_buffers[1]
-    end
-
-    for _, win in ipairs(windows_with_buf) do
-      if vim.api.nvim_win_is_valid(win) then
-        if window_protection.is_buffer_switch_allowed(win, target_buf) then
-          pcall(vim.api.nvim_win_set_buf, win, target_buf)
-        end
-      end
-    end
-  end
-
-  local delete_cmd = "bdelete" .. (opts.bang and "!" or "") .. " " .. buf
-
-  local ok_delete, err = pcall(vim.cmd, delete_cmd)
-  if not ok_delete then
-    require("yoda-adapters.notification").notify("Buffer delete failed: " .. tostring(err), "error")
-  end
-end, { bang = true, desc = "Smart buffer delete that preserves window layout" })
-
-vim.api.nvim_create_user_command("BD", function(opts)
-  vim.cmd("Bd" .. (opts.bang and "!" or ""))
-end, { bang = true, desc = "Alias for Bd" })
-
-vim.cmd([[
-  cnoreabbrev <expr> bd getcmdtype() == ':' && getcmdline() == 'bd' ? 'Bd' : 'bd'
-  cnoreabbrev <expr> bdelete getcmdtype() == ':' && getcmdline() == 'bdelete' ? 'Bd' : 'bdelete'
-]])
