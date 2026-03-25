@@ -38,10 +38,20 @@ function M.get_config()
   return config
 end
 
---- Update configuration
+--- Update configuration and register the BufReadPre detection autocmd.
+--- Combining both here means callers need only one setup() call, matching the
+--- pattern used by filetype_detection, performance_autocmds, and git_refresh.
 --- @param user_config table User configuration
 function M.setup(user_config)
   config = vim.tbl_deep_extend("force", DEFAULT_CONFIG, user_config or {})
+
+  vim.api.nvim_create_autocmd("BufReadPre", {
+    group = vim.api.nvim_create_augroup("YodaLargeFile", { clear = true }),
+    desc = "Detect and optimize for large files",
+    callback = function(args)
+      M.on_buf_read(args.buf)
+    end,
+  })
 end
 
 --- Check if buffer is marked as large file

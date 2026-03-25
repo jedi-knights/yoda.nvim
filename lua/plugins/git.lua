@@ -26,13 +26,15 @@ return {
           follow_files = true,
         },
         attach_to_untracked = true,
-        -- Show author/date/commit inline at EOL with no delay so the info
-        -- appears immediately when the cursor lands on a line.
+        -- Show author/date/commit inline at EOL after the cursor settles.
         current_line_blame = true,
         current_line_blame_opts = {
           virt_text = true,
           virt_text_pos = "eol",
-          delay = 0,
+          -- 800ms: only show blame when the cursor has been still for a moment.
+          -- delay = 0 ran a git blame lookup on every CursorMoved, adding
+          -- continuous I/O overhead during normal navigation.
+          delay = 800,
           ignore_whitespace = false,
         },
         sign_priority = 6,
@@ -86,7 +88,7 @@ return {
               gs.next_hunk()
             end)
             return "<Ignore>"
-          end, { expr = true })
+          end, { expr = true, desc = "Git: Next hunk" })
 
           map("n", "[c", function()
             if vim.wo.diff then
@@ -96,27 +98,28 @@ return {
               gs.prev_hunk()
             end)
             return "<Ignore>"
-          end, { expr = true })
+          end, { expr = true, desc = "Git: Prev hunk" })
 
           -- Actions
-          map({ "n", "v" }, "<leader>hs", ":Gitsigns stage_hunk<CR>")
-          map({ "n", "v" }, "<leader>hr", ":Gitsigns reset_hunk<CR>")
-          map("n", "<leader>hS", gs.stage_buffer)
-          map("n", "<leader>hu", gs.undo_stage_hunk)
-          map("n", "<leader>hR", gs.reset_buffer)
-          map("n", "<leader>hp", gs.preview_hunk)
+          map({ "n", "v" }, "<leader>hs", ":Gitsigns stage_hunk<CR>", { desc = "Git: Stage hunk" })
+          map({ "n", "v" }, "<leader>hr", ":Gitsigns reset_hunk<CR>", { desc = "Git: Reset hunk" })
+          map("n", "<leader>hS", gs.stage_buffer, { desc = "Git: Stage buffer" })
+          map("n", "<leader>hu", gs.undo_stage_hunk, { desc = "Git: Undo stage hunk" })
+          map("n", "<leader>hR", gs.reset_buffer, { desc = "Git: Reset buffer" })
+          map("n", "<leader>hp", gs.preview_hunk, { desc = "Git: Preview hunk" })
           map("n", "<leader>hb", function()
             gs.blame_line({ full = true })
-          end)
-          map("n", "<leader>tb", gs.toggle_current_line_blame)
-          map("n", "<leader>hd", gs.diffthis)
+          end, { desc = "Git: Blame line (full)" })
+          map("n", "<leader>tb", gs.toggle_current_line_blame, { desc = "Git: Toggle line blame" })
+          map("n", "<leader>hd", gs.diffthis, { desc = "Git: Diff this" })
           map("n", "<leader>hD", function()
             gs.diffthis("~")
-          end)
-          map("n", "<leader>td", gs.toggle_deleted)
+          end, { desc = "Git: Diff this (against last commit)" })
+          -- <leader>hT not <leader>td: td conflicts with Test: Debug nearest (<leader>td in testing.lua)
+          map("n", "<leader>hT", gs.toggle_deleted, { desc = "Git: Toggle deleted lines" })
 
           -- Text object
-          map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>")
+          map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "Git: Select hunk" })
         end,
       })
     end,

@@ -5,6 +5,12 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
+-- Buffer cycling: ]b / [b mirror the ]d / [d diagnostic convention.
+-- Faster than opening the fzf buffer picker for the common case of stepping
+-- through a small set of open buffers.
+map("n", "]b", "<cmd>bnext<cr>", { desc = "Buffer: Next" })
+map("n", "[b", "<cmd>bprev<cr>", { desc = "Buffer: Prev" })
+
 map("n", "<leader>qq", ":qa<cr>", { desc = "Util: Quit Neovim" })
 
 -- Delete all content in the current buffer without touching the clipboard.

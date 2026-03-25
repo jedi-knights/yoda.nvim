@@ -13,8 +13,10 @@ return {
       "theHamsta/nvim-dap-virtual-text",
     },
     -- F-key bindings match standard IDE conventions (VS Code, IntelliJ) so
-    -- existing muscle memory transfers. leader-d prefix for breakpoint/ui ops.
+    -- existing muscle memory transfers. <leader>d prefix for leader-accessible
+    -- alternatives and operations without F-key equivalents.
     keys = {
+      -- F-keys (IDE convention)
       {
         "<F5>",
         function()
@@ -43,6 +45,14 @@ return {
         end,
         desc = "Debug: Step Out",
       },
+      -- <leader>d prefix (home-row alternatives + extras)
+      {
+        "<leader>dc",
+        function()
+          require("dap").continue()
+        end,
+        desc = "Debug: Continue/Start",
+      },
       {
         "<leader>db",
         function()
@@ -56,6 +66,34 @@ return {
           require("dap").set_breakpoint(vim.fn.input("Condition: "))
         end,
         desc = "Debug: Conditional Breakpoint",
+      },
+      {
+        "<leader>do",
+        function()
+          require("dap").step_over()
+        end,
+        desc = "Debug: Step Over",
+      },
+      {
+        "<leader>di",
+        function()
+          require("dap").step_into()
+        end,
+        desc = "Debug: Step Into",
+      },
+      {
+        "<leader>dO",
+        function()
+          require("dap").step_out()
+        end,
+        desc = "Debug: Step Out",
+      },
+      {
+        "<leader>dq",
+        function()
+          require("dap").terminate()
+        end,
+        desc = "Debug: Terminate",
       },
       {
         "<leader>du",
@@ -156,5 +194,4 @@ return {
       })
     end,
   },
-
 }

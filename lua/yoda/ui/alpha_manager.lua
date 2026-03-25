@@ -205,7 +205,10 @@ function M.recenter_alpha_dashboard()
   local ok, alpha = pcall(require, "alpha")
   if ok and alpha and alpha.start then
     local alpha_config = vim.b[buf].alpha_config
-    pcall(alpha.start, false, alpha_config)
+    local start_ok, start_err = pcall(alpha.start, false, alpha_config)
+    if not start_ok then
+      vim.notify("[yoda] Failed to recenter alpha dashboard: " .. tostring(start_err), vim.log.levels.WARN)
+    end
   end
 
   if current_win ~= win and vim.api.nvim_win_is_valid(current_win) then

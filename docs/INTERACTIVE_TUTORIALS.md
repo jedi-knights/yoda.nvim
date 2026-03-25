@@ -116,7 +116,7 @@ Each tutorial step can have different actions:
 - Buffer navigation
 
 #### **AI Features**
-- Avante AI integration
+- Claude Code integration
 - GitHub Copilot
 
 #### **Development Tools**

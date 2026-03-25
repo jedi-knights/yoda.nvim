@@ -18,7 +18,6 @@ return {
   -- Mason - LSP, DAP, and linter installer
   {
     "williamboman/mason.nvim",
-    lazy = true,
     event = "VeryLazy",
     build = ":MasonUpdate",
     config = function()
@@ -59,6 +58,9 @@ return {
           "basedpyright",
           "yamlls",
           "marksman", -- Markdown LSP server
+          -- NOTE: jdtls (Java/Groovy) is intentionally absent — it requires
+          -- manual installation (e.g. `brew install jdtls`) because Mason
+          -- cannot configure the workspace directory and JVM flags it needs.
         },
         -- Override the default handler to prevent mason-lspconfig from
         -- auto-configuring servers. All vim.lsp.config calls are made

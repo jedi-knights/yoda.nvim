@@ -62,12 +62,6 @@ Comprehensive overview of Yoda.nvim's features, capabilities, and technical arch
 - **Context-aware recommendations** based on your code
 - **Seamless integration** with your workflow
 
-### Avante AI (Agentic AI)
-- **Context-aware conversations** with your codebase
-- **Code generation** and refactoring assistance
-- **MCP Hub integration** for external tools
-- **Multiple AI providers** (Claude, OpenAI, etc.)
-
 ### OpenCode
 - **Context-aware AI assistance** directly in editor
 - **Prompt library** for common tasks
@@ -119,7 +113,7 @@ Comprehensive overview of Yoda.nvim's features, capabilities, and technical arch
 - Comprehensive plugin management
 
 **Advanced Development Features:**
-- AI Integration: Avante.nvim, Copilot, MCP Hub
+- AI Integration: Claude Code, Copilot
 - Testing Framework: Neotest with coverage
 - LSP Setup: Mason + lspconfig with file watching
 - Development Tools: Modern tooling integration
@@ -253,9 +247,8 @@ end
 ### AI Features
 ```vim
 :Copilot status       " Check Copilot status
-:checkhealth avante   " Check Avante setup
-<leader>aa            " Ask Avante
-<leader>ai            " Toggle OpenCode
+<leader>ai            " Toggle Claude Code
+<leader>aa            " Accept diff
 ```
 
 ---

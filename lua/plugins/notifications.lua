@@ -7,40 +7,24 @@ return {
     "folke/noice.nvim",
     lazy = false,
     priority = 1200,
-    enabled = true,
     dependencies = {
       "MunifTanjim/nui.nvim",
     },
     config = function()
-      -- Ensure vim.notify is available before setting up noice
-      if not vim.notify then
-        vim.notify = function(msg, level, opts)
-          print(string.format("[%s] %s", level or "INFO", msg))
-        end
-      end
-
-      -- Save reference to detect override conflicts
-      local pre_noice_notify = vim.notify
-
       require("noice").setup({
-        -- UI overrides (with dressing.nvim handling vim.ui.select, these should be safe)
         cmdline = {
-          enabled = true, -- Re-enable noice cmdline (dressing handles vim.ui.select)
-          view = "cmdline_popup", -- Use popup view
-          opts = {}, -- Default options
+          view = "cmdline_popup",
+          opts = {},
         },
         messages = {
-          enabled = true, -- Re-enable messages
-          view = "notify", -- Use notify view
-          view_error = "notify", -- Errors in notify
-          view_warn = "notify", -- Warnings in notify
+          view = "notify",
+          view_error = "notify",
+          view_warn = "notify",
         },
         popupmenu = {
-          enabled = true, -- Use noice popup menu for completion
-          backend = "nui", -- Use nui backend
+          backend = "nui",
         },
         notify = {
-          enabled = true, -- Enable noice notify (for better notifications)
           view = "notify",
         },
         history = {
@@ -56,30 +40,23 @@ return {
             },
           },
         },
-        -- Disable the override warning since we've properly configured the notification system
         health = {
-          checker = false, -- Disable health checks that might show vim.notify override warnings
+          checker = false,
         },
-        -- LSP enhancements
         lsp = {
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
             ["vim.lsp.util.stylize_markdown"] = true,
-            ["cmp.entry.get_documentation"] = true,
+            -- ["cmp.entry.get_documentation"] removed: nvim-cmp not installed (uses blink.cmp)
           },
           hover = {
-            enabled = true,
             silent = false,
             view = "hover",
           },
+          -- Signature help disabled here: blink.cmp owns textDocument/signatureHelp.
+          -- Both intercepting the same LSP response causes duplicate popups.
           signature = {
-            enabled = true,
-            auto_open = {
-              enabled = true,
-              trigger = true,
-              luasnip = true,
-              throttle = 200,
-            },
+            enabled = false,
           },
         },
         views = {
@@ -107,24 +84,14 @@ return {
               event = "msg_show",
               kind = "confirm",
             },
-            opts = { skip = true }, -- Skip noice, let dressing handle
+            opts = { skip = true },
           },
         },
       })
 
-      -- Verify that Noice has properly taken control of vim.notify
-      vim.schedule(function()
-        if vim.notify and type(vim.notify) == "function" and vim.notify ~= pre_noice_notify then
-          -- Force our notification adapter to use noice
-          vim.g.yoda_notify_backend = "noice"
-
-          -- Set a flag to indicate noice is in control
-          vim.g.yoda_noice_initialized = true
-        else
-          -- Fallback if noice didn't properly override
-          vim.g.yoda_notify_backend = "native"
-        end
-      end)
+      -- noice is loaded unconditionally (lazy = false, priority = 1200) and always
+      -- overrides vim.notify; tell the notification adapter which backend is active.
+      vim.g.yoda_notify_backend = "noice"
     end,
   },
 }
