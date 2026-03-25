@@ -20,10 +20,10 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
--- 1000ms: allows leader sequences to be typed without lag on any individual key.
--- 300ms was too short — it caused a 300ms stall on every 'j' in insert mode due
--- to the jk→<Esc> mapping waiting for the second key before committing the first.
-vim.opt.timeoutlen = 1000
+-- 500ms: enough time for deliberate multi-key leader sequences without perceptible
+-- lag on ambiguous operators (g, d, etc.). Was 1000ms when jk→<Esc> was active —
+-- that mapping forced a long wait on every 'j'; now that it's removed, 500ms is safe.
+vim.opt.timeoutlen = 500
 vim.opt.ttimeoutlen = 0
 vim.opt.autoread = true
 vim.opt.splitright = true
