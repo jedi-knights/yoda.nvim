@@ -46,8 +46,7 @@ M.MARKER_DEFAULTS = {
 --- @return table Configuration with environments, markers, etc.
 function M.get_config()
   -- Check for user override first (OCP - extend without modification!)
-  local config = require("yoda.config")
-  local user_overrides = config.get_test_config()
+  local user_overrides = vim.g.yoda_test_config
 
   if user_overrides then
     return vim.tbl_deep_extend("force", {
