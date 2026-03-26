@@ -29,7 +29,7 @@ development environment.
 
 Key Features:~
   • Beginner-friendly setup with sensible defaults
-  • AI-powered development with GitHub Copilot and OpenCode
+  • AI-powered development with Claude Code integration
   • Beautiful modern UI with TokyoNight theme  
   • Fast performance with lazy-loading optimization
   • Comprehensive LSP, testing, debugging, and Git integration
@@ -149,28 +149,20 @@ Language Features:~
 ==============================================================================
 AI FEATURES                                                       *yoda-ai*
 
-Yoda.nvim integrates multiple AI assistance tools for enhanced development.
+Yoda.nvim integrates Claude Code for AI-assisted development.
 
-GitHub Copilot:~
-    <Tab>                      Accept suggestion
-    <C-]>                      Next suggestion
-    <C-[>                      Previous suggestion
-    <leader>cp                 Toggle Copilot
+Claude Code:~
+    <leader>ai                 Toggle Claude Code
+    <leader>af                 Focus Claude Code window
+    <leader>ar                 Resume Claude session
+    <leader>aC                 Continue Claude session
+    <leader>am                 Select Claude model
+    <leader>aB                 Add current buffer to Claude context
+    <leader>as      (v)        Send visual selection to Claude
+    <leader>aa                 Accept diff from Claude
+    <leader>ad                 Deny diff from Claude
 
-OpenCode Integration:~
-    <leader>ao                 Open OpenCode
-    <leader>af                 Focus OpenCode
-    <leader>ac                 Close OpenCode
-    
-AI-powered features:
-  • Intelligent code completion
-  • Context-aware suggestions  
-  • Code review assistance
-  • Documentation generation
-
-AI Diagnostics:~
-    <leader>ad                 Run AI diagnostics
-    <leader>ah                 AI health check
+See |yoda-keymaps-ai| for the full keymap reference.
 
 ==============================================================================
 KEYMAPS                                                       *yoda-keymaps*
@@ -238,7 +230,7 @@ Plugin Categories:~
   • File Management        Explorer and fuzzy finder
   • Git Integration        Version control tools
   • Testing & Debugging    Development workflow
-  • AI Tools               Copilot and assistants
+  • AI Tools               Claude Code integration
 
 ==============================================================================
 TROUBLESHOOTING                                       *yoda-troubleshooting*

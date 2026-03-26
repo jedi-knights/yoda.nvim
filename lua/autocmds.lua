@@ -69,6 +69,9 @@ autocmd("BufWritePre", {
   pattern = "*",
   desc = "Remove trailing whitespace before saving (skipped when conform formatter present)",
   callback = function()
+    if not vim.bo.modifiable then
+      return
+    end
     local ok, conform = pcall(require, "conform")
     if ok and #conform.list_formatters(0) > 0 then
       return

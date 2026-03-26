@@ -23,7 +23,7 @@ What is Yoda.nvim?~
 
 Yoda.nvim is a modern Neovim distribution that provides:
   • Beginner-friendly setup with sensible defaults
-  • AI-powered development with Avante integration  
+  • AI-powered development with Claude Code integration
   • Modern UI with beautiful themes and components
   • Comprehensive tooling for development, testing, and debugging
 
@@ -90,13 +90,14 @@ DEVELOPMENT WORKFLOW                            *yoda-getting-started-workflow*
 ==============================================================================
 AI FEATURES                                       *yoda-getting-started-ai*
 
-Quick AI Access~
-    <leader>aa                 Ask AI assistant
-    <leader>ac                 Open AI chat
-    <leader>as                 Send selection to AI
+Quick AI Access (Claude Code)~
+    <leader>ai                 Toggle Claude Code
+    <leader>af                 Focus Claude Code window
+    <leader>as                 Send visual selection to Claude
+    <leader>aa                 Accept diff from Claude
+    <leader>ad                 Deny diff from Claude
 
-Setup AI Features~
-See |yoda-ai-setup| for detailed configuration.
+See |yoda-keymaps-ai| for the full keymap reference.
 
 ==============================================================================
 TESTING & DEBUGGING                           *yoda-getting-started-testing*

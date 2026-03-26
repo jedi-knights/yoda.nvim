@@ -12,6 +12,7 @@ CONTENTS                                         *yoda-configuration-contents*
 5. Keymaps Customization ................... |yoda-config-keymaps|
 6. Plugin Management ....................... |yoda-config-plugins|
 7. Advanced Configuration .................. |yoda-config-advanced|
+8. User Variables .......................... |yoda-config-variables|
 
 ==============================================================================
 CONFIGURATION OVERVIEW                            *yoda-config-overview*
@@ -353,6 +354,83 @@ Load configuration based on conditions:
       vim.opt.clipboard = "unnamedplus"
     end
 <
+
+==============================================================================
+USER VARIABLES                                       *yoda-config-variables*
+
+Set these global variables in `init.lua` before Yoda loads.
+
+Terminal Window~
+
+Control the floating terminal window dimensions and appearance:
+>
+    vim.g.yoda_terminal_width     = 0.9       -- 0–1, fraction of screen width
+    vim.g.yoda_terminal_height    = 0.85      -- 0–1, fraction of screen height
+    vim.g.yoda_terminal_border    = "rounded" -- none|single|double|rounded|solid|shadow
+    vim.g.yoda_terminal_title_pos = "center"  -- left|center|right
+<
+
+Example — compact terminal:
+>
+    vim.g.yoda_terminal_width  = 0.6
+    vim.g.yoda_terminal_height = 0.5
+    vim.g.yoda_terminal_border = "single"
+<
+
+YAML Parser~
+
+Extend the set of recognized deployment environment names used by the
+YAML parser (default: fastly, qa, prod):
+>
+    vim.g.yoda_yaml_environments = {
+      fastly  = true,
+      qa      = true,
+      prod    = true,
+      staging = true,  -- add staging
+      dev     = true,  -- add dev
+    }
+<
+
+Override indentation levels if your YAML schema differs:
+>
+    vim.g.yoda_yaml_env_indent    = 2   -- default
+    vim.g.yoda_yaml_region_indent = 6   -- default
+<
+
+Picker Backend~
+
+Override the automatic picker backend detection
+(default order: snacks → fzf-lua → native):
+>
+    vim.g.yoda_picker_backend = "snacks"   -- force snacks
+    vim.g.yoda_picker_backend = "fzf-lua"  -- force fzf-lua
+    vim.g.yoda_picker_backend = "native"   -- force vim.ui.select
+<
+
+Large File Handling~
+
+See |yoda-large-file| for full documentation.
+>
+    vim.g.yoda_large_file = {
+      size_threshold    = 100 * 1024,  -- 100KB
+      show_notification = true,
+      disable = { treesitter = true, lsp = true, gitsigns = true },
+    }
+<
+
+Variable Reference~
+
+| Variable                    | Default      | Type         |
+|-----------------------------|--------------|--------------|
+| yoda_terminal_width         | 0.9          | number (0–1) |
+| yoda_terminal_height        | 0.85         | number (0–1) |
+| yoda_terminal_border        | "rounded"    | string       |
+| yoda_terminal_title_pos     | "center"     | string       |
+| yoda_yaml_environments      | (see above)  | table        |
+| yoda_yaml_env_indent        | 2            | number       |
+| yoda_yaml_region_indent     | 6            | number       |
+| yoda_picker_backend         | auto-detect  | string       |
+| yoda_large_file             | (see above)  | table        |
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

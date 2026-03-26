@@ -1,0 +1,81 @@
+*yoda-features.txt*           Yoda.nvim Features Reference
+
+                      YODA.NVIM FEATURES REFERENCE
+
+==============================================================================
+CONTENTS                                           *yoda-features-contents*
+
+1. Tool Indicators ......................... |yoda-features-tool-indicators|
+
+==============================================================================
+TOOL INDICATORS                               *yoda-features-tool-indicators*
+
+Yoda.nvim shows visual indicators in the status line and via notifications
+when project-specific development tools are detected in the current directory.
+Detection is project-scoped: indicators only appear when the project file for
+a tool is present, not just because the tool is globally installed.
+
+Supported Tools~
+
+Go Task (task):~
+  Detection:  `Taskfile.yml` or `Taskfile.yaml` in the current directory
+  Indicator:  [task]
+
+Invoke (invoke):~
+  Detection:  `tasks.py` in the current directory
+  Indicator:  [invoke]
+
+Startup Notifications~
+
+When Yoda starts and tools are detected you will see a notification, e.g.:
+>
+    Development tools: [task] [invoke]
+<
+
+Commands~
+
+:YodaToolStatus~
+Show the detailed availability of each supported tool:
+>
+    :YodaToolStatus
+<
+Output:
+>
+    Available:   [task] [invoke]
+    Unavailable: (none)
+<
+
+:YodaToolIndicators~
+Show the current indicator string:
+>
+    :YodaToolIndicators
+<
+
+Configuration~
+
+Tool indicators respect the `show_environment_notification` flag:
+>
+    vim.g.yoda_config = {
+      show_environment_notification = true,  -- default
+    }
+<
+
+Detection Logic~
+
+For each tool, detection runs in order:
+  1. Check that the plugin providing the tool is loaded
+  2. Check for the project file in the current working directory
+  3. Only if both pass is the indicator shown
+
+Indicators are refreshed on:
+  • Startup
+  • `DirChanged` event (cd, lcd, etc.)
+  • `BufEnter` event
+
+Storage~
+
+The current indicator string is stored in `vim.g.yoda_tool_indicators` and
+can be read by other UI components such as a custom statusline.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

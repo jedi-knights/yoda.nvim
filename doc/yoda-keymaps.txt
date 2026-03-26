@@ -100,19 +100,17 @@ Inlay Hints ~
 ==============================================================================
 AI & CODE ASSISTANCE                                       *yoda-keymaps-ai*
 
-OpenCode Integration ~
-    <leader>ai      (n)    Toggle/Focus OpenCode (auto-save + insert mode)
-    <leader>ab      (n,i)  Return to previous buffer from OpenCode
-    <leader>aq      (n,i)  Return to main buffer (command-based, most reliable)
-    <leader>ao      (n)    Open OpenCode
-    <leader>af      (n)    Focus OpenCode window
-    <leader>ac      (n)    Close OpenCode window
-    <A-q>           (n,i)  Exit OpenCode and return to main buffer
-    <C-q>           (i)    Smart escape (return to buffer if in OpenCode)
-
-AI Diagnostics ~
-    <leader>ad      (n)    Run AI diagnostics
-    <leader>ah      (n)    AI health check
+Claude Code Integration ~
+    <leader>ai      (n)    Toggle Claude Code
+    <leader>af      (n)    Focus Claude Code window
+    <leader>ar      (n)    Resume Claude session (--resume)
+    <leader>aC      (n)    Continue Claude session (--continue)
+    <leader>am      (n)    Select Claude model
+    <leader>aB      (n)    Add current buffer to Claude context
+    <leader>as      (v)    Send visual selection to Claude
+    <leader>as      (n)    Add file to Claude (in file explorer)
+    <leader>aa      (n)    Accept diff from Claude
+    <leader>ad      (n)    Deny diff from Claude
 
 ==============================================================================
 TESTING & DEBUGGING                                     *yoda-keymaps-testing*

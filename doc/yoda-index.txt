@@ -81,7 +81,7 @@ Advanced technical documentation:
 Architecture Highlights:~
   • Modular design with clear separation of concerns
   • Dependency injection for testability
-  • Adapter pattern for plugin abstraction
+  • Plugin-agnostic picker abstraction (picker_handler)
   • SOLID principles compliance
   • Comprehensive error handling
 

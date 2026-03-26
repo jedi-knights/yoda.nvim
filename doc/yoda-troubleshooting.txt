@@ -1,0 +1,299 @@
+*yoda-troubleshooting.txt*    Yoda.nvim Troubleshooting Guide
+
+                    YODA.NVIM TROUBLESHOOTING GUIDE
+
+==============================================================================
+CONTENTS                                        *yoda-troubleshooting-contents*
+
+1. Quick Diagnostics ....................... |yoda-trouble-diagnostics|
+2. Installation Issues ..................... |yoda-trouble-install|
+3. Startup Issues .......................... |yoda-trouble-startup|
+4. Plugin Issues ........................... |yoda-trouble-plugins|
+5. LSP Issues .............................. |yoda-trouble-lsp|
+6. File Explorer Issues .................... |yoda-trouble-explorer|
+7. Keymap Issues ........................... |yoda-trouble-keymaps|
+8. Performance Issues ...................... |yoda-trouble-perf|
+9. Terminal Issues ......................... |yoda-trouble-terminal|
+10. Configuration Issues ................... |yoda-trouble-config|
+11. Recovery ............................... |yoda-trouble-recovery|
+12. Getting Help ........................... |yoda-trouble-help|
+
+==============================================================================
+QUICK DIAGNOSTICS                                  *yoda-trouble-diagnostics*
+
+Health Checks~
+>
+    :checkhealth        " Run all health checks
+    :checkhealth lazy   " Check Lazy.nvim
+    :checkhealth lsp    " Check LSP status
+<
+
+System Information~
+>
+    :version            " Show Neovim version
+    :LspInfo            " Show active LSP clients
+    :Lazy log           " Show plugin logs
+    :messages           " View message history
+<
+
+==============================================================================
+INSTALLATION ISSUES                                  *yoda-trouble-install*
+
+Neovim Version Too Old~
+
+Error: "This configuration requires Neovim 0.10.1+"
+>
+    # Check current version
+    nvim --version
+
+    # Update Neovim (macOS)
+    brew upgrade neovim
+<
+
+Plugin Installation Fails~
+>
+    :Lazy clean         " Clean plugin cache
+    :Lazy sync          " Reinstall plugins
+<
+
+Manual cleanup:
+>
+    rm -rf ~/.local/share/nvim/lazy
+    rm -rf ~/.local/state/nvim/lazy
+    nvim                " Restart; sync runs automatically
+<
+
+==============================================================================
+STARTUP ISSUES                                       *yoda-trouble-startup*
+
+Slow Startup~
+
+Diagnose with startup profiling:
+>
+    nvim --startuptime startup.log +q
+    tail -n 20 startup.log
+<
+
+Solutions:
+  1. Profile plugin loading:
+>
+       :Lazy profile
+<
+  2. Disable verbose startup:
+>
+       vim.g.yoda_config = { verbose_startup = false }
+<
+  3. Remove unused plugins:
+>
+       :Lazy clean
+<
+
+Dashboard Not Showing~
+
+Force show the dashboard:
+>
+    :Alpha
+<
+
+==============================================================================
+PLUGIN ISSUES                                        *yoda-trouble-plugins*
+
+Plugin Not Loading~
+>
+    :Lazy               " Check plugin status
+    :Lazy sync          " Install missing plugins
+    :Lazy clean         " Clean and reinstall
+<
+
+Lazy.nvim Documentation Error~
+
+Error: "No such file or directory" for local plugins
+>
+    # Remove documentation cache and restart
+    rm -rf ~/.local/state/nvim/lazy/readme
+    nvim
+    :Lazy sync
+<
+
+Plugin Configuration Errors~
+>
+    :Lazy log           " Check error logs
+<
+
+==============================================================================
+LSP ISSUES                                             *yoda-trouble-lsp*
+
+Language Servers Not Working~
+
+Diagnose:
+>
+    :LspInfo            " Check LSP status
+    :Mason              " Check installed servers
+<
+
+Solutions:
+  1. Install/update language servers:
+>
+       :Mason
+<
+  2. Restart the language server:
+>
+       :LspRestart
+<
+
+LSP Keymaps Not Working~
+>
+    :verbose nmap gd    " Check if keymap exists
+    :LspInfo            " Verify LSP is attached to buffer
+<
+
+==============================================================================
+FILE EXPLORER ISSUES                                *yoda-trouble-explorer*
+
+Explorer Not Opening~
+>
+    :lua require("snacks").explorer()   " Try directly
+    :Lazy                               " Verify snacks is installed
+<
+
+Explorer Opens in Insert Mode~
+>
+    <Esc>               " Exit insert mode manually
+<
+
+==============================================================================
+KEYMAP ISSUES                                       *yoda-trouble-keymaps*
+
+Keymaps Not Working~
+
+Diagnose:
+>
+    :nmap <leader>ff              " Check if keymap is registered
+    :verbose nmap <leader>ff      " See where it was defined
+<
+
+Check leader key:
+>
+    :echo mapleader               " Should show " " (space)
+<
+
+Reload configuration:
+>
+    :source ~/.config/nvim/init.lua
+<
+
+==============================================================================
+PERFORMANCE ISSUES                                      *yoda-trouble-perf*
+
+For full performance guidance see |yoda-performance|.
+
+High Memory Usage~
+>
+    :checkhealth lazy   " Check plugin health
+    :Lazy profile       " Profile plugin loading
+<
+
+Slow File Operations~
+
+Install ripgrep:
+>
+    brew install ripgrep    " macOS
+    apt install ripgrep     " Ubuntu
+<
+
+==============================================================================
+TERMINAL ISSUES                                       *yoda-trouble-terminal*
+
+Terminal Not Opening~
+>
+    :terminal           " Try built-in terminal directly
+<
+
+Check shell configuration:
+>
+    echo $SHELL         " Confirm shell is set
+<
+
+==============================================================================
+CONFIGURATION ISSUES                                  *yoda-trouble-config*
+
+Configuration Not Loading~
+>
+    :luafile ~/.config/nvim/init.lua    " Check for syntax errors
+<
+
+Check files exist:
+>
+    ls -la ~/.config/nvim/
+<
+
+Environment Variables Not Applied~
+>
+    echo $YODA_ENV      " Should show your environment setting
+<
+
+Set in shell profile:
+>
+    echo 'export YODA_ENV=home' >> ~/.zshrc
+    source ~/.zshrc
+<
+
+==============================================================================
+RECOVERY                                             *yoda-trouble-recovery*
+
+Reset Plugins~
+>
+    rm -rf ~/.local/share/nvim/lazy
+    rm -rf ~/.local/state/nvim/lazy
+    nvim
+    :Lazy sync
+<
+
+Reset LSP Data~
+>
+    rm -rf ~/.local/share/nvim/mason
+    nvim
+    :Mason          " Reinstall language servers
+<
+
+Complete Reset~
+>
+    # Backup first
+    cp -r ~/.config/nvim ~/.config/nvim.backup
+
+    # Remove all data
+    rm -rf ~/.config/nvim
+    rm -rf ~/.local/share/nvim
+    rm -rf ~/.local/state/nvim
+
+    # Reinstall
+    git clone https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
+    nvim
+<
+
+==============================================================================
+GETTING HELP                                           *yoda-trouble-help*
+
+Startup Logs~
+>
+    nvim --startuptime startup.log +q
+    cat startup.log
+<
+
+Plugin Logs~
+>
+    :Lazy log           " Plugin logs
+    :messages           " Neovim message history
+<
+
+Report an Issue~
+
+Open an issue at: https://github.com/jedi-knights/yoda.nvim/issues
+
+Include:
+  • Neovim version: `nvim --version`
+  • Error messages: `:messages`
+  • Plugin logs: `:Lazy log`
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

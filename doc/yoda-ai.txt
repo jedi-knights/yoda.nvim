@@ -1,0 +1,127 @@
+*yoda-ai.txt*              Yoda.nvim AI Integration Guide
+
+                     YODA.NVIM AI INTEGRATION GUIDE
+
+==============================================================================
+CONTENTS                                                   *yoda-ai-contents*
+
+1. Prerequisites ........................... |yoda-ai-prereqs|
+2. Claude Code Setup ....................... |yoda-ai-setup|
+3. Keymaps ................................. |yoda-ai-keymaps|
+4. Verification ............................ |yoda-ai-verify|
+5. Troubleshooting ......................... |yoda-ai-trouble|
+
+==============================================================================
+PREREQUISITES                                               *yoda-ai-prereqs*
+
+Required Software:~
+  • Neovim 0.10.1 or later
+  • Node.js 18 or later
+  • Git
+
+==============================================================================
+CLAUDE CODE SETUP                                            *yoda-ai-setup*
+
+Yoda.nvim uses claudecode.nvim for AI assistance. Claude Code runs as an
+agentic process in your terminal and communicates with the Neovim plugin
+over a local socket.
+
+1. Install Claude Code CLI~
+>
+    npm install -g @anthropic-ai/claude-code
+<
+
+2. Authenticate~
+>
+    claude login
+<
+
+3. Verify Installation~
+>
+    claude --version
+<
+
+4. Start Neovim~
+
+The plugin loads on-demand when you first invoke a Claude command. No
+additional Neovim configuration is required.
+
+Environment-Specific Setup~
+
+Yoda.nvim detects home/work environments via the YODA_ENV variable:
+>
+    # Work environment (e.g. corporate API proxy)
+    export YODA_ENV="work"
+
+    # Home environment
+    export YODA_ENV="home"
+<
+
+==============================================================================
+KEYMAPS                                                    *yoda-ai-keymaps*
+
+All Claude Code keymaps are under the <leader>a prefix.
+
+Session~
+    <leader>ai      (n)    Toggle Claude Code
+    <leader>af      (n)    Focus Claude Code window
+    <leader>ar      (n)    Resume previous Claude session
+    <leader>aC      (n)    Continue last Claude conversation
+    <leader>am      (n)    Select Claude model
+
+Context~
+    <leader>aB      (n)    Add current buffer to Claude context
+    <leader>as      (v)    Send visual selection to Claude
+    <leader>as      (n)    Add file to Claude (in file explorer buffers)
+
+Diffs~
+    <leader>aa      (n)    Accept diff proposed by Claude
+    <leader>ad      (n)    Deny diff proposed by Claude
+
+Discover all AI keymaps interactively:
+>
+    <leader>?       Show which-key hint for current prefix
+<
+
+==============================================================================
+VERIFICATION                                                *yoda-ai-verify*
+
+Check AI and LSP health:
+>
+    :YodaDiagnostics    " Yoda system health check
+    :LspInfo            " Active LSP clients
+    :Mason              " Installed language servers
+    :checkhealth        " Full Neovim health check
+    :checkhealth lsp    " LSP-specific health check
+<
+
+==============================================================================
+TROUBLESHOOTING                                            *yoda-ai-trouble*
+
+Claude Code: `claude` command not found~
+>
+    npm install -g @anthropic-ai/claude-code
+<
+
+Claude Code: Authentication errors~
+>
+    claude login
+<
+
+LSP works but Claude does not~
+>
+    :LspInfo           " Confirm LSP clients are attached
+    :Mason             " Verify language servers are installed
+    :checkhealth lsp   " Run LSP health check
+<
+
+General debugging~
+>
+    :set verbose=9     " Enable verbose logging
+    :Lazy              " Check plugin status
+    :checkhealth       " Full health check
+    :messages          " View Neovim message history
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

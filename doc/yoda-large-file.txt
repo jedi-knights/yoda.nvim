@@ -1,0 +1,201 @@
+*yoda-large-file.txt*         Yoda.nvim Large File Handling
+
+                     YODA.NVIM LARGE FILE HANDLING
+
+==============================================================================
+CONTENTS                                          *yoda-large-file-contents*
+
+1. Overview ................................ |yoda-large-file-overview|
+2. Automatic Optimizations ................. |yoda-large-file-auto|
+3. Configuration ........................... |yoda-large-file-config|
+4. Commands ................................ |yoda-large-file-commands|
+5. Troubleshooting ......................... |yoda-large-file-trouble|
+6. Performance Tips ........................ |yoda-large-file-tips|
+
+==============================================================================
+OVERVIEW                                          *yoda-large-file-overview*
+
+Yoda.nvim automatically detects large files and disables expensive features
+to keep editing responsive. The default threshold is 100KB.
+
+When a large file is detected, a notification is shown and a subset of
+features are selectively disabled for that buffer only.
+
+==============================================================================
+AUTOMATIC OPTIMIZATIONS                              *yoda-large-file-auto*
+
+When a file exceeds the size threshold, the following are disabled:
+
+  • EditorConfig        Prevents BufWritePre delays
+  • Treesitter          Prevents syntax parsing delays
+  • LSP                 Prevents background analysis
+  • Gitsigns            Prevents git diff computation
+  • Auto-save           Skipped to avoid write delays
+  • Diagnostics         Disabled to stop diagnostic computation
+  • Swap/Undo/Backup    Reduced I/O overhead
+  • Fold method         Switched to manual
+
+==============================================================================
+CONFIGURATION                                       *yoda-large-file-config*
+
+Set `vim.g.yoda_large_file` before Yoda loads (e.g. in `init.lua`):
+>
+    vim.g.yoda_large_file = {
+      size_threshold = 100 * 1024, -- 100KB (default)
+      show_notification = true,    -- Notify when large file is detected
+      disable = {
+        editorconfig = true,
+        treesitter   = true,
+        lsp          = true,
+        gitsigns     = true,
+        autosave     = true,
+        diagnostics  = true,
+        syntax       = false,  -- Keep basic syntax highlighting
+        swap         = true,
+        undo         = true,
+        backup       = true,
+      },
+    }
+<
+
+Conservative Mode (keep more features):~
+>
+    vim.g.yoda_large_file = {
+      size_threshold = 500 * 1024,  -- 500KB threshold
+      disable = {
+        editorconfig = true,
+        treesitter   = true,
+        lsp          = false,   -- Keep LSP
+        gitsigns     = false,   -- Keep git signs
+        autosave     = true,
+        diagnostics  = false,   -- Keep diagnostics
+        swap         = true,
+        undo         = false,   -- Keep undo history
+        backup       = true,
+      },
+    }
+<
+
+Aggressive Mode (disable everything):~
+>
+    vim.g.yoda_large_file = {
+      size_threshold = 50 * 1024,   -- 50KB threshold
+      disable = {
+        editorconfig = true,
+        treesitter   = true,
+        lsp          = true,
+        gitsigns     = true,
+        autosave     = true,
+        diagnostics  = true,
+        syntax       = true,   -- Disable even basic syntax
+        swap         = true,
+        undo         = true,
+        backup       = true,
+      },
+    }
+<
+
+==============================================================================
+COMMANDS                                          *yoda-large-file-commands*
+
+:LargeFileStatus~
+
+Show whether large file mode is active for the current buffer:
+>
+    :LargeFileStatus
+<
+Output example:
+>
+    Large file mode: ENABLED
+    File: large_data.json
+    Size: 2.5MB
+    Threshold: 100KB
+<
+
+:LargeFileEnable~
+
+Manually enable large file mode for the current buffer (useful for files
+below the threshold that are still slow):
+>
+    :LargeFileEnable
+<
+
+:LargeFileDisable~
+
+Disable large file mode for the current buffer. Reload the buffer
+afterwards to fully restore all features:
+>
+    :LargeFileDisable
+    :e!
+<
+
+:LargeFileConfig~
+
+Show the active large file configuration:
+>
+    :LargeFileConfig
+<
+
+==============================================================================
+TROUBLESHOOTING                                   *yoda-large-file-trouble*
+
+File is still slow after large file mode is active~
+
+  1. Confirm large file mode is enabled:
+>
+       :LargeFileStatus
+<
+  2. Manually force it on:
+>
+       :LargeFileEnable
+<
+  3. Profile to find the remaining bottleneck:
+>
+       :profile start /tmp/nvim-profile.log
+       :profile func *
+       :profile file *
+       " Edit your file
+       :profile stop
+<
+
+Large file mode triggers for small files~
+
+Raise the threshold:
+>
+    vim.g.yoda_large_file = {
+      size_threshold = 500 * 1024,  -- 500KB
+    }
+<
+
+==============================================================================
+PERFORMANCE TIPS                                       *yoda-large-file-tips*
+
+Very Large Files (>10MB)~
+
+  • Consider using `view` mode rather than editing directly
+  • Split large files into smaller chunks where possible
+  • Use external tools (jq, xmllint) to pre-process before opening
+
+Log Files~
+>
+    -- Auto-enable large file mode for all .log files
+    vim.api.nvim_create_autocmd("BufReadPre", {
+      pattern = "*.log",
+      callback = function()
+        vim.cmd("LargeFileEnable")
+      end,
+    })
+<
+
+JSON/XML Files~
+
+Format with an external tool before opening in Neovim:
+>
+    jq . large.json > formatted.json
+    nvim formatted.json
+<
+
+See also: |yoda-performance|
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
