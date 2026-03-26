@@ -233,8 +233,14 @@ end
 
 package.preload["yoda-diagnostics.ai_cli"] = function()
   return {
-    get_claude_path = function() return nil end,
-    is_claude_available = function() return false end,
-    get_claude_version = function() return nil, nil end,
+    get_claude_path = function()
+      return nil
+    end,
+    is_claude_available = function()
+      return false
+    end,
+    get_claude_version = function()
+      return nil, nil
+    end,
   }
 end
