@@ -19,7 +19,7 @@ describe("environment", function()
     vim.env.YODA_DEV_LOCAL = original_env_dev_local
     vim.g.yoda_config = original_config
     vim.schedule = original_schedule
-    package.loaded["yoda.utils"] = nil
+    package.loaded["yoda-adapters.notification"] = nil
   end)
 
   describe("get_mode()", function()
@@ -92,7 +92,7 @@ describe("environment", function()
       local notified = false
       local captured_msg = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           notified = true
           captured_msg = msg
@@ -117,7 +117,7 @@ describe("environment", function()
 
       local captured_msg = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           captured_msg = msg
         end,
@@ -140,7 +140,7 @@ describe("environment", function()
 
       local captured_opts = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           captured_opts = opts
         end,
@@ -163,7 +163,7 @@ describe("environment", function()
 
       local captured_level = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           captured_level = level
         end,
@@ -212,7 +212,7 @@ describe("environment", function()
       local notified = false
       local captured_msg = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           notified = true
           captured_msg = msg
@@ -234,7 +234,7 @@ describe("environment", function()
 
       local captured_opts = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           captured_opts = opts
         end,
@@ -254,7 +254,7 @@ describe("environment", function()
 
       local captured_level = nil
 
-      package.loaded["yoda.utils"] = {
+      package.loaded["yoda-adapters.notification"] = {
         notify = function(msg, level, opts)
           captured_level = level
         end,
