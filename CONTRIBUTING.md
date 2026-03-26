@@ -14,9 +14,9 @@ Yoda.nvim maintains world-class code quality (10/10):
 - **Test Coverage**: 302 tests, ~95% coverage
 
 **Please read our standards documentation:**
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture
-- [STANDARDS_QUICK_REFERENCE.md](docs/STANDARDS_QUICK_REFERENCE.md) - Code standards (SOLID/DRY/CLEAN/Complexity)
-- [TESTING_GUIDE.md](docs/TESTING_GUIDE.md) - Testing guidelines
+- `:help yoda-architecture` — System architecture
+- `:help yoda-configuration` — Configuration guide
+- `tests/` — Test infrastructure and examples
 
 ---
 
@@ -35,9 +35,6 @@ Yoda.nvim maintains world-class code quality (10/10):
 # Clone the repository
 git clone https://github.com/jedi-knights/yoda.nvim.git
 cd yoda.nvim
-
-# Install git hooks (runs lint + test before each commit)
-make install-hooks
 
 # Run tests
 make test
@@ -63,8 +60,8 @@ git checkout -b fix/bug-description
 
 ### 2. Make Changes
 
-- **Follow existing code patterns** - See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- **Maintain SOLID/CLEAN/DRY principles** - See [STANDARDS_QUICK_REFERENCE.md](docs/STANDARDS_QUICK_REFERENCE.md)
+- **Follow existing code patterns** - See `:help yoda-architecture`
+- **Maintain SOLID/CLEAN/DRY principles** - keep modules focused and under ~300 lines
 - **Add tests for new functionality** - Required!
 - **Update documentation** if needed
 - **Keep it beginner-friendly** - Clear, modular, easy to understand
@@ -75,7 +72,7 @@ git checkout -b fix/bug-description
 
 ```bash
 # Create test file
-cp tests/unit/core/string_spec.lua tests/unit/your_module_spec.lua
+cp tests/unit/config_spec.lua tests/unit/your_module_spec.lua
 
 # Edit tests
 nvim tests/unit/your_module_spec.lua
@@ -173,8 +170,7 @@ Then create a Pull Request on GitHub.
 ### Running Tests
 
 ```bash
-make test           # Run all 302 tests
-make test-unit      # Run unit tests only
+make test           # Run all tests
 <leader>tt          # From Neovim: run current test file
 <leader>ta          # From Neovim: run all tests
 <leader>tw          # From Neovim: watch mode
@@ -252,13 +248,6 @@ end
 return true, result
 ```
 
-**Dependency Inversion:**
-```lua
--- Use adapters, not direct plugin calls
-local notify = require("yoda.adapters.notification")
-notify.notify(msg, "info")  -- Works with any backend!
-```
-
 ---
 
 ## 🛠️ How to Contribute
@@ -289,17 +278,17 @@ notify.notify(msg, "info")  -- Works with any backend!
 
 ### Update Documentation When:
 
-- **Adding new features** → Update `docs/FEATURES.md`
-- **Adding keymaps** → Update `docs/KEYMAPS.md`
-- **Changing architecture** → Update `docs/ARCHITECTURE.md`
-- **Adding configuration** → Update `docs/CONFIGURATION.md`
+- **Adding new features** → Update the relevant `doc/yoda-*.txt` help file
+- **Adding keymaps** → Update `doc/yoda-keymaps.txt`
+- **Changing architecture** → Update `doc/yoda-architecture.txt`
+- **Adding configuration** → Update `doc/yoda-configuration.txt`
+- After editing any `doc/` file, regenerate tags: `nvim --headless +"helptags doc/" +qa`
 
 ### Documentation Standards
 
-- Use markdown
-- Include code examples
+- Use vimdoc help format (see existing `doc/*.txt` files)
+- Include code examples in `>` blocks
 - Keep it concise and clear
-- Add to table of contents if applicable
 
 ---
 
@@ -372,10 +361,9 @@ Your PR will automatically run:
 ## 🎯 Areas for Contribution
 
 ### High Priority
-- Terminal module tests
-- Integration tests
 - Performance optimizations
 - Bug fixes
+- Additional test coverage
 
 ### Medium Priority
 - New utility functions
@@ -394,22 +382,20 @@ Your PR will automatically run:
 ## 📚 Resources
 
 ### Essential Reading
-- [Architecture Guide](docs/ARCHITECTURE.md) - System design
-- [Code Standards](docs/STANDARDS_QUICK_REFERENCE.md) - Quality guidelines
-- [Testing Guide](docs/TESTING_GUIDE.md) - How to write tests
-- [Getting Started](docs/GETTING_STARTED.md) - User guide
+- `:help yoda-architecture` — System design
+- `:help yoda-getting-started` — User guide
+- `:help yoda-configuration` — Configuration reference
 
 ### Development
-- [Testing Guide](docs/TESTING_GUIDE.md) - Test infrastructure and guide
-- [Makefile](Makefile) - Development commands
-- [Test Helpers](tests/helpers.lua) - Testing utilities
+- [Makefile](Makefile) — Development commands (`make test`, `make lint`, `make format`)
+- [Test Helpers](tests/helpers.lua) — Testing utilities
 
 ---
 
 ## 💬 Getting Help
 
 - **Questions?** Open a [GitHub Discussion](https://github.com/jedi-knights/yoda.nvim/discussions)
-- **Issues?** Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
+- **Issues?** Run `:help yoda-troubleshooting` in Neovim
 - **Bugs?** Search [existing issues](https://github.com/jedi-knights/yoda.nvim/issues)
 
 ---
