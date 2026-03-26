@@ -3,14 +3,13 @@
 
 local M = {}
 
-local utils = require("yoda.commands.utils")
-local get_console_logger = utils.get_console_logger
-
 --- Setup Lazy.nvim related commands
 function M.setup()
   -- Debug Lazy.nvim plugin manager
   vim.api.nvim_create_user_command("YodaDebugLazy", function()
-    local logger = get_console_logger("debug")
+    local logger = require("yoda-logging.logger")
+    logger.set_strategy("console")
+    logger.set_level("debug")
 
     logger.info("=== Lazy.nvim Debug Information ===")
     logger.debug("Lazy.nvim path", { path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" })
@@ -38,7 +37,9 @@ function M.setup()
 
   -- Clean Lazy.nvim cache and state
   vim.api.nvim_create_user_command("YodaCleanLazy", function()
-    local logger = get_console_logger("info")
+    local logger = require("yoda-logging.logger")
+    logger.set_strategy("console")
+    logger.set_level("info")
 
     -- Clean up Lazy.nvim cache and state
     local lazy_state = vim.fn.stdpath("state") .. "/lazy"

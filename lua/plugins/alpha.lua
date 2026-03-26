@@ -49,7 +49,9 @@ return {
           return
         end
 
-        if require("yoda.buffer.type_cache").is_real_file_buffer(buf) then
+        local bo = vim.bo[buf]
+        local bufname = vim.api.nvim_buf_get_name(buf)
+        if bo.buftype == "" and bo.filetype ~= "" and bo.filetype ~= "alpha" and bufname ~= "" then
           vim.schedule(function()
             alpha_manager.close_all_alpha_buffers()
             pcall(vim.api.nvim_del_augroup_by_name, "YodaAlphaClose")
