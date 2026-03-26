@@ -113,35 +113,11 @@ local function extract_env_names(env_region)
   return env_names
 end
 
---- Load markers with fallback to defaults
---- Complexity: 1
---- @return table Available markers
-local function load_markers()
-  local config_loader = require("yoda.config_loader")
-  local markers = config_loader.load_pytest_markers("pytest.ini")
-  return markers or DEFAULT_MARKERS
-end
-
 --- Parse environment and region from combined label
---- Complexity: 1
 --- @param label string Label in format "env (region)"
 --- @return string|nil, string|nil Environment and region
 local function parse_env_region_label(label)
   return label:match("^(.+)%s+%((.+)%)$")
-end
-
---- Check if marker exists in markers list
---- Complexity: 2 (1 loop + 1 if)
---- @param markers table Array of markers
---- @param marker string Marker to find
---- @return boolean
-local function marker_exists(markers, marker)
-  for _, m in ipairs(markers) do
-    if m == marker then
-      return true
-    end
-  end
-  return false
 end
 
 --- Determine Allure preference from selection
@@ -217,10 +193,9 @@ end
 --- Complexity: 4 (1 load + 1 check + 1 picker)
 --- @param callback function Callback(selected_markers)
 local function wizard_step_select_markers(callback)
-  local markers = load_markers()
   local picker = require("yoda-adapters.picker")
 
-  picker.multiselect(markers, {
+  picker.multiselect(DEFAULT_MARKERS, {
     prompt = "Select Test Markers (Tab to toggle selection, Enter to confirm):",
   }, function(selected)
     if not selected or #selected == 0 then
@@ -336,12 +311,6 @@ function M.handle_json_selection(env_region, callback)
 
     local env, region = parse_env_region_label(choice)
     if env and region then
-      -- For JSON selection, we need to get markers and allure settings from cache
-      local markers = cached.markers or ""
-      local open_allure = cached.open_allure or false
-
-      -- NOTE: Configuration preview moved to pytest-atlas.nvim plugin
-
       callback({ environment = env, region = region })
     else
       vim.notify("Failed to parse environment and region from selection", vim.log.levels.ERROR)
