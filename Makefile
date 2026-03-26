@@ -1,6 +1,6 @@
 # Makefile for Yoda.nvim
 
-.PHONY: test test-verbose test-watch test-unit test-integration test-property lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
+.PHONY: test test-verbose test-watch test-property lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
 
 # Default target
 help:
@@ -9,9 +9,7 @@ help:
 	@echo "Testing:"
 	@echo "  make test              - Run all tests (optimized, excludes slow tests)"
 	@echo "  make test-verbose      - Run tests with detailed output (for CI)"
-	@echo "  make test-watch        - Run tests in watch mode" 
-	@echo "  make test-unit         - Run unit tests only"
-	@echo "  make test-integration  - Run integration tests only"
+	@echo "  make test-watch        - Run tests in watch mode"
 	@echo "  make test-property     - Run property-based tests (advanced)"
 	@echo ""
 	@echo "Code Quality:"
@@ -28,7 +26,6 @@ help:
 	@echo "  make benchmark-clean   - Clean up benchmark files"
 	@echo ""
 	@echo "Development:"
-	@echo "  make install-hooks     - Install git pre-commit hooks"
 	@echo "  make clean             - Clean generated files"
 	@echo "  make help              - Show this help"
 
@@ -47,14 +44,6 @@ test-verbose:
 	@echo "================================================================================"
 	@./scripts/test_summary.sh /tmp/yoda_test_output.txt
 	@echo "================================================================================"
-
-# Run only unit tests
-test-unit:
-	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/unit')" -c "quitall!"
-
-# Run only integration tests
-test-integration:
-	nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/integration')" -c "quitall!"
 
 # Run property-based tests (advanced)
 test-property:
@@ -98,13 +87,6 @@ benchmark-lsp:
 benchmark-clean:
 	@echo "Cleaning benchmark files..."
 	@./scripts/benchmark_performance.sh clean
-
-# Install git hooks
-install-hooks:
-	@echo "Installing git hooks..."
-	@cp scripts/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@echo "✅ Pre-commit hook installed"
 
 # Clean generated files  
 clean:
