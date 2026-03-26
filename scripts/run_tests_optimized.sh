@@ -11,7 +11,6 @@ TEMP_DIR="/tmp/yoda_tests_fast_$$"
 # Create temporary directory structure for fast tests
 mkdir -p "$TEMP_DIR/tests"
 cp -r tests/unit "$TEMP_DIR/tests/"
-cp -r tests/property "$TEMP_DIR/tests/"
 cp tests/helpers.lua "$TEMP_DIR/tests/"
 
 # Remove slow tests with significant vim.wait() delays

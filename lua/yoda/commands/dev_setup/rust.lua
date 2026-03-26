@@ -4,12 +4,12 @@
 local M = {}
 
 local notify = require("yoda-adapters.notification")
-local utils = require("yoda.commands.utils")
-local get_console_logger = utils.get_console_logger
 
 function M.setup()
   vim.api.nvim_create_user_command("YodaRustSetup", function()
-    local logger = get_console_logger("info")
+    local logger = require("yoda-logging.logger")
+    logger.set_strategy("console")
+    logger.set_level("info")
 
     logger.info("🦀 Setting up Rust development environment...")
 
