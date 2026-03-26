@@ -118,7 +118,6 @@ if not ok_fd then
   vim.notify("[yoda] Failed to load yoda.filetype.detection: " .. tostring(filetype_detection), vim.log.levels.WARN)
 end
 
-
 local ok_gr, git_refresh = pcall(require, "yoda.git_refresh")
 if not ok_gr then
   vim.notify("[yoda] Failed to load yoda.git_refresh: " .. tostring(git_refresh), vim.log.levels.WARN)
@@ -135,8 +134,12 @@ else
   vim.notify("[yoda] Failed to load yoda.timer_manager: " .. tostring(timer_manager), vim.log.levels.WARN)
 end
 
-if ok_fd then filetype_detection.setup_all(autocmd, augroup) end
-if ok_gr then git_refresh.setup_autocmds(autocmd, augroup) end
+if ok_fd then
+  filetype_detection.setup_all(autocmd, augroup)
+end
+if ok_gr then
+  git_refresh.setup_autocmds(autocmd, augroup)
+end
 
 -- ============================================================================
 -- Buffer
