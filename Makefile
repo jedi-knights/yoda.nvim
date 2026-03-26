@@ -110,6 +110,5 @@ install-hooks:
 clean:
 	@echo "Cleaning generated files..."
 	@rm -f startup.log
-	@rm -rf benchmarks/temp/
 	@rm -f /tmp/yoda_test_output.txt
 	@echo "✅ Cleanup complete"
