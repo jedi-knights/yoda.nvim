@@ -1,6 +1,6 @@
 # Makefile for Yoda.nvim
 
-.PHONY: test test-verbose test-watch test-property lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
+.PHONY: test test-verbose test-watch lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
 
 # Default target
 help:
@@ -10,7 +10,6 @@ help:
 	@echo "  make test              - Run all tests (optimized, excludes slow tests)"
 	@echo "  make test-verbose      - Run tests with detailed output (for CI)"
 	@echo "  make test-watch        - Run tests in watch mode"
-	@echo "  make test-property     - Run property-based tests (advanced)"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint              - Run linter (stylua --check)"
@@ -44,12 +43,6 @@ test-verbose:
 	@echo "================================================================================"
 	@./scripts/test_summary.sh /tmp/yoda_test_output.txt
 	@echo "================================================================================"
-
-# Run property-based tests (advanced)
-test-property:
-	@echo "Running property-based tests (200+ runs per test)..."
-	@echo "This will take longer than unit tests..."
-	@nvim --headless -u tests/minimal_init.lua -c "lua require('plenary.test_harness').test_directory('tests/property')" -c "quitall!"
 
 # Lint code with stylua
 lint:
