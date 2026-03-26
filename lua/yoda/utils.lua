@@ -58,7 +58,7 @@ end
 --- @param level string|number Log level ("info", "warn", "error" or vim.log.levels.*)
 --- @param opts table|nil Options (title, timeout, etc.)
 function M.notify(msg, level, opts)
-  local ok, adapter = pcall(require, "yoda.adapters.notification")
+  local ok, adapter = pcall(require, "yoda-adapters.notification")
   if not ok then
     -- Fallback to native vim.notify if adapter fails to load
     local numeric_level = type(level) == "string" and vim.log.levels.INFO or level

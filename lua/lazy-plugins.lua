@@ -114,32 +114,8 @@ require("lazy").setup({
     end,
   }),
 
-  -- Core plugins
-  { import = "plugins.core" },
-  { import = "plugins.ui" },
-  { import = "plugins.notifications" },
-  { import = "plugins.dashboard" },
-  { import = "plugins.statusline" },
-  { import = "plugins.editor" },
-  { import = "plugins.motion" },
-
-  -- Development tools
-  { import = "plugins.lsp" },
-  { import = "plugins.completion" },
-  { import = "plugins.debugging" },
-  { import = "plugins.testing" },
-  { import = "plugins.formatters" },
-
-  -- Integration
-  { import = "plugins.ai" },
-  { import = "plugins.git" },
-  { import = "plugins.explorer" },
-  { import = "plugins.finding" },
-
-  -- Language-specific plugins (loaded by filetype)
-  { import = "plugins.languages.rust" },
-  { import = "plugins.languages.python" },
-  { import = "plugins.languages.javascript" },
+  -- All plugins: one file per plugin in lua/plugins/
+  { import = "plugins" },
 
   -- User customizations: add your own plugins in lua/custom/plugins/
   -- This directory is gitignored so your changes won't conflict with upstream yoda updates.

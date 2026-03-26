@@ -26,64 +26,63 @@ require("lazy-bootstrap")
 require("options")
 require("lazy-plugins")
 
--- Load local configuration if it exists.
--- Always surface errors so the user sees config mistakes immediately;
--- only suppress the expected "module not found" when no local.lua is present.
+-- ============================================================================
+-- Yoda Modules + Environment Setup
+-- ============================================================================
+
+-- Defer until the event loop starts, after lazy.nvim plugin initialization
+-- is complete. local.lua loads first so any globals it sets (e.g.
+-- vim.g.yoda_large_file) are visible to the setup() calls that follow.
 vim.schedule(function()
-  local ok, err = pcall(require, "local")
-  if not ok and type(err) == "string" and not err:find("module 'local' not found") then
-    vim.notify("[yoda] Error in local.lua: " .. err, vim.log.levels.ERROR)
+  -- Load local configuration if it exists. Use fs_stat to detect presence so
+  -- we never need to pattern-match against Neovim's module-not-found message.
+  local local_path = vim.fn.stdpath("config") .. "/lua/local.lua"
+  if vim.uv.fs_stat(local_path) then
+    local ok, err = pcall(require, "local")
+    if not ok then
+      vim.notify("[yoda] Error in local.lua: " .. tostring(err), vim.log.levels.ERROR)
+    end
   end
-end)
 
--- Defer keymaps and autocmds for better startup performance
-vim.schedule(function()
-  require("yoda.keymaps")
-  require("autocmds")
-end)
+  -- Keymaps and autocmds are core — Neovim is largely unusable without them.
+  local ok_km, err_km = pcall(require, "yoda.keymaps")
+  if not ok_km then
+    vim.notify("[yoda] Failed to load yoda.keymaps: " .. tostring(err_km), vim.log.levels.ERROR)
+  end
 
--- ============================================================================
--- Yoda Modules
--- ============================================================================
+  local ok_ac, err_ac = pcall(require, "autocmds")
+  if not ok_ac then
+    vim.notify("[yoda] Failed to load autocmds: " .. tostring(err_ac), vim.log.levels.ERROR)
+  end
 
--- Defer loading of non-critical modules
-vim.schedule(function()
-  local verbose = vim.g.yoda_config and vim.g.yoda_config.verbose_startup
-
+  -- The following modules are non-fatal: Neovim remains usable without them.
   local ok_cmds, err_cmds = pcall(require, "yoda.commands")
-  if not ok_cmds and verbose then
+  if not ok_cmds then
     vim.notify("[yoda] Failed to load yoda.commands: " .. tostring(err_cmds), vim.log.levels.WARN)
   end
 
-  -- Initialize large file detection
-  local ok, large_file = pcall(require, "yoda.large_file")
-  if ok then
+  -- Initialize large file detection (setup() also registers user commands)
+  local ok_lf, large_file = pcall(require, "yoda.large_file")
+  if ok_lf then
     large_file.setup(vim.g.yoda_large_file or {})
-    large_file.setup_commands()
-  elseif verbose then
+  else
     vim.notify("[yoda] Failed to load yoda.large_file: " .. tostring(large_file), vim.log.levels.WARN)
   end
 
   -- Initialize memory manager
-  local mem_ok, memory_manager = pcall(require, "yoda.performance.memory_manager")
-  if mem_ok then
+  local ok_mm, memory_manager = pcall(require, "yoda.performance.memory_manager")
+  if ok_mm then
     memory_manager.setup(vim.g.yoda_memory_manager or {})
-  elseif verbose then
+  else
     vim.notify("[yoda] Failed to load yoda.performance.memory_manager: " .. tostring(memory_manager), vim.log.levels.WARN)
   end
-end)
 
--- ============================================================================
--- Environment Setup
--- ============================================================================
-
--- Show environment notification if configured
-vim.schedule(function()
-  local ok, environment = pcall(require, "yoda.environment")
-  if ok then
+  -- Show environment notifications if configured
+  local ok_env, environment = pcall(require, "yoda.environment")
+  if ok_env then
     environment.show_notification()
     environment.show_local_dev_notification()
-  elseif vim.g.yoda_config and vim.g.yoda_config.verbose_startup then
+  else
     vim.notify("[yoda] Failed to load yoda.environment: " .. tostring(environment), vim.log.levels.WARN)
   end
 end)

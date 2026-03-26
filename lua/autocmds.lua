@@ -49,6 +49,18 @@ autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
   end,
 })
 
+-- Briefly highlight yanked text. Skipped for large buffers (>1000 lines)
+-- where the highlight scan would be perceptible.
+autocmd("TextYankPost", {
+  group = augroup("YodaHighlightYank", { clear = true }),
+  desc = "Highlight yanked text briefly",
+  callback = function()
+    if vim.api.nvim_buf_line_count(0) < 1000 then
+      vim.highlight.on_yank({ timeout = 50 })
+    end
+  end,
+})
+
 -- Remove trailing whitespace on save, but only for buffers without a conform
 -- formatter — those formatters already handle whitespace and run after this
 -- autocmd would fire, making the regex redundant.
@@ -100,20 +112,31 @@ autocmd("FileType", {
 
 -- Modules that register their own autocmds via a setup call. Kept here so
 -- all autocmd registration is visible in one place.
-local filetype_detection = require("yoda.filetype.detection")
-local performance_autocmds = require("yoda.performance.autocmds")
-local git_refresh = require("yoda.git_refresh")
+-- Loaded individually so one failure doesn't cascade to the rest.
+local ok_fd, filetype_detection = pcall(require, "yoda.filetype.detection")
+if not ok_fd then
+  vim.notify("[yoda] Failed to load yoda.filetype.detection: " .. tostring(filetype_detection), vim.log.levels.WARN)
+end
+
+
+local ok_gr, git_refresh = pcall(require, "yoda.git_refresh")
+if not ok_gr then
+  vim.notify("[yoda] Failed to load yoda.git_refresh: " .. tostring(git_refresh), vim.log.levels.WARN)
+end
 
 -- Register VimLeavePre cleanup for all tracked timers.
 -- Lives here because setup_cleanup() is just registering an autocmd.
 local ok_timer, timer_manager = pcall(require, "yoda.timer_manager")
-if ok_timer and timer_manager.setup_cleanup then
-  timer_manager.setup_cleanup()
+if ok_timer then
+  if timer_manager.setup_cleanup then
+    timer_manager.setup_cleanup()
+  end
+else
+  vim.notify("[yoda] Failed to load yoda.timer_manager: " .. tostring(timer_manager), vim.log.levels.WARN)
 end
 
-filetype_detection.setup_all(autocmd, augroup)
-performance_autocmds.setup_all(autocmd, augroup)
-git_refresh.setup_autocmds(autocmd, augroup)
+if ok_fd then filetype_detection.setup_all(autocmd, augroup) end
+if ok_gr then git_refresh.setup_autocmds(autocmd, augroup) end
 
 -- ============================================================================
 -- Buffer
@@ -146,7 +169,10 @@ autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
   desc = "Resize splits equally when Vim is resized",
   callback = function()
-    local timer_mgr = require("yoda.timer_manager")
+    local ok, timer_mgr = pcall(require, "yoda.timer_manager")
+    if not ok then
+      return
+    end
     local timer_id = "vim_resized"
     if timer_mgr.is_vim_timer_active(timer_id) then
       timer_mgr.stop_vim_timer(timer_id)
@@ -166,6 +192,11 @@ autocmd("FileType", {
   group = augroup("YodaFileTypes", { clear = true }),
   desc = "Apply filetype-specific settings",
   callback = function()
-    require("yoda.filetype.settings").apply(vim.bo.filetype)
+    local ok, settings = pcall(require, "yoda.filetype.settings")
+    if not ok then
+      vim.notify("[yoda] Failed to load yoda.filetype.settings: " .. tostring(settings), vim.log.levels.WARN)
+      return
+    end
+    settings.apply(vim.bo.filetype)
   end,
 })
