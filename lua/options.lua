@@ -124,6 +124,13 @@ vim.opt.foldlevel = 99
 -- YODA SPECIFIC
 -- ============================================================================
 
+-- Backend overrides (optional — adapters auto-detect if not set).
+-- Must be set here (before lazy-plugins loads) to take effect.
+-- Notify backends:  "noice" | "snacks" | "native"
+-- Picker backends:  "snacks" | "telescope" | "native"
+-- vim.g.yoda_notify_backend = "snacks"
+-- vim.g.yoda_picker_backend = "snacks"
+
 -- Configuration for Yoda.nvim (only set if not already configured)
 if not vim.g.yoda_config then
   vim.g.yoda_config = {

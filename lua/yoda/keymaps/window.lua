@@ -5,10 +5,6 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
--- NOTE: <C-h/j/k/l> window navigation is handled by vim-tmux-navigator
--- (lua/plugins/motion.lua). It transparently falls back to <C-w> movement
--- when outside tmux, so no separate mappings are needed here.
-
 map("n", "<leader>xt", function()
   local ok, win_utils = pcall(require, "yoda-window.utils")
   if not ok then

@@ -38,9 +38,10 @@ function M.get_config()
   return config
 end
 
---- Update configuration and register the BufReadPre detection autocmd.
---- Combining both here means callers need only one setup() call, matching the
---- pattern used by filetype_detection, performance_autocmds, and git_refresh.
+--- Update configuration, register the BufReadPre detection autocmd, and set up
+--- user commands. All three are bundled here so callers need only one setup()
+--- call, matching the pattern used by filetype_detection, performance_autocmds,
+--- and git_refresh.
 --- @param user_config table User configuration
 function M.setup(user_config)
   config = vim.tbl_deep_extend("force", DEFAULT_CONFIG, user_config or {})
@@ -52,6 +53,8 @@ function M.setup(user_config)
       M.on_buf_read(args.buf)
     end,
   })
+
+  M.setup_commands()
 end
 
 --- Check if buffer is marked as large file
