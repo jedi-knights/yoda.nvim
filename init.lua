@@ -69,14 +69,6 @@ vim.schedule(function()
     vim.notify("[yoda] Failed to load yoda.large_file: " .. tostring(large_file), vim.log.levels.WARN)
   end
 
-  -- Initialize memory manager
-  local ok_mm, memory_manager = pcall(require, "yoda.performance.memory_manager")
-  if ok_mm then
-    memory_manager.setup(vim.g.yoda_memory_manager or {})
-  else
-    vim.notify("[yoda] Failed to load yoda.performance.memory_manager: " .. tostring(memory_manager), vim.log.levels.WARN)
-  end
-
   -- Show environment notifications if configured
   local ok_env, environment = pcall(require, "yoda.environment")
   if ok_env then
