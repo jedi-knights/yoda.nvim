@@ -1,0 +1,465 @@
+*yoda-javascript.txt*     JavaScript/TypeScript Development in Yoda.nvim
+
+               JAVASCRIPT/TYPESCRIPT DEVELOPMENT IN YODA.NVIM
+
+A comprehensive guide to JS/TS development with ts_ls LSP, vscode-js-debug,
+Jest/Vitest testing, and Biome linting/formatting.
+
+==============================================================================
+CONTENTS                                         *yoda-javascript-contents*
+
+1. Quick Start ............................. |yoda-js-quickstart|
+2. Installation ............................ |yoda-js-installation|
+3. LSP Features ............................ |yoda-js-lsp|
+4. Debugging ............................... |yoda-js-debugging|
+5. Testing ................................. |yoda-js-testing|
+6. Linting & Formatting .................... |yoda-js-linting|
+7. TypeScript .............................. |yoda-js-typescript|
+8. Package.json Management ................. |yoda-js-packagejson|
+9. Node.js REPL ............................ |yoda-js-repl|
+10. Console.log Helpers .................... |yoda-js-consolelog|
+11. Framework Support ...................... |yoda-js-frameworks|
+12. Keymaps ................................ |yoda-js-keymaps|
+13. Advanced Configuration ................. |yoda-js-config|
+14. Troubleshooting ........................ |yoda-js-trouble|
+
+==============================================================================
+QUICK START                                          *yoda-js-quickstart*
+
+1. Install JavaScript Tools~
+>
+    :YodaJavaScriptSetup
+<
+
+Installs via Mason:
+  • typescript-language-server (ts_ls) — LSP
+  • js-debug-adapter — Node.js/Chrome debugger
+  • biome — Linter and formatter
+
+Restart Neovim after installation.
+
+2. Open a Project~
+>
+    cd your-js-project
+    nvim src/index.ts
+<
+
+ts_ls activates automatically and provides completion, type checking,
+auto-imports, inlay hints, diagnostics, and refactoring actions.
+
+3. Essential Keymaps~
+    <leader>jr      Run Node.js file
+    <leader>jn      Open Node.js REPL
+    <leader>jt      Run nearest test
+    <leader>jd      Start debugger
+    <leader>jh      Toggle inlay hints
+    <leader>jo      Toggle code outline
+
+==============================================================================
+INSTALLATION                                       *yoda-js-installation*
+
+Automatic~
+>
+    :YodaJavaScriptSetup
+<
+
+Manual~
+
+TypeScript Language Server:
+>
+    :Mason          " Navigate to typescript-language-server, press i
+
+    # or via npm
+    npm install -g typescript typescript-language-server
+<
+
+js-debug-adapter:
+>
+    :Mason          " Navigate to js-debug-adapter, press i
+<
+
+Biome:
+>
+    :Mason          " Navigate to biome, press i
+
+    # or via npm
+    npm install -g @biomejs/biome
+<
+
+Verify:
+>
+    :LspInfo        " Should show ts_ls attached
+    :Mason          " All three tools should show as installed
+<
+
+==============================================================================
+LSP FEATURES                                             *yoda-js-lsp*
+
+Yoda.nvim uses ts_ls (TypeScript Language Server) for JS/TS support.
+
+Code Intelligence~
+  • Completion with module imports, types, JSDoc snippets
+  • Auto-import suggestions (press <CR> to accept)
+  • Inlay hints showing inferred types (TypeScript)
+  • Organize imports (remove unused, sort)
+
+Navigation~
+    gd              Go to definition
+    gD              Go to declaration
+    gi              Go to implementation
+    gr              Find references
+    K               Hover documentation
+
+Code Actions~
+    <leader>ca      Code actions (add imports, extract function, etc.)
+    <leader>rn      Rename symbol
+    <leader>jI      Organize imports
+    <leader>jh      Toggle inlay hints
+
+Inlay Hints Example~
+>
+    -- Without hints
+    const numbers = [1, 2, 3].map(n => n * 2)
+
+    -- With hints (TypeScript)
+    const numbers: number[] = [1, 2, 3].map((n: number): number => n * 2)
+<
+
+==============================================================================
+DEBUGGING                                           *yoda-js-debugging*
+
+Yoda.nvim uses vscode-js-debug for Node.js and Chrome debugging via nvim-dap.
+
+Keymaps~
+    <leader>jd      Start debugger (select configuration)
+    <leader>db      Toggle breakpoint
+    <leader>dc      Continue / start
+    <leader>do      Step over
+    <leader>di      Step into
+    <leader>dO      Step out
+    <leader>dq      Terminate session
+    <leader>du      Toggle DAP UI
+
+Workflow~
+
+1. Set breakpoint: `<leader>db`
+2. Start: `<leader>jd` — select a configuration:
+   • Launch file           Debug current file in Node.js
+   • Attach               Attach to running Node.js process
+   • Debug Jest Tests      Run Jest with breakpoint support
+   • Launch Chrome         Debug browser app (http://localhost:3000)
+3. Step through code with `<leader>do` / `<leader>di`
+4. Stop: `<leader>dq`
+
+Chrome/Browser Debugging~
+
+1. Start your dev server: `npm run dev`
+2. Press `<leader>jd`, select "Launch Chrome"
+3. Source maps must be enabled in tsconfig or webpack
+
+==============================================================================
+TESTING                                             *yoda-js-testing*
+
+Yoda.nvim supports Jest and Vitest via neotest. Both frameworks are
+auto-detected — they can coexist in the same project.
+
+Keymaps~
+    <leader>jt      Run nearest test
+    <leader>jT      Run all tests in file
+    <leader>jC      Run full test suite
+    <leader>ts      Toggle test summary panel
+    <leader>to      Toggle test output panel
+
+Test File Patterns~
+
+Jest:   `*.test.js`, `*.spec.js`, `__tests__/*.js`
+Vitest: `*.test.ts`, `*.spec.ts`
+
+Watch Mode~
+>
+    :Neotest watch      " Re-run on file changes
+<
+
+Debug a Test~
+
+1. Set breakpoint in the test function
+2. `<leader>jd` → select "Debug Jest Tests"
+3. Use standard DAP controls
+
+==============================================================================
+LINTING & FORMATTING                               *yoda-js-linting*
+
+Yoda.nvim uses Biome — a fast, all-in-one linter and formatter written in Rust.
+
+Auto-format on save: enabled by default (Biome → Prettier → LSP fallback).
+
+Manual format:
+>
+    <leader>f       Format current buffer
+<
+
+Diagnostics~
+    <leader>je      Open diagnostics panel
+
+Biome Configuration~
+
+Create `biome.json` in your project root:
+>
+    {
+      "$schema": "https://biomejs.dev/schemas/1.0.0/schema.json",
+      "organizeImports": { "enabled": true },
+      "linter": {
+        "enabled": true,
+        "rules": { "recommended": true }
+      },
+      "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "lineWidth": 100
+      }
+    }
+<
+
+Using ESLint + Prettier instead~
+
+Edit `lua/plugins/conform.lua` and `lua/plugins/nvim-lint.lua`:
+>
+    javascript = { "prettier" },    -- conform.lua
+    typescript = { "prettier" },
+<
+>
+    javascript = { "eslint_d" },    -- nvim-lint.lua
+    typescript = { "eslint_d" },
+<
+Then install: `:MasonInstall eslint_d prettier`
+
+==============================================================================
+TYPESCRIPT                                          *yoda-js-typescript*
+
+Type Checking~
+
+ts_ls provides real-time type checking as you type:
+>
+    interface User { name: string; age: number }
+
+    greet({ name: "Yoda", age: 900 })  -- OK
+    greet({ name: "Luke" })            -- Error: Missing 'age'
+<
+
+tsconfig.json~
+>
+    {
+      "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "noEmit": true
+      }
+    }
+<
+
+==============================================================================
+PACKAGE.JSON MANAGEMENT                          *yoda-js-packagejson*
+
+`package-info.nvim` provides inline version management when editing
+`package.json`.
+
+Keymaps (active only in package.json)~
+    <leader>js      Show package info and latest version
+    <leader>ju      Update package to latest
+    <leader>jd      Delete package
+    <leader>ji      Install new package
+    <leader>jv      Change package version
+
+Check Outdated Packages~
+>
+    :YodaNpmOutdated
+<
+
+==============================================================================
+NODE.JS REPL                                          *yoda-js-repl*
+
+Open a floating, persistent Node.js REPL:
+>
+    <leader>jn      Toggle REPL
+<
+
+The REPL uses the system Node.js version (respects `.nvmrc` via nvm).
+
+REPL Commands~
+    .help           Show available commands
+    .break          Exit multi-line input
+    .clear          Clear REPL context
+    .exit           Exit (or press <leader>jn)
+    .save file      Save session to file
+    .load file      Load file into session
+
+==============================================================================
+CONSOLE.LOG HELPERS                               *yoda-js-consolelog*
+
+Insert console.log for word under cursor~
+>
+    <leader>jl
+    -- cursor on: userName
+    -- inserts: console.log("userName:", userName)
+<
+
+Remove all console.log statements from file~
+>
+    <leader>jL
+<
+
+==============================================================================
+FRAMEWORK SUPPORT                                *yoda-js-frameworks*
+
+React/TSX~
+  • JSX/TSX syntax highlighting via Treesitter
+  • Component, hook, and prop-type completions from ts_ls
+  • Debug components with `<leader>jd` → "Launch Chrome"
+
+Vue~
+  For full Vue support, install volar:
+>
+    :MasonInstall vue-language-server
+<
+
+Next.js / Nuxt~
+  Works out of the box with ts_ls. API routes, dynamic imports, and env
+  variables are supported.
+
+Build Tools~
+  • Vite: works with Vitest testing; use `<leader>jd` for Chrome debugging
+  • Webpack/esbuild: supported via source maps
+
+==============================================================================
+KEYMAPS                                             *yoda-js-keymaps*
+
+All JS/TS-specific keymaps use the `<leader>j` prefix.
+
+Execution~
+    <leader>jr      (n)  Run Node.js file
+    <leader>jn      (n)  Open Node.js REPL
+
+Testing~
+    <leader>jt      (n)  Run nearest test
+    <leader>jT      (n)  Run all tests in file
+    <leader>jC      (n)  Run full test suite
+
+Debugging~
+    <leader>jd      (n)  Start debugger
+    <leader>db      (n)  Toggle breakpoint
+    <leader>dc      (n)  Continue
+
+Code Quality~
+    <leader>jh      (n)  Toggle inlay hints
+    <leader>jI      (n)  Organize imports
+    <leader>je      (n)  Open diagnostics panel
+
+Utilities~
+    <leader>jl      (n)  Insert console.log for word under cursor
+    <leader>jL      (n)  Remove all console.log statements
+    <leader>jo      (n)  Toggle code outline
+
+package.json only~
+    <leader>js      (n)  Show package info
+    <leader>ju      (n)  Update package
+    <leader>ji      (n)  Install package
+    <leader>jv      (n)  Change version
+
+General LSP~
+    gd              Go to definition
+    gr              Find references
+    K               Hover documentation
+    <leader>ca      Code actions
+    <leader>f       Format buffer
+
+==============================================================================
+ADVANCED CONFIGURATION                              *yoda-js-config*
+
+Custom TypeScript LSP Settings~
+
+Edit `lua/yoda/lsp/servers/ts_ls.lua` (or equivalent):
+>
+    settings = {
+      typescript = {
+        inlayHints = {
+          includeInlayParameterNameHints = "literals", -- none|literals|all
+        },
+        preferences = {
+          quoteStyle = "single",
+          importModuleSpecifier = "relative",
+        },
+      },
+    }
+<
+
+Jest Configuration (`jest.config.js`)~
+>
+    module.exports = {
+      testEnvironment: "node",
+      testMatch: ["**/__tests__/**/*.test.js"],
+      collectCoverageFrom: ["src/**/*.js"],
+    }
+<
+
+Vitest Configuration (`vitest.config.ts`)~
+>
+    import { defineConfig } from "vitest/config"
+    export default defineConfig({
+      test: { globals: true, environment: "node" },
+    })
+<
+
+==============================================================================
+TROUBLESHOOTING                                     *yoda-js-trouble*
+
+ts_ls not starting~
+>
+    :Mason          " Verify typescript-language-server installed
+    :LspInfo        " Check if attached
+    :LspRestart     " Restart language server
+    :LspLog         " View LSP error log
+<
+
+Reinstall ts_ls:
+>
+    :MasonUninstall typescript-language-server
+    :MasonInstall typescript-language-server
+<
+
+Module resolution errors~
+
+Add paths to `tsconfig.json`:
+>
+    { "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] } } }
+<
+
+Then `:LspRestart`.
+
+Debugger not working~
+>
+    :Mason          " Verify js-debug-adapter installed
+    :lua print(vim.inspect(require("dap").configurations.typescript))
+<
+
+Restart Neovim after installing js-debug-adapter.
+
+Tests not detected~
+
+Check naming conventions:
+  Jest:   `*.test.js`, `*.spec.js`
+  Vitest: `*.test.ts`, `*.spec.ts`
+>
+    npm list jest     " or: npm list vitest
+<
+
+Biome not linting~
+>
+    :Mason          " Verify biome installed
+    :lua print(vim.inspect(require("lint").linters_by_ft.javascript))
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

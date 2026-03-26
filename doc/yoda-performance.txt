@@ -1,0 +1,183 @@
+*yoda-performance.txt*        Yoda.nvim Performance Guide
+
+                       YODA.NVIM PERFORMANCE GUIDE
+
+==============================================================================
+CONTENTS                                          *yoda-performance-contents*
+
+1. Measuring Performance ................... |yoda-perf-measuring|
+2. Startup Optimization .................... |yoda-perf-startup|
+3. Memory Optimization ..................... |yoda-perf-memory|
+4. File System Performance ................. |yoda-perf-filesystem|
+5. LSP Performance ......................... |yoda-perf-lsp|
+6. Benchmarking ............................ |yoda-perf-benchmark|
+7. Common Issues ........................... |yoda-perf-issues|
+
+==============================================================================
+MEASURING PERFORMANCE                                   *yoda-perf-measuring*
+
+Startup Time~
+>
+    nvim --startuptime startup.log +q
+    tail -n 20 startup.log
+<
+
+Plugin Loading Analysis~
+>
+    :Lazy profile       " Profile plugin loading times
+    :Lazy log           " Check for slow plugins
+<
+
+Health Checks~
+>
+    :checkhealth        " Run all health checks
+    :checkhealth lazy   " Check Lazy.nvim
+    :checkhealth lsp    " Check LSP status
+<
+
+==============================================================================
+STARTUP OPTIMIZATION                                    *yoda-perf-startup*
+
+Lazy Loading~
+
+All plugins in Yoda.nvim are configured with lazy loading. When adding your
+own plugins, follow the same pattern:
+>
+    {
+      "plugin/name",
+      lazy = true,              -- Don't load on startup
+      event = "VeryLazy",       -- Load after startup sequence
+      -- or
+      cmd = { "Command" },      -- Load when command is first used
+      -- or
+      ft = { "filetype" },      -- Load only for specific filetypes
+    }
+<
+
+Disable Verbose Startup~
+>
+    -- In init.lua
+    vim.g.yoda_config = {
+      verbose_startup = false,
+      show_loading_messages = false,
+    }
+<
+
+Clean Unused Plugins~
+>
+    :Lazy clean         " Remove plugins no longer in spec
+    :Lazy sync          " Reinstall only needed plugins
+<
+
+==============================================================================
+MEMORY OPTIMIZATION                                     *yoda-perf-memory*
+
+Monitor Memory Usage~
+>
+    :Lazy profile       " Profile memory usage
+    :checkhealth lazy   " Check plugin health
+<
+
+Treesitter~
+
+Only install parsers for languages you use:
+>
+    -- In lua/plugins/nvim-treesitter.lua
+    opts = {
+      ensure_installed = {
+        "lua", "vim", "vimdoc", "query",
+        -- Add only what you need
+      },
+    }
+<
+
+==============================================================================
+FILE SYSTEM PERFORMANCE                              *yoda-perf-filesystem*
+
+Install Fast Search Tools~
+
+Yoda.nvim uses ripgrep and fd for file search. Install both:
+>
+    # macOS
+    brew install ripgrep fd
+
+    # Ubuntu
+    sudo apt install ripgrep fd-find
+
+    # Arch
+    sudo pacman -S ripgrep fd
+<
+
+These tools are required for fzf-lua to work at full speed.
+
+==============================================================================
+LSP PERFORMANCE                                          *yoda-perf-lsp*
+
+Optimize Language Servers~
+
+Lua LSP workspace check can be slow on large projects:
+>
+    -- In lua/yoda/lsp/servers/lua_ls.lua
+    settings = {
+      Lua = {
+        workspace = {
+          checkThirdParty = false,  -- Faster workspace initialization
+        },
+        telemetry = {
+          enable = false,
+        },
+      },
+    }
+<
+
+Manage LSP Servers~
+>
+    :Mason              " Install/update language servers
+<
+
+==============================================================================
+BENCHMARKING                                           *yoda-perf-benchmark*
+
+Startup Time Benchmark~
+>
+    #!/bin/bash
+    # Warm up cache
+    nvim --startuptime /tmp/nvim_1.log +q
+
+    # Benchmark
+    nvim --startuptime /tmp/nvim_2.log +q
+
+    # Print result
+    tail -n 1 /tmp/nvim_2.log | awk '{print $1}'
+<
+
+Lua Benchmarks~
+
+Yoda.nvim includes a benchmark module used in development:
+>
+    :lua require("yoda.performance.benchmark").run()
+<
+
+==============================================================================
+COMMON ISSUES                                           *yoda-perf-issues*
+
+Slow File Finding~
+
+  1. Install ripgrep and fd (see |yoda-perf-filesystem|)
+  2. Exclude large directories (node_modules, .git) via .gitignore
+  3. Use shallow git clones for large repositories
+
+High Memory Usage~
+
+  1. Remove unused plugins from your spec
+  2. Check that plugins use lazy loading
+  3. Reduce installed Treesitter parsers
+
+Slow LSP~
+
+  1. Disable `checkThirdParty` in Lua LSP settings
+  2. Ensure you are not running duplicate LSP clients (``:LspInfo``)
+  3. Use Mason to keep servers up to date
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

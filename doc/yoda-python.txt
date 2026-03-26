@@ -3,7 +3,7 @@
                      PYTHON DEVELOPMENT IN YODA.NVIM
 
 A comprehensive guide to Python development with basedpyright LSP, debugpy
-debugging, ruff/mypy linting, and neotest integration.
+debugging, ruff/mypy linting, and neotest/pytest integration.
 
 ==============================================================================
 CONTENTS                                               *yoda-python-contents*
@@ -13,30 +13,29 @@ CONTENTS                                               *yoda-python-contents*
 3. LSP Features ............................ |yoda-python-lsp|
 4. Debugging ............................... |yoda-python-debugging|
 5. Testing ................................. |yoda-python-testing|
-6. Virtual Environments .................... |yoda-python-venv|
-7. Linting & Formatting .................... |yoda-python-linting|
-8. Type Checking ........................... |yoda-python-typing|
-9. REPL .................................... |yoda-python-repl|
-10. Code Navigation ........................ |yoda-python-navigation|
-11. Keymaps ................................ |yoda-python-keymaps|
-12. Troubleshooting ........................ |yoda-python-troubleshooting|
+6. Test Preprocessor ....................... |yoda-python-preprocessor|
+7. Virtual Environments .................... |yoda-python-venv|
+8. Linting & Formatting .................... |yoda-python-linting|
+9. Type Checking ........................... |yoda-python-typing|
+10. REPL ................................... |yoda-python-repl|
+11. Code Navigation ........................ |yoda-python-navigation|
+12. Keymaps ................................ |yoda-python-keymaps|
+13. Troubleshooting ........................ |yoda-python-troubleshooting|
 
 ==============================================================================
 QUICK START                                          *yoda-python-quickstart*
 
 1. Install Python Tools~
-
-Run the setup command to install all required tools:
 >
     :YodaPythonSetup
 <
 
-This installs:
+This installs via Mason:
   • basedpyright - LSP server (modern, fast fork of pyright)
   • debugpy - Debug adapter
-  • ruff - Linter/formatter (ultra-fast)
+  • ruff - Linter/formatter (ultra-fast, written in Rust)
 
-After installation completes, restart Neovim.
+Restart Neovim after installation.
 
 2. Open a Python Project~
 >
@@ -44,282 +43,444 @@ After installation completes, restart Neovim.
     nvim main.py
 <
 
-basedpyright will automatically activate and provide:
-  • Code completion
-  • Type checking
-  • Auto-imports
-  • Inline diagnostics
-  • Refactoring actions
+basedpyright activates automatically and provides completion, type checking,
+auto-imports, inline diagnostics, and refactoring actions.
 
 3. Essential Keymaps~
-    <leader>pr                 Run Python file
-    <leader>pi                 Open Python REPL
-    <leader>pt                 Run nearest test
-    <leader>pd                 Debug test
-    <leader>pv                 Select virtual environment
+    <leader>pr      Run Python file
+    <leader>pi      Open Python REPL
+    <leader>pt      Run nearest test
+    <leader>pd      Debug nearest test method
+    <leader>pv      Select virtual environment
+    <leader>po      Toggle code outline
 
 ==============================================================================
 INSTALLATION                                       *yoda-python-installation*
 
-Automatic Installation~
-
-The easiest way to install Python tools:
+Automatic~
 >
     :YodaPythonSetup
 <
 
-This command installs all required tools via Mason and configures them
-automatically.
+Manual~
 
-Manual Installation~
-
-If you prefer manual installation:
-
-1. basedpyright (LSP):
+basedpyright (LSP):
 >
-    :Mason
-    " Search for 'basedpyright', press 'i' to install
+    :Mason          " Navigate to basedpyright, press i
+
+    # or via pip
+    pip install basedpyright
 <
 
-2. debugpy (Debug Adapter):
+Note: Yoda.nvim uses `basedpyright`, not `pyright`. Pyright is explicitly
+disabled to prevent conflicts.
+
+debugpy (Debugger):
 >
-    :Mason  
-    " Search for 'debugpy', press 'i' to install
+    :Mason          " Navigate to debugpy, press i
+
+    # or via pip
+    pip install debugpy
 <
 
-3. ruff (Linter/Formatter):
+ruff (Linter/Formatter):
 >
-    :Mason
-    " Search for 'ruff', press 'i' to install
+    :Mason          " Navigate to ruff, press i
+
+    # or via pip
+    pip install ruff
 <
 
-System Installation~
-
-You can also install tools system-wide:
+Verify:
 >
-    # Using pip
-    pip install basedpyright debugpy ruff
-    
-    # Using conda
-    conda install -c conda-forge basedpyright debugpy ruff
+    :LspInfo        " Should show basedpyright attached
+    :Mason          " All three tools should show as installed
 <
 
 ==============================================================================
 LSP FEATURES                                             *yoda-python-lsp*
 
-basedpyright LSP provides comprehensive Python language support:
+Yoda.nvim uses basedpyright — a community-maintained fork of Microsoft's
+pyright with additional features and performance improvements.
 
 Code Completion~
-  • Intelligent autocompletion for variables, functions, classes
-  • Import suggestions and auto-imports
-  • Snippet expansion for common patterns
-  • Context-aware suggestions
+  • Function/method completions with signatures
+  • Module and attribute completions
+  • Auto-import suggestions (press <CR> to accept)
+  • Type-aware completions
 
 Type Checking~
-  • Real-time type error detection
-  • Support for type hints and annotations
-  • Generic type support
-  • Union and Optional types
 
-Refactoring~
-  • Rename symbol across project
-  • Extract function/variable
-  • Organize imports
-  • Convert string formatting
+basedpyright provides real-time type checking as you type:
+>
+    def greet(name: str) -> str:
+        return f"Hello, {name}"
+
+    greet("Yoda")   -- OK
+    greet(42)       -- Error: Argument of type "int" not assignable to "str"
+<
+
+Type checking mode is `"basic"` by default. Upgrade to `"strict"` in
+`pyrightconfig.json` for maximum type safety.
+
+pyrightconfig.json~
+
+Control type checking strictness per project:
+>
+    {
+      "typeCheckingMode": "basic",
+      "pythonVersion": "3.12",
+      "include": ["src"],
+      "exclude": ["**/__pycache__", ".venv"]
+    }
+<
+
+Available modes: `"off"`, `"basic"`, `"standard"`, `"strict"`
+
+Project Root Detection~
+
+basedpyright detects Python projects using these root markers (in order):
+  • pyproject.toml
+  • setup.py
+  • setup.cfg
+  • requirements.txt
+  • Pipfile
+  • pyrightconfig.json
+  • .git
 
 Navigation~
-    gd                         Go to definition
-    gr                         Find references
-    gi                         Go to implementation
-    K                          Show documentation
-    <leader>ca                 Code actions
+    gd              Go to definition
+    gD              Go to declaration
+    gi              Go to implementation
+    gr              Find references
+    K               Hover documentation
 
-Diagnostics~
-  • Inline error/warning display
-  • Configurable severity levels
-  • Quick fix suggestions
-  • Import error resolution
+Code Actions~
+    <leader>ca      Code actions (add imports, extract function, etc.)
+    <leader>rn      Rename symbol
+
+Available actions:
+  • Add missing imports
+  • Remove unused imports
+  • Extract to function or variable
+  • Add type annotations
+  • Implement abstract methods
 
 ==============================================================================
 DEBUGGING                                           *yoda-python-debugging*
 
 Yoda.nvim uses debugpy for Python debugging with nvim-dap integration.
 
-Setting Breakpoints~
-    <leader>db                 Toggle breakpoint
-    <leader>dB                 Set conditional breakpoint
-    <leader>dr                 Clear all breakpoints
+Keymaps~
+    <leader>pd      Debug nearest test method
+    <leader>pD      Debug nearest test class
+    <leader>db      Toggle breakpoint
+    <leader>dB      Set conditional breakpoint
+    <leader>dc      Continue / start debug
+    <leader>do      Step over
+    <leader>di      Step into
+    <leader>dO      Step out
+    <leader>dq      Terminate session
+    <leader>du      Toggle DAP UI
 
-Starting Debug Session~
-    <leader>dc                 Start debugging current file
-    <leader>pd                 Debug nearest test
-    <leader>da                 Attach to running process
+Debugging Workflow~
 
-Debug Controls~
-    <leader>dc                 Continue execution
-    <leader>ds                 Step over
-    <leader>di                 Step into
-    <leader>do                 Step out
-    <leader>dt                 Terminate session
+1. Set breakpoint: place cursor on line, press `<leader>db`
+2. Start debugger: press `<leader>dc` — select a configuration:
+   • Launch file              Debug current file
+   • Launch file with args    Prompts for CLI arguments before starting
+   • Attach                   Attach to running Python process
+   • Debug pytest tests       Run pytest with breakpoint support
+3. Step through code with `<leader>do` / `<leader>di`
+4. Inspect variables in the DAP UI panels
+5. Stop: `<leader>dq`
 
-Debug UI~
-    <leader>du                 Toggle debug UI
-    <leader>dv                 View variables
-    <leader>df                 View call stack
+Launch File with Arguments~
 
-Configuration~
+Useful for scripts that accept sys.argv:
+>
+    import sys
 
-debugpy is automatically configured for:
-  • Standard Python files
-  • Django applications
-  • Flask applications  
-  • FastAPI applications
-  • Pytest test files
+    def main(args):
+        print(f"Processing: {args}")
+
+    if __name__ == "__main__":
+        main(sys.argv[1:])
+<
+
+Press `<leader>dc`, select "Launch file with arguments", enter your args.
+
+Debug pytest Tests~
+
+Debug a test method:
+  1. Place cursor inside the test function
+  2. Press `<leader>pd`
+
+Debug a test class:
+  1. Place cursor inside the test class
+  2. Press `<leader>pD`
+
+Both run with `justMyCode = false` so you can step into library code.
 
 ==============================================================================
 TESTING                                             *yoda-python-testing*
 
-Yoda.nvim integrates with pytest via neotest for comprehensive test support.
+Yoda.nvim uses pytest via neotest for Python testing.
 
-Running Tests~
-    <leader>tc                 Run current test file (neotest for Python)
-    <leader>tr                 Run nearest test
-    <leader>ta                 Run all tests
-    <leader>ts                 Toggle test summary window
-    <leader>tw                 Watch tests (auto-run on save)
+Keymaps~
+    <leader>pt      Run nearest test
+    <leader>pT      Run all tests in file
+    <leader>pC      Run full test suite
+    <leader>ts      Toggle test summary panel
+    <leader>to      Toggle test output panel
+    <leader>pd      Debug nearest test method
+    <leader>pD      Debug nearest test class
 
-Test Output & Navigation~
-    <leader>tv                 View test output in split
-    <leader>to                 Open test output panel
-    <leader>tO                 Focus test output panel
-    <leader>tF                 Focus test summary window
-    <leader>tC                 Clear test output panel
-    <leader>tj                 Jump to next failing test
-    <leader>tk                 Jump to previous failing test
+Test File Patterns~
 
-Test Debugging~
-    <leader>pd                 Debug nearest test
-    <leader>pD                 Debug test file
+pytest discovers:
+  • Files:     `test_*.py`, `*_test.py`
+  • Functions: `test_*`
+  • Classes:   `Test*`
+
+Fixtures and Parametrize~
+>
+    import pytest
+
+    @pytest.fixture
+    def sample_data():
+        return {"name": "Yoda", "age": 900}
+
+    def test_with_fixture(sample_data):
+        assert sample_data["name"] == "Yoda"
+
+    @pytest.mark.parametrize("a,b,expected", [
+        (1, 2, 3),
+        (0, 0, 0),
+        (-1, 1, 0),
+    ])
+    def test_add(a, b, expected):
+        assert a + b == expected
+<
+
+pytest Configuration~
+>
+    # pyproject.toml
+    [tool.pytest.ini_options]
+    testpaths = ["tests"]
+    python_files = ["test_*.py", "*_test.py"]
+    python_classes = ["Test*"]
+    python_functions = ["test_*"]
+    addopts = "-v"
+<
 
 Test UI Features~
 
 Neotest provides an integrated testing UI with:
-  • Output Panel: Auto-opens on test run (bottom split)
-  • Summary Window: Tree view of all tests with status icons
-  • Inline Status: Virtual text and signs showing test results
-  • Floating Output: Detailed test output in floating windows
+  • Output panel: auto-opens on test run (bottom split)
+  • Summary window: tree view of all tests with status icons
+  • Inline status: virtual text and signs showing test results
 
 Test Status Icons~
-    ✓                          Test passed
-    ✗                          Test failed
-    ⟳                          Test running
-    ↓                          Test skipped
-    ?                          Test status unknown
+    ✓   Test passed
+    ✗   Test failed
+    ⟳   Test running
+    ↓   Test skipped
 
-Test Configuration~
+==============================================================================
+TEST PREPROCESSOR                                  *yoda-python-preprocessor*
 
-neotest automatically detects:
-  • pytest configuration (pytest.ini, pyproject.toml)
-  • Test discovery patterns
-  • Custom markers and fixtures
-  • Parametrized tests
+The test picker integrates with a custom `preprocessor.py` for complex test
+setups. When found in the project root, the preprocessor runs instead of
+calling pytest directly.
 
-The configuration uses simplified pytest arguments (-vv) by default.
-Output panel opens automatically for short test runs.
+How It Works~
 
-Supported Test Frameworks~
-  • pytest (primary, via neotest-python adapter)
-  • unittest (basic support)
-  • nose2 (basic support)
-  
-Note: Lua test files use plenary test harness automatically.
+1. Auto-detection: the test picker checks for `preprocessor.py` in the
+   project root
+2. Smart execution: if found, runs the preprocessor with Click CLI arguments
+3. Fallback: if not found, falls back to direct pytest execution
+
+Command Generation~
+
+With preprocessor (when `preprocessor.py` exists):
+>
+    python preprocessor.py process -e qa -r auto -m bdd --allure
+<
+
+Without preprocessor (fallback):
+>
+    pytest --tb=short -v -m bdd --alluredir=allure-results
+<
+
+Terminal Output~
+
+The test picker shows which mode is in use:
+>
+    ============================================================
+    TEST CONFIGURATION
+    ============================================================
+    Environment: qa
+    Region: auto
+    Markers: bdd
+    Allure Report: Yes
+    Python Env: /path/to/venv
+    Execution Mode: Preprocessor Script
+    Command: /path/to/venv/bin/python preprocessor.py ...
+    ============================================================
+<
+
+Creating a Preprocessor~
+
+Requirements:
+  1. File location: `preprocessor.py` in project root
+  2. Dependencies: `pip install click`
+  3. Interface: must implement a `process` command with options:
+       -e, --environment   Test environment (qa, prod, etc.)
+       -r, --region        Test region (auto, us-east, etc.)
+       -m, --markers       Pytest markers to run
+       --allure            Enable Allure report generation
+
+Minimal implementation:
+>
+    #!/usr/bin/env python3
+    import click
+    import subprocess, sys
+
+    @click.group()
+    def cli():
+        pass
+
+    @cli.command()
+    @click.option("-e", "--environment", default="qa")
+    @click.option("-r", "--region", default="auto")
+    @click.option("-m", "--markers", default="")
+    @click.option("--allure", is_flag=True)
+    def process(environment, region, markers, allure):
+        setup_test_environment(environment, region, markers)
+        cmd = build_pytest_command(markers, allure)
+        result = subprocess.run(cmd, check=False)
+        cleanup_test_environment()
+        sys.exit(result.returncode)
+
+    if __name__ == "__main__":
+        cli()
+<
+
+Testing the preprocessor directly:
+>
+    python preprocessor.py process -e qa -r auto -m smoke
+    python preprocessor.py process -e prod -r us-east -m integration --allure
+    python preprocessor.py --help
+<
 
 ==============================================================================
 VIRTUAL ENVIRONMENTS                                   *yoda-python-venv*
 
-Yoda.nvim provides comprehensive virtual environment support.
+Yoda.nvim has automatic virtual environment detection and LSP integration.
 
-Environment Selection~
-    <leader>pv                 Select virtual environment
-    <leader>pV                 Create new virtual environment
+Auto-Detection Order~
 
-Automatic Detection~
+When you open a Python file, Yoda searches for venvs in this order:
+  1. <project_root>/.venv/bin/python
+  2. <project_root>/venv/bin/python
+  3. <project_root>/env/bin/python
+  4. <cwd>/.venv/bin/python
+  5. <cwd>/venv/bin/python
+  6. <cwd>/env/bin/python
 
-Yoda.nvim automatically detects virtual environments in:
-  • ./venv/
-  • ./env/
-  • ./.venv/
-  • ~/.pyenv/versions/
-  • Conda environments
+The detected venv is automatically applied to basedpyright so completions
+and type checking use your project's installed packages.
 
-Manual Environment Setup~
+Manual Selection~
 >
-    # Create virtual environment
-    python -m venv venv
-    
-    # Activate in terminal
-    source venv/bin/activate  # Linux/macOS
-    venv\Scripts\activate     # Windows
-    
-    # Select in Neovim
-    <leader>pv
+    <leader>pv      " Open venv selector
 <
 
-Environment Information~
-
-The statusline shows:
-  • Currently active environment
-  • Python version
-  • Environment path
-
-Conda Support~
+Or:
 >
-    # Create conda environment
-    conda create -n myproject python=3.11
+    :VenvSelect
+    :YodaPythonVenv
+<
+
+Cache Management~
+
+Venv detection is cached (5-minute TTL) for performance:
+>
+    :PythonVenvDetect   " Re-detect venv (clears cache)
+    :PythonVenvCache    " Show cache statistics and TTL
+    :PythonVenvClear    " Clear all cached venv entries
+<
+
+Auto-Restart on Project Switch~
+
+When you change directories, basedpyright automatically restarts with the
+new project's configuration. A 1000ms debounce prevents rapid restarts
+when navigating between buffers.
+
+Creating Virtual Environments~
+>
+    # Standard venv (built-in)
+    python -m venv .venv
+    source .venv/bin/activate
+
+    # uv (fast, recommended)
+    uv venv .venv
+    source .venv/bin/activate
+
+    # conda
+    conda create -n myproject python=3.12
     conda activate myproject
-    
-    # Neovim will auto-detect conda environments
 <
+
+After creating, open a Python file — the venv is auto-detected.
 
 ==============================================================================
 LINTING & FORMATTING                               *yoda-python-linting*
 
-Yoda.nvim uses ruff for ultra-fast linting and formatting.
+Yoda.nvim uses ruff for both linting and formatting — an ultra-fast Python
+tool written in Rust. It replaces flake8, isort, pylint, and black.
 
-Code Formatting~
-    <leader>f                  Format current file
-    <leader>F                  Format entire project
+Auto-format on save: enabled by default (500ms timeout).
 
-Auto-formatting~
-
-Files are automatically formatted on save (configurable).
-
-Linting~
-
-ruff provides real-time linting for:
-  • PEP 8 style violations
-  • Import sorting
-  • Unused imports/variables
-  • Complex expression detection
-  • Security issues
-
-Configuration~
-
-Configure ruff in pyproject.toml:
+Manual format:
 >
-    [tool.ruff]
-    line-length = 88
-    target-version = "py311"
-    
-    [tool.ruff.lint]
-    select = ["E", "F", "W", "I"]
-    ignore = ["E501"]
+    <leader>f       Format current buffer
 <
 
-Disable Auto-formatting~
+Linting runs automatically on `BufWritePost` and `InsertLeave`.
+
+ruff Configuration~
+
+Create `pyproject.toml` or `ruff.toml`:
 >
-    -- In your config
-    vim.g.yoda_python_format_on_save = false
+    # pyproject.toml
+    [tool.ruff]
+    line-length = 100
+    target-version = "py312"
+
+    [tool.ruff.lint]
+    select = ["E", "F", "I", "N", "W"]
+    ignore = ["E501"]
+
+    [tool.ruff.format]
+    quote-style = "double"
+    indent-style = "space"
+<
+
+Common ruff Rule Sets~
+
+  E    pycodestyle errors
+  F    pyflakes (unused imports, undefined names)
+  I    isort (import ordering)
+  N    pep8-naming
+  W    pycodestyle warnings
+  B    flake8-bugbear
+  UP   pyupgrade (modernize syntax)
+
+Diagnostics~
+>
+    <leader>pe      Open diagnostics panel
 <
 
 ==============================================================================
@@ -327,209 +488,223 @@ TYPE CHECKING                                         *yoda-python-typing*
 
 basedpyright provides comprehensive type checking capabilities.
 
-Type Checking Features~
-  • Static type analysis
-  • Type inference
-  • Generic type support
-  • Protocol support
-  • Literal types
-
-Type Checking Commands~
-    <leader>ct                 Run type checker
-    <leader>cT                 Type check entire project
-
-Configuration~
-
-Configure type checking in pyproject.toml:
+Type Checking Example~
 >
-    [tool.basedpyright]
-    typeCheckingMode = "basic"
-    pythonVersion = "3.11"
-    include = ["src"]
-    exclude = ["tests"]
+    from typing import Optional
+
+    def process(value: Optional[int]) -> str:
+        return str(value)       -- Warning: Could be None
+
+    def process_safe(value: Optional[int]) -> str:
+        if value is None:
+            return "none"
+        return str(value)       -- OK
 <
 
 Type Checking Modes~
-  • off - No type checking
-  • basic - Basic type checking
-  • strict - Strict type checking
+  • off      No type checking
+  • basic    Basic type checking (default)
+  • standard Intermediate
+  • strict   Strict — maximum type safety
 
-Ignoring Type Errors~
+Configure in `pyrightconfig.json` (see |yoda-python-lsp|).
+
+mypy Integration~
+
+For additional on-demand type checking, run mypy:
 >
-    # Ignore specific line
-    value = get_value()  # type: ignore
-    
-    # Ignore specific error
-    value = get_value()  # pyright: ignore[reportGeneralTypeIssues]
+    <leader>pm      Run mypy on current file
 <
+
+This executes `mypy <current-file>` and shows output in a terminal.
+
+Install mypy:
+>
+    pip install mypy
+    # or: uv pip install mypy
+<
+
+Configure in `pyproject.toml`:
+>
+    [tool.mypy]
+    python_version = "3.12"
+    strict = true
+    ignore_missing_imports = true
+<
+
+Comparison~
+
+  basedpyright  Real-time inline, fast, configurable strictness
+  mypy          On-demand via <leader>pm, stricter, pre-commit/CI
+
+Use basedpyright for interactive development and mypy for CI validation.
 
 ==============================================================================
 REPL                                                   *yoda-python-repl*
 
-Yoda.nvim provides integrated Python REPL support.
+Open an interactive Python REPL in a floating terminal:
+>
+    <leader>pi      Toggle REPL
+<
+
+The REPL uses the active virtual environment automatically.
+
+Features~
+  • Floating terminal — doesn't split your layout
+  • Persistent — toggle on/off with same keymap
+  • Venv-aware — uses detected virtual environment
 
 REPL Commands~
-    <leader>pi                 Open Python REPL
-    <leader>pI                 Open IPython REPL (if available)
-    <leader>ps                 Send line to REPL
-    <leader>pS                 Send selection to REPL
-    <leader>pf                 Send file to REPL
-
-REPL Features~
-  • Syntax highlighting
-  • Command history
-  • Auto-completion
-  • Output capture
-
-IPython Integration~
-
-If IPython is installed, enhanced features include:
-  • Magic commands (%timeit, %debug, etc.)
-  • Rich output display
-  • Automatic imports
-  • Enhanced debugging
-
-Installation~
->
-    pip install ipython
-<
+    .help           Show available commands
+    exit()          Exit REPL (or press <leader>pi)
 
 ==============================================================================
 CODE NAVIGATION                                   *yoda-python-navigation*
 
-Advanced navigation features for Python code.
+Outline View~
 
-Symbol Navigation~
-    gd                         Go to definition
-    gr                         Find references
-    gi                         Go to implementation
-    K                          Show documentation
-    <leader>ca                 Code actions
+Toggle a code structure sidebar:
+>
+    <leader>po      Toggle outline
+<
 
-Project Navigation~
-    <leader>ff                 Find files
-    <leader>fs                 Find symbols
-    <leader>fw                 Find word under cursor
-    <leader>fW                 Find word in project
+Shows functions, methods, classes, and module-level constants. Press `Enter`
+to jump to a symbol, `q` to close.
 
-Class/Function Navigation~
-    <leader>ns                 Next function/class
-    <leader>ps                 Previous function/class
-    <leader>nS                 Next class
-    <leader>pS                 Previous class
+Symbol Search~
+>
+    <leader>fR      Find symbols in current file
+    <leader>fS      Find symbols across workspace
+<
 
-Import Navigation~
-    <leader>fi                 Find imports
-    <leader>ai                 Add import
-    <leader>ri                 Remove unused imports
+File Navigation~
+>
+    <leader>ff      Find files
+    <leader>fg      Grep in files
+    <leader>fr      Recent files
+<
+
+Code Coverage~
+>
+    <leader>pc      Show code coverage
+<
+
+Requires `pytest-cov` to have generated coverage data first.
 
 ==============================================================================
 KEYMAPS                                             *yoda-python-keymaps*
 
-Complete keymap reference for Python development.
+All Python-specific keymaps use the `<leader>p` prefix.
 
-File Operations~
-    <leader>pr                 Run Python file
-    <leader>pf                 Format file
-    <leader>pi                 Open REPL
+Execution~
+    <leader>pr      (n)  Run Python file
+    <leader>pi      (n)  Open Python REPL
 
 Testing~
-    <leader>pt                 Run nearest test
-    <leader>pT                 Run test file
-    <leader>pa                 Run all tests
-    <leader>pd                 Debug nearest test
-
-Environment~
-    <leader>pv                 Select virtual environment
-    <leader>pV                 Create virtual environment
-    <leader>pe                 Show environment info
-
-Code Actions~
-    <leader>ca                 Code actions
-    <leader>cr                 Rename symbol
-    <leader>cf                 Format code
-    <leader>ci                 Organize imports
+    <leader>pt      (n)  Run nearest test
+    <leader>pT      (n)  Run all tests in file
+    <leader>pC      (n)  Run full test suite
 
 Debugging~
-    <leader>db                 Toggle breakpoint
-    <leader>dc                 Start debugging
-    <leader>ds                 Step over
-    <leader>di                 Step into
+    <leader>pd      (n)  Debug nearest test method
+    <leader>pD      (n)  Debug nearest test class
+    <leader>db      (n)  Toggle breakpoint
+    <leader>dc      (n)  Continue / start debug
+    <leader>do      (n)  Step over
+    <leader>di      (n)  Step into
+    <leader>dO      (n)  Step out
+    <leader>dq      (n)  Terminate session
+    <leader>du      (n)  Toggle DAP UI
 
-Navigation~
-    gd                         Go to definition
-    gr                         Find references
-    K                          Show documentation
+Code Quality~
+    <leader>pm      (n)  Run mypy on current file
+    <leader>pe      (n)  Open diagnostics panel
+    <leader>pc      (n)  Show code coverage
+
+Navigation & Environment~
+    <leader>po      (n)  Toggle outline
+    <leader>pv      (n)  Select virtual environment
+    <leader>pL      (n)  Apply venv to basedpyright
+
+General LSP~
+    gd              Go to definition
+    gD              Go to declaration
+    gi              Go to implementation
+    gr              Find references
+    K               Hover documentation
+    <leader>rn      Rename symbol
+    <leader>ca      Code actions
+    <leader>f       Format buffer
 
 ==============================================================================
 TROUBLESHOOTING                               *yoda-python-troubleshooting*
 
-Common issues and solutions for Python development.
-
-LSP Not Working~
-
-Check LSP status:
+basedpyright not starting~
 >
-    :LspInfo
-    :checkhealth lsp
+    :Mason          " Verify basedpyright is installed
+    :LspInfo        " Check if attached to buffer
+    :LspRestart     " Restart language server
+    :LspLog         " View LSP error log
 <
 
-If basedpyright isn't running:
-1. Install via :YodaPythonSetup
-2. Restart Neovim
-3. Open a Python file
-
-Python Not Found~
-
-Error: "Python executable not found"
+Reinstall basedpyright:
 >
-    # Install Python
-    # macOS: brew install python
-    # Ubuntu: sudo apt install python3
-    
-    # Or select virtual environment
-    <leader>pv
+    :MasonUninstall basedpyright
+    :MasonInstall basedpyright
 <
 
-Virtual Environment Issues~
+Wrong Python interpreter / missing packages~
 
-If venv detection fails:
+The most common cause is the venv not being detected.
 >
-    # Manual venv selection
-    <leader>pv
-    
-    # Check Python path
-    :lua print(vim.fn.exepath("python"))
+    <leader>pv          " Manually select venv
+    :PythonVenvDetect   " Force re-detection
+    :PythonVenvCache    " Show cached venv and TTL
+    :PythonVenvClear    " Clear cache and retry
+    <leader>pL          " Apply detected venv to basedpyright
 <
 
-Debugging Not Working~
+pyright conflict~
 
-If debugpy fails:
-1. Install debugpy: :Mason -> search "debugpy"
-2. Restart Neovim
-3. Set breakpoint: <leader>db
-4. Start debugging: <leader>dc
-
-Import Errors~
-
-If imports aren't resolved:
-1. Check virtual environment: <leader>pv
-2. Ensure packages are installed in active environment
-3. Restart LSP: :LspRestart
-
-Performance Issues~
-
-For large projects:
+Yoda.nvim explicitly disables pyright. If two LSP servers are attached:
 >
-    -- Limit LSP workspace scanning
-    vim.g.yoda_python_workspace_scan_limit = 1000
+    :StopPyright        " Stop running pyright clients
+    :UninstallPyright   " Remove pyright from Mason
 <
 
-Getting Help~
-  • :checkhealth for system diagnostics
-  • :LspInfo for LSP status
-  • :Mason for tool installation
-  • Visit GitHub issues for community support
+Debugger not working~
+>
+    :Mason          " Verify debugpy is installed
+    :lua print(vim.inspect(require("dap").configurations.python))
+<
+
+Common causes:
+  1. Wrong interpreter — ensure venv is selected before debugging
+  2. debugpy not in venv — `pip install debugpy` inside your venv
+  3. Port in use — restart Neovim if a previous debug session hung
+
+Tests not detected~
+
+Check naming conventions:
+  pytest:   `test_*.py` or `*_test.py`, functions `test_*`, classes `Test*`
+>
+    pytest --version        " Verify pytest installed in venv
+    python -m pytest --version
+<
+
+ruff not linting~
+>
+    :Mason          " Verify ruff installed
+    :lua print(vim.inspect(require("lint").linters_by_ft.python))
+<
+
+Performance issues~
+>
+    :YodaAutocmdLogEnable   " Enable autocmd logging
+    " Open/edit Python files to reproduce the issue
+    :YodaAutocmdLogView     " Inspect firing events
+    :YodaAutocmdLogDisable  " Disable when done
+<
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

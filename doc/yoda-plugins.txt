@@ -1,0 +1,141 @@
+*yoda-plugins.txt*            Yoda.nvim Plugin Management
+
+                      YODA.NVIM PLUGIN MANAGEMENT
+
+==============================================================================
+CONTENTS                                           *yoda-plugins-contents*
+
+1. Update Policy ........................... |yoda-plugins-policy|
+2. Manual Updates .......................... |yoda-plugins-update|
+3. Enabling Auto-Updates ................... |yoda-plugins-auto|
+4. Troubleshooting ......................... |yoda-plugins-trouble|
+
+==============================================================================
+UPDATE POLICY                                       *yoda-plugins-policy*
+
+Auto-updates are disabled by default in Yoda.nvim. This is intentional:
+
+  • Faster startup — no update checks on launch
+  • Manual control — you decide when to update
+  • Stable experience — no unexpected plugin changes
+
+See |yoda-distribution-stability| in |yoda-configuration| for the broader
+update philosophy.
+
+==============================================================================
+MANUAL UPDATES                                      *yoda-plugins-update*
+
+Update Commands~
+>
+    :Lazy sync          " Install missing + update all plugins
+    :Lazy check         " Check for available updates (no install)
+    :Lazy update        " Update all plugins
+    :Lazy clean         " Remove plugins no longer in spec
+    :Lazy log           " View plugin change log
+<
+
+Recommended Workflow~
+
+1. Check what would change:
+>
+    :Lazy check
+<
+2. Review the Lazy UI — inspect changelogs before updating
+3. Install updates:
+>
+    :Lazy sync
+<
+4. Restart Neovim and run:
+>
+    :checkhealth
+<
+
+Lock File~
+
+`lazy-lock.json` pins every plugin to an exact commit. Commit this file to
+reproduce the same plugin versions across machines. Only update it
+intentionally after running `:Lazy sync` and verifying things still work.
+
+==============================================================================
+ENABLING AUTO-UPDATES                               *yoda-plugins-auto*
+
+If you want Lazy.nvim to check for updates automatically, edit
+`lua/lazy-plugins.lua` and set the checker options:
+
+Option 1: Background update checker~
+>
+    require("lazy").setup(plugins, {
+      checker = {
+        enabled = true,    -- Check in background
+        frequency = 3600,  -- Every hour (seconds)
+        notify = true,     -- Show notification when updates available
+      },
+    })
+<
+
+Option 2: Change detection only (no network calls)~
+>
+    require("lazy").setup(plugins, {
+      checker = { enabled = false },
+      change_detection = {
+        enabled = true,   -- Watch for local plugin file changes
+        notify = true,
+      },
+    })
+<
+
+Option 3: Startup auto-sync (not recommended)~
+
+Add to your `VimEnter` autocmd:
+>
+    vim.defer_fn(function()
+      require("lazy").sync()
+    end, 1000)
+<
+
+This increases startup time and can introduce unexpected changes.
+
+==============================================================================
+TROUBLESHOOTING                                     *yoda-plugins-trouble*
+
+Plugin not loading~
+>
+    :Lazy               " Check plugin status and errors
+    :Lazy sync          " Install missing plugins
+    :Lazy log           " View error log
+<
+
+Lazy.nvim documentation error ("No such file or directory")~
+>
+    rm -rf ~/.local/state/nvim/lazy/readme
+    nvim
+    :Lazy sync
+<
+
+Slow updates~
+
+Lazy.nvim uses shallow clones by default (fastest). If updates are still
+slow, check your network or lower the `concurrency` setting:
+>
+    require("lazy").setup(plugins, {
+      git = { timeout = 120 },
+      concurrency = 4,
+    })
+<
+
+Update conflicts~
+>
+    :Lazy check         " See what changed
+    :Lazy log           " Review changelogs
+    :Lazy clean         " Remove stale plugins (use with care)
+<
+
+Full plugin reset~
+>
+    rm -rf ~/.local/share/nvim/lazy
+    rm -rf ~/.local/state/nvim/lazy
+    nvim                " Plugins reinstall automatically
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

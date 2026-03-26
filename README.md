@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/assets/yoda.jpg" alt="Yoda" width="250"/>
+  <img src="assets/yoda.jpg" alt="Yoda" width="250"/>
 </p>
 
 <h1 align="center">Yoda Neovim Distribution</h1>
 
 <p align="center">
-  <img src="docs/assets/Yoda.gif" alt="Yoda.nvim Demo" width="700"/>
+  <img src="assets/Yoda.gif" alt="Yoda.nvim Demo" width="700"/>
 </p>
 
 <p align="center">
@@ -20,17 +20,17 @@
 </p>
 
 <p align="center">
-  <a href="docs/INSTALLATION.md">Installation</a> •
-  <a href="docs/GETTING_STARTED.md">Getting Started</a> •
-  <a href="docs/KEYMAPS.md">Keymaps</a> •
-  <a href="docs/CONFIGURATION.md">Configuration</a> •
-  <a href="docs/TROUBLESHOOTING.md">Troubleshooting</a>
+  <a href="doc/yoda-getting-started.txt">Getting Started</a> •
+  <a href="doc/yoda-keymaps.txt">Keymaps</a> •
+  <a href="doc/yoda-configuration.txt">Configuration</a> •
+  <a href="doc/yoda-ai.txt">AI Setup</a> •
+  <a href="doc/yoda-troubleshooting.txt">Troubleshooting</a>
 </p>
 
 <p align="center">
-  <strong>🚀 <a href="docs/INSTALLATION.md">Quick Install</a></strong> •
-  <strong>🤖 <a href="docs/AI_SETUP.md">AI Setup</a></strong> •
-  <strong>📚 <a href="docs/KEYMAPS.md">Keymap Reference</a></strong>
+  <strong>🚀 <a href="doc/yoda-getting-started.txt">Quick Start</a></strong> •
+  <strong>🤖 <a href="doc/yoda-ai.txt">AI Setup</a></strong> •
+  <strong>📚 <a href="doc/yoda-keymaps.txt">Keymap Reference</a></strong>
 </p>
 
 ---
@@ -40,7 +40,7 @@
 Yoda.nvim is a modern Neovim distribution that provides:
 
 - **🎯 Beginner-friendly setup** with sensible defaults and guided onboarding
-- **🤖 AI-powered development** with GitHub Copilot and OpenCode integration
+- **🤖 AI-powered development** with Claude Code integration
 - **🎨 Beautiful modern UI** with TokyoNight theme and enhanced components
 - **⚡ Fast performance** with lazy-loading and optimized startup
 - **🛠️ Comprehensive tooling** for LSP, testing, debugging, and Git integration
@@ -197,28 +197,28 @@ Once installed, all language servers provide:
 
 ## 📚 Documentation
 
+Documentation lives in the `doc/` directory as Neovim help files.
+Open any topic with `:help <tag>` inside Neovim.
+
 ### Getting Started
-- **[Installation Guide](docs/INSTALLATION.md)** - Detailed installation instructions
-- **[Getting Started](docs/GETTING_STARTED.md)** - Learn the basics and workflow
-- **[Keymap Reference](docs/KEYMAPS.md)** - Complete keymap documentation
+- **`:help yoda`** — Overview and feature summary
+- **`:help yoda-getting-started`** — First steps and workflow
+- **`:help yoda-keymaps`** — Complete keymap reference
+- **`:help yoda-architecture`** — Codebase structure
 
 ### Configuration
-- **[Configuration Guide](docs/CONFIGURATION.md)** - Customize your setup
-- **[User Configuration](docs/USER_CONFIGURATION.md)** - New! Customize terminal, YAML parser, and more
-- **[AI Setup Guide](docs/AI_SETUP.md)** - Configure Copilot and OpenCode
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Performance Guide](docs/PERFORMANCE_GUIDE.md)** - Optimize startup and runtime
+- **`:help yoda-configuration`** — Customize your setup, user variables
+- **`:help yoda-ai`** — Claude Code integration setup
+- **`:help yoda-plugins`** — Plugin update policy and management
+- **`:help yoda-troubleshooting`** — Common issues and solutions
+- **`:help yoda-performance`** — Startup and runtime optimization
+
+### Language Guides
+- **`:help yoda-python`** — Python (basedpyright, debugpy, ruff, pytest)
+- **`:help yoda-javascript`** — JavaScript/TypeScript (ts_ls, Biome, Jest/Vitest)
 
 ### For Contributors
-- **[Quick Start Guide](docs/QUICK_START.md)** - New! Get contributing in 5 minutes
-- **[Architecture Diagrams](docs/diagrams/ARCHITECTURE.md)** - New! Visual architecture guide
-- **[Standards Reference](docs/STANDARDS_QUICK_REFERENCE.md)** - Code quality standards
 - **[Contributing Guide](CONTRIBUTING.md)** - Full contribution guidelines
-
-### Advanced Topics
-- **[LSP Guide](docs/overview/LSP.md)** - Language Server Protocol setup
-- **[Debugging Guide](docs/overview/DEBUGGING.md)** - Debug with DAP
-- **[Plugin Development](docs/PLUGIN.md)** - Create custom plugins
 
 ## 🏗️ Architecture
 
@@ -277,7 +277,7 @@ export YODA_DEV_LOCAL=1
 unset YODA_DEV_LOCAL
 ```
 
-See [Local Plugin Development Guide](docs/LOCAL_PLUGIN_DEVELOPMENT.md) for more details.
+See `:help yoda-configuration` for more details.
 
 ### Startup Messages
 ```lua
@@ -373,7 +373,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 - **Issues**: [GitHub Issues](https://github.com/jedi-knights/yoda.nvim/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/jedi-knights/yoda.nvim/discussions)
-- **Documentation**: Check the [docs directory](docs/)
+- **Documentation**: Use `:help yoda` inside Neovim
 
 ## 🙏 Acknowledgements
 
@@ -389,7 +389,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 > *"Train yourself to let go of everything you fear to lose." — Yoda*
 
-**Ready to begin your Neovim journey?** Start with the [Installation Guide](docs/INSTALLATION.md)!
+**Ready to begin your Neovim journey?** Run `:help yoda-getting-started` after installing!
 
 ---
 
