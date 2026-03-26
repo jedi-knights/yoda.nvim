@@ -18,10 +18,9 @@ CONTENTS                                                *yoda-keymaps-contents*
 7. Git Integration ......................... |yoda-keymaps-git|
 8. Buffer & Tab Management ................. |yoda-keymaps-buffers|
 9. Window Management ....................... |yoda-keymaps-windows|
-10. Project Navigation ..................... |yoda-keymaps-project|
-11. System & Configuration ................. |yoda-keymaps-system|
-12. Visual Mode ............................ |yoda-keymaps-visual|
-13. Disabled Keys .......................... |yoda-keymaps-disabled|
+10. System & Configuration ................. |yoda-keymaps-system|
+11. Visual Mode ............................ |yoda-keymaps-visual|
+12. Disabled Keys .......................... |yoda-keymaps-disabled|
 
 ==============================================================================
 GENERAL NAVIGATION                                   *yoda-keymaps-navigation*

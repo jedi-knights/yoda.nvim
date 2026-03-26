@@ -19,8 +19,7 @@ Auto-updates are disabled by default in Yoda.nvim. This is intentional:
   • Manual control — you decide when to update
   • Stable experience — no unexpected plugin changes
 
-See |yoda-distribution-stability| in |yoda-configuration| for the broader
-update philosophy.
+See |yoda-configuration| for the broader update philosophy.
 
 ==============================================================================
 MANUAL UPDATES                                      *yoda-plugins-update*

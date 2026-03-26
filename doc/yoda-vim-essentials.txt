@@ -3,7 +3,7 @@
                         VIM ESSENTIALS QUICK REFERENCE
 
 The most important Vim commands for daily use.
-For comprehensive guide, see |yoda-vim-tutor|.
+For an interactive tutorial, run |:Tutor| inside Neovim.
 
 ==============================================================================
 CONTENTS                                       *yoda-vim-essentials-contents*
