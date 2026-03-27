@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/tests-302%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-191%20passing-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/quality-15%2F15%20★-gold" alt="Code Quality">
   <img src="https://img.shields.io/badge/coverage-~95%25-brightgreen" alt="Coverage">
 </p>
@@ -140,47 +140,39 @@ Once installed, all language servers provide:
 
 > **Leader key**: `<Space>` (most keymaps start with `<leader>`)
 
-### 🚀 Navigation
+### 🚀 Navigation & Files
 | Keymap | Description |
 |--------|-------------|
 | `<leader>eo` | Open Snacks Explorer (only if closed) |
 | `<leader>ef` | Focus Snacks Explorer (if open) |
 | `<leader>ec` | Close Snacks Explorer (if open) |
-| `<leader>ff` | Find files (Telescope) |
-| `<leader>fg` | Search in files (Telescope) |
-| `<leader>fr` | Recent files (Telescope) |
-| `<leader><leader>` | Smart file search |
+| `<leader>ff` | Find files (fzf-lua) |
+| `<leader>fg` | Live grep search (fzf-lua) |
+| `<leader>fr` | Recent files (fzf-lua) |
+| `<leader>fb` | Find open buffers |
 
-### 🤖 AI Features
-
-#### GitHub Copilot (Code Completion)
-| Keymap | Mode | Description |
-|--------|------|-------------|
-| `<leader>a` | Insert | Accept Copilot suggestion |
-| `<leader>n` | Insert | Next suggestion |
-| `<leader>p` | Insert | Previous suggestion |
-| `<leader>d` | Insert | Dismiss suggestion |
-| `<leader>cop` | Normal | Toggle Copilot on/off |
-
-#### OpenCode (AI Assistant)
+### 🤖 AI Features (Claude Code)
 | Keymap | Description |
 |--------|-------------|
-| `<leader>ai` | Toggle OpenCode and enter insert mode (ready to type) |
-| `<leader>oa` | Ask about current selection/cursor |
-| `<leader>oe` | Explain current code |
-| `<leader>os` | Select from prompt library |
-| `<leader>o+` | Add context to prompt |
-| `<leader>ot` | Toggle OpenCode terminal |
-| `<leader>on` | New OpenCode session |
-| `<leader>oi` | Interrupt current session |
+| `<leader>ai` | Toggle Claude Code |
+| `<leader>af` | Focus Claude Code window |
+| `<leader>ar` | Resume previous Claude session |
+| `<leader>aC` | Continue last Claude conversation |
+| `<leader>am` | Select Claude model |
+| `<leader>aB` | Add current buffer to Claude context |
+| `<leader>as` | Send visual selection to Claude (visual mode) |
+| `<leader>aa` | Accept diff from Claude |
+| `<leader>ad` | Deny diff from Claude |
 
 ### 🛠️ Development
 | Keymap | Description |
 |--------|-------------|
-| `<leader>gd` | Go to definition |
-| `<leader>gr` | Find references |
-| `<leader>ca` | Code actions |
-| `<leader>ta` | Run tests |
+| `gd` | Go to definition |
+| `<leader>lr` | Find references |
+| `<leader>la` | Code actions |
+| `<leader>lf` | Format buffer |
+| `<leader>ta` | Run all tests |
+| `<leader>tn` | Run nearest test |
 
 ### ⌨️ Keymap Discovery & Display
 | Keymap | Description |
@@ -229,18 +221,21 @@ Yoda.nvim uses a modular architecture:
 ├── init.lua                 # Entry point
 ├── lua/
 │   ├── options.lua          # Neovim options
-│   ├── keymaps.lua          # Key mappings
 │   ├── autocmds.lua         # Auto-commands
-│   ├── plugins.lua          # Plugin specifications
-│   ├── lazy-plugins.lua     # Lazy.nvim setup
+│   ├── lazy-plugins.lua     # Lazy.nvim + plugin setup
 │   ├── lazy-bootstrap.lua   # Lazy.nvim bootstrap
+│   ├── plugins/             # One file per plugin
+│   ├── custom/plugins/      # User-local plugin overrides (gitignored)
 │   └── yoda/
-│       ├── colorscheme.lua  # Theme settings
-│       ├── lsp.lua          # LSP configuration
-│       ├── functions.lua    # Custom functions
-│       ├── commands.lua     # Custom commands
-│       ├── plenary.lua      # Test utilities
-│       └── utils.lua        # Utility functions
+│       ├── keymaps/         # Domain-grouped keymap modules
+│       ├── commands/        # User-facing Ex commands
+│       ├── buffer/          # Buffer state utilities
+│       ├── filetype/        # Filetype detection & settings
+│       ├── integrations/    # Third-party plugin wiring
+│       ├── testing/         # Test configuration defaults
+│       ├── lsp.lua          # LSP setup
+│       ├── environment.lua  # Home/work environment detection
+│       └── [other modules]  # Specialised functionality
 ```
 
 ## ⚙️ Quick Configuration
@@ -290,67 +285,30 @@ vim.g.yoda_config = {
 
 ## 🤖 AI Usage Examples
 
-### GitHub Copilot Workflow
+### Claude Code Workflow
 
-**Real-time code completion while typing:**
-1. Start typing code in insert mode
-2. Wait for gray suggestion to appear
-3. While in insert mode, press:
-   - `<leader>a` to accept
-   - `<leader>n` / `<leader>p` to cycle through options
-   - `<leader>d` to dismiss if not needed
-
-**Toggle and manage Copilot:**
+**Toggle and navigate:**
 ```vim
-<leader>cop        " Toggle Copilot on/off (normal mode)
-:Copilot status    " Check current status
-:Copilot setup     " Authenticate with GitHub
+<leader>ai         " Toggle Claude Code terminal
+<leader>af         " Focus the Claude Code window
+<leader>ar         " Resume a previous session (--resume)
+<leader>aC         " Continue the last conversation (--continue)
 ```
 
-### OpenCode Workflow
-
-**Quick toggle with auto-insert:**
+**Send context to Claude:**
 ```vim
-<leader>ai         " Opens OpenCode and drops you into insert mode - ready to type!
+<leader>aB         " Add the current buffer to Claude's context
+" Select code in visual mode, then:
+<leader>as         " Send selection to Claude
 ```
 
-**Ask about code:**
+**Review and apply Claude's changes:**
 ```vim
-" 1. Select code in visual mode or position cursor
-" 2. Press <leader>oa to ask about it
-" OpenCode: "What does @this code do?"
-
-" Or explain it
-<leader>oe         " Explain current selection/cursor
+<leader>aa         " Accept a diff proposed by Claude
+<leader>ad         " Deny a diff proposed by Claude
 ```
 
-**Use prompt library:**
-```vim
-<leader>os         " Opens prompt selector with options:
-                   " - Ask...
-                   " - Explain this
-                   " - Optimize this
-                   " - Document this
-                   " - Add tests for this
-                   " - Review buffer
-                   " - Review git diff
-                   " - Explain diagnostics
-```
-
-**Build complex prompts with context:**
-```vim
-" 1. Select function A, press <leader>o+ (adds @this to prompt)
-" 2. Navigate to function B, press <leader>o+ again
-" 3. Type your question: "How do these functions work together?"
-" 4. Submit to get context-aware answer
-```
-
-**OpenCode placeholders:**
-- `@buffer` - Current buffer content
-- `@this` - Current selection or cursor position
-- `@visible` - Currently visible text
-- `@diagnostics` - Current errors/warnings
-- `@diff` - Git changes
+See `:help yoda-ai` for full setup instructions.
 
 ## 🛠️ Plugin Management
 
@@ -393,4 +351,4 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ---
 
-**Last Updated**: October 2025
+**Last Updated**: March 2026

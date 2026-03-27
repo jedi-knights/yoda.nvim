@@ -97,13 +97,13 @@ yoda-keymaps-ai	yoda-keymaps.txt	/*yoda-keymaps-ai*
 yoda-keymaps-buffers	yoda-keymaps.txt	/*yoda-keymaps-buffers*
 yoda-keymaps-contents	yoda-keymaps.txt	/*yoda-keymaps-contents*
 yoda-keymaps-disabled	yoda-keymaps.txt	/*yoda-keymaps-disabled*
-yoda-keymaps-files	yoda-keymaps.txt	/*yoda-keymaps-files*
+yoda-keymaps-explorer	yoda-keymaps.txt	/*yoda-keymaps-explorer*
 yoda-keymaps-git	yoda-keymaps.txt	/*yoda-keymaps-git*
 yoda-keymaps-lsp	yoda-keymaps.txt	/*yoda-keymaps-lsp*
 yoda-keymaps-navigation	yoda-keymaps.txt	/*yoda-keymaps-navigation*
 yoda-keymaps-search	yoda-keymaps.txt	/*yoda-keymaps-search*
-yoda-keymaps-system	yoda-keymaps.txt	/*yoda-keymaps-system*
 yoda-keymaps-testing	yoda-keymaps.txt	/*yoda-keymaps-testing*
+yoda-keymaps-utilities	yoda-keymaps.txt	/*yoda-keymaps-utilities*
 yoda-keymaps-visual	yoda-keymaps.txt	/*yoda-keymaps-visual*
 yoda-keymaps-windows	yoda-keymaps.txt	/*yoda-keymaps-windows*
 yoda-keymaps.txt	yoda-keymaps.txt	/*yoda-keymaps.txt*

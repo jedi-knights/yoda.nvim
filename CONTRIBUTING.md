@@ -11,7 +11,7 @@ Yoda.nvim maintains world-class code quality (10/10):
 - **SOLID Principles**: All 5 principles applied
 - **CLEAN Code**: Cohesive, Loosely coupled, Encapsulated, Assertive, Non-redundant
 - **DRY**: Zero code duplication
-- **Test Coverage**: 302 tests, ~95% coverage
+- **Test Coverage**: 191 tests, ~95% coverage
 
 **Please read our standards documentation:**
 - `:help yoda-architecture` — System architecture
@@ -351,7 +351,7 @@ return true, result
 
 Your PR will automatically run:
 - **Lint Check**: Code style validation with stylua
-- **Test Suite**: 302 tests on Neovim stable and nightly
+- **Test Suite**: 191 tests on Neovim stable and nightly
 - **Coverage**: Validate test coverage for changes
 
 **All checks must pass for PR to be merged.**
