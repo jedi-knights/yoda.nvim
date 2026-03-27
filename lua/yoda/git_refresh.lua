@@ -56,7 +56,7 @@ function M.setup_autocmds(autocmd, augroup)
     group = git_refresh_group,
     desc = "Check for external changes and refresh git signs when Neovim gains focus",
     callback = function()
-      if vim.bo.buftype == "" and vim.bo.filetype ~= "opencode" then
+      if vim.bo.buftype == "" then
         pcall(vim.cmd, "checktime")
         vim.schedule(function()
           gitsigns.refresh_batched()

@@ -24,8 +24,9 @@ M.PATTERNS = {
 
 --- Configure Jenkinsfile for Groovy syntax with Jenkins keywords
 function M.configure_jenkinsfile()
+  -- Setting filetype triggers the FileType event, which loads the groovy syntax
+  -- file automatically — no need to set vim.bo.syntax separately.
   vim.bo.filetype = "groovy"
-  vim.bo.syntax = "groovy"
 
   -- Add Jenkins-specific keywords for better syntax highlighting
   vim.cmd([[
