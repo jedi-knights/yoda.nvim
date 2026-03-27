@@ -3,15 +3,12 @@
 -- icons must be eager (devicons shim), pairs on InsertEnter, the rest VeryLazy.
 
 return {
-  -- File type icons with a compatibility shim so plugins expecting
-  -- the devicons API work without modification.
+  -- File type icons. Loaded eagerly so icons are available at startup.
   {
     "echasnovski/mini.icons",
     lazy = false,
     config = function()
-      local mini_icons = require("mini.icons")
-      mini_icons.setup()
-      mini_icons.mock_nvim_web_devicons()
+      require("mini.icons").setup()
     end,
   },
 
