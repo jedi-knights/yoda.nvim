@@ -72,26 +72,6 @@ return {
       },
     })
 
-    -- Open explorer on startup once all plugins are loaded.
-    -- Lives here rather than autocmds.lua so replacing snacks only requires
-    -- changes in one place.
-    vim.api.nvim_create_autocmd("User", {
-      pattern = "VeryLazy",
-      group = vim.api.nvim_create_augroup("YodaExplorerStartup", { clear = true }),
-      desc = "Open Snacks explorer on startup",
-      callback = function()
-        vim.defer_fn(function()
-          local ok, snacks = pcall(require, "snacks")
-          if ok and snacks.explorer and snacks.explorer.open then
-            local open_ok, open_err = pcall(snacks.explorer.open)
-            if not open_ok then
-              vim.notify("[yoda] Failed to open explorer: " .. tostring(open_err), vim.log.levels.WARN)
-            end
-          end
-        end, 100)
-      end,
-    })
-
     -- Global autocmd to handle file opening from explorer context
     vim.api.nvim_create_augroup("ExplorerFileOpen", { clear = true })
     vim.api.nvim_create_autocmd("BufReadPost", {
