@@ -83,7 +83,7 @@ return {
       dashboard.button("e", "📁  Open Explorer", "<leader>eo"),
       dashboard.button("f", "🔍  Find Files", "<leader>ff"),
       dashboard.button("g", "🔎  Find Text", "<leader>fg"),
-      dashboard.button("r", "📋  Recent Files", ":Telescope oldfiles<CR>"),
+      dashboard.button("r", "📋  Recent Files", ":FzfLua oldfiles<CR>"),
       dashboard.button("l", "🔧  Lazy", ":Lazy<CR>"),
       dashboard.button("q", "❌  Quit", ":qa<CR>"),
     }
