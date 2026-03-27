@@ -1,6 +1,5 @@
--- lua/plugins/neotest.lua
--- Neotest core + language adapters. Adapters are installed as separate specs
--- (so lazy.nvim fetches them) and wired in dynamically via pcall in config.
+-- lua/plugins/testing.lua
+-- Test runners: neotest (core + adapters), coverage overlay, pytest picker.
 
 return {
   -- Language adapters — lazy-loaded by filetype; picked up via pcall in config below.
@@ -14,6 +13,7 @@ return {
     dependencies = { "nvim-neotest/neotest" },
     ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
   },
+
   {
     "nvim-neotest/neotest",
     lazy = true,
@@ -124,6 +124,58 @@ return {
           signs = true,
         },
       })
+    end,
+  },
+
+  {
+    "andythigpen/nvim-coverage",
+    lazy = true,
+    cmd = { "Coverage", "CoverageLoad", "CoverageShow", "CoverageHide" },
+    config = function()
+      require("coverage").setup()
+    end,
+  },
+
+  {
+    "ocrosby/pytest-atlas.nvim",
+    lazy = true,
+    keys = {
+      {
+        "<leader>tt",
+        function()
+          local ok, pytest_atlas = pcall(require, "pytest-atlas")
+          if ok then
+            pytest_atlas.run_tests()
+          else
+            vim.notify("Failed to load pytest-atlas: " .. tostring(pytest_atlas), vim.log.levels.ERROR)
+          end
+        end,
+        desc = "Test: Run pytest with picker",
+      },
+    },
+    cmd = { "PytestAtlasRun", "PytestAtlasStatus" },
+    dependencies = {
+      "folke/snacks.nvim",
+    },
+    config = function()
+      local ok, pytest_atlas = pcall(require, "pytest-atlas")
+      if not ok then
+        vim.notify("Failed to load pytest-atlas: " .. tostring(pytest_atlas), vim.log.levels.ERROR)
+        return
+      end
+
+      local success, err = pcall(function()
+        pytest_atlas.setup({
+          keymap = "<leader>tt",
+          enable_keymap = false,
+          picker = "snacks",
+          debug = false,
+        })
+      end)
+
+      if not success then
+        vim.notify("pytest-atlas setup failed: " .. tostring(err), vim.log.levels.ERROR)
+      end
     end,
   },
 }
