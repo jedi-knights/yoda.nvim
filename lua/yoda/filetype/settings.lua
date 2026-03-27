@@ -83,7 +83,8 @@ local FILETYPE_SETTINGS = {
   end,
 
   ["snacks-explorer"] = function()
-    vim.cmd("stopinsert")
+    -- Defer stopinsert until after the explorer buffer is fully settled;
+    -- an immediate call fires before the mode is stable.
     vim.schedule(function()
       if vim.fn.mode() ~= "n" then
         vim.cmd("stopinsert")

@@ -38,8 +38,9 @@ autocmd({ "BufLeave", "FocusLost", "CmdlineEnter", "WinLeave" }, {
 -- and can produce spurious errors.
 -- CursorHoldI intentionally excluded: with updatetime=250 it fired every 250ms
 -- in insert mode, running checktime (file stat I/O) continuously while typing.
--- FocusGained and BufEnter already cover the important reload cases.
-autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+-- FocusGained is intentionally excluded here: git_refresh.lua owns that event
+-- and already calls checktime before refreshing git signs, avoiding double I/O.
+autocmd({ "BufEnter", "CursorHold" }, {
   group = augroup("YodaChecktime", { clear = true }),
   desc = "Reload files changed outside Neovim",
   callback = function()
