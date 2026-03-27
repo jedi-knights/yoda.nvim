@@ -7,8 +7,6 @@ local M = {}
 -- Dependencies
 -- ============================================================================
 
-local alpha_manager = require("yoda.ui.alpha_manager")
-
 -- ============================================================================
 -- Performance Profiles
 -- ============================================================================
@@ -90,9 +88,6 @@ local FILETYPE_SETTINGS = {
       if vim.fn.mode() ~= "n" then
         vim.cmd("stopinsert")
       end
-
-      -- Recenter alpha dashboard if it's open
-      alpha_manager.recenter_alpha_dashboard()
     end)
   end,
 

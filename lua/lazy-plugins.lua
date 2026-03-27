@@ -35,11 +35,18 @@ require("lazy").setup({
     priority = 1000,
     config = function()
       local ok, adapters = pcall(require, "yoda-adapters")
-      if ok and adapters and adapters.setup then
-        adapters.setup({
+      if not ok then
+        vim.notify("[yoda] Failed to load yoda-adapters: " .. tostring(adapters), vim.log.levels.ERROR)
+        return
+      end
+      if adapters and adapters.setup then
+        local setup_ok, err = pcall(adapters.setup, {
           notification_backend = nil,
           picker_backend = nil,
         })
+        if not setup_ok then
+          vim.notify("[yoda] yoda-adapters setup failed: " .. tostring(err), vim.log.levels.WARN)
+        end
       end
     end,
   }),
@@ -48,11 +55,18 @@ require("lazy").setup({
     priority = 999,
     config = function()
       local ok, core = pcall(require, "yoda-core")
-      if ok and core and core.setup then
-        core.setup({
+      if not ok then
+        vim.notify("[yoda] Failed to load yoda-core: " .. tostring(core), vim.log.levels.ERROR)
+        return
+      end
+      if core and core.setup then
+        local setup_ok, err = pcall(core.setup, {
           use_di = false,
           dependencies = {},
         })
+        if not setup_ok then
+          vim.notify("[yoda] yoda-core setup failed: " .. tostring(err), vim.log.levels.WARN)
+        end
       end
     end,
   }),
@@ -62,11 +76,18 @@ require("lazy").setup({
     dependencies = { "yoda.nvim-adapters" },
     config = function()
       local ok, logging = pcall(require, "yoda-logging")
-      if ok and logging and logging.setup then
-        logging.setup({
+      if not ok then
+        vim.notify("[yoda] Failed to load yoda-logging: " .. tostring(logging), vim.log.levels.ERROR)
+        return
+      end
+      if logging and logging.setup then
+        local setup_ok, err = pcall(logging.setup, {
           strategy = "file",
           level = logging.LEVELS and logging.LEVELS.INFO or 2,
         })
+        if not setup_ok then
+          vim.notify("[yoda] yoda-logging setup failed: " .. tostring(err), vim.log.levels.WARN)
+        end
       end
     end,
   }),
@@ -76,14 +97,21 @@ require("lazy").setup({
     dependencies = { "yoda.nvim-adapters" },
     config = function()
       local ok, terminal = pcall(require, "yoda-terminal")
-      if ok and terminal and terminal.setup then
-        terminal.setup({
+      if not ok then
+        vim.notify("[yoda] Failed to load yoda-terminal: " .. tostring(terminal), vim.log.levels.ERROR)
+        return
+      end
+      if terminal and terminal.setup then
+        local setup_ok, err = pcall(terminal.setup, {
           width = 0.9,
           height = 0.85,
           border = "rounded",
           autocmds = true,
           commands = true,
         })
+        if not setup_ok then
+          vim.notify("[yoda] yoda-terminal setup failed: " .. tostring(err), vim.log.levels.WARN)
+        end
       end
     end,
   }),
@@ -93,11 +121,18 @@ require("lazy").setup({
     dependencies = { "yoda.nvim-adapters" },
     config = function()
       local ok, window = pcall(require, "yoda-window")
-      if ok and window and window.setup then
-        window.setup({
+      if not ok then
+        vim.notify("[yoda] Failed to load yoda-window: " .. tostring(window), vim.log.levels.ERROR)
+        return
+      end
+      if window and window.setup then
+        local setup_ok, err = pcall(window.setup, {
           enable_layout_management = true,
           enable_window_protection = true,
         })
+        if not setup_ok then
+          vim.notify("[yoda] yoda-window setup failed: " .. tostring(err), vim.log.levels.WARN)
+        end
       end
     end,
   }),
@@ -106,10 +141,17 @@ require("lazy").setup({
     priority = 994,
     config = function()
       local ok, diagnostics = pcall(require, "yoda-diagnostics")
-      if ok and diagnostics and diagnostics.setup then
-        diagnostics.setup({
+      if not ok then
+        vim.notify("[yoda] Failed to load yoda-diagnostics: " .. tostring(diagnostics), vim.log.levels.ERROR)
+        return
+      end
+      if diagnostics and diagnostics.setup then
+        local setup_ok, err = pcall(diagnostics.setup, {
           register_defaults = true,
         })
+        if not setup_ok then
+          vim.notify("[yoda] yoda-diagnostics setup failed: " .. tostring(err), vim.log.levels.WARN)
+        end
       end
     end,
   }),
