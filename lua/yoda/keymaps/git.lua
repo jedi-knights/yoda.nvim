@@ -10,5 +10,3 @@ end
 map("n", "<leader>gg", function()
   require("neogit").open()
 end, { desc = "Git: Open Neogit - Open interactive git interface" })
-
-map("n", "<leader>gB", ":G blame<CR>", { desc = "Git: Blame (Fugitive) - Open full file blame view" })
