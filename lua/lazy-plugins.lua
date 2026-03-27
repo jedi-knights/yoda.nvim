@@ -92,8 +92,7 @@ require("lazy").setup({
     end,
   }),
   plugin_spec("yoda-terminal.nvim", {
-    lazy = false,
-    priority = 996,
+    event = "VeryLazy",
     dependencies = { "yoda.nvim-adapters" },
     config = function()
       local ok, terminal = pcall(require, "yoda-terminal")
@@ -116,8 +115,7 @@ require("lazy").setup({
     end,
   }),
   plugin_spec("yoda-window.nvim", {
-    lazy = false,
-    priority = 995,
+    event = "VeryLazy",
     dependencies = { "yoda.nvim-adapters" },
     config = function()
       local ok, window = pcall(require, "yoda-window")
@@ -137,8 +135,7 @@ require("lazy").setup({
     end,
   }),
   plugin_spec("yoda-diagnostics.nvim", {
-    lazy = false,
-    priority = 994,
+    event = "VeryLazy",
     config = function()
       local ok, diagnostics = pcall(require, "yoda-diagnostics")
       if not ok then

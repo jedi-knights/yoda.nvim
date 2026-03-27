@@ -71,7 +71,7 @@ return {
             for _, w in ipairs(vim.api.nvim_list_wins()) do
               local w_buf = vim.api.nvim_win_get_buf(w)
               local w_ft = vim.bo[w_buf].filetype
-              if w ~= win and w_ft ~= "snacks-explorer" and w_ft ~= "opencode" then
+              if w ~= win and w_ft ~= "snacks-explorer" then
                 main_win = w
                 break
               end
@@ -127,7 +127,7 @@ return {
           for _, win in ipairs(vim.api.nvim_list_wins()) do
             local win_buf = vim.api.nvim_win_get_buf(win)
             local win_ft = vim.bo[win_buf].filetype
-            if win_ft ~= "snacks-explorer" and win_ft ~= "opencode" then
+            if win_ft ~= "snacks-explorer" then
               target_win = win
               break
             end
