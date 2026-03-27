@@ -32,7 +32,7 @@ Architecture Goals:~
   • High code quality (10/10 rating)
 
 Quality Metrics:~
-  • 302 unit tests with ~95% coverage
+  • 191 unit tests with ~95% coverage
   • SOLID principles compliance: 10/10
   • CLEAN code principles: 10/10
   • DRY principle compliance: 10/10
@@ -45,16 +45,14 @@ File Organization:~
 >
     lua/yoda/
     ├── buffer/               Buffer state inspection
-    │   ├── state_checker.lua Modifiable/writable buffer checks
-    │   └── type_cache.lua    Buffer type caching
+    │   └── state_checker.lua Modifiable/writable buffer checks
     │
     ├── commands/             User-facing Ex commands
     │   ├── buffer.lua        Buffer management commands
     │   ├── diagnostics.lua   Diagnostic commands
     │   ├── formatting.lua    Format commands
     │   ├── lazy.lua          Lazy plugin manager commands
-    │   ├── lsp.lua           LSP commands
-    │   └── utils.lua         Command utilities
+    │   └── lsp.lua           LSP commands
     │
     ├── filetype/             Filetype handling
     │   ├── detection.lua     Custom filetype detection autocmds
@@ -67,23 +65,14 @@ File Organization:~
     │   ├── init.lua          Registration entry point
     │   └── [domain].lua      Per-domain keymaps (git, lsp, testing…)
     │
-    ├── performance/          Performance utilities
-    │   ├── benchmark.lua     Microbenchmark helpers
-    │   └── memory_manager.lua  Buffer memory tracking
-    │
     ├── testing/              Test configuration
     │   └── defaults.lua      User-configurable test defaults
     │
-    ├── ui/                   UI helpers
-    │   └── alpha_manager.lua Dashboard (alpha.nvim) management
-    │
-    ├── config.lua            Yoda configuration schema
     ├── config_loader.lua     YAML/Lua config loading
     ├── environment.lua       Environment detection (home/work)
     ├── lsp.lua               LSP setup and server registration
     ├── picker_handler.lua    Abstract picker (snacks/fzf-lua)
     ├── python_venv.lua       Python virtualenv detection
-    ├── utils.lua             General utility functions
     └── [other modules]       Specialised functionality
 <
 
@@ -163,61 +152,29 @@ Non-redundant (DRY):~
 ==============================================================================
 TERMINAL SYSTEM                                 *yoda-architecture-terminal*
 
-Modular terminal management system with dependency injection support.
+Terminal management is provided by the external `yoda-terminal.nvim` plugin,
+which is loaded via `lazy-plugins.lua` as a Jedi Knights foundation plugin.
 
-config.lua~
-Terminal window configuration:
+Configuration happens at startup via plugin_spec("yoda-terminal.nvim"):
 >
-    local config = require("yoda.terminal.config")
-    
-    local term_config = config.make_config({ "python", "-i" }, "Python REPL")
-<
-
-Functions:
-  • DEFAULTS - Default terminal configuration
-  • make_win_opts(title, overrides) - Create window options
-  • make_config(cmd, title, opts) - Create terminal configuration
-
-shell.lua~  
-Shell detection and management:
->
-    local shell = require("yoda.terminal.shell")
-    
-    local shell_type = shell.get_type()  -- "bash", "zsh", etc.
-    shell.open_simple({ title = "My Terminal" })
-<
-
-Functions:
-  • get_type() - Detect shell type (bash, zsh, fish)
-  • get_default() - Get default shell path
-  • open_simple(opts) - Open simple terminal
-
-venv.lua~
-Virtual environment utilities:
->
-    local venv = require("yoda.terminal.venv")
-    
-    venv.find_virtual_envs(function(envs)
-      -- Handle found environments
-    end)
-<
-
-Functions:
-  • find_virtual_envs(callback) - Discover virtual environments
-  • select_virtual_env(callback) - UI for environment selection
-  • get_activate_script_path(env_path) - Get activation script
-
-Dependency Injection Support~
-
-The terminal system supports dependency injection for testing:
->
-    local venv_di = require("yoda.terminal.venv_di")
-    
-    local venv_instance = venv_di.new({
-      platform = mock_platform,
-      io = mock_io,
-      picker = mock_picker
+    plugin_spec("yoda-terminal.nvim", {
+      lazy = false,
+      priority = 996,
+      config = function()
+        require("yoda-terminal").setup({
+          width = 0.9,
+          height = 0.85,
+          border = "rounded",
+          autocmds = true,
+          commands = true,
+        })
+      end,
     })
+<
+
+The terminal module is available at runtime via:
+>
+    local terminal = require("yoda-terminal")
 <
 
 ==============================================================================
@@ -231,10 +188,8 @@ Test Structure:~
     ├── buffer/                Buffer state checker tests
     ├── filetype/              Filetype detection and settings tests
     ├── integrations/          Integration wiring tests (gitsigns, etc.)
-    ├── performance/           Performance utility tests
-    ├── terminal/              Terminal system tests
-    ├── ui/                    UI component tests (alpha manager)
     └── window/                Window utility tests
+    Plus top-level spec files for each core module
 <
 
 Test Helpers~
@@ -259,7 +214,7 @@ Test Patterns:~
 4. Maintain >90% coverage
 
 Quality Metrics:~
-  • 302 unit tests
+  • 191 unit tests
   • ~95% code coverage
   • All tests pass on CI
   • Comprehensive edge case testing

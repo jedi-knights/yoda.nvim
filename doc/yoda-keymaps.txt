@@ -10,204 +10,189 @@ License: MIT
 CONTENTS                                                *yoda-keymaps-contents*
 
 1. General Navigation ...................... |yoda-keymaps-navigation|
-2. File Management ......................... |yoda-keymaps-files|
-3. Search & Find ........................... |yoda-keymaps-search|
+2. File Explorer ........................... |yoda-keymaps-explorer|
+3. Search & Find (fzf-lua) ................. |yoda-keymaps-search|
 4. LSP & Code Intelligence ................. |yoda-keymaps-lsp|
 5. AI & Code Assistance .................... |yoda-keymaps-ai|
-6. Testing & Debugging ..................... |yoda-keymaps-testing|
+6. Testing ................................. |yoda-keymaps-testing|
 7. Git Integration ......................... |yoda-keymaps-git|
-8. Buffer & Tab Management ................. |yoda-keymaps-buffers|
-9. Window Management ....................... |yoda-keymaps-windows|
-10. System & Configuration ................. |yoda-keymaps-system|
+8. Window Management ....................... |yoda-keymaps-windows|
+9. Utilities & Notifications ............... |yoda-keymaps-utilities|
+10. Buffer Navigation ...................... |yoda-keymaps-buffers|
 11. Visual Mode ............................ |yoda-keymaps-visual|
 12. Disabled Keys .......................... |yoda-keymaps-disabled|
 
 ==============================================================================
 GENERAL NAVIGATION                                   *yoda-keymaps-navigation*
 
-Legend: <leader> = <Space> (spacebar) 
-Modes: n = Normal, i = Insert, v = Visual, t = Terminal
+Legend: <leader> = <Space> (spacebar)
+Modes: n = Normal, v = Visual, t = Terminal
 
 Basic Movement ~
-    jk              (i,v)  Exit to normal mode
+    <C-d>           (n,v)  Scroll down (cursor centered)
+    <C-u>           (n,v)  Scroll up (cursor centered)
+    n               (n)    Next search result (cursor centered)
+    N               (n)    Previous search result (cursor centered)
+    K               (n)    Hover docs (LSP) or Vim help for word under cursor
+
+Window Navigation ~
     <C-h>           (n)    Move to left window
-    <C-j>           (n)    Move to lower window  
+    <C-j>           (n)    Move to lower window
     <C-k>           (n)    Move to upper window
     <C-l>           (n)    Move to right window
-    <C-c>           (n)    Close current window
-
-Quick Actions ~
-    <C-s>           (n)    Save file
-    <C-q>           (n)    Save and quit
-    <C-x>           (n)    Close buffer
-    <leader>i       (n)    Re-indent entire file
-    <leader>y       (n)    Yank entire buffer to system clipboard
 
 ==============================================================================
-FILE MANAGEMENT                                         *yoda-keymaps-files*
+FILE EXPLORER                                         *yoda-keymaps-explorer*
 
-Explorer ~
-    <leader>eo      (n)    Open file explorer (only if closed)
-    <leader>ef      (n)    Focus on explorer (if open)
-    <leader>er      (n)    Refresh file explorer
-    <leader>ec      (n)    Close file explorer
-    <leader>et      (n)    Toggle file explorer
+Snacks Explorer ~
+    <leader>eo      (n)    Open explorer (only if closed)
+    <leader>ef      (n)    Focus explorer (or open if closed)
+    <leader>ec      (n)    Close explorer
+    <leader>er      (n)    Refresh explorer
+    <leader>ed      (n)    Debug explorer state
+    <leader>e?      (n)    Show explorer keybindings help
 
-File Operations ~
-    <leader>ff      (n)    Find files
-    <leader>fo      (n)    Open file
-    <leader>fn      (n)    New file
+In the Explorer ~
+    H                      Toggle hidden files
+    I                      Toggle ignored files
+    h                      Close/collapse directory
+    l                      Open directory or file
+
+==============================================================================
+SEARCH & FIND (fzf-lua)                               *yoda-keymaps-search*
+
+    <leader>ff      (n)    Find files in current directory
+    <leader>fg      (n)    Live grep (search text across files)
     <leader>fr      (n)    Recent files
-    <leader>fs      (n)    Save file
-    <leader>fS      (n)    Save as...
-
-==============================================================================
-SEARCH & FIND                                           *yoda-keymaps-search*
-
-Text Search ~
-    <leader>/       (n)    Search in current buffer
-    <leader>sg      (n)    Live grep (search in all files)
-    <leader>sw      (n)    Search word under cursor
-    <leader>sh      (n)    Search help
-    <leader>sk      (n)    Search keymaps
-    <leader>sr      (n)    Resume last search
-
-Find & Replace ~
-    <leader>sr      (n)    Search and replace
-    <leader>r       (v)    Replace in visual selection
+    <leader>fb      (n)    Find open buffers
+    <leader>fR      (n)    Document symbols (LSP, current file)
+    <leader>fS      (n)    Workspace symbols (LSP, all files)
+    <leader>fD      (n)    Browse all diagnostics
+    <leader>fG      (n)    Find git-tracked files
 
 ==============================================================================
 LSP & CODE INTELLIGENCE                                   *yoda-keymaps-lsp*
 
 Navigation ~
     gd              (n)    Go to definition
-    gr              (n)    Go to references  
-    gi              (n)    Go to implementation
-    K               (n)    Show hover documentation
-    <C-h>           (i)    Show signature help
+    <leader>ld      (n)    Go to definition
+    <leader>lD      (n)    Go to declaration
+    <leader>li      (n)    Go to implementation
+    <leader>lr      (n)    Find references
 
 Code Actions ~
-    <leader>ca      (n)    Code actions
-    <leader>rn      (n)    Rename symbol
-    <leader>f       (n)    Format code
-    <leader>cd      (n)    Show diagnostics
-    <leader>cf      (n)    Fix diagnostic
+    <leader>la      (n)    Code actions
+    <leader>lrn     (n)    Rename symbol
+    <leader>lf      (n)    Format buffer
 
-Inlay Hints ~
-    <leader>th      (n)    Toggle inlay hints (if supported)
+Symbols ~
+    <leader>ls      (n)    Document symbols (current file)
+    <leader>lw      (n)    Workspace symbols
+
+Diagnostics ~
+    <leader>le      (n)    Show diagnostic float (cursor)
+    <leader>lq      (n)    Add diagnostics to location list
+    [d              (n)    Previous diagnostic
+    ]d              (n)    Next diagnostic
 
 ==============================================================================
 AI & CODE ASSISTANCE                                       *yoda-keymaps-ai*
 
 Claude Code Integration ~
-    <leader>ai      (n)    Toggle Claude Code
+    <leader>ai      (n)    Toggle Claude Code terminal
     <leader>af      (n)    Focus Claude Code window
-    <leader>ar      (n)    Resume Claude session (--resume)
-    <leader>aC      (n)    Continue Claude session (--continue)
+    <leader>ar      (n)    Resume previous Claude session (--resume)
+    <leader>aC      (n)    Continue last Claude conversation (--continue)
     <leader>am      (n)    Select Claude model
+
+Context ~
     <leader>aB      (n)    Add current buffer to Claude context
     <leader>as      (v)    Send visual selection to Claude
-    <leader>as      (n)    Add file to Claude (in file explorer)
+    <leader>as      (n)    Add file to Claude (in file explorer buffers)
+
+Diffs ~
     <leader>aa      (n)    Accept diff from Claude
     <leader>ad      (n)    Deny diff from Claude
 
+See |yoda-ai| for setup instructions.
+
 ==============================================================================
-TESTING & DEBUGGING                                     *yoda-keymaps-testing*
+TESTING                                              *yoda-keymaps-testing*
 
-Test Runner ~
-    <leader>tt      (n)    Run current test file
-    <leader>tr      (n)    Run nearest test
-    <leader>ta      (n)    Run all tests
-    <leader>ts      (n)    Stop test runner
-    <leader>tw      (n)    Watch tests
+Neotest ~
+    <leader>ta      (n)    Run all tests (cwd)
+    <leader>tn      (n)    Run nearest test
+    <leader>tf      (n)    Run current file tests
+    <leader>tl      (n)    Run last test
+    <leader>tc      (n)    Run current file (filetype-aware)
+    <leader>td      (n)    Debug nearest test (DAP)
+    <leader>ts      (n)    Toggle test summary panel
+    <leader>to      (n)    Toggle test output panel
+    <leader>tv      (n)    View test output (enter)
+    <leader>tO      (n)    Focus test output panel
+    <leader>tF      (n)    Focus test summary panel
+    <leader>tC      (n)    Clear test output panel
 
-Debugging ~
-    <leader>db      (n)    Toggle breakpoint
-    <leader>dc      (n)    Continue debugging
-    <leader>di      (n)    Step into
-    <leader>do      (n)    Step over
-    <leader>dr      (n)    Start/restart debugger
+pytest-atlas ~
+    <leader>tS      (n)    Show test environment status
+    <leader>tL      (n)    Open pytest-atlas log (tail, last 100 lines)
+    <leader>tLA     (n)    Open pytest-atlas log (full)
+    <leader>tX      (n)    Clear pytest-atlas log
 
 ==============================================================================
 GIT INTEGRATION                                           *yoda-keymaps-git*
 
-Git Status & Diff ~
-    <leader>gs      (n)    Git status (Neogit)
-    <leader>gd      (n)    Git diff
-    <leader>gb      (n)    Git blame
-    <leader>gl      (n)    Git log
+    <leader>gg      (n)    Open Neogit (interactive git interface)
+    <leader>gB      (n)    Git blame full file (Fugitive)
 
-Git Hunks ~
-    <leader>gh      (n)    Next git hunk
-    <leader>gH      (n)    Previous git hunk
-    <leader>gp      (n)    Preview git hunk
-    <leader>gr      (n)    Reset git hunk
-
-Git Branches ~
-    <leader>gc      (n)    Git checkout branch
-    <leader>gC      (n)    Create new branch
+Gitsigns hunk operations are registered as buffer-local keymaps inside
+the gitsigns on_attach callback. Use :map <buffer> to inspect them.
 
 ==============================================================================
-BUFFER & TAB MANAGEMENT                                *yoda-keymaps-buffers*
+WINDOW MANAGEMENT                                     *yoda-keymaps-windows*
 
-Buffer Navigation ~
-    <leader>bp      (n)    Previous buffer
-    <leader>bn      (n)    Next buffer
-    <leader>bd      (n)    Delete buffer
-    <leader>bD      (n)    Force delete buffer
-    <leader>bb      (n)    Buffer picker
+Splits ~
+    <leader>|       (n)    Vertical split
+    <leader>-       (n)    Horizontal split
+    <leader>ws      (n)    Equalize window sizes
 
-Tab Management ~
-    <leader>tn      (n)    New tab
-    <leader>tc      (n)    Close tab
-    <leader>to      (n)    Close other tabs
-    <leader>tp      (n)    Previous tab
-    <leader>tN      (n)    Next tab
+Diagnostics / Trouble ~
+    <leader>xt      (n)    Focus Trouble diagnostics window
+    <leader>xT      (n)    Show all TODO comments in Trouble
 
 ==============================================================================
-WINDOW MANAGEMENT                                       *yoda-keymaps-windows*
+UTILITIES & NOTIFICATIONS                           *yoda-keymaps-utilities*
 
-Window Split ~
-    <leader>wh      (n)    Split window horizontally
-    <leader>wv      (n)    Split window vertically
-    <leader>wr      (n)    Rotate windows
-    <leader>we      (n)    Equalize window sizes
+General ~
+    <leader>qq      (n)    Quit Neovim
+    <leader>D       (n)    Delete buffer content (void register, no clipboard)
+    <leader>tu      (n)    Toggle conform.nvim auto-format on save
+    <leader>d       (n)    Open Snacks dashboard
+    <leader><leader>r (n)  Hot reload Yoda config
 
-Window Resize ~
-    <leader>w+      (n)    Increase window height
-    <leader>w-      (n)    Decrease window height
-    <leader>w>      (n)    Increase window width
-    <leader>w<      (n)    Decrease window width
+Keymap Discovery ~
+    <leader>kk      (n)    Show all leader keymaps (float window)
+    <leader>sk      (n)    Toggle Showkeys screencaster display
+
+Noice / Notifications ~
+    <leader>nm      (n)    Show message history (Noice)
+    <leader>nl      (n)    Show last message
+    <leader>nh      (n)    Show notification history
+    <leader>nd      (n)    Dismiss all notifications
 
 ==============================================================================
-SYSTEM & CONFIGURATION                                  *yoda-keymaps-system*
+BUFFER NAVIGATION                                     *yoda-keymaps-buffers*
 
-Configuration ~
-    <leader>ce      (n)    Edit configuration
-    <leader>cr      (n)    Reload configuration
-    <leader>ch      (n)    Check health
-
-Plugin Management ~
-    <leader>ps      (n)    Plugin sync (Lazy)
-    <leader>pi      (n)    Plugin install
-    <leader>pu      (n)    Plugin update
-    <leader>pc      (n)    Plugin clean
-    <leader>ph      (n)    Plugin help
-
-Utilities ~
-    <leader>ul      (n)    Toggle line numbers
-    <leader>ur      (n)    Toggle relative numbers
-    <leader>uw      (n)    Toggle word wrap
-    <leader>us      (n)    Toggle spell check
+    ]b              (n)    Next buffer
+    [b              (n)    Previous buffer
 
 ==============================================================================
 VISUAL MODE                                             *yoda-keymaps-visual*
 
-Text Operations ~
-    <leader>r       (v)    Replace selection
-    <leader>y       (v)    Yank to clipboard
-    <leader>d       (v)    Delete to void register
-    <leader>p       (v)    Delete and paste over
+    <leader>r       (v)    Start substitute command on selection
+    <leader>y       (v)    Yank selection to system clipboard
+    <leader>d       (v)    Delete to void register (no clipboard change)
+    <leader>p       (v)    Replace selection, preserve clipboard
 
 ==============================================================================
 DISABLED KEYS                                          *yoda-keymaps-disabled*
@@ -220,6 +205,9 @@ The following keys are disabled to encourage better vim habits:
     <right>         (n)    Use 'l' instead
     <pageup>        (n)    Use '<C-u>' instead
     <pagedown>      (n)    Use '<C-d>' instead
+
+Note: jk → <Esc> insert-mode mapping was removed — it caused a 300ms stall
+on every 'j' typed. Use <C-[> or physical Escape instead.
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:
