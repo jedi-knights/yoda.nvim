@@ -26,13 +26,10 @@ end
 
 require("lazy").setup({
   -- Extracted Yoda plugins (foundation)
-  -- Each plugin is configured via its own config callback so that setup()
-  -- runs immediately after the plugin is loaded during lazy.setup(), with no
-  -- deferred scheduling gap. Priority ordering ensures dependencies are
-  -- configured before the plugins that depend on them.
+  -- Deferred to VeryLazy — nothing before UIEnter needs them. Load order
+  -- between them is enforced via the `dependencies` field.
   plugin_spec("yoda.nvim-adapters", {
-    lazy = false,
-    priority = 1000,
+    event = "VeryLazy",
     config = function()
       local ok, adapters = pcall(require, "yoda-adapters")
       if not ok then
@@ -51,8 +48,7 @@ require("lazy").setup({
     end,
   }),
   plugin_spec("yoda-core.nvim", {
-    lazy = false,
-    priority = 999,
+    event = "VeryLazy",
     config = function()
       local ok, core = pcall(require, "yoda-core")
       if not ok then
@@ -71,8 +67,7 @@ require("lazy").setup({
     end,
   }),
   plugin_spec("yoda-logging.nvim", {
-    lazy = false,
-    priority = 997,
+    event = "VeryLazy",
     dependencies = { "yoda.nvim-adapters" },
     config = function()
       local ok, logging = pcall(require, "yoda-logging")
