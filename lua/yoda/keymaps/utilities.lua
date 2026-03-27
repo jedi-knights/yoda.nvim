@@ -40,7 +40,7 @@ map("n", "<leader><leader>r", function()
   end
 
   local config = vim.fn.stdpath("config")
-  for _, f in ipairs({ "/lua/options.lua", "/lua/keymaps.lua", "/lua/autocmds.lua" }) do
+  for _, f in ipairs({ "/lua/options.lua", "/lua/yoda/keymaps/init.lua", "/lua/autocmds.lua" }) do
     local ok, err = pcall(dofile, config .. f)
     if not ok then
       notify.notify("❌ Failed to reload " .. f .. ": " .. tostring(err), "error")

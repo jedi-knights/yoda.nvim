@@ -454,20 +454,9 @@ function M.setup()
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
         vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
         vim.keymap.set("n", "gI", vim.lsp.buf.implementation, opts)
-        vim.keymap.set("n", "K", function()
-          local clients = vim.lsp.get_clients({ bufnr = 0 })
-          if #clients > 0 then
-            vim.lsp.buf.hover()
-          else
-            local word = vim.fn.expand("<cword>")
-            if word ~= "" then
-              local ok, err = pcall(vim.cmd, "help " .. word)
-              if not ok then
-                vim.notify("No help found for '" .. word .. "': " .. tostring(err), vim.log.levels.WARN)
-              end
-            end
-          end
-        end, opts)
+        -- K is handled globally in keymaps/help.lua: checks for LSP clients and
+        -- falls back to :help — covers both LSP and non-LSP buffers without a
+        -- buffer-local duplicate here.
         vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
         vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
         vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
@@ -477,7 +466,7 @@ function M.setup()
           local clients = vim.lsp.get_clients({ bufnr = event.buf })
           for _, client in ipairs(clients) do
             if client.supports_method("textDocument/inlayHint") then
-              local is_enabled = vim.lsp.inlay_hint.is_enabled(event.buf)
+              local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
               vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = event.buf })
               notify.notify(is_enabled and "Inlay hints disabled" or "Inlay hints enabled", "info")
               return
@@ -527,7 +516,7 @@ function M.setup()
 
   -- Auto-restart Python LSP when entering different Python projects
   vim.api.nvim_create_autocmd("DirChanged", {
-    group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", {}),
+    group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", { clear = true }),
     callback = function()
       local timer_id = "python_lsp_restart"
 
