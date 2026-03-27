@@ -24,12 +24,11 @@ end, { desc = "Util: Delete buffer content" })
 map("n", "<leader>tu", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
 
 map("n", "<leader>d", function()
-  local ok, alpha = pcall(require, "alpha")
-  if ok and alpha and alpha.start then
-    alpha.start()
-    notify.notify("Dashboard opened", "info")
+  local ok, snacks = pcall(require, "snacks")
+  if ok and snacks and snacks.dashboard then
+    snacks.dashboard.open()
   else
-    notify.notify("Failed to open dashboard - alpha plugin not available", "error")
+    notify.notify("Failed to open dashboard - snacks not available", "error")
   end
 end, { desc = "Util: Open dashboard" })
 
@@ -40,9 +39,13 @@ map("n", "<leader><leader>r", function()
     end
   end
 
-  dofile(vim.fn.stdpath("config") .. "/lua/options.lua")
-  dofile(vim.fn.stdpath("config") .. "/lua/keymaps.lua")
-  dofile(vim.fn.stdpath("config") .. "/lua/autocmds.lua")
+  local config = vim.fn.stdpath("config")
+  for _, f in ipairs({ "/lua/options.lua", "/lua/keymaps.lua", "/lua/autocmds.lua" }) do
+    local ok, err = pcall(dofile, config .. f)
+    if not ok then
+      notify.notify("❌ Failed to reload " .. f .. ": " .. tostring(err), "error")
+    end
+  end
 
   vim.defer_fn(function()
     notify.notify("✅ Reloaded Yoda config", "info")

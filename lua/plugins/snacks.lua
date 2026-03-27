@@ -6,6 +6,44 @@ return {
   priority = 1000,
   config = function()
     require("snacks").setup({
+      dashboard = {
+        enabled = true,
+        -- Only show on startup with no files (matches previous alpha cond).
+        -- snacks handles this natively via its own startup detection.
+        preset = {
+          header = [[
+
+        ██╗   ██╗ ██████╗ ██████╗  █████╗
+        ╚██╗ ██╔╝██╔═══██╗██╔══██╗██╔══██╗
+         ╚████╔╝ ██║   ██║██║  ██║███████║
+          ╚██╔╝  ██║   ██║██║  ██║██╔══██║
+           ██║   ╚██████╔╝██████╔╝██║  ██║
+           ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝
+                                                     ]],
+          keys = {
+            { icon = "🤖", key = "a", desc = "Open Code AI", action = "<cmd>ClaudeCode<CR>" },
+            {
+              icon = "📁",
+              key = "e",
+              desc = "Open Explorer",
+              action = function()
+                require("snacks").explorer.open()
+              end,
+            },
+            { icon = "🔍", key = "f", desc = "Find Files", action = "<cmd>FzfLua files<CR>" },
+            { icon = "🔎", key = "g", desc = "Find Text", action = "<cmd>FzfLua live_grep<CR>" },
+            { icon = "📋", key = "r", desc = "Recent Files", action = "<cmd>FzfLua oldfiles<CR>" },
+            { icon = "🔧", key = "l", desc = "Lazy", action = "<cmd>Lazy<CR>" },
+            { icon = "❌", key = "q", desc = "Quit", action = "<cmd>qa<CR>" },
+          },
+        },
+        sections = {
+          { section = "header" },
+          { section = "keys", gap = 1, padding = 1 },
+          { section = "startup" },
+          { text = { { "May the force be with you", hl = "DashboardFooter" } }, align = "center", padding = 1 },
+        },
+      },
       explorer = {
         enabled = true,
         show_hidden = true,
