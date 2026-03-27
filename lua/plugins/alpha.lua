@@ -79,10 +79,10 @@ return {
 
     -- Set menu
     dashboard.section.buttons.val = {
-      dashboard.button("a", "🤖  Open Code AI", "<leader>ai"),
+      dashboard.button("a", "🤖  Open Code AI", "<cmd>ClaudeCode<CR>"),
       dashboard.button("e", "📁  Open Explorer", "<leader>eo"),
-      dashboard.button("f", "🔍  Find Files", "<leader>ff"),
-      dashboard.button("g", "🔎  Find Text", "<leader>fg"),
+      dashboard.button("f", "🔍  Find Files", "<cmd>FzfLua files<CR>"),
+      dashboard.button("g", "🔎  Find Text", "<cmd>FzfLua live_grep<CR>"),
       dashboard.button("r", "📋  Recent Files", ":FzfLua oldfiles<CR>"),
       dashboard.button("l", "🔧  Lazy", ":Lazy<CR>"),
       dashboard.button("q", "❌  Quit", ":qa<CR>"),
