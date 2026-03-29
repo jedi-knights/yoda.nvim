@@ -503,15 +503,6 @@ function M.setup()
       border = "rounded",
       source = "if_many",
     },
-    -- status icons shown in the statuscolumn / sign column
-    status = {
-      text = {
-        [vim.diagnostic.severity.ERROR] = "󰅚",
-        [vim.diagnostic.severity.WARN] = "󰀪",
-        [vim.diagnostic.severity.INFO] = "󰋽",
-        [vim.diagnostic.severity.HINT] = "󰌶",
-      },
-    },
   })
 
   -- Auto-restart Python LSP when entering different Python projects
