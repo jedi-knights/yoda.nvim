@@ -95,7 +95,8 @@ return {
         enabled = false, -- Disabled: Using Noice for notifications to avoid vim.notify conflicts
       },
       picker = {
-        enabled = false, -- Disabled: Snacks picker causes crashes in Neovim 0.11.x - use fzf-lua instead
+        enabled = true,
+        -- Keep ui_select off — fzf-lua is the primary picker for vim.ui.select
         ui_select = false,
       },
       terminal = {
@@ -110,10 +111,21 @@ return {
       },
     })
 
+    -- zoxide project picker — jumps to any directory in your zoxide history.
+    -- Requires zoxide: brew install zoxide
+    vim.keymap.set("n", "<leader>sp", function()
+      if vim.fn.executable("zoxide") == 0 then
+        vim.notify("zoxide is not installed. See: https://github.com/ajeetdsouza/zoxide", vim.log.levels.WARN)
+        return
+      end
+      require("snacks").picker.zoxide()
+    end, { desc = "[S]earch [P]rojects (zoxide)" })
+
     -- Global autocmd to handle file opening from explorer context
-    vim.api.nvim_create_augroup("ExplorerFileOpen", { clear = true })
+    local explorer_group = vim.api.nvim_create_augroup("ExplorerFileOpen", { clear = true })
     vim.api.nvim_create_autocmd("BufReadPost", {
-      group = "ExplorerFileOpen",
+      group = explorer_group,
+      desc = "Redirect files opened in the explorer window to the main window",
       callback = function(args)
         local buf = args.buf
         local current_win = vim.api.nvim_get_current_win()

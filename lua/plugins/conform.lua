@@ -25,8 +25,13 @@ return {
     notify_on_error = false,
     -- Wrap format_on_save in a function so the global toggle takes effect on
     -- every save rather than being captured at plugin-load time.
-    format_on_save = function()
+    -- bufnr is provided by conform and used to skip non-modifiable buffers
+    -- (e.g. fugitive, help, quickfix) that would otherwise produce errors.
+    format_on_save = function(bufnr)
       if not vim.g.autoformat then
+        return nil
+      end
+      if not vim.bo[bufnr].modifiable then
         return nil
       end
       return { timeout_ms = 500, lsp_format = "fallback" }

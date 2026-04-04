@@ -77,4 +77,12 @@ vim.schedule(function()
   else
     vim.notify("[yoda] Failed to load yoda.environment: " .. tostring(environment), vim.log.levels.WARN)
   end
+
+  -- Screen recording toggle (macOS only — requires ffmpeg and Screen Recording permission)
+  local ok_sc, screencast = pcall(require, "yoda.screencast")
+  if ok_sc then
+    screencast.setup()
+  else
+    vim.notify("[yoda] Failed to load yoda.screencast: " .. tostring(screencast), vim.log.levels.WARN)
+  end
 end)
