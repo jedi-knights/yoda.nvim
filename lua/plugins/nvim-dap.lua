@@ -181,6 +181,36 @@ return {
       dapui.setup()
       require("nvim-dap-virtual-text").setup()
 
+      -- Load .vscode/launch.json if present in the project root.
+      -- type_to_filetypes maps the DAP adapter name to the filetype(s) it applies to,
+      -- which is required because launch.json uses adapter type names, not Neovim filetypes.
+      local vscode = require("dap.ext.vscode")
+      local type_to_filetypes = { delve = { "go" }, python = { "python" } }
+
+      local function load_vscode_launch()
+        local launch = vim.fn.getcwd() .. "/.vscode/launch.json"
+        if vim.fn.filereadable(launch) == 1 then
+          -- load_launchjs parses JSON; wrap in pcall so a malformed file
+          -- surfaces as a notification rather than a raw Lua stack trace.
+          local ok, err = pcall(vscode.load_launchjs, launch, type_to_filetypes)
+          if not ok then
+            vim.notify("[dap] Failed to load launch.json: " .. tostring(err), vim.log.levels.WARN)
+          end
+        end
+      end
+
+      load_vscode_launch()
+
+      -- Reload when switching projects so per-repo launch configs are picked up.
+      -- pattern = "global" limits to :cd (session-wide) changes; ignores :lcd/:tcd
+      -- so the callback doesn't fire multiple times for a single directory change.
+      vim.api.nvim_create_autocmd("DirChanged", {
+        group = vim.api.nvim_create_augroup("dap_vscode_launch", { clear = true }),
+        pattern = { "global" },
+        callback = load_vscode_launch,
+        desc = "Reload .vscode/launch.json when cwd changes",
+      })
+
       -- Auto-open dapui when a debug session starts and close it when the
       -- session ends. This avoids having to manually toggle the UI each time.
       dap.listeners.after.event_initialized["dapui_config"] = function()
