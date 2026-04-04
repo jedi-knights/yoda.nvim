@@ -42,10 +42,7 @@ local function convert_to_gif(mov)
           vim.notify("Screencast saved — " .. gif, vim.log.levels.INFO)
           os.remove(mov)
         else
-          vim.notify(
-            "ffmpeg conversion failed (exit " .. code .. ") — raw file kept: " .. mov,
-            vim.log.levels.WARN
-          )
+          vim.notify("ffmpeg conversion failed (exit " .. code .. ") — raw file kept: " .. mov, vim.log.levels.WARN)
         end
       end)
     end,
@@ -77,10 +74,7 @@ local function start()
 
   -- jobstart returns 0 (invalid command) or -1 (not executable) on failure.
   if job_id <= 0 then
-    vim.notify(
-      "[screencast] Failed to start screencapture (macOS only, check PATH and Screen Recording permission)",
-      vim.log.levels.ERROR
-    )
+    vim.notify("[screencast] Failed to start screencapture (macOS only, check PATH and Screen Recording permission)", vim.log.levels.ERROR)
     return
   end
 
