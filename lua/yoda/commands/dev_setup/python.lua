@@ -53,7 +53,7 @@ function M.setup()
     end
 
     for _, client in ipairs(clients) do
-      vim.lsp.stop_client(client.id)
+      client:stop()
       notify.notify(string.format("Stopped pyright client (id:%d)", client.id), "info")
     end
   end, { desc = "Stop pyright LSP clients (we use basedpyright)" })

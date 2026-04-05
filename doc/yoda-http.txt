@@ -1,0 +1,151 @@
+*yoda-http.txt*               Yoda.nvim HTTP Client Reference
+
+                      YODA.NVIM HTTP CLIENT REFERENCE
+
+Built-in HTTP client available in Neovim 0.12+ via `vim.net.request()`.
+
+==============================================================================
+CONTENTS                                              *yoda-http-contents*
+
+1. Overview .................................. |yoda-http-overview|
+2. Basic Usage ............................... |yoda-http-usage|
+3. Request Options ........................... |yoda-http-options|
+4. Examples .................................. |yoda-http-examples|
+5. Error Handling ............................ |yoda-http-errors|
+
+==============================================================================
+OVERVIEW                                              *yoda-http-overview*
+
+Neovim 0.12 includes a built-in HTTP client via `vim.net.request()`. This
+replaces the need for shelling out to `curl` or `wget` for simple HTTP
+operations in Lua scripts and plugin code.
+
+The function is asynchronous-friendly and returns response data including
+status code, headers, and body.
+
+==============================================================================
+BASIC USAGE                                           *yoda-http-usage*
+
+Synchronous GET request: ~
+>lua
+    local response = vim.net.request('https://api.github.com/repos/neovim/neovim')
+    print(response.status)   -- 200
+    print(response.body)     -- JSON string
+<
+
+The simplest form takes a URL string and returns a response table.
+
+==============================================================================
+REQUEST OPTIONS                                       *yoda-http-options*
+
+`vim.net.request()` accepts a table for full control over the request:
+
+>lua
+    vim.net.request({
+      url = 'https://api.example.com/data',
+      method = 'POST',
+      headers = {
+        ['Content-Type'] = 'application/json',
+        ['Authorization'] = 'Bearer ' .. token,
+      },
+      body = vim.json.encode({ key = 'value' }),
+    })
+<
+
+Fields: ~
+
+    url        `string`    Request URL (required)
+    method     `string`    HTTP method: GET, POST, PUT, DELETE, PATCH
+                           (default: "GET")
+    headers    `table`     Key-value pairs for request headers
+    body       `string`    Request body (for POST, PUT, PATCH)
+
+Response table: ~
+
+    status     `number`    HTTP status code (200, 404, etc.)
+    headers    `table`     Response headers
+    body       `string`    Response body as a string
+
+==============================================================================
+EXAMPLES                                              *yoda-http-examples*
+
+Fetch JSON and decode: ~
+>lua
+    local response = vim.net.request('https://api.github.com/zen')
+    if response.status == 200 then
+      vim.notify(response.body, vim.log.levels.INFO)
+    end
+<
+
+POST with JSON body: ~
+>lua
+    local response = vim.net.request({
+      url = 'https://httpbin.org/post',
+      method = 'POST',
+      headers = { ['Content-Type'] = 'application/json' },
+      body = vim.json.encode({ message = 'hello from neovim' }),
+    })
+    local data = vim.json.decode(response.body)
+<
+
+Download and save a file: ~
+>lua
+    local response = vim.net.request('https://example.com/file.txt')
+    if response.status == 200 then
+      local path = vim.fn.stdpath('data') .. '/downloaded.txt'
+      local f = io.open(path, 'w')
+      if f then
+        f:write(response.body)
+        f:close()
+      end
+    end
+<
+
+Use in an autocommand (e.g., check for updates): ~
+>lua
+    vim.api.nvim_create_autocmd('VimEnter', {
+      group = vim.api.nvim_create_augroup('CheckUpdates', { clear = true }),
+      once = true,
+      callback = function()
+        vim.schedule(function()
+          local ok, resp = pcall(vim.net.request,
+            'https://api.github.com/repos/owner/repo/releases/latest')
+          if ok and resp.status == 200 then
+            local release = vim.json.decode(resp.body)
+            vim.notify('Latest release: ' .. release.tag_name)
+          end
+        end)
+      end,
+      desc = 'Check for latest release on startup',
+    })
+<
+
+==============================================================================
+ERROR HANDLING                                        *yoda-http-errors*
+
+Always wrap `vim.net.request()` in `pcall` for production code: ~
+>lua
+    local ok, response = pcall(vim.net.request, 'https://example.com/api')
+    if not ok then
+      vim.notify('HTTP request failed: ' .. tostring(response),
+        vim.log.levels.ERROR)
+      return
+    end
+    if response.status ~= 200 then
+      vim.notify('Unexpected status: ' .. response.status,
+        vim.log.levels.WARN)
+      return
+    end
+<
+
+Common failure scenarios: ~
+
+  - Network unreachable (no internet connection)
+  - DNS resolution failure
+  - Connection timeout
+  - SSL/TLS certificate errors
+
+These all raise errors that `pcall` will catch.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
