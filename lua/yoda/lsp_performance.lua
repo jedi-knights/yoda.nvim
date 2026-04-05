@@ -98,48 +98,56 @@ end
 function M.setup_commands()
   vim.api.nvim_create_user_command("LSPPerfReport", function()
     local report = M.get_report()
-    print("=== LSP Performance Report ===\n")
+    local lines = { "=== LSP Performance Report ===", "" }
 
-    print("--- Attach Times ---")
+    table.insert(lines, "--- Attach Times ---")
     if vim.tbl_count(report.attach_times) == 0 then
-      print("  No LSP attaches recorded")
+      table.insert(lines, "  No LSP attaches recorded")
     else
       for server, data in pairs(report.attach_times) do
-        print(string.format("  %s: avg=%.2fms, min=%.2fms, max=%.2fms, count=%d", server, data.total / data.count, data.min, data.max, data.count))
+        table.insert(
+          lines,
+          string.format("  %s: avg=%.2fms, min=%.2fms, max=%.2fms, count=%d", server, data.total / data.count, data.min, data.max, data.count)
+        )
       end
     end
 
-    print("\n--- Virtual Environment Detection ---")
+    table.insert(lines, "")
+    table.insert(lines, "--- Virtual Environment Detection ---")
     if vim.tbl_count(report.venv_detection) == 0 then
-      print("  No venv detections recorded")
+      table.insert(lines, "  No venv detections recorded")
     else
       for root, data in pairs(report.venv_detection) do
         local avg_time = data.total / data.count
         local success_rate = (data.found / data.count) * 100
-        print(string.format("  %s: avg=%.2fms, success=%.1f%%, count=%d", root, avg_time, success_rate, data.count))
+        table.insert(lines, string.format("  %s: avg=%.2fms, success=%.1f%%, count=%d", root, avg_time, success_rate, data.count))
       end
     end
 
-    print("\n--- LSP Restarts ---")
+    table.insert(lines, "")
+    table.insert(lines, "--- LSP Restarts ---")
     if vim.tbl_count(report.restarts) == 0 then
-      print("  No LSP restarts recorded")
+      table.insert(lines, "  No LSP restarts recorded")
     else
       for server, count in pairs(report.restarts) do
-        local status = count > 5 and "⚠️" or "✓"
-        print(string.format("  %s %s: %d restarts", status, server, count))
+        local status = count > 5 and "warning" or "ok"
+        table.insert(lines, string.format("  [%s] %s: %d restarts", status, server, count))
       end
     end
 
-    print("\n--- Configuration Times ---")
+    table.insert(lines, "")
+    table.insert(lines, "--- Configuration Times ---")
     if vim.tbl_count(report.config_times) == 0 then
-      print("  No config times recorded")
+      table.insert(lines, "  No config times recorded")
     else
       for server, data in pairs(report.config_times) do
-        print(string.format("  %s: avg=%.2fms, max=%.2fms, count=%d", server, data.total / data.count, data.max, data.count))
+        table.insert(lines, string.format("  %s: avg=%.2fms, max=%.2fms, count=%d", server, data.total / data.count, data.max, data.count))
       end
     end
 
-    print("\n========================")
+    table.insert(lines, "")
+    table.insert(lines, "========================")
+    vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
   end, { desc = "Show LSP performance metrics" })
 
   vim.api.nvim_create_user_command("LSPPerfReset", function()

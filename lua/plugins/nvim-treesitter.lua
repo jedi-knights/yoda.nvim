@@ -55,8 +55,10 @@ return {
       indent = {
         enable = true,
       },
+      -- Incremental selection: use Neovim 0.12 built-in (v + an/in/]n/[n)
+      -- when available, otherwise fall back to nvim-treesitter keymaps.
       incremental_selection = {
-        enable = true,
+        enable = vim.fn.has("nvim-0.12") == 0,
         keymaps = {
           init_selection = "<C-space>",
           node_incremental = "<C-space>",

@@ -84,6 +84,7 @@ vim.opt.cmdheight = 1
 vim.opt.showtabline = 2 -- Always show bufferline/tabline
 vim.opt.confirm = true -- ask to save unsaved changes instead of refusing to quit
 vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
+vim.opt.pumborder = "rounded" -- bordered completion popup menu (Neovim 0.12+)
 
 -- ============================================================================
 -- BACKUP & SHADA

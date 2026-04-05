@@ -331,7 +331,7 @@ function M.setup()
       -- Silently stop pyright if it somehow still attaches
       if client.name == "pyright" then
         vim.schedule(function()
-          vim.lsp.stop_client(client.id, true)
+          client:stop(true)
         end)
         return
       end

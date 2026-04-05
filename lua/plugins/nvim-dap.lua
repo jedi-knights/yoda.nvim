@@ -60,6 +60,34 @@ return {
     end,
   },
 
+  -- Go DAP adapter. Configures Delve automatically so Go debugging works
+  -- without a .vscode/launch.json. Also adds :DapGoTest to debug individual tests.
+  {
+    "leoluz/nvim-dap-go",
+    ft = "go",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "rcarriga/nvim-dap-ui",
+    },
+    keys = {
+      {
+        "<leader>dt",
+        function()
+          require("dap-go").debug_test()
+        end,
+        desc = "Debug: Go Test (nearest)",
+      },
+      {
+        "<leader>dT",
+        function()
+          require("dap-go").debug_last_test()
+        end,
+        desc = "Debug: Go Test (last)",
+      },
+    },
+    opts = {},
+  },
+
   {
     "mfussenegger/nvim-dap",
     dependencies = {
