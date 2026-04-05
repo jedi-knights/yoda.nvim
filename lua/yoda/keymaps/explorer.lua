@@ -27,7 +27,7 @@ map("n", "<leader>eo", function()
   end
 end, { desc = "Explorer: Open (only if closed)" })
 
-map("n", "<leader>ef", function()
+map("n", "<leader>e", function()
   local ok, win_utils = pcall(require, "yoda-window.utils")
   if not ok then
     notify.notify("yoda-window.utils not available", "error")
@@ -43,23 +43,13 @@ map("n", "<leader>ef", function()
   end)
 
   if #all_explorer_wins > 0 then
-    local list_win = nil
-    for _, win_data in ipairs(all_explorer_wins) do
-      if vim.api.nvim_buf_is_valid(win_data.buf) then
-        local ft = vim.bo[win_data.buf].filetype
-        if ft == "snacks_picker_list" then
-          list_win = win_data.win
-          break
-        end
-      end
-    end
-
-    if list_win and vim.api.nvim_win_is_valid(list_win) then
-      local ok_set = pcall(vim.api.nvim_set_current_win, list_win)
-      if not ok_set then
-        notify.notify("Could not focus explorer window", "warn")
-      end
-    end
+    win_utils.close_windows(function(win, buf, buf_name, ft)
+      return ft == "snacks_picker_list"
+        or ft == "snacks_picker_input"
+        or ft == "snacks_layout_box"
+        or ft == "snacks-explorer"
+        or ft == "snacks_explorer"
+    end, true)
     return
   end
 
@@ -69,7 +59,7 @@ map("n", "<leader>ef", function()
   if not success then
     notify.notify("Snacks Explorer could not be opened", "error")
   end
-end, { desc = "Explorer: Focus or open" })
+end, { desc = "Explorer: Toggle" })
 
 map("n", "<leader>ec", function()
   local ok, win_utils = pcall(require, "yoda-window.utils")
@@ -108,7 +98,7 @@ map("n", "<leader>e?", function()
     "Snacks Explorer Keybindings:",
     "",
     "<leader>eo - Open explorer",
-    "<leader>ef - Focus explorer",
+    "<leader>e  - Toggle explorer",
     "<leader>er - Refresh explorer",
     "<leader>ec - Close explorer",
     "<leader>ed - Debug explorer state",
