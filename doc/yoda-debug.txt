@@ -1,0 +1,308 @@
+*yoda-debug.txt*        Yoda.nvim Debugging Crib Sheet
+
+                    YODA.NVIM DEBUGGING CRIB SHEET
+
+Author: Jedi Knights
+Version: 1.0
+License: MIT
+
+==============================================================================
+CONTENTS                                                *yoda-debug-contents*
+
+1. Quick Start .................................. |yoda-debug-quickstart|
+2. Core Keymaps ................................. |yoda-debug-keymaps|
+3. Breakpoints .................................. |yoda-debug-breakpoints|
+4. DAP UI ....................................... |yoda-debug-ui|
+5. Python Debugging ............................. |yoda-debug-python|
+6. Go Debugging ................................. |yoda-debug-go|
+7. Rust Debugging ............................... |yoda-debug-rust|
+8. JavaScript/TypeScript Debugging .............. |yoda-debug-javascript|
+9. Test Debugging ............................... |yoda-debug-tests|
+10. VSCode launch.json .......................... |yoda-debug-vscode|
+11. DAP REPL .................................... |yoda-debug-repl|
+12. Troubleshooting ............................. |yoda-debug-troubleshoot|
+
+==============================================================================
+QUICK START                                          *yoda-debug-quickstart*
+
+Leader key is <Space>.
+
+The fastest path to debugging any file:
+
+    1. Open the file you want to debug.
+    2. Set a breakpoint:          <leader>db
+    3. Start/continue the session: <F5>  or  <leader>dc
+    4. Step through code:          <F10> (over), <F11> (into), <F12> (out)
+    5. Inspect variables:          hover with cursor (virtual text is on)
+    6. Open the full UI:           <leader>du
+    7. Stop the session:           <leader>dq
+
+The DAP UI opens automatically when a session starts and closes when it
+ends. Variable values are shown inline via nvim-dap-virtual-text.
+
+==============================================================================
+CORE KEYMAPS                                          *yoda-debug-keymaps*
+
+These keymaps are available in all filetypes once nvim-dap loads.
+
+F-Key Bindings (IDE convention) ~
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <F5>            Continue / start debug session
+    <F10>           Step over
+    <F11>           Step into
+    <F12>           Step out
+
+Leader Bindings (<leader>d prefix) ~
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <leader>dc      Continue / start debug session
+    <leader>db      Toggle breakpoint
+    <leader>dB      Set conditional breakpoint (prompts for expression)
+    <leader>do      Step over
+    <leader>di      Step into
+    <leader>dO      Step out
+    <leader>dq      Terminate session
+    <leader>du      Toggle DAP UI
+    <leader>dr      Open DAP REPL
+    <leader>dl      Re-run last debug session
+
+==============================================================================
+BREAKPOINTS                                          *yoda-debug-breakpoints*
+
+Toggle breakpoint ~
+    <leader>db      Place or remove a breakpoint on the current line.
+                    A sign appears in the gutter when a breakpoint is set.
+
+Conditional breakpoint ~
+    <leader>dB      Prompts for a condition expression. The debugger will
+                    only pause when the expression evaluates to true.
+                    Example conditions:
+                      i > 10
+                      name == "admin"
+                      len(items) > 0
+
+Breakpoints persist for the lifetime of the Neovim session. They are
+cleared when you close Neovim.
+
+==============================================================================
+DAP UI                                                    *yoda-debug-ui*
+
+The DAP UI (nvim-dap-ui) opens automatically when a debug session starts
+and closes when the session ends or is terminated.
+
+    <leader>du      Manually toggle the DAP UI on or off.
+
+The UI panels show:
+    - Scopes:       local variables and their current values
+    - Breakpoints:  all breakpoints in the session
+    - Stacks:       call stack at the current pause point
+    - Watches:      user-defined watch expressions
+    - Console:      debugger output and program stdout/stderr
+    - REPL:         interactive evaluation
+
+Virtual Text ~
+
+nvim-dap-virtual-text displays variable values inline, right next to the
+code at the current execution point. No action needed — it activates
+automatically during a debug session.
+
+==============================================================================
+PYTHON DEBUGGING                                       *yoda-debug-python*
+
+Adapter: debugpy (installed as a uv global tool)
+Trigger: opening a `.py` file lazy-loads nvim-dap-python
+
+Python-specific keymaps (available in Python buffers):
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <leader>pd      Debug nearest test method (dap-python)
+    <leader>pD      Debug nearest test class (dap-python)
+    <F5>            Launch/continue (generic DAP)
+
+Launch configurations registered automatically:
+    - Launch file                uses the current file
+    - Launch file with arguments prompts for CLI arguments
+    - Debug test method          cursor must be inside a test function
+    - Debug test class           cursor must be inside a test class
+
+Venv resolution ~
+
+The debugger resolves the Python path dynamically at session start:
+    1. Checks for `.venv/bin/python` in the current working directory
+    2. Falls back to `python` on $PATH
+
+This works across multiple Python projects in the same Neovim session —
+each session start re-evaluates the venv.
+
+Test runner: pytest (configured in nvim-dap-python).
+
+==============================================================================
+GO DEBUGGING                                              *yoda-debug-go*
+
+Adapter: Delve (dlv)
+Trigger: opening a `.go` file lazy-loads nvim-dap-go
+
+Go-specific keymaps:
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <leader>dt      Debug nearest Go test
+    <leader>dT      Re-run last Go test debug session
+    <F5>            Launch/continue (generic DAP)
+
+Delve is configured automatically by nvim-dap-go — no
+`.vscode/launch.json` is needed for basic debugging.
+
+==============================================================================
+RUST DEBUGGING                                          *yoda-debug-rust*
+
+Adapter: codelldb (managed by rustaceanvim)
+Trigger: opening a `.rs` file lazy-loads rustaceanvim
+
+Rust-specific keymaps:
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <leader>rd      Start debug via :RustLsp debuggables (picker)
+    <F5>            Launch/continue (generic DAP)
+
+`:RustLsp debuggables` shows a picker of all runnable targets (binaries,
+tests, examples) in the project. Select one to start a debug session.
+
+==============================================================================
+JAVASCRIPT/TYPESCRIPT DEBUGGING                      *yoda-debug-javascript*
+
+Adapter: vscode-js-debug (js-debug-adapter via Mason)
+Trigger: opening a `.js`, `.ts`, `.jsx`, or `.tsx` file
+
+JavaScript-specific keymaps:
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <leader>jd      Start debugger (calls dap.continue())
+    <F5>            Launch/continue (generic DAP)
+
+Launch configurations registered automatically:
+    - Launch file           runs current file with Node.js
+    - Attach                attach to a running Node.js process (picker)
+    - Debug Jest Tests      runs Jest in debug mode (--runInBand)
+    - Launch Chrome         opens Chrome at http://localhost:3000
+
+The adapter supports five debug types: pwa-node, pwa-chrome, pwa-msedge,
+node-terminal, and pwa-extensionHost. All are registered when
+js-debug-adapter is installed via Mason.
+
+==============================================================================
+TEST DEBUGGING                                          *yoda-debug-tests*
+
+Neotest integrates with DAP for debugging individual tests across all
+supported languages.
+
+    Key             Action
+    --------------- ------------------------------------------------
+    <leader>td      Debug nearest test (any language, DAP strategy)
+    <leader>pd      Debug nearest Python test method
+    <leader>pD      Debug nearest Python test class
+    <leader>dt      Debug nearest Go test
+    <leader>dT      Re-run last Go test debug session
+    <leader>rd      Debug Rust (shows debuggables picker)
+
+The <leader>td keymap uses neotest's DAP strategy, which works with any
+configured neotest adapter. Language-specific keymaps may offer additional
+features (e.g., class-level debugging in Python).
+
+Python DAP options for neotest:
+    justMyCode = false       steps into library/framework code
+    console = "integratedTerminal"
+
+==============================================================================
+VSCODE LAUNCH.JSON                                      *yoda-debug-vscode*
+
+If a `.vscode/launch.json` file exists in the project root, it is loaded
+automatically when Neovim starts or when you `:cd` to a new project.
+
+Supported adapter type mappings:
+    launch.json type    Neovim filetype
+    ----------------    ---------------
+    delve               go
+    python              python
+
+Example `.vscode/launch.json`: >json
+    {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "name": "Launch Package",
+          "type": "delve",
+          "request": "launch",
+          "program": "${workspaceFolder}/cmd/server"
+        }
+      ]
+    }
+<
+
+These configurations appear alongside the built-in ones when you start a
+debug session with <F5> or <leader>dc.
+
+==============================================================================
+DAP REPL                                                 *yoda-debug-repl*
+
+    <leader>dr      Open the DAP REPL
+
+The REPL allows interactive evaluation during a paused debug session.
+You can:
+    - Inspect variables:     type the variable name
+    - Evaluate expressions:  type any valid expression
+    - Call functions:         invoke functions in the current scope
+    - Navigate frames:       `.scopes`, `.threads`, `.frames`
+
+Common REPL commands:
+    .exit           close the REPL
+    .c / .continue  continue execution
+    .n / .next      step over
+    .into           step into
+    .out            step out
+    .scopes         show current scopes
+    .threads        list threads
+    .frames         show stack frames
+
+==============================================================================
+TROUBLESHOOTING                                    *yoda-debug-troubleshoot*
+
+Session won't start ~
+    1. Check the adapter is installed:
+       - Python:     `uv tool list` should show debugpy
+       - Go:         `which dlv` should return a path
+       - Rust:       Mason should have codelldb installed
+       - JS/TS:      `:Mason` → js-debug-adapter should be installed
+    2. Check `:DapStatus` for adapter state
+    3. Check `:messages` for error output
+
+No breakpoints hit ~
+    1. Ensure the breakpoint sign is visible in the gutter
+    2. Confirm the code path actually executes that line
+    3. For Python: check you're using the right venv (<leader>pv)
+
+Variables not showing ~
+    1. Ensure nvim-dap-virtual-text is loaded (`:Lazy check`)
+    2. Toggle the DAP UI: <leader>du
+    3. Open the REPL to inspect manually: <leader>dr
+
+Python venv wrong ~
+    1. Check current venv: <leader>pv to select
+    2. Ensure `.venv/` exists in the project root
+    3. The debugger re-resolves on each session start
+
+Useful diagnostic commands ~
+    :DapStatus              show current DAP status
+    :DapShowLog             open DAP log file
+    :DapSetLogLevel DEBUG   enable verbose logging
+    <leader>kd              dump all registered keymaps to a buffer
+    <leader>kc              find keymap conflicts
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
