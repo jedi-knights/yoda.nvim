@@ -6,8 +6,16 @@ local function map(mode, lhs, rhs, opts)
 end
 
 map("n", "<leader>ta", function()
-  require("neotest").run.run(vim.uv.cwd())
-end, { desc = "Test: Run all tests" })
+  local dir = vim.uv.cwd()
+  local ok, snacks = pcall(require, "snacks")
+  if ok then
+    local pickers = snacks.picker.get({ source = "explorer" })
+    if pickers and pickers[1] then
+      dir = pickers[1]:cwd()
+    end
+  end
+  require("neotest").run.run(dir)
+end, { desc = "Test: Run all tests (explorer dir)" })
 
 map("n", "<leader>tn", function()
   require("neotest").run.run()

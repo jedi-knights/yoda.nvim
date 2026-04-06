@@ -103,6 +103,9 @@ return {
         enabled = true,
         auto_close = true,
       },
+      image = {
+        enabled = false, -- Disabled: causes treesitter range errors on picker/dashboard buffers
+      },
       input = {
         enabled = true,
         win = {
@@ -118,7 +121,15 @@ return {
         vim.notify("zoxide is not installed. See: https://github.com/ajeetdsouza/zoxide", vim.log.levels.WARN)
         return
       end
-      require("snacks").picker.zoxide()
+      require("snacks").picker.zoxide({
+        confirm = function(picker, item)
+          picker:close()
+          if item then
+            vim.cmd("cd " .. vim.fn.fnameescape(item.file))
+            require("snacks").dashboard()
+          end
+        end,
+      })
     end, { desc = "[S]earch [P]rojects (zoxide)" })
 
     -- Global autocmd to handle file opening from explorer context
