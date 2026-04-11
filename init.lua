@@ -27,6 +27,36 @@ require("options")
 require("lazy-plugins")
 
 -- ============================================================================
+-- Neovim 0.12 UI2
+-- ============================================================================
+
+-- Enable the built-in ui2 module for floating cmdline and styled messages.
+-- This replaces noice.nvim with native Neovim functionality.
+--
+-- NOTE: vim._core.ui2 is an internal Neovim API (underscore-prefixed).
+-- It is available in Neovim 0.12 but is not yet a stable public API —
+-- it may change or be renamed in future releases.
+local ok_ui2, ui2 = pcall(require, "vim._core.ui2")
+if ok_ui2 then
+  ui2.enable({
+    msg = {
+      targets = "msg",
+      msg = {
+        timeout = 2500,
+      },
+    },
+  })
+
+  -- ui2 provides a floating cmdline overlay, so hide the built-in cmdline.
+  vim.opt.cmdheight = 0
+
+  -- With ui2 active, set the notify backend to native (vim.notify works directly)
+  if not vim.g.yoda_notify_backend then
+    vim.g.yoda_notify_backend = "native"
+  end
+end
+
+-- ============================================================================
 -- Yoda Modules + Environment Setup
 -- ============================================================================
 
