@@ -5,101 +5,109 @@
 ==============================================================================
 CONTENTS                                              *yoda-ui-contents*
 
-1. Noice.nvim Integration .................. |yoda-ui-noice|
-2. Compatibility Notes ..................... |yoda-ui-compat|
-3. Noice Commands .......................... |yoda-ui-noice-commands|
-4. Troubleshooting ......................... |yoda-ui-trouble|
+1. UI2 Integration .......................... |yoda-ui-ui2|
+2. Snacks Notifier .......................... |yoda-ui-notifier|
+3. Compatibility Notes ...................... |yoda-ui-compat|
+4. Troubleshooting .......................... |yoda-ui-trouble|
 
 ==============================================================================
-NOICE.NVIM INTEGRATION                                   *yoda-ui-noice*
+UI2 INTEGRATION                                           *yoda-ui-ui2*
 
-Yoda.nvim includes noice.nvim for an enhanced UI. Noice replaces several
-built-in Neovim UI surfaces:
+Yoda.nvim uses Neovim 0.12's built-in `vim._core.ui2` module for an
+enhanced UI. This replaces the previous noice.nvim dependency with
+native functionality:
 
-  • Command line    Floating popup instead of the bottom bar
-  • Messages        Styled message display with history
-  • Popups          Enhanced popup menus and dialogs
-  • Notifications   Styled notifications with icons
+  * Command line    Floating overlay when `cmdheight = 0`
+  * Messages        Styled message display with auto-dismiss
+  * Borders         Global `winborder = "rounded"` for all floats
 
-Noice is used internally for:
-  • Environment mode notifications
-  • Python virtual environment warnings
-  • General plugin notifications
+The ui2 setup lives in `init.lua` (after lazy-plugins loads) and is
+conditionally enabled only on Neovim 0.12+.
 
-==============================================================================
-COMPATIBILITY NOTES                                     *yoda-ui-compat*
-
-These Neovim options conflict with Noice and are intentionally not set:
-
-lazyredraw (`nolazyredraw`)~
-
-`lazyredraw` is intended for scripts and macros, not interactive use.
-Noice will display incorrectly if it is set. Yoda.nvim does not set it.
->
-    -- DO NOT set this — it breaks Noice rendering
-    -- vim.opt.lazyredraw = true
+Configuration:
+>lua
+    require("vim._core.ui2").enable({
+      msg = {
+        targets = "msg",
+        msg = { timeout = 2500 },
+      },
+    })
 <
+
+==============================================================================
+SNACKS NOTIFIER                                       *yoda-ui-notifier*
+
+`vim.notify()` calls are rendered by the snacks.nvim notifier. This
+handles all plugin notifications, environment messages, and errors.
+
+To dismiss active notifications, use snacks' built-in dismiss.
+
+==============================================================================
+COMPATIBILITY NOTES                                    *yoda-ui-compat*
+
+These options work together with ui2:
 
 cmdheight~
 
-Noice manages command-line height automatically. Yoda.nvim uses:
+Defaults to 1 in `options.lua`. When ui2 loads (Neovim 0.12+), it
+overrides to 0 so the floating cmdline overlay appears:
 >
-    vim.opt.cmdheight = 1   -- Minimal; Noice adjusts as needed
+    -- options.lua (safe default for pre-0.12)
+    vim.opt.cmdheight = 1
+
+    -- init.lua (overrides when ui2 is available)
+    vim.opt.cmdheight = 0
+<
+
+winborder~
+
+Global rounded borders for all floating windows (Neovim 0.12+):
+>
+    vim.opt.winborder = "rounded"
 <
 
 showmode~
 
-Noice provides its own mode indicator. The built-in is disabled:
+The built-in mode indicator is disabled (statusline shows the mode):
 >
-    vim.opt.showmode = false   -- Noice shows the mode instead
+    vim.opt.showmode = false
 <
 
-Safe Performance Options~
+lazyredraw~
 
-These are safe to use alongside Noice:
+Do NOT set `lazyredraw` — it can interfere with ui2 rendering:
 >
-    vim.opt.updatetime = 250   -- Safe for Noice responsiveness
-    vim.opt.timeoutlen = 500   -- Safe for Noice key sequences
+    -- vim.opt.lazyredraw = true   -- DO NOT set this
 <
 
 ==============================================================================
-NOICE COMMANDS                                    *yoda-ui-noice-commands*
+TROUBLESHOOTING                                        *yoda-ui-trouble*
 
-    :Noice              Show Noice status and recent messages
-    :NoiceDismiss       Dismiss active notifications
-    :NoiceStats         Show internal Noice statistics
-    :NoiceHistory       Browse message history
+ui2 not loading~
 
-==============================================================================
-TROUBLESHOOTING                                         *yoda-ui-trouble*
-
-Noice not loading~
+Confirm you are on Neovim 0.12+:
 >
-    :lua print(require("noice"))    " Confirm module loads
-    :Lazy                           " Check plugin status
+    :lua print(vim.version().minor)   " Should be >= 12
 <
 
-Display glitches~
-
-  1. Check terminal supports true color:
+Check that the module is available:
 >
-       :lua print(vim.opt.termguicolors:get())
-<
-  2. Check for conflicting options:
->
-       :lua print(vim.opt.lazyredraw:get())   " Should be false
-       :lua print(vim.opt.cmdheight:get())    " Should be 1
-<
-  3. Reset Noice state:
->
-       :NoiceDismiss
-       :NoiceStats
+    :lua print(pcall(require, "vim._core.ui2"))   " Should be true
 <
 
-Performance issues with Noice~
+Floating cmdline not appearing~
 
-Identify which Noice feature is slow by checking `:NoiceStats`, then
-disable just that feature in `lua/plugins/noice.lua`.
+Verify cmdheight is 0:
+>
+    :lua print(vim.opt.cmdheight:get())   " Should be 0
+<
+
+Notifications not displaying~
+
+Confirm snacks notifier is enabled:
+>
+    :lua print(require("snacks").config.notifier.enabled)
+<
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:
