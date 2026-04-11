@@ -11,7 +11,7 @@ CONTENTS                                                *yoda-keymaps-contents*
 
 1. General Navigation ...................... |yoda-keymaps-navigation|
 2. File Explorer ........................... |yoda-keymaps-explorer|
-3. Search & Find (fzf-lua) ................. |yoda-keymaps-search|
+3. Search & Find (mini.pick) ............... |yoda-keymaps-search|
 4. LSP & Code Intelligence ................. |yoda-keymaps-lsp|
 5. AI & Code Assistance .................... |yoda-keymaps-ai|
 6. Testing ................................. |yoda-keymaps-testing|
@@ -59,16 +59,16 @@ In the Explorer ~
     l                      Open directory or file
 
 ==============================================================================
-SEARCH & FIND (fzf-lua)                               *yoda-keymaps-search*
+SEARCH & FIND (mini.pick)                              *yoda-keymaps-search*
 
-    <leader>ff      (n)    Find files in current directory
-    <leader>fg      (n)    Live grep (search text across files)
-    <leader>fr      (n)    Recent files
-    <leader>fb      (n)    Find open buffers
-    <leader>fR      (n)    Document symbols (LSP, current file)
-    <leader>fS      (n)    Workspace symbols (LSP, all files)
-    <leader>fD      (n)    Browse all diagnostics
-    <leader>fG      (n)    Find git-tracked files
+    <leader><leader> (n)   Find files in current directory
+    <leader>/       (n)    Live grep (search text across files)
+    <leader>sh      (n)    Search help tags
+    <leader>sk      (n)    Search keymaps
+    <leader>s.      (n)    Search recent files
+    <leader>sd      (n)    Search diagnostics
+    <leader>sb      (n)    Search open buffers
+    <leader>sc      (n)    Search git changed files
 
 ==============================================================================
 LSP & CODE INTELLIGENCE                                   *yoda-keymaps-lsp*
@@ -172,10 +172,10 @@ General ~
 
 Keymap Discovery ~
     <leader>kk      (n)    Show all leader keymaps (float window)
-    <leader>sk      (n)    Toggle Showkeys screencaster display
+    <leader>sK      (n)    Toggle Showkeys screencaster display
 
-Noice / Notifications ~
-    <leader>nm      (n)    Show message history (Noice)
+Notifications ~
+    <leader>nm      (n)    Show message history
     <leader>nl      (n)    Show last message
     <leader>nh      (n)    Show notification history
     <leader>nd      (n)    Dismiss all notifications

@@ -108,7 +108,7 @@ Yoda.nvim uses ripgrep and fd for file search. Install both:
     sudo pacman -S ripgrep fd
 <
 
-These tools are required for fzf-lua to work at full speed.
+These tools are required for mini.pick to work at full speed.
 
 ==============================================================================
 LSP PERFORMANCE                                          *yoda-perf-lsp*

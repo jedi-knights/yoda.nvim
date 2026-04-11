@@ -71,7 +71,7 @@ File Organization:~
     ├── config_loader.lua     YAML/Lua config loading
     ├── environment.lua       Environment detection (home/work)
     ├── lsp.lua               LSP setup and server registration
-    ├── picker_handler.lua    Abstract picker (snacks/fzf-lua)
+    ├── picker_handler.lua    Abstract picker (snacks/mini.pick)
     ├── python_venv.lua       Python virtualenv detection
     └── [other modules]       Specialised functionality
 <
@@ -101,7 +101,7 @@ Extensible without modification:
     vim.g.yoda_test_config = {
       environments = { custom_envs },
     }
-    vim.g.yoda_picker_backend = "telescope"
+    vim.g.yoda_picker_backend = "mini.pick"
 <
 
 Liskov Substitution:~
@@ -117,7 +117,7 @@ Focused, minimal interfaces:
 Dependency Inversion:~
 Abstract dependencies:
 >
-    -- picker_handler abstracts snacks/fzf-lua from call sites
+    -- picker_handler abstracts snacks/mini.pick from call sites
     local picker = require("yoda.picker_handler")
     picker.select(items, opts, callback)
 <

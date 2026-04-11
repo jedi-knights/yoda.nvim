@@ -211,8 +211,9 @@ Overriding Default Keymaps~
 Override existing keymaps by redefining them:
 >
     -- Override default file finder
-    vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>", 
-        { desc = "Find files with Telescope" })
+    vim.keymap.set("n", "<leader><leader>", function()
+      require("mini.pick").builtin.files()
+    end, { desc = "Find files with mini.pick" })
 <
 
 Which-Key Integration~
@@ -267,14 +268,14 @@ Configure existing plugins:
 >
     -- Override plugin settings
     {
-      "nvim-telescope/telescope.nvim",
-      opts = {
-        defaults = {
-          layout_config = {
-            horizontal = { width = 0.9 }
-          }
-        }
-      }
+      "echasnovski/mini.pick",
+      config = function()
+        require("mini.pick").setup({
+          window = {
+            config = { border = "rounded" },
+          },
+        })
+      end
     }
 <
 
@@ -400,11 +401,11 @@ Override indentation levels if your YAML schema differs:
 Picker Backend~
 
 Override the automatic picker backend detection
-(default order: snacks → fzf-lua → native):
+(default order: snacks → mini.pick → native):
 >
-    vim.g.yoda_picker_backend = "snacks"   -- force snacks
-    vim.g.yoda_picker_backend = "fzf-lua"  -- force fzf-lua
-    vim.g.yoda_picker_backend = "native"   -- force vim.ui.select
+    vim.g.yoda_picker_backend = "snacks"     -- force snacks
+    vim.g.yoda_picker_backend = "mini.pick"  -- force mini.pick
+    vim.g.yoda_picker_backend = "native"     -- force vim.ui.select
 <
 
 Large File Handling~

@@ -81,7 +81,7 @@ vim.opt.wildmode = "longest:full,full"
 vim.opt.laststatus = 3
 vim.opt.showcmd = true
 vim.opt.cmdheight = 1 -- init.lua overrides to 0 when ui2 is available (Neovim 0.12+)
-vim.opt.showtabline = 2 -- Always show bufferline/tabline
+vim.opt.showtabline = 0 -- Hide tabline (use :bnext / :bprev to navigate buffers)
 vim.opt.confirm = true -- ask to save unsaved changes instead of refusing to quit
 vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
 vim.opt.pumborder = "rounded" -- bordered completion popup menu (Neovim 0.12+)
@@ -129,7 +129,7 @@ vim.opt.foldlevel = 99
 -- Backend overrides (optional — adapters auto-detect if not set).
 -- Must be set here (before lazy-plugins loads) to take effect.
 -- Notify backends:  "snacks" | "native"
--- Picker backends:  "snacks" | "telescope" | "native"
+-- Picker backends:  "snacks" | "mini.pick" | "native"
 -- vim.g.yoda_notify_backend = "snacks"
 -- vim.g.yoda_picker_backend = "snacks"
 
