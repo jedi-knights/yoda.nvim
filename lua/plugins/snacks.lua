@@ -30,9 +30,30 @@ return {
                 require("snacks").explorer.open()
               end,
             },
-            { icon = "🔍", key = "f", desc = "Find Files", action = "<cmd>FzfLua files<CR>" },
-            { icon = "🔎", key = "g", desc = "Find Text", action = "<cmd>FzfLua live_grep<CR>" },
-            { icon = "📋", key = "r", desc = "Recent Files", action = "<cmd>FzfLua oldfiles<CR>" },
+            {
+              icon = "🔍",
+              key = "f",
+              desc = "Find Files",
+              action = function()
+                require("mini.pick").builtin.files()
+              end,
+            },
+            {
+              icon = "🔎",
+              key = "g",
+              desc = "Find Text",
+              action = function()
+                require("mini.pick").builtin.grep_live()
+              end,
+            },
+            {
+              icon = "📋",
+              key = "r",
+              desc = "Recent Files",
+              action = function()
+                require("mini.extra").pickers.oldfiles()
+              end,
+            },
             { icon = "🔧", key = "l", desc = "Lazy", action = "<cmd>Lazy<CR>" },
             { icon = "❌", key = "q", desc = "Quit", action = "<cmd>qa<CR>" },
           },
@@ -96,7 +117,7 @@ return {
       },
       picker = {
         enabled = true,
-        -- Keep ui_select off — fzf-lua is the primary picker for vim.ui.select
+        -- Keep ui_select off — mini.pick is the primary picker
         ui_select = false,
       },
       terminal = {

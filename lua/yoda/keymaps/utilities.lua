@@ -98,7 +98,7 @@ map("n", "<leader>kk", function()
   end
 end, { desc = "Util: Show leader keymaps in normal mode" })
 
-map("n", "<leader>sk", function()
+map("n", "<leader>sK", function()
   local success = pcall(vim.cmd, "ShowkeysToggle")
   if not success then
     local alt_success = pcall(vim.cmd, "Showkeys")
@@ -108,6 +108,6 @@ map("n", "<leader>sk", function()
   end
 end, { desc = "Util: Toggle showkeys display" })
 
-map("n", "<leader>nm", function()
+map("n", "<leader>n", function()
   require("yoda.messages_float").show()
 end, { desc = "Util: Show message history (floating)" })

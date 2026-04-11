@@ -31,6 +31,12 @@ map("n", "<leader>vt", function()
   })
 end, { desc = "Terminal: Floating shell - Open zsh terminal in floating window" })
 
+-- Navigate out of terminal mode with Ctrl+w + direction
+map("t", "<C-w>h", "<C-\\><C-n><C-w>h", { desc = "Window: Move left from terminal" })
+map("t", "<C-w>j", "<C-\\><C-n><C-w>j", { desc = "Window: Move down from terminal" })
+map("t", "<C-w>k", "<C-\\><C-n><C-w>k", { desc = "Window: Move up from terminal" })
+map("t", "<C-w>l", "<C-\\><C-n><C-w>l", { desc = "Window: Move right from terminal" })
+
 map("n", "<leader>vr", function()
   local function get_python()
     local cwd = vim.uv.cwd()
