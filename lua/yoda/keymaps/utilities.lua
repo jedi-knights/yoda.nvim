@@ -109,5 +109,5 @@ map("n", "<leader>sk", function()
 end, { desc = "Util: Toggle showkeys display" })
 
 map("n", "<leader>nm", function()
-  vim.cmd("messages")
-end, { desc = "Util: Show message history" })
+  require("yoda.messages_float").show()
+end, { desc = "Util: Show message history (floating)" })
