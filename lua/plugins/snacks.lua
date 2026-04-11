@@ -92,7 +92,7 @@ return {
         end,
       },
       notifier = {
-        enabled = false, -- Disabled: Using Noice for notifications to avoid vim.notify conflicts
+        enabled = true, -- Handles vim.notify display (replaces noice.nvim)
       },
       picker = {
         enabled = true,

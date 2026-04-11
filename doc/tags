@@ -217,9 +217,9 @@ yoda-troubleshooting-contents	yoda-troubleshooting.txt	/*yoda-troubleshooting-co
 yoda-troubleshooting.txt	yoda-troubleshooting.txt	/*yoda-troubleshooting.txt*
 yoda-ui-compat	yoda-ui.txt	/*yoda-ui-compat*
 yoda-ui-contents	yoda-ui.txt	/*yoda-ui-contents*
-yoda-ui-noice	yoda-ui.txt	/*yoda-ui-noice*
-yoda-ui-noice-commands	yoda-ui.txt	/*yoda-ui-noice-commands*
+yoda-ui-notifier	yoda-ui.txt	/*yoda-ui-notifier*
 yoda-ui-trouble	yoda-ui.txt	/*yoda-ui-trouble*
+yoda-ui-ui2	yoda-ui.txt	/*yoda-ui-ui2*
 yoda-ui.txt	yoda-ui.txt	/*yoda-ui.txt*
 yoda-vim-essentials-big-picture	yoda-vim-essentials.txt	/*yoda-vim-essentials-big-picture*
 yoda-vim-essentials-commands	yoda-vim-essentials.txt	/*yoda-vim-essentials-commands*
