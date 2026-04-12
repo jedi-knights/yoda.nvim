@@ -1,15 +1,18 @@
 # Makefile for Yoda.nvim
 
-.PHONY: test test-verbose test-watch lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean help
+# Path to the neospec binary. Override with: make test NEOSPEC=/path/to/neospec
+NEOSPEC ?= neospec
+
+.PHONY: test test-verbose test-watch lint format benchmark benchmark-startup benchmark-buffers benchmark-files benchmark-memory benchmark-lsp benchmark-clean install help
 
 # Default target
 help:
 	@echo "Yoda.nvim Development Commands"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make test              - Run all tests (optimized, excludes slow tests)"
-	@echo "  make test-verbose      - Run tests with detailed output (for CI)"
-	@echo "  make test-watch        - Run tests in watch mode"
+	@echo "  make test              - Run all tests with coverage (neospec)"
+	@echo "  make test-verbose      - Run tests with detailed diagnostic output"
+	@echo "  make test-watch        - Run tests in watch mode (not yet implemented)"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint              - Run linter (stylua --check)"
@@ -25,24 +28,33 @@ help:
 	@echo "  make benchmark-clean   - Clean up benchmark files"
 	@echo ""
 	@echo "Development:"
+	@echo "  make install           - Install dev dependencies (latest neospec)"
 	@echo "  make clean             - Clean generated files"
 	@echo "  make help              - Show this help"
 
-# Run tests (optimized, excludes slow tests)
+# Install development dependencies (always fetches the latest neospec)
+install:
+	@echo "Installing neospec (latest)..."
+	@GOPROXY=direct go install github.com/jedi-knights/neospec/cmd/neospec@latest
+	@echo "Done. Run 'make test' to verify."
+
+# Run tests with coverage (reads neospec.toml for all settings)
 test:
-	@echo "Running tests..."
-	@./scripts/run_tests_optimized.sh tests/minimal_init_fast.lua
+	@command -v $(NEOSPEC) >/dev/null 2>&1 || { \
+		echo "Error: neospec not found in PATH."; \
+		echo "Install: go install github.com/jedi-knights/neospec/cmd/neospec@latest"; \
+		exit 1; \
+	}
+	@$(NEOSPEC) run
 
 # Verbose test runner for CI/debugging
 test-verbose:
-	@echo "Running tests with detailed output..."
-	@./scripts/run_tests_optimized.sh tests/minimal_init_fast.lua 2>&1 | tee /tmp/yoda_test_output.txt
-	@echo ""
-	@echo "================================================================================"
-	@echo "AGGREGATE TEST RESULTS"
-	@echo "================================================================================"
-	@./scripts/test_summary.sh /tmp/yoda_test_output.txt
-	@echo "================================================================================"
+	@command -v $(NEOSPEC) >/dev/null 2>&1 || { \
+		echo "Error: neospec not found in PATH."; \
+		echo "Install: go install github.com/jedi-knights/neospec/cmd/neospec@latest"; \
+		exit 1; \
+	}
+	@$(NEOSPEC) run --verbose
 
 # Lint code with stylua
 lint:
@@ -81,9 +93,10 @@ benchmark-clean:
 	@echo "Cleaning benchmark files..."
 	@./scripts/benchmark_performance.sh clean
 
-# Clean generated files  
+# Clean generated files
 clean:
 	@echo "Cleaning generated files..."
 	@rm -f startup.log
 	@rm -f /tmp/yoda_test_output.txt
-	@echo "✅ Cleanup complete"
+	@rm -rf coverage/
+	@echo "Done."

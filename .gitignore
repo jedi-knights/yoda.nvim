@@ -50,3 +50,6 @@ node_modules/
 # Benchmark temporary files
 benchmarks/temp/
 
+# Test coverage output
+coverage/
+

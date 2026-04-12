@@ -48,8 +48,13 @@ describe("integrations.gitsigns", function()
     end)
   end)
 
-  describe("refresh()", function()
-    it("calls gitsigns.refresh when available", function()
+  describe("refresh_batched()", function()
+    it("does nothing when gitsigns is not available", function()
+      package.loaded.gitsigns = nil
+      gitsigns.refresh_batched() -- should not error
+    end)
+
+    it("calls gitsigns.refresh after the batch window elapses", function()
       local refresh_called = false
       package.loaded.gitsigns = {
         refresh = function()
@@ -57,199 +62,101 @@ describe("integrations.gitsigns", function()
         end,
       }
 
-      gitsigns.refresh()
+      gitsigns.refresh_batched()
 
-      -- Wait for vim.schedule
-      vim.wait(100, function()
+      -- Wait longer than the 200ms batch window
+      vim.wait(300, function()
         return refresh_called
       end)
 
       assert.is_true(refresh_called)
     end)
 
-    it("does nothing when gitsigns is not available", function()
-      package.loaded.gitsigns = nil
-      gitsigns.refresh() -- Should not error
-    end)
-
-    it("handles refresh errors gracefully", function()
+    it("handles errors in gitsigns.refresh gracefully", function()
       package.loaded.gitsigns = {
         refresh = function()
-          error("refresh error")
+          error("simulated refresh error")
         end,
       }
 
-      gitsigns.refresh() -- Should not throw
+      gitsigns.refresh_batched()
 
-      -- Wait for vim.schedule
-      vim.wait(100)
-    end)
-  end)
-
-  describe("refresh_debounced()", function()
-    it("calls gitsigns.refresh with debouncing", function()
-      local refresh_count = 0
-      package.loaded.gitsigns = {
-        refresh = function()
-          refresh_count = refresh_count + 1
-        end,
-      }
-      vim.bo.buftype = ""
-
-      -- Call multiple times rapidly
-      gitsigns.refresh_debounced()
-      gitsigns.refresh_debounced()
-      gitsigns.refresh_debounced()
-
-      -- Wait for debounce delay
-      vim.wait(200, function()
-        return refresh_count > 0
-      end)
-
-      -- Should only refresh once due to debouncing
-      assert.equals(1, refresh_count)
-    end)
-
-    it("does nothing when gitsigns is not available", function()
-      package.loaded.gitsigns = nil
-      vim.bo.buftype = ""
-      gitsigns.refresh_debounced() -- Should not error
-    end)
-
-    it("skips refresh for special buffer types", function()
-      local refresh_called = false
-      package.loaded.gitsigns = {
-        refresh = function()
-          refresh_called = true
-        end,
-      }
-      vim.bo.buftype = "nofile"
-
-      gitsigns.refresh_debounced()
-
-      -- Wait to ensure no refresh happens
-      vim.wait(200)
-      assert.is_false(refresh_called)
-    end)
-
-    it("cancels pending refresh when called again", function()
-      local refresh_count = 0
-      package.loaded.gitsigns = {
-        refresh = function()
-          refresh_count = refresh_count + 1
-        end,
-      }
-      vim.bo.buftype = ""
-
-      gitsigns.refresh_debounced()
-      vim.wait(50) -- Wait less than debounce delay
-      gitsigns.refresh_debounced()
-
-      -- Wait for full debounce delay
-      vim.wait(200, function()
-        return refresh_count > 0
-      end)
-
-      -- Should only refresh once
-      assert.equals(1, refresh_count)
-    end)
-
-    it("handles refresh errors gracefully", function()
-      package.loaded.gitsigns = {
-        refresh = function()
-          error("refresh error")
-        end,
-      }
-      vim.bo.buftype = ""
-
-      gitsigns.refresh_debounced()
-
-      -- Wait for debounce and schedule
-      vim.wait(200)
-      -- Should not throw error
+      -- Wait for batch window + schedule; should not propagate the error
+      vim.wait(300)
     end)
   end)
 
   describe("reset_timers()", function()
-    it("cancels pending refresh timers", function()
+    it("cancels a pending batch timer before it fires", function()
       local refresh_count = 0
       package.loaded.gitsigns = {
         refresh = function()
           refresh_count = refresh_count + 1
         end,
       }
-      vim.bo.buftype = ""
 
-      gitsigns.refresh_debounced()
+      gitsigns.refresh_batched()
       gitsigns.reset_timers()
 
-      -- Wait to ensure no refresh happens
-      vim.wait(200)
+      -- Wait past the batch window; timer was cancelled so no refresh should occur
+      vim.wait(300)
       assert.equals(0, refresh_count)
     end)
 
     it("can be called multiple times safely", function()
       gitsigns.reset_timers()
       gitsigns.reset_timers()
-      -- Should not error
+      -- should not error
     end)
 
-    it("handles already stopped timers gracefully", function()
+    it("handles already-completed timers gracefully", function()
       package.loaded.gitsigns = { refresh = function() end }
-      vim.bo.buftype = ""
 
-      gitsigns.refresh_debounced()
-      vim.wait(200) -- Let timer complete
-      gitsigns.reset_timers() -- Should not error
+      gitsigns.refresh_batched()
+      vim.wait(300) -- let the batch timer complete naturally
+      gitsigns.reset_timers() -- should not error on already-done timer
     end)
   end)
 
   describe("integration", function()
-    it("works with real vim.schedule and timers", function()
-      local refresh_sequence = {}
+    it("triggers exactly one refresh after the batch window", function()
+      local refresh_called = false
       package.loaded.gitsigns = {
         refresh = function()
-          table.insert(refresh_sequence, "refresh")
+          refresh_called = true
         end,
       }
-      vim.bo.buftype = ""
 
-      -- Call refresh
-      table.insert(refresh_sequence, "start")
-      gitsigns.refresh()
+      gitsigns.refresh_batched()
 
-      -- Wait for schedule
-      vim.wait(100, function()
-        return #refresh_sequence > 1
+      vim.wait(300, function()
+        return refresh_called
       end)
 
-      table.insert(refresh_sequence, "end")
-
-      assert.same({ "start", "refresh", "end" }, refresh_sequence)
+      assert.is_true(refresh_called)
     end)
 
-    it("debounced refresh prevents flickering from rapid calls", function()
-      local refresh_times = {}
+    it("deduplicates rapid calls within the batch window", function()
+      local refresh_count = 0
       package.loaded.gitsigns = {
         refresh = function()
-          table.insert(refresh_times, vim.uv.hrtime())
+          refresh_count = refresh_count + 1
         end,
       }
-      vim.bo.buftype = ""
 
-      -- Simulate rapid file changes
-      for i = 1, 5 do
-        gitsigns.refresh_debounced()
-        vim.wait(20) -- Less than debounce delay
+      -- Fire five times within the batch window
+      for _ = 1, 5 do
+        gitsigns.refresh_batched()
+        vim.wait(20) -- well within the 200ms window
       end
 
-      -- Wait for debounce to complete
-      vim.wait(200, function()
-        return #refresh_times > 0
+      -- Wait for the batch to fire and schedule to complete
+      vim.wait(300, function()
+        return refresh_count > 0
       end)
 
-      -- Should only refresh once despite 5 calls
-      assert.equals(1, #refresh_times)
+      -- Same buffer deduplicates to a single refresh
+      assert.equals(1, refresh_count)
     end)
   end)
 end)

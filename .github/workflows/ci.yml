@@ -33,25 +33,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install Neovim
-        uses: rhysd/action-setup-vim@v1
-        with:
-          neovim: true
-          version: stable
-
-      - name: Show Neovim version
-        run: nvim --version
-
       - name: Run tests
-        run: make test-verbose
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
+        uses: jedi-knights/neospec@v0.1.4
         with:
-          name: test-results
-          path: /tmp/yoda_test_output.txt
-          if-no-files-found: warn
+          verbose: "true"
+          test-patterns: "tests/unit/**/*_spec.lua"
 
   validate:
     name: Validate
