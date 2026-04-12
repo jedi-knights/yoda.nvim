@@ -1,0 +1,79 @@
+name: Badge
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  badge:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+
+      - name: Run tests and collect coverage
+        id: neospec
+        uses: jedi-knights/neospec@v0
+        with:
+          formats: console,lcov
+          test-patterns: "tests/unit/**/*_spec.lua"
+
+      - name: Generate HTML coverage report
+        run: |
+          sudo apt-get install -y --quiet lcov
+          genhtml coverage/lcov.info -o htmlcov/ --quiet
+        shell: bash
+
+      - name: Update coverage badge
+        run: |
+          PCT="${{ steps.neospec.outputs.coverage-percentage }}"
+          if [ -z "$PCT" ]; then
+            echo "No coverage percentage output, skipping badge update"
+            exit 0
+          fi
+          PCT_INT="${PCT%.*}"
+          if [ "$PCT_INT" -ge 90 ]; then COLOR="brightgreen"
+          elif [ "$PCT_INT" -ge 80 ]; then COLOR="green"
+          elif [ "$PCT_INT" -ge 70 ]; then COLOR="yellow"
+          elif [ "$PCT_INT" -ge 60 ]; then COLOR="orange"
+          else COLOR="red"
+          fi
+          URL_PCT=$(printf '%s' "$PCT" | sed 's/\./%2E/g')
+          sed -i "s|img\.shields\.io/badge/coverage-[^\"]*|img.shields.io/badge/coverage-${URL_PCT}%25-${COLOR}|" README.md
+        shell: bash
+
+      - name: Commit badge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet README.md || (git add README.md && git commit -m "chore: update coverage badge [skip ci]" && git push)
+        shell: bash
+
+      - name: Upload Pages artifact
+        if: always()
+        id: upload-artifact
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: htmlcov/
+
+      - name: Deploy to GitHub Pages
+        if: always() && steps.upload-artifact.outcome == 'success'
+        id: deploy
+        uses: actions/deploy-pages@v5
