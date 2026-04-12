@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   badge:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
@@ -56,7 +60,7 @@ jobs:
           else COLOR="red"
           fi
           URL_PCT=$(printf '%s' "$PCT" | sed 's/\./%2E/g')
-          sed -i "s|img\.shields\.io/badge/coverage-[^\"]*|img.shields.io/badge/coverage-${URL_PCT}%25-${COLOR}|" README.md
+          sed -i "s|img\.shields\.io/badge/Coverage-[^\"]*|img.shields.io/badge/Coverage-${URL_PCT}%25-${COLOR}|" README.md
         shell: bash
 
       - name: Commit badge
