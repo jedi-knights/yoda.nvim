@@ -35,7 +35,7 @@ help:
 # Install development dependencies (always fetches the latest neospec)
 install:
 	@echo "Installing neospec (latest)..."
-	@go install github.com/jedi-knights/neospec/cmd/neospec@latest
+	@GOPROXY=direct go install github.com/jedi-knights/neospec/cmd/neospec@latest
 	@echo "Done. Run 'make test' to verify."
 
 # Run tests with coverage (reads neospec.toml for all settings)
