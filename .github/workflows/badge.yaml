@@ -38,7 +38,7 @@ jobs:
       - name: Generate HTML coverage report
         run: |
           sudo apt-get install -y --quiet lcov
-          genhtml coverage/lcov.info -o htmlcov/ --quiet
+          genhtml coverage/lcov.info -o htmlcov/ --quiet --ignore-errors source
         shell: bash
 
       - name: Update coverage badge
