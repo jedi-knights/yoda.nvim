@@ -1,0 +1,5 @@
+neovim_version = "stable"
+test_patterns  = ["tests/unit/**/*_spec.lua"]
+coverage_dir   = "coverage"
+formats        = ["console", "lcov"]
+init_file      = "tests/minimal_init_fast.lua"
