@@ -37,6 +37,7 @@ jobs:
         uses: jedi-knights/neospec@v0.1.4
         with:
           verbose: "true"
+          test-patterns: "tests/unit/**/*_spec.lua"
 
   validate:
     name: Validate
