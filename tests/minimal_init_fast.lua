@@ -171,6 +171,19 @@ package.preload["yoda-logging"] = function()
   }
 end
 
+package.preload["yoda-logging.logger"] = function()
+  local noop = function() end
+  return {
+    trace = noop,
+    debug = noop,
+    info = noop,
+    warn = noop,
+    error = noop,
+    set_strategy = noop,
+    set_level = noop,
+  }
+end
+
 package.preload["yoda-logging.config"] = function()
   return {
     LEVELS = {
