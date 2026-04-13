@@ -16,7 +16,6 @@
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/badge.yaml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/badge.yaml/badge.svg" alt="Badge"></a>
   <img src="https://img.shields.io/badge/Tests-191%20passing-brightgreen" alt="Tests">
-  <img src="https://img.shields.io/badge/quality-15%2F15%20★-gold" alt="Code Quality">
   <a href="https://jedi-knights.github.io/yoda.nvim/"><img src="https://img.shields.io/badge/Coverage-100%2E0%25-brightgreen" alt="Coverage"></a>
 </p>
 
