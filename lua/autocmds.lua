@@ -57,7 +57,7 @@ autocmd("TextYankPost", {
   desc = "Highlight yanked text briefly",
   callback = function()
     if vim.api.nvim_buf_line_count(0) < 1000 then
-      vim.highlight.on_yank({ timeout = 50 })
+      vim.hl.on_yank({ timeout = 50 })
     end
   end,
 })
@@ -136,6 +136,14 @@ if ok_timer then
   end
 else
   vim.notify("[yoda] Failed to load yoda.timer_manager: " .. tostring(timer_manager), vim.log.levels.WARN)
+end
+
+-- Register VimLeavePre ShaDa write to prevent "file already exists" warnings.
+local ok_session, session = pcall(require, "yoda.session")
+if ok_session then
+  session.setup()
+else
+  vim.notify("[yoda] Failed to load yoda.session: " .. tostring(session), vim.log.levels.WARN)
 end
 
 if ok_fd then
