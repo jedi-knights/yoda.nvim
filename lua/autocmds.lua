@@ -77,7 +77,18 @@ autocmd("BufWritePre", {
     if ok and #conform.list_formatters(0) > 0 then
       return
     end
-    vim.cmd([[%s/\s\+$//e]])
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local modified = false
+    for i, line in ipairs(lines) do
+      local trimmed = line:gsub("%s+$", "")
+      if trimmed ~= line then
+        lines[i] = trimmed
+        modified = true
+      end
+    end
+    if modified then
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    end
   end,
 })
 
