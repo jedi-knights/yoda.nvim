@@ -1,90 +1,108 @@
 -- lua/plugins/nvim-treesitter.lua
+--
+-- Uses the new nvim-treesitter main branch API (post-rewrite).
+-- The legacy require("nvim-treesitter.configs").setup() was removed;
+-- highlighting and indentation are configured via native vim.treesitter APIs.
 
 return {
   "nvim-treesitter/nvim-treesitter",
   branch = "main",
   build = ":TSUpdate",
-  event = { "BufReadPost", "BufNewFile" },
-  cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
+  -- The new main branch does not support lazy-loading; it must be available
+  -- before any buffer triggers treesitter parsing.
+  lazy = false,
   dependencies = {
     {
       "nvim-treesitter/nvim-treesitter-textobjects",
-      lazy = true,
+      branch = "main",
     },
   },
   config = function()
-    local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-    parser_config.gherkin = {
-      install_info = {
-        url = "https://github.com/binhtran432k/tree-sitter-gherkin",
-        files = { "src/parser.c", "src/scanner.c" },
-        branch = "main",
-      },
-      filetype = "feature",
-    }
+    require("nvim-treesitter").setup({
+      install_dir = vim.fn.stdpath("data") .. "/site",
+    })
 
-    require("nvim-treesitter.configs").setup({
-      ensure_installed = {
-        "lua",
-        "vim",
-        "vimdoc",
-        "python",
-        "rust",
-        "go",
-        "javascript",
-        "typescript",
-        "c_sharp",
-        "json",
-        "yaml",
-        "toml",
-        "markdown",
-        "markdown_inline",
-        "bash",
-        "regex",
-        "gherkin",
-        -- "comment" intentionally omitted: it is a pure injection parser
-        -- that runs over every buffer in every language, adding injection
-        -- query overhead on every file open. Per-language comment
-        -- highlighting is already handled natively by each language's own
-        -- parser, so the extra parser provides no benefit.
-      },
-      auto_install = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-      },
-      indent = {
-        enable = true,
-      },
-      -- Incremental selection: use Neovim 0.12 built-in (v + an/in/]n/[n)
-      -- when available, otherwise fall back to nvim-treesitter keymaps.
-      incremental_selection = {
-        enable = vim.fn.has("nvim-0.12") == 0,
-        keymaps = {
-          init_selection = "<C-space>",
-          node_incremental = "<C-space>",
-          scope_incremental = false,
-          node_decremental = "<bs>",
-        },
-      },
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true,
-          keymaps = {
-            ["af"] = "@function.outer",
-            ["if"] = "@function.inner",
-            ["ac"] = "@class.outer",
-            ["ic"] = "@class.inner",
+    -- Register the custom gherkin parser so :TSInstall gherkin works.
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "TSUpdate",
+      desc = "Register gherkin parser for nvim-treesitter",
+      callback = function()
+        require("nvim-treesitter.parsers").gherkin = {
+          install_info = {
+            url = "https://github.com/binhtran432k/tree-sitter-gherkin",
+            branch = "main",
           },
-        },
-      },
+        }
+      end,
     })
 
     vim.treesitter.language.register("gherkin", "feature")
 
+    -- Install desired parsers on first run (async, non-blocking).
+    -- "comment" intentionally omitted: it is a pure injection parser that runs
+    -- over every buffer in every language, adding injection query overhead on
+    -- every file open. Per-language comment highlighting is already handled
+    -- natively by each language's own parser.
+    local ensure_installed = {
+      "lua",
+      "vim",
+      "vimdoc",
+      "python",
+      "rust",
+      "go",
+      "javascript",
+      "typescript",
+      "c_sharp",
+      "json",
+      "yaml",
+      "toml",
+      "markdown",
+      "markdown_inline",
+      "bash",
+      "regex",
+      "gherkin",
+    }
+
+    local installed = require("nvim-treesitter").installed()
+    local missing = vim
+      .iter(ensure_installed)
+      :filter(function(lang)
+        return not vim.tbl_contains(installed, lang)
+      end)
+      :totable()
+
+    if #missing > 0 then
+      require("nvim-treesitter").install(missing)
+    end
+
+    -- Enable treesitter highlighting and indentation for all filetypes.
+    vim.api.nvim_create_autocmd("FileType", {
+      group = vim.api.nvim_create_augroup("YodaTreesitter", { clear = true }),
+      desc = "Enable treesitter highlight and indent",
+      callback = function(ev)
+        if pcall(vim.treesitter.start, ev.buf) then
+          vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end
+      end,
+    })
+
+    -- Configure nvim-treesitter-textobjects (main branch API).
+    require("nvim-treesitter-textobjects").setup({
+      select = {
+        lookahead = true,
+      },
+    })
+
+    -- stylua: ignore start
+    vim.keymap.set({ "x", "o" }, "af", function() require("nvim-treesitter-textobjects.select").select_textobject("@function.outer", "textobjects") end, { desc = "around function" })
+    vim.keymap.set({ "x", "o" }, "if", function() require("nvim-treesitter-textobjects.select").select_textobject("@function.inner", "textobjects") end, { desc = "inside function" })
+    vim.keymap.set({ "x", "o" }, "ac", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.outer", "textobjects") end, { desc = "around class" })
+    vim.keymap.set({ "x", "o" }, "ic", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.inner", "textobjects") end, { desc = "inside class" })
+    -- stylua: ignore end
+
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "feature",
+      desc = "Set commentstring for Gherkin feature files",
       callback = function()
         vim.bo.commentstring = "# %s"
       end,
