@@ -24,14 +24,20 @@ native functionality:
 The ui2 setup lives in `init.lua` (after lazy-plugins loads) and is
 conditionally enabled only on Neovim 0.12+.
 
+The `msg` target is disabled on Neovim 0.12.0–0.12.1 due to a bug in
+`ui2/messages.lua` where `nvim_buf_set_text` receives an out-of-range
+`end_col` when multiple messages arrive in the same `vim.schedule` tick.
+A version guard auto-enables `msg` on 0.12.2+.
+
 Configuration:
 >lua
-    require("vim._core.ui2").enable({
-      msg = {
-        targets = "msg",
-        msg = { timeout = 2500 },
-      },
-    })
+    local ver = vim.version()
+    local msg_safe = not (ver.minor == 12 and ver.patch <= 1)
+    local opts = msg_safe
+      and { msg = { targets = "msg", msg = { timeout = 2500 } } }
+      or {}
+
+    require("vim._core.ui2").enable(opts)
 <
 
 ==============================================================================
