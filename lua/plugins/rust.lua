@@ -62,22 +62,15 @@ return {
           border = "rounded",
           show_version_date = true,
         },
-        null_ls = {
-          enabled = false, -- We're using conform.nvim + nvim-lint
-        },
-        completion = {
-          cmp = {
-            enabled = true,
-          },
-        },
       })
 
       -- Cargo.toml specific keymaps
       vim.api.nvim_create_autocmd("BufRead", {
+        group = vim.api.nvim_create_augroup("YodaCratesKeymaps", { clear = true }),
         pattern = "Cargo.toml",
-        callback = function()
+        callback = function(ev)
           local crates = require("crates")
-          local opts = { silent = true, buffer = true }
+          local opts = { silent = true, buffer = ev.buf }
 
           vim.keymap.set("n", "<leader>rc", crates.show_popup, vim.tbl_extend("force", opts, { desc = "Crates: Show popup" }))
           vim.keymap.set("n", "<leader>ru", crates.update_crate, vim.tbl_extend("force", opts, { desc = "Crates: Update crate" }))
