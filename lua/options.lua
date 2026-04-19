@@ -80,7 +80,7 @@ vim.opt.wildmode = "longest:full,full"
 
 vim.opt.laststatus = 3
 vim.opt.showcmd = true
-vim.opt.cmdheight = 1 -- init.lua overrides to 0 when ui2 is available (Neovim 0.12+)
+vim.opt.cmdheight = 1 -- noice.nvim provides a floating cmdline popup instead
 vim.opt.showtabline = 0 -- Hide tabline (use :bnext / :bprev to navigate buffers)
 vim.opt.confirm = true -- ask to save unsaved changes instead of refusing to quit
 vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup

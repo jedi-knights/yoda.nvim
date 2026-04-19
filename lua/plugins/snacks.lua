@@ -113,7 +113,7 @@ return {
         end,
       },
       notifier = {
-        enabled = true, -- Handles vim.notify display (replaces noice.nvim)
+        enabled = false, -- Disabled: noice.nvim handles vim.notify display
       },
       picker = {
         enabled = true,
