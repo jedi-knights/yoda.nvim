@@ -36,23 +36,32 @@ require("lazy-plugins")
 -- NOTE: vim._core.ui2 is an internal Neovim API (underscore-prefixed).
 -- It is available in Neovim 0.12 but is not yet a stable public API —
 -- it may change or be renamed in future releases.
+--
+-- The msg target is conditionally disabled on Neovim 0.12.0–0.12.1 due
+-- to a bug in ui2/messages.lua where nvim_buf_set_text receives an
+-- out-of-range end_col when multiple messages arrive in the same
+-- vim.schedule tick (e.g. yank + file-write notifications).
+-- The version guard auto-enables msg on 0.12.2+.
 local ok_ui2, ui2 = pcall(require, "vim._core.ui2")
 if ok_ui2 then
-  ui2.enable({
-    msg = {
-      targets = "msg",
-      msg = {
-        timeout = 2500,
-      },
-    },
-  })
+  -- Neovim 0.12.1 has a bug in ui2/messages.lua where nvim_buf_set_text
+  -- receives an out-of-range end_col when multiple messages arrive in the
+  -- same vim.schedule tick. Enable the msg target only on patched versions.
+  local ver = vim.version()
+  local msg_safe = not (ver.minor == 12 and ver.patch <= 1)
+  local ui2_opts = msg_safe and { msg = { targets = "msg", msg = { timeout = 2500 } } } or {}
 
-  -- ui2 provides a floating cmdline overlay, so hide the built-in cmdline.
-  vim.opt.cmdheight = 0
+  local ok_enable, err_enable = pcall(ui2.enable, ui2_opts)
+  if not ok_enable then
+    vim.notify("[yoda] ui2.enable failed: " .. tostring(err_enable), vim.log.levels.WARN)
+  else
+    -- ui2 provides a floating cmdline overlay, so hide the built-in cmdline.
+    vim.opt.cmdheight = 0
 
-  -- With ui2 active, set the notify backend to native (vim.notify works directly)
-  if not vim.g.yoda_notify_backend then
-    vim.g.yoda_notify_backend = "native"
+    -- With ui2 active, set the notify backend to native (vim.notify works directly)
+    if not vim.g.yoda_notify_backend then
+      vim.g.yoda_notify_backend = "native"
+    end
   end
 end
 
