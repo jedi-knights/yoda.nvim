@@ -83,10 +83,22 @@ local function lsp_status()
   table.insert(lines, "")
 
   table.insert(lines, "--- Available LSP Servers ---")
-  local available_servers = { "gopls", "lua_ls", "ts_ls", "basedpyright", "yamlls", "jdtls", "marksman" }
+  -- Map server names to their actual executable names for availability checks.
+  -- Most executables match the server name, but some differ.
+  local available_servers = {
+    { name = "gopls", cmd = "gopls" },
+    { name = "lua_ls", cmd = "lua-language-server" },
+    { name = "ts_ls", cmd = "typescript-language-server" },
+    { name = "basedpyright", cmd = "basedpyright-langserver" },
+    { name = "yamlls", cmd = "yaml-language-server" },
+    { name = "jdtls", cmd = "jdtls" },
+    { name = "marksman", cmd = "marksman" },
+    { name = "autotools_ls", cmd = "autotools-language-server" },
+    { name = "rust_analyzer", cmd = "rust-analyzer" },
+  }
   for _, server in ipairs(available_servers) do
-    local cmd_available = vim.fn.executable(server) == 1
-    table.insert(lines, string.format("  %s: %s", server, cmd_available and "available" or "not found"))
+    local cmd_available = vim.fn.executable(server.cmd) == 1
+    table.insert(lines, string.format("  %s: %s", server.name, cmd_available and "available" or "not found"))
   end
   table.insert(lines, "========================")
 
@@ -211,6 +223,22 @@ function M.setup()
   end, { desc = "Show LSP information" })
   vim.api.nvim_create_user_command("PythonLSPDebug", python_lsp_debug, { desc = "Debug Python LSP configuration" })
   vim.api.nvim_create_user_command("GroovyLSPDebug", groovy_lsp_debug, { desc = "Debug Groovy/Java LSP configuration" })
+
+  -- jdtls commands — registered once here rather than in LspAttach to avoid
+  -- errors from re-creating global commands on every buffer attach.
+  local notify = require("yoda-adapters.notification")
+  vim.api.nvim_create_user_command("JdtlsQuiet", function()
+    vim.lsp.codelens.run()
+    notify.notify("JDTLS quiet mode toggled", "info")
+  end, { desc = "Toggle JDTLS quiet mode" })
+
+  vim.api.nvim_create_user_command("JdtlsBuild", function()
+    vim.lsp.buf.execute_command({
+      command = "java.project.buildWorkspace",
+      arguments = { true },
+    })
+    notify.notify("JDTLS build initiated", "info")
+  end, { desc = "Force JDTLS build" })
 end
 
 return M
