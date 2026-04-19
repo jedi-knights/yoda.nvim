@@ -86,8 +86,11 @@ map("n", "<leader>kk", function()
 
       vim.api.nvim_create_autocmd("BufLeave", {
         buffer = buf,
+        once = true,
         callback = function()
-          vim.api.nvim_buf_delete(buf, { force = true })
+          if vim.api.nvim_buf_is_valid(buf) then
+            vim.api.nvim_buf_delete(buf, { force = true })
+          end
         end,
       })
     else
@@ -108,6 +111,36 @@ map("n", "<leader>sK", function()
   end
 end, { desc = "Util: Toggle showkeys display" })
 
-map("n", "<leader>n", function()
-  require("yoda.messages_float").show()
-end, { desc = "Util: Show message history (floating)" })
+map("n", "<leader>nm", function()
+  local ok, noice = pcall(require, "noice")
+  if ok then
+    noice.cmd("history")
+  else
+    vim.cmd("messages")
+  end
+end, { desc = "Util: Show message history" })
+
+map("n", "<leader>nl", function()
+  local ok, noice = pcall(require, "noice")
+  if ok then
+    noice.cmd("last")
+  else
+    vim.cmd("messages")
+  end
+end, { desc = "Util: Show last message" })
+
+map("n", "<leader>nh", function()
+  local ok, noice = pcall(require, "noice")
+  if ok then
+    noice.cmd("history")
+  else
+    vim.cmd("messages")
+  end
+end, { desc = "Util: Show notification history" })
+
+map("n", "<leader>nd", function()
+  local ok, noice = pcall(require, "noice")
+  if ok then
+    noice.cmd("dismiss")
+  end
+end, { desc = "Util: Dismiss all notifications" })
