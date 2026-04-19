@@ -18,6 +18,7 @@ return {
       { "<leader>g", group = "Git" },
       { "<leader>h", group = "Git Hunk", mode = { "n", "v" } },
       { "<leader>w", group = "Window" },
+      { "<leader>n", group = "Notifications" },
       { "<leader>x", group = "Diagnostics" },
       -- Explicit entry so leader-D isn't swallowed by the leader-d Debug group
       { "<leader>D", desc = "Delete buffer content" },
