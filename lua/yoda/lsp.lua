@@ -297,6 +297,17 @@ function M.setup()
     },
   })
 
+  -- Makefile/Autotools setup
+  safe_setup("autotools_ls", {
+    cmd = { "autotools-language-server" },
+    filetypes = { "make", "automake", "config" },
+    root_markers = { "Makefile", "Makefile.am", "configure.ac", "GNUmakefile", ".git" },
+    capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 300,
+    },
+  })
+
   -- Markdown setup
   safe_setup("marksman", {
     cmd = { "marksman", "server" },

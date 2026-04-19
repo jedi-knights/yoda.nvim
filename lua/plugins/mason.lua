@@ -49,6 +49,7 @@ return {
           "ts_ls",
           "basedpyright",
           "yamlls",
+          "autotools_ls", -- Makefile/Autotools LSP server
           "marksman", -- Markdown LSP server
           -- NOTE: jdtls (Java/Groovy) is intentionally absent — it requires
           -- manual installation (e.g. `brew install jdtls`) because Mason

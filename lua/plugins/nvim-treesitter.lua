@@ -59,11 +59,12 @@ return {
       "markdown",
       "markdown_inline",
       "bash",
+      "make",
       "regex",
       "gherkin",
     }
 
-    local installed = require("nvim-treesitter").installed()
+    local installed = require("nvim-treesitter").get_installed()
     local missing = vim
       .iter(ensure_installed)
       :filter(function(lang)
