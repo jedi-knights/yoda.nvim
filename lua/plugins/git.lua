@@ -172,6 +172,13 @@ return {
           item = { ">", "v" },
           section = { ">", "v" },
         },
+        -- Restore <CR> to toggle (expand/collapse) behavior.
+        -- The new default changed <CR> to GoToFile; Tab still toggles too.
+        mappings = {
+          status = {
+            ["<cr>"] = "Toggle",
+          },
+        },
         integrations = {
           diffview = true,
         },
