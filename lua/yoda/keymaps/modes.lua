@@ -12,10 +12,10 @@ map({ "n", "x" }, "<C-u>", "<C-u>zz", { desc = "Scroll up (centered)" })
 map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 map("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
 
-map("v", "<leader>r", ":s/", { desc = "Visual: Replace - Start substitute command on selection" })
-map("v", "<leader>y", '"+y', { desc = "Visual: Yank to clipboard - Copy selection to system clipboard" })
-map("v", "<leader>d", '"_d', { desc = "Visual: Delete to void register - Delete without affecting clipboard" })
-map("v", "<leader>p", "_dP", { desc = "Visual: Delete and paste over - Replace selection while preserving clipboard" })
+map("v", "<leader>r", ":s/", { desc = "Visual: Replace" })
+map("v", "<leader>y", '"+y', { desc = "Visual: Yank to clipboard" })
+map("v", "<leader>d", '"_d', { desc = "Visual: Delete to void register" })
+map("v", "<leader>p", "_dP", { desc = "Visual: Delete and paste over" })
 
 -- jk → <Esc> intentionally removed: it caused a 300ms stall on every 'j'
 -- typed in insert mode while Neovim waited to see if 'k' would follow.

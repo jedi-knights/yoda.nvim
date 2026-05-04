@@ -111,8 +111,8 @@ Navigation~
     K               Hover documentation
 
 Code Actions~
-    <leader>la      Code actions (add imports, extract function, etc.)
-    <leader>ln      Rename symbol
+    <leader>ca      Code actions (add imports, extract function, etc.)
+    <leader>lR      Rename symbol
     <leader>jI      Organize imports
     <leader>jh      Toggle inlay hints
 

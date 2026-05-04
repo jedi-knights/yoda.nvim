@@ -201,8 +201,8 @@ Navigation~
     K                          Show hover documentation
 
 Code Actions~
-    <leader>la                 Code actions
-    <leader>ln                 Rename symbol
+    <leader>ca                 Code actions
+    <leader>lR                 Rename symbol
     <leader>f                  Format code/selection
 
 Diagnostics~

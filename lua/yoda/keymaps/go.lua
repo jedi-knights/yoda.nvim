@@ -9,6 +9,7 @@ end
 -- Set up Go-specific keymaps only for Go files
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "go",
+  group = vim.api.nvim_create_augroup("YodaGoKeymaps", { clear = true }),
   callback = function()
     local bufnr = vim.api.nvim_get_current_buf()
 

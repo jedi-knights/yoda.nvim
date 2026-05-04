@@ -9,4 +9,4 @@ end
 
 map("n", "<leader>gg", function()
   require("neogit").open()
-end, { desc = "Git: Open Neogit - Open interactive git interface" })
+end, { desc = "Git: Open Neogit" })

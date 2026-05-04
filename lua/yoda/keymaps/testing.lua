@@ -122,7 +122,7 @@ map("n", "<leader>tL", function()
   end
 end, { desc = "Test: Open pytest-atlas log (tail)" })
 
-map("n", "<leader>tLA", function()
+map("n", "<leader>tA", function()
   local ok, pytest_atlas = pcall(require, "pytest-atlas")
   if ok then
     pytest_atlas.open_log() -- Show full log (all sessions)

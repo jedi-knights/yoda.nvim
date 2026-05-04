@@ -166,7 +166,7 @@ Types of Hints~
   • Binding modes
 
 Toggle Inlay Hints~
-    <leader>th                 Toggle inlay hints
+    <leader>lh                 Toggle inlay hints
 
 Example Inlay Hints~
 >
