@@ -45,12 +45,7 @@ Window Navigation ~
 FILE EXPLORER                                         *yoda-keymaps-explorer*
 
 Snacks Explorer ~
-    <leader>eo      (n)    Open explorer (only if closed)
-    <leader>ef      (n)    Focus explorer (or open if closed)
-    <leader>ec      (n)    Close explorer
-    <leader>er      (n)    Refresh explorer
-    <leader>ed      (n)    Debug explorer state
-    <leader>e?      (n)    Show explorer keybindings help
+    <leader>e       (n)    Toggle explorer (opens if closed, closes if open)
 
 In the Explorer ~
     H                      Toggle hidden files
@@ -82,7 +77,7 @@ Navigation ~
 
 Code Actions ~
     <leader>la      (n)    Code actions
-    <leader>lrn     (n)    Rename symbol
+    <leader>ln      (n)    Rename symbol
     <leader>lf      (n)    Format buffer
 
 Symbols ~
@@ -143,39 +138,32 @@ pytest-atlas ~
 GIT INTEGRATION                                           *yoda-keymaps-git*
 
     <leader>gg      (n)    Open Neogit (interactive git interface)
-    <leader>gB      (n)    Git blame full file (Fugitive)
 
-Gitsigns hunk operations are registered as buffer-local keymaps inside
-the gitsigns on_attach callback. Use :map <buffer> to inspect them.
+Gitsigns hunk operations (blame, stage, reset, diff, navigate) are registered
+as buffer-local keymaps in the gitsigns on_attach callback. Use :map <buffer>
+to inspect them. <leader>tb toggles current-line blame.
 
 ==============================================================================
 WINDOW MANAGEMENT                                     *yoda-keymaps-windows*
 
 Splits ~
-    <leader>|       (n)    Vertical split
-    <leader>-       (n)    Horizontal split
+    <leader>w|      (n)    Vertical split
+    <leader>w-      (n)    Horizontal split
     <leader>ws      (n)    Equalize window sizes
-
-Diagnostics / Trouble ~
-    <leader>xt      (n)    Focus Trouble diagnostics window
-    <leader>xT      (n)    Show all TODO comments in Trouble
 
 ==============================================================================
 UTILITIES & NOTIFICATIONS                           *yoda-keymaps-utilities*
 
 General ~
-    <leader>qq      (n)    Quit Neovim
+    <leader>q       (n)    Quit Neovim
     <leader>D       (n)    Delete buffer content (void register, no clipboard)
     <leader>tu      (n)    Toggle conform.nvim auto-format on save
-    <leader>d       (n)    Open Snacks dashboard
-    <leader><leader>r (n)  Hot reload Yoda config
+    <leader>H       (n)    Open Snacks dashboard (home)
 
 Keymap Discovery ~
-    <leader>kk      (n)    Show all leader keymaps (float window)
-    <leader>sK      (n)    Toggle Showkeys screencaster display
+    <leader>tK      (n)    Toggle Showkeys screencaster display
 
 Notifications ~
-    <leader>nm      (n)    Show message history
     <leader>nl      (n)    Show last message
     <leader>nh      (n)    Show notification history
     <leader>nd      (n)    Dismiss all notifications

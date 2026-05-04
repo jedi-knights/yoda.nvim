@@ -11,16 +11,24 @@ return {
     preset = "helix",
     icons = { mappings = true, keys = {} },
     spec = {
+      -- Core groups
       { "<leader>a", group = "AI" },
-      { "<leader>s", group = "Search" },
-      { "<leader>t", group = "Toggle/Test" },
       { "<leader>d", group = "Debug" },
       { "<leader>g", group = "Git" },
       { "<leader>h", group = "Git Hunk", mode = { "n", "v" } },
-      { "<leader>w", group = "Window" },
+      { "<leader>l", group = "LSP" },
       { "<leader>n", group = "Notifications" },
-      { "<leader>x", group = "Diagnostics" },
-      -- Explicit entry so leader-D isn't swallowed by the leader-d Debug group
+      { "<leader>s", group = "Search" },
+      { "<leader>t", group = "Toggle/Test" },
+      { "<leader>w", group = "Window" },
+      -- Utility groups
+      { "<leader>c", group = "Coverage" },
+      { "<leader>k", group = "Keymaps" },
+      -- Language groups (buffer-local keymaps — registered by FileType autocmds)
+      { "<leader>j", group = "JavaScript" },
+      { "<leader>p", group = "Python" },
+      { "<leader>r", group = "Rust" },
+      -- Standalone entries that share a prefix with a group and need an explicit label
       { "<leader>D", desc = "Delete buffer content" },
     },
   },
