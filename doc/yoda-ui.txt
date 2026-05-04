@@ -30,7 +30,6 @@ Dependencies:
 
 Keymaps~
 
-  `<leader>nm`   Show full message history (`:Noice`)
   `<leader>nl`   Show last message (`:Noice last`)
   `<leader>nh`   Show notification history (`:Noice history`)
   `<leader>nd`   Dismiss all notifications (`:Noice dismiss`)

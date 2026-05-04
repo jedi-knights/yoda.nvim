@@ -426,26 +426,21 @@ function M.setup()
           return
         end
 
-        -- Standard Vim LSP keymaps — gd/gr/gI are conventions that experienced
-        -- users expect. The <leader>l* group below intentionally duplicates some
-        -- of these for which-key discoverability. Both sets are buffer-local and
-        -- lightweight, so the cost is negligible.
+        -- Short vim-convention keymaps — muscle memory that experienced users
+        -- expect. K is handled globally in keymaps/help.lua. <leader>ca and
+        -- <leader>rn have been removed: they leaked into the <leader>c (Coverage)
+        -- and <leader>r (Rust) prefix spaces. Use <leader>la and <leader>ln instead.
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = buf, desc = "LSP: Go to Definition" })
         vim.keymap.set("n", "gr", vim.lsp.buf.references, { buffer = buf, desc = "LSP: Find References" })
         vim.keymap.set("n", "gI", vim.lsp.buf.implementation, { buffer = buf, desc = "LSP: Go to Implementation" })
-        -- K is handled globally in keymaps/help.lua: checks for LSP clients and
-        -- falls back to :help — covers both LSP and non-LSP buffers without a
-        -- buffer-local duplicate here.
-        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = buf, desc = "LSP: Code Action" })
-        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { buffer = buf, desc = "LSP: Rename Symbol" })
         vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, { buffer = buf, desc = "LSP: Signature Help" })
 
-        -- <leader>l* group: which-key discoverable set plus actions not covered above
+        -- <leader>l* group: which-key discoverable LSP commands
         vim.keymap.set("n", "<leader>ld", vim.lsp.buf.definition, { buffer = buf, desc = "LSP: Go to Definition" })
         vim.keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { buffer = buf, desc = "LSP: Go to Declaration" })
         vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, { buffer = buf, desc = "LSP: Go to Implementation" })
         vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, { buffer = buf, desc = "LSP: Find References" })
-        vim.keymap.set("n", "<leader>lrn", vim.lsp.buf.rename, { buffer = buf, desc = "LSP: Rename Symbol" })
+        vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, { buffer = buf, desc = "LSP: Rename Symbol" })
         vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, { buffer = buf, desc = "LSP: Code Action" })
         vim.keymap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { buffer = buf, desc = "LSP: Document Symbols" })
         vim.keymap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, { buffer = buf, desc = "LSP: Workspace Symbols" })

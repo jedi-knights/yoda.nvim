@@ -111,8 +111,8 @@ Navigation~
     K               Hover documentation
 
 Code Actions~
-    <leader>ca      Code actions (add imports, extract function, etc.)
-    <leader>rn      Rename symbol
+    <leader>la      Code actions (add imports, extract function, etc.)
+    <leader>ln      Rename symbol
     <leader>jI      Organize imports
     <leader>jh      Toggle inlay hints
 
@@ -372,8 +372,8 @@ General LSP~
     gd              Go to definition
     gr              Find references
     K               Hover documentation
-    <leader>ca      Code actions
-    <leader>f       Format buffer
+    <leader>la      Code actions
+    <leader>lf      Format buffer
 
 ==============================================================================
 ADVANCED CONFIGURATION                              *yoda-js-config*

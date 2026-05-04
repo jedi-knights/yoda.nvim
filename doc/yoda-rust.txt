@@ -138,8 +138,8 @@ Refactoring~
   • Change function signature
 
 Code Actions~
-    <leader>ca                 Show available code actions
-    
+    <leader>ra                 Show available code actions (rustaceanvim)
+
 Available actions include:
   • Add missing imports
   • Fill match arms
@@ -337,38 +337,23 @@ Test Navigation~
 ==============================================================================
 CARGO MANAGEMENT                                         *yoda-rust-cargo*
 
-Integrated Cargo command support for project management.
+Cargo Commands (active in Rust files)~
+    <leader>rr                 Cargo run (via overseer)
+    <leader>rb                 Cargo build (via overseer)
+    <leader>rt                 Run nearest test
+    <leader>rT                 Run all tests in current file
 
-Cargo Commands~
-    <leader>rr                 Cargo run
-    <leader>rb                 Cargo build
-    <leader>rc                 Cargo check
-    <leader>rC                 Cargo clean
-    <leader>ru                 Cargo update
+Cargo.toml Dependency Management~
 
-Package Management~
-    <leader>ra                 Add dependency
-    <leader>rR                 Remove dependency
-    <leader>rs                 Search crates.io
+The following keymaps are active only when editing Cargo.toml:
+    <leader>rc                 Show crate info popup
+    <leader>ru                 Update crate under cursor
+    <leader>rU                 Update all crates
+    <leader>rV                 Show available versions
+    <leader>rF                 Show available features
 
-Build Profiles~
-    <leader>rbr                Build release
-    <leader>rrr                Run release
-
-Cargo.toml Features~
-
-When editing Cargo.toml files:
-  • Dependency completion
-  • Version suggestions
-  • Feature flag completion
-  • Workspace member completion
-
-Cargo Task Integration~
-
-Tasks are available via overseer:
-    <leader>tr                 Run Cargo task
-    <leader>tb                 Build task
-    <leader>tt                 Test task
+Powered by crates.nvim, which also provides inline version hints and
+completion for dependency names, versions, and feature flags.
 
 ==============================================================================
 FORMATTING & LINTING                               *yoda-rust-formatting*
@@ -471,7 +456,7 @@ Symbol Navigation~
     gr                         Find references
     gi                         Go to implementation
     K                          Show documentation
-    <leader>ca                 Code actions
+    <leader>la                 Code actions
 
 Project Navigation~
     <leader>ff                 Find files
@@ -498,44 +483,46 @@ Rust-specific Features~
 ==============================================================================
 KEYMAPS                                                 *yoda-rust-keymaps*
 
-Complete keymap reference for Rust development.
+Complete keymap reference for Rust development. All <leader>r keymaps are
+buffer-local and only active in Rust or Cargo.toml files.
 
-Cargo Commands~
+Cargo / Build (Rust files)~
     <leader>rr                 Cargo run
     <leader>rb                 Cargo build
-    <leader>rc                 Cargo check
-    <leader>rt                 Run tests
-    <leader>rf                 Format code
 
-LSP Actions~
-    <leader>ca                 Code actions
-    <leader>cr                 Rename symbol
-    <leader>cf                 Format code
-    <leader>cd                 Show diagnostics
+Testing (Rust files)~
+    <leader>rt                 Run nearest test
+    <leader>rT                 Run all tests in file
 
-Navigation~
+Debugging (Rust files)~
+    <leader>rd                 Start debuggables (rustaceanvim)
+    <leader>db                 Toggle breakpoint
+    <leader>dc                 Continue execution
+
+Rust Tools (Rust files)~
+    <leader>ra                 Code actions (rustaceanvim)
+    <leader>rh                 Toggle inlay hints
+    <leader>rm                 Expand macro
+    <leader>rp                 Go to parent module
+    <leader>rj                 Join lines
+    <leader>ro                 Toggle code outline
+    <leader>re                 Open diagnostics panel
+
+Cargo.toml only~
+    <leader>rc                 Show crate info popup
+    <leader>ru                 Update crate under cursor
+    <leader>rU                 Update all crates
+    <leader>rV                 Show available versions
+    <leader>rF                 Show available features
+
+LSP (all languages)~
     gd                         Go to definition
     gr                         Find references
     gi                         Go to implementation
     K                          Show documentation
-
-Testing~
-    <leader>tt                 Run current test file
-    <leader>tr                 Run nearest test
-    <leader>ta                 Run all tests
-    <leader>td                 Debug test
-
-Debugging~
-    <leader>db                 Toggle breakpoint
-    <leader>rd                 Start debugging
-    <leader>dc                 Continue execution
-    <leader>ds                 Step over
-
-Rust Tools~
-    <leader>rh                 Hover actions
-    <leader>rm                 Expand macro
-    <leader>rc                 Open Cargo.toml
-    <leader>rp                 Parent module
+    <leader>la                 LSP code actions
+    <leader>ln                 Rename symbol
+    <leader>lf                 Format buffer
 
 ==============================================================================
 TROUBLESHOOTING                                 *yoda-rust-troubleshooting*

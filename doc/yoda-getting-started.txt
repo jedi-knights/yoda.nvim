@@ -57,8 +57,7 @@ When you open Neovim (nvim), you'll see the Alpha dashboard with:
 
 3. Basic File Operations~
     <leader>w                  Save file
-    <leader>q                  Quit
-    <leader>qq                 Force quit
+    <leader>q                  Quit Neovim (all windows)
 
 ==============================================================================
 DEVELOPMENT WORKFLOW                            *yoda-getting-started-workflow*
@@ -80,7 +79,7 @@ DEVELOPMENT WORKFLOW                            *yoda-getting-started-workflow*
 3. Code Navigation~
   • Go to Definition: <leader>gd or gd
   • Find References: <leader>gr
-  • Code Actions: <leader>ca
+  • Code Actions: <leader>la
 
 4. Git Integration~
   • Git Status: <leader>gg (opens Neogit)
