@@ -7,7 +7,7 @@ map("n", "<leader>.", function()
   require("yoda-terminal").open_floating()
 end, { desc = "Terminal: Open floating terminal" })
 
-map("n", "<leader>vt", function()
+map("n", "<leader>Tt", function()
   local terminal = require("snacks.terminal")
   terminal.open({
     id = "myterm",
@@ -34,7 +34,7 @@ map("t", "<C-j>", "<C-\\><C-n><C-w>j", { desc = "Window: Move down from terminal
 map("t", "<C-k>", "<C-\\><C-n><C-w>k", { desc = "Window: Move up from terminal" })
 map("t", "<C-l>", "<C-\\><C-n><C-w>l", { desc = "Window: Move right from terminal" })
 
-map("n", "<leader>vr", function()
+map("n", "<leader>Tr", function()
   local function get_python()
     local cwd = vim.uv.cwd()
     local venv = cwd .. "/.venv/bin/python3"
