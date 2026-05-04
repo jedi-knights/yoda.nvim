@@ -153,6 +153,16 @@ Splits ~
     <leader>ws      (n)    Equalize window sizes
 
 ==============================================================================
+TERMINAL                                             *yoda-keymaps-terminal*
+
+    <leader>.       (n)    Open floating terminal (venv-aware)
+    <leader>Tt      (n)    Open floating zsh shell (snacks)
+    <leader>Tr      (n)    Toggle Python REPL (venv-aware)
+
+Terminal-mode window navigation: <C-h/j/k/l> exit terminal mode and move
+to the adjacent window, matching normal-mode window navigation.
+
+==============================================================================
 UTILITIES & NOTIFICATIONS                           *yoda-keymaps-utilities*
 
 General ~
