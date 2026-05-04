@@ -82,7 +82,7 @@ DEVELOPMENT WORKFLOW                            *yoda-getting-started-workflow*
   • Code Actions: <leader>la
 
 4. Git Integration~
-  • Git Status: <leader>gg (opens Neogit)
+  • Git Status: <leader>Gg (opens Neogit)
   • Stage Changes: <leader>hs (stage hunk)
   • View Diff: <leader>hd
 

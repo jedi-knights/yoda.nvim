@@ -7,6 +7,6 @@ end
 -- are registered as buffer-local keymaps inside the gitsigns on_attach callback
 -- in lua/plugins/git.lua. Global duplicates have been removed.
 
-map("n", "<leader>gg", function()
+map("n", "<leader>Gg", function()
   require("neogit").open()
 end, { desc = "Git: Open Neogit" })
