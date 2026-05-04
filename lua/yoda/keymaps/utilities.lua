@@ -21,7 +21,7 @@ map("n", "<leader>D", function()
 end, { desc = "Util: Delete buffer content" })
 
 -- Toggle conform.nvim auto-format on save for the session.
-map("n", "<leader>tu", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
+map("n", "<leader>uf", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
 
 -- <leader>H mnemonic: Home screen. <leader>d is reserved for the Debug group.
 map("n", "<leader>H", function()

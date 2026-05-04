@@ -433,6 +433,10 @@ function M.setup()
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = buf, desc = "LSP: Go to Definition" })
         vim.keymap.set("n", "gr", vim.lsp.buf.references, { buffer = buf, desc = "LSP: Find References" })
         vim.keymap.set("n", "gI", vim.lsp.buf.implementation, { buffer = buf, desc = "LSP: Go to Implementation" })
+        -- K is handled globally in keymaps/help.lua: checks for LSP clients and
+        -- falls back to :help — covers both LSP and non-LSP buffers without a
+        -- buffer-local duplicate here.
+        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = buf, desc = "LSP: Code Action" })
         vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, { buffer = buf, desc = "LSP: Signature Help" })
 
         -- <leader>l* group: which-key discoverable LSP commands
@@ -440,7 +444,7 @@ function M.setup()
         vim.keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { buffer = buf, desc = "LSP: Go to Declaration" })
         vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, { buffer = buf, desc = "LSP: Go to Implementation" })
         vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, { buffer = buf, desc = "LSP: Find References" })
-        vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, { buffer = buf, desc = "LSP: Rename Symbol" })
+        vim.keymap.set("n", "<leader>lR", vim.lsp.buf.rename, { buffer = buf, desc = "LSP: Rename Symbol" })
         vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, { buffer = buf, desc = "LSP: Code Action" })
         vim.keymap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { buffer = buf, desc = "LSP: Document Symbols" })
         vim.keymap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, { buffer = buf, desc = "LSP: Workspace Symbols" })
@@ -451,7 +455,7 @@ function M.setup()
         vim.keymap.set("n", "<leader>lq", vim.diagnostic.setloclist, { buffer = buf, desc = "LSP: Set Loclist" })
 
         -- Toggle inlay hints
-        vim.keymap.set("n", "<leader>th", function()
+        vim.keymap.set("n", "<leader>lh", function()
           local buf_clients = vim.lsp.get_clients({ bufnr = buf })
           for _, c in ipairs(buf_clients) do
             if c:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then

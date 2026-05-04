@@ -77,7 +77,7 @@ Navigation ~
 
 Code Actions ~
     <leader>la      (n)    Code actions
-    <leader>ln      (n)    Rename symbol
+    <leader>lR      (n)    Rename symbol
     <leader>lf      (n)    Format buffer
 
 Symbols ~
@@ -131,7 +131,7 @@ Neotest ~
 pytest-atlas ~
     <leader>tS      (n)    Show test environment status
     <leader>tL      (n)    Open pytest-atlas log (tail, last 100 lines)
-    <leader>tLA     (n)    Open pytest-atlas log (full)
+    <leader>tA      (n)    Open pytest-atlas log (full)
     <leader>tX      (n)    Clear pytest-atlas log
 
 ==============================================================================
@@ -157,7 +157,7 @@ UTILITIES & NOTIFICATIONS                           *yoda-keymaps-utilities*
 General ~
     <leader>q       (n)    Quit Neovim
     <leader>D       (n)    Delete buffer content (void register, no clipboard)
-    <leader>tu      (n)    Toggle conform.nvim auto-format on save
+    <leader>uf      (n)    Toggle conform.nvim auto-format on save
     <leader>H       (n)    Open Snacks dashboard (home)
 
 Keymap Discovery ~

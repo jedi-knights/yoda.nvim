@@ -156,8 +156,8 @@ Navigation~
     K               Hover documentation
 
 Code Actions~
-    <leader>la      Code actions (add imports, extract function, etc.)
-    <leader>ln      Rename symbol
+    <leader>ca      Code actions (add imports, extract function, etc.)
+    <leader>lR      Rename symbol
 
 Available actions:
   • Add missing imports
@@ -631,9 +631,9 @@ General LSP~
     gi              Go to implementation
     gr              Find references
     K               Hover documentation
-    <leader>ln      Rename symbol
-    <leader>la      Code actions
-    <leader>lf      Format buffer
+    <leader>lR      Rename symbol
+    <leader>ca      Code actions
+    <leader>f       Format buffer
 
 ==============================================================================
 TROUBLESHOOTING                               *yoda-python-troubleshooting*
