@@ -54,5 +54,13 @@ vim.api.nvim_create_autocmd("FileType", {
     map("n", "<leader>gr", function()
       vim.cmd("!go run " .. vim.fn.expand("%"))
     end, { buffer = bufnr, desc = "Run current Go file" })
+
+    -- Override the global "Git" which-key group label for this buffer so that
+    -- <leader>g shows "Go" rather than "Git" when editing Go files. Git keymaps
+    -- (<leader>gg) still appear in the popup — only the label changes.
+    local ok, wk = pcall(require, "which-key")
+    if ok then
+      wk.add({ { "<leader>g", group = "Go", buffer = bufnr } })
+    end
   end,
 })

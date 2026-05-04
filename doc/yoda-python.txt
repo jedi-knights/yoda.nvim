@@ -156,8 +156,8 @@ Navigation~
     K               Hover documentation
 
 Code Actions~
-    <leader>ca      Code actions (add imports, extract function, etc.)
-    <leader>rn      Rename symbol
+    <leader>la      Code actions (add imports, extract function, etc.)
+    <leader>ln      Rename symbol
 
 Available actions:
   • Add missing imports
@@ -586,7 +586,7 @@ File Navigation~
 
 Code Coverage~
 >
-    <leader>pc      Show code coverage
+    <leader>cv      Show code coverage
 <
 
 Requires `pytest-cov` to have generated coverage data first.
@@ -619,7 +619,6 @@ Debugging~
 Code Quality~
     <leader>pm      (n)  Run mypy on current file
     <leader>pe      (n)  Open diagnostics panel
-    <leader>pc      (n)  Show code coverage
 
 Navigation & Environment~
     <leader>po      (n)  Toggle outline
@@ -632,9 +631,9 @@ General LSP~
     gi              Go to implementation
     gr              Find references
     K               Hover documentation
-    <leader>rn      Rename symbol
-    <leader>ca      Code actions
-    <leader>f       Format buffer
+    <leader>ln      Rename symbol
+    <leader>la      Code actions
+    <leader>lf      Format buffer
 
 ==============================================================================
 TROUBLESHOOTING                               *yoda-python-troubleshooting*

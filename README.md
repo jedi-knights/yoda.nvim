@@ -121,9 +121,9 @@ When using Rust with `rust_analyzer`, you get:
 - ✅ Clippy linting on save
 - ✅ Experimental diagnostics
 - ✅ Enhanced Cargo keymaps:
-  - `<leader>cb` - Cargo build (with LSP diagnostics)
-  - `<leader>cr` - Cargo run
-  - `<leader>ct` - Cargo test
+  - `<leader>rb` - Cargo build
+  - `<leader>rr` - Cargo run
+  - `<leader>rt` - Cargo test
 
 ### LSP Features (All Languages)
 
@@ -131,10 +131,10 @@ Once installed, all language servers provide:
 - 🔍 **Go to definition** (`gd`, `gD`)
 - 📝 **Auto-completion** (automatic)
 - ⚠️ **Inline diagnostics** (errors/warnings)
-- 🔧 **Code actions** (`<leader>ca`)
+- 🔧 **Code actions** (`<leader>la`)
 - 📖 **Hover documentation** (`K`)
-- ♻️ **Rename** (`rn`)
-- 🎨 **Format** (`<leader>f`)
+- ♻️ **Rename** (`<leader>ln`)
+- 🎨 **Format** (`<leader>lf`)
 
 ## ⌨️ Essential Keymaps
 
@@ -177,14 +177,13 @@ Once installed, all language servers provide:
 ### ⌨️ Keymap Discovery & Display
 | Keymap | Description |
 |--------|-------------|
-| `<leader>kk` | Show available keymaps (custom display) |
-| `<leader>sk` | Toggle showkeys display (screencaster) |
+| `<leader>tK` | Toggle showkeys display (screencaster) |
 
 ### 🪟 Window Management
 | Keymap | Description |
 |--------|-------------|
-| `<leader>\|` | Vertical split |
-| `<leader>-` | Horizontal split |
+| `<leader>w\|` | Vertical split |
+| `<leader>w-` | Horizontal split |
 | `<C-h/j/k/l>` | Navigate windows |
 
 ## 📚 Documentation
