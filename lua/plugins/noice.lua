@@ -30,6 +30,16 @@ return {
       notify = {
         view = "notify",
       },
+      -- Force stragglers (plain :echo, write/yank confirmations, generic
+      -- msg_show events) into the notify popup instead of flashing at the
+      -- bottom of the screen. Conservative: only msg_show with empty kind —
+      -- search counts, errors, and warnings already have dedicated routes.
+      routes = {
+        {
+          filter = { event = "msg_show", kind = { "", "echo", "echomsg" } },
+          view = "notify",
+        },
+      },
       history = {
         view = "popup",
         opts = { enter = true, format = "details" },
