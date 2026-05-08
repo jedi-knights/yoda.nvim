@@ -27,7 +27,6 @@ map("n", "<leader>Tt", function()
   })
 end, { desc = "Terminal: Floating shell" })
 
-
 -- Navigate out of terminal mode with Ctrl + direction
 map("t", "<C-h>", "<C-\\><C-n><C-w>h", { desc = "Window: Move left from terminal" })
 map("t", "<C-j>", "<C-\\><C-n><C-w>j", { desc = "Window: Move down from terminal" })
