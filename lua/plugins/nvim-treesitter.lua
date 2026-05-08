@@ -59,7 +59,6 @@ return {
       "markdown",
       "markdown_inline",
       "bash",
-      "make",
       "regex",
       "gherkin",
     }
@@ -73,7 +72,20 @@ return {
       :totable()
 
     if #missing > 0 then
-      require("nvim-treesitter").install(missing)
+      -- The main-branch rewrite shells out to the `tree-sitter` CLI to compile
+      -- parsers; without it, install() emits one ENOENT per parser. Surface a
+      -- single actionable error instead.
+      if vim.fn.executable("tree-sitter") == 0 then
+        vim.notify(
+          "nvim-treesitter: `tree-sitter` CLI not found on PATH. "
+            .. "Install it (`brew install tree-sitter-cli`) and restart Neovim. "
+            .. "Missing parsers: "
+            .. table.concat(missing, ", "),
+          vim.log.levels.ERROR
+        )
+      else
+        require("nvim-treesitter").install(missing)
+      end
     end
 
     -- Enable treesitter highlighting and indentation for all filetypes.
