@@ -34,12 +34,28 @@ function M.setup()
 
   -- Global LSP handler optimizations for responsiveness
   -- vim.lsp.with() is deprecated in 0.12; use wrapper functions that merge config instead.
-  -- publishDiagnostics is omitted here — diagnostic display is owned by vim.diagnostic.config() below.
   vim.lsp.handlers["textDocument/hover"] = function(err, result, ctx, config)
     vim.lsp.handlers.hover(err, result, ctx, vim.tbl_extend("force", config or {}, { border = "rounded" }))
   end
   vim.lsp.handlers["textDocument/signatureHelp"] = function(err, result, ctx, config)
     vim.lsp.handlers.signature_help(err, result, ctx, vim.tbl_extend("force", config or {}, { border = "rounded" }))
+  end
+
+  -- gopls v0.21.1 workaround: in a Go workspace (go.work + multiple
+  -- modules), gopls emits "X is not in your go.mod file" false
+  -- positives for imports that are correctly declared in the
+  -- per-module go.mod. The build, vet, and staticcheck all see them
+  -- fine — only gopls's diagnostic generation is broken. Filter
+  -- those specific messages before vim.diagnostic.config() (below)
+  -- renders them. Remove this once gopls v0.22+ ships.
+  local default_publish = vim.lsp.handlers["textDocument/publishDiagnostics"]
+  vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+    if result and result.diagnostics then
+      result.diagnostics = vim.tbl_filter(function(d)
+        return not (d.message and d.message:match("is not in your go%.mod file"))
+      end, result.diagnostics)
+    end
+    return default_publish(err, result, ctx, config)
   end
 
   -- Helper function to safely setup LSP servers using vim.lsp.config.
