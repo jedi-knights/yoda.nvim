@@ -89,12 +89,16 @@ return {
     end
 
     -- Enable treesitter highlighting and indentation for all filetypes.
+    -- Cache the indentexpr function in a stable global so the indentexpr
+    -- evaluation (called on every indent op) does not re-resolve require()
+    -- on each keystroke.
+    _G.YodaTSIndent = require("nvim-treesitter").indentexpr
     vim.api.nvim_create_autocmd("FileType", {
       group = vim.api.nvim_create_augroup("YodaTreesitter", { clear = true }),
       desc = "Enable treesitter highlight and indent",
       callback = function(ev)
         if pcall(vim.treesitter.start, ev.buf) then
-          vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          vim.bo[ev.buf].indentexpr = "v:lua.YodaTSIndent()"
         end
       end,
     })

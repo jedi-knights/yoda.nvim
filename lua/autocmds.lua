@@ -1,6 +1,14 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
+-- Module-scope cache for hot-path callbacks. yoda.filetype.settings is a
+-- first-party module guaranteed to exist; conform is checked via package.loaded
+-- so no require() runs in the BufWritePre callback.
+local ok_fts, filetype_settings = pcall(require, "yoda.filetype.settings")
+if not ok_fts then
+  vim.notify("[yoda] Failed to load yoda.filetype.settings: " .. tostring(filetype_settings), vim.log.levels.WARN)
+end
+
 -- ============================================================================
 -- Editor Behavior
 -- ============================================================================
@@ -13,7 +21,7 @@ autocmd({ "BufEnter", "FocusGained", "CmdlineLeave", "WinEnter" }, {
   group = line_numbers_group,
   desc = "Enable relative line numbers",
   callback = function()
-    if vim.wo.nu and not vim.startswith(vim.api.nvim_get_mode().mode, "i") then
+    if vim.wo.nu and not vim.wo.relativenumber and not vim.startswith(vim.api.nvim_get_mode().mode, "i") then
       vim.wo.relativenumber = true
     end
   end,
@@ -22,7 +30,7 @@ autocmd({ "BufLeave", "FocusLost", "CmdlineEnter", "WinLeave" }, {
   group = line_numbers_group,
   desc = "Disable relative line numbers",
   callback = function(args)
-    if vim.wo.nu then
+    if vim.wo.nu and vim.wo.relativenumber then
       vim.wo.relativenumber = false
     end
     if args.event == "CmdlineEnter" then
@@ -73,8 +81,20 @@ autocmd("BufWritePre", {
     if not vim.bo.modifiable then
       return
     end
-    local ok, conform = pcall(require, "conform")
-    if ok and #conform.list_formatters(0) > 0 then
+    -- Direct package.loaded lookup avoids a pcall+require round-trip on every
+    -- save; conform sets package.loaded.conform when its plugin loads.
+    local conform = package.loaded.conform
+    if conform and #conform.list_formatters(0) > 0 then
+      return
+    end
+    -- Fast path: skip the full-buffer copy when nothing needs trimming.
+    -- search() with 'cnw' does not move the cursor and returns 0 if no match.
+    -- @/ is saved and restored to guarantee the user's last-search pattern
+    -- (used by n/N) is not disturbed by this autocmd.
+    local saved_search = vim.fn.getreg("/")
+    local has_trailing = vim.fn.search([[\s\+$]], "cnw") ~= 0
+    vim.fn.setreg("/", saved_search)
+    if not has_trailing then
       return
     end
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
@@ -195,16 +215,15 @@ autocmd("VimResized", {
   group = augroup("YodaResizeSplits", { clear = true }),
   desc = "Resize splits equally when Vim is resized",
   callback = function()
-    local ok, timer_mgr = pcall(require, "yoda.timer_manager")
-    if not ok then
+    if not ok_timer then
       return
     end
     local timer_id = "vim_resized"
-    if timer_mgr.is_vim_timer_active(timer_id) then
-      timer_mgr.stop_vim_timer(timer_id)
+    if timer_manager.is_vim_timer_active(timer_id) then
+      timer_manager.stop_vim_timer(timer_id)
     end
 
-    timer_mgr.create_vim_timer(function()
+    timer_manager.create_vim_timer(function()
       pcall(vim.cmd, "wincmd =")
     end, RESIZE_DEBOUNCE_DELAY, timer_id)
   end,
@@ -218,11 +237,8 @@ autocmd("FileType", {
   group = augroup("YodaFileTypes", { clear = true }),
   desc = "Apply filetype-specific settings",
   callback = function()
-    local ok, settings = pcall(require, "yoda.filetype.settings")
-    if not ok then
-      vim.notify("[yoda] Failed to load yoda.filetype.settings: " .. tostring(settings), vim.log.levels.WARN)
-      return
+    if ok_fts then
+      filetype_settings.apply(vim.bo.filetype)
     end
-    settings.apply(vim.bo.filetype)
   end,
 })
