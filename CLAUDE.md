@@ -24,28 +24,35 @@ Yoda.nvim is a comprehensive Neovim distribution focused on providing an excelle
 - ❌ Adding comments or whitespace changes
 - ❌ Changes to non-code files (.gitignore, etc.)
 
-### Testing  
+### Testing
 ```bash
-make test              # Run all tests (optimized for speed)
-make test-verbose      # Run tests with detailed output (for CI/debugging)
+make test              # Run all specs with coverage (via neospec)
+make test-verbose      # Run with verbose output (for CI/debugging)
 ```
-- Uses `plenary.nvim` test framework
-- Runs 542 tests in ~2-3 seconds 
-- Individual test files can be found in `tests/unit/`
+- Test runner: `neospec` (binary installed via `make install`)
+- Spec discovery and coverage settings live in `neospec.toml`
+- Specs use plenary-style `describe` / `it` blocks under `tests/unit/**/*_spec.lua`
 
 ### Linting
 ```bash
 make lint              # Check code style with stylua
 make format            # Auto-format code with stylua
 ```
-- Checks Lua code style using `stylua`
-- Excludes files with goto labels (`yaml_parser.lua`, `config_loader.lua`)
+- Runs `stylua --check` over every `.lua` file under `lua/` and `tests/`
+- File-level excludes (e.g., goto-label files) are configured in `stylua.toml`
 
 ### Other Available Commands
 ```bash
-make test-unit         # Run only unit tests
-make test-integration  # Run integration tests  
-make help             # Show all available commands
+make install           # Install / update the neospec test runner
+make benchmark         # Run all performance benchmarks
+make benchmark-startup # Startup time
+make benchmark-buffers # Buffer switching
+make benchmark-files   # File operations
+make benchmark-memory  # Memory usage
+make benchmark-lsp     # LSP operations
+make benchmark-clean   # Remove benchmark output
+make clean             # Clean generated files
+make help              # Show all available commands
 ```
 
 ## Code Style
@@ -57,9 +64,10 @@ make help             # Show all available commands
 
 ## Testing Framework
 
-- Uses `plenary.nvim` test harness
+- Runner: `neospec` (Go binary) — configured by `neospec.toml`, bootstrapped by `tests/minimal_init_fast.lua`
+- Specs use plenary-style `describe` / `it` blocks
 - Test files mirror the `lua/` directory structure in `tests/unit/`
-- Tests include both unit tests and integration tests
+- Coverage is collected for `lua/yoda/` and written to `coverage/` in `console` and `lcov` formats
 - Mock patterns are used for external dependencies
 
 ## Architecture Notes
