@@ -146,6 +146,8 @@ Once installed, all language servers provide:
 | `<leader>eo` | Open Snacks Explorer (only if closed) |
 | `<leader>ef` | Focus Snacks Explorer (if open) |
 | `<leader>ec` | Close Snacks Explorer (if open) |
+| `H` *(in explorer)* | Toggle hidden files (dotfiles) |
+| `I` *(in explorer)* | Toggle ignored files (gitignored) |
 | `<leader><leader>` | Find files (mini.pick) |
 | `<leader>/` | Live grep search (mini.pick) |
 | `<leader>s.` | Recent files (mini.pick) |
