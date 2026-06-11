@@ -289,9 +289,13 @@ function M.setup()
   -- Hover docs are sourced from official Intel/ARM references; diagnostics are
   -- produced by shelling out to gcc/clang, so they degrade gracefully when no
   -- compiler is on PATH. .asm-lsp.toml lets a project pin its assembler/arch.
+  -- "nasm" is added beyond lspconfig's default { asm, vmasm }: Neovim assigns the
+  -- `nasm` filetype to *.nasm files, and asm-lsp supports the NASM dialect, so
+  -- without this those buffers would never get a server. *.s/*.S/*.asm all map to
+  -- the `asm` filetype regardless of dialect, so they're already covered.
   safe_setup("asm_lsp", {
     cmd = { "asm-lsp" },
-    filetypes = { "asm", "vmasm" },
+    filetypes = { "asm", "vmasm", "nasm" },
     root_markers = { ".asm-lsp.toml", ".git" },
   })
 
