@@ -285,6 +285,16 @@ function M.setup()
     root_markers = { "Makefile", "Makefile.am", "configure.ac", "GNUmakefile", ".git" },
   })
 
+  -- Assembly setup (asm-lsp: GAS/NASM/GO asm, x86/x86-64, ARM, RISC-V, etc.)
+  -- Hover docs are sourced from official Intel/ARM references; diagnostics are
+  -- produced by shelling out to gcc/clang, so they degrade gracefully when no
+  -- compiler is on PATH. .asm-lsp.toml lets a project pin its assembler/arch.
+  safe_setup("asm_lsp", {
+    cmd = { "asm-lsp" },
+    filetypes = { "asm", "vmasm" },
+    root_markers = { ".asm-lsp.toml", ".git" },
+  })
+
   -- Markdown setup
   safe_setup("marksman", {
     cmd = { "marksman", "server" },
