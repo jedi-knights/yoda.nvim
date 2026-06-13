@@ -60,7 +60,8 @@ return {
         override = {
           ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
           ["vim.lsp.util.stylize_markdown"] = true,
-          -- cmp.entry.get_documentation not overridden: uses blink.cmp, not nvim-cmp
+          -- cmp.entry.get_documentation not overridden: uses blink.cmp, not
+          -- nvim-cmp
         },
         hover = {
           silent = false,

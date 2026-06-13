@@ -41,7 +41,8 @@ function M.get_gitsigns()
 end
 
 --- Refresh git signs with batching - collects multiple requests in 200ms window
---- This deduplicates rapid refresh triggers (BufWritePost, FocusGained, FileChangedShell)
+--- This deduplicates rapid refresh triggers (BufWritePost, FocusGained,
+--- FileChangedShell)
 function M.refresh_batched()
   local gs = M.get_gitsigns()
   if not gs then

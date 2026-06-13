@@ -188,7 +188,8 @@ require("lazy").setup({
   { import = "plugins" },
 
   -- User customizations: add your own plugins in lua/custom/plugins/
-  -- This directory is gitignored so your changes won't conflict with upstream yoda updates.
+  -- This directory is gitignored so your changes won't conflict with upstream
+  -- yoda updates.
   -- See lua/custom/plugins/init.lua for instructions.
   { import = "custom.plugins" },
 }, {
@@ -231,7 +232,8 @@ require("lazy").setup({
         "tarPlugin", -- (*)
         "tohtml", -- not in options.lua; no early-guard needed
         "zipPlugin", -- (*)
-        "spellfile", -- (*) note: options.lua uses "spellfile_plugin" (guard name differs)
+        -- (*) note: options.lua uses "spellfile_plugin" (guard name differs)
+        "spellfile",
         "2html_plugin", -- (*)
         "getscript", -- (*)
         "getscriptPlugin", -- (*)

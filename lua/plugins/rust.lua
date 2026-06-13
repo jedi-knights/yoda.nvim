@@ -1,12 +1,15 @@
 -- lua/plugins/rust.lua
--- Rust development: rustaceanvim (LSP/DAP/neotest via rust-analyzer) and crates.nvim (Cargo.toml).
+-- Rust development: rustaceanvim (LSP/DAP/neotest via rust-analyzer) and
+-- crates.nvim (Cargo.toml).
 
 return {
-  -- Filetype plugin: no setup() call needed, activates automatically for *.rs files.
+  -- Filetype plugin: no setup() call needed, activates automatically for *.rs
+  -- files.
   -- Manages its own rust-analyzer LSP client, bypassing mason-lspconfig, so
   -- rust-analyzer must NOT be listed in mason-lspconfig's ensure_installed.
   -- Provides a built-in neotest adapter (rustaceanvim.neotest) that uses
-  -- rust-analyzer for test discovery — more accurate than the archived neotest-rust.
+  -- rust-analyzer for test discovery — more accurate than the archived
+  -- neotest-rust.
   {
     "mrcjkb/rustaceanvim",
     version = "^5",

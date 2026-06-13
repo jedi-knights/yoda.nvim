@@ -30,9 +30,12 @@ return {
 
   -- Separation of concerns:
   --   ensure_installed  → Mason installs the server binaries
-  --   handlers          → Overrides mason-lspconfig auto-configuration (we opt out
-  --                        of auto-setup so that yoda.lsp owns all vim.lsp.config calls)
-  --   yoda.lsp.setup()  → Single source of truth for all vim.lsp.config configuration
+  --   handlers          → Overrides mason-lspconfig auto-configuration (we opt
+  --   out
+  --                        of auto-setup so that yoda.lsp owns all
+  --                        vim.lsp.config calls)
+  --   yoda.lsp.setup()  → Single source of truth for all vim.lsp.config
+  --   configuration
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
@@ -71,7 +74,8 @@ return {
             if server_name == "pyright" then
               return
             end
-            -- All other servers: do nothing here; yoda.lsp.setup() configured them
+            -- All other servers: do nothing here; yoda.lsp.setup() configured
+            -- them
           end,
         },
       })

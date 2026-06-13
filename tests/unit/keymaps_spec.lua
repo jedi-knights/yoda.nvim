@@ -13,7 +13,8 @@ describe("keymaps", function()
   }
 
   --- Extract {mode, key} pairs from a Lua source file by matching map() and
-  --- vim.keymap.set() call sites. This is intentionally simple pattern matching —
+  --- vim.keymap.set() call sites. This is intentionally simple pattern matching
+  --- —
   --- it doesn't evaluate the Lua, so it catches literal string arguments only.
   local function extract_keys(filepath)
     local lines = vim.fn.readfile(filepath)

@@ -7,7 +7,7 @@ local M = {}
 -- Constants
 -- ============================================================================
 
-local NOTIFICATION_TIMEOUT_MS = 2000 -- Display environment notification for 2 seconds
+local NOTIFICATION_TIMEOUT_MS = 2000 -- Environment notification timeout
 
 --- Show environment notification on startup
 --- Displays which mode Yoda is running in (Home/Work)

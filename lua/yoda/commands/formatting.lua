@@ -95,7 +95,8 @@ function M.setup()
 
   -- Toggle conform.nvim auto-format on save.
   -- vim.g.autoformat is initialised to true in formatters.lua so the first
-  -- call always disables, matching the common "I need to save without formatting"
+  -- call always disables, matching the common "I need to save without
+  -- formatting"
   -- use-case without requiring the user to remember the current state.
   vim.api.nvim_create_user_command("ToggleFormat", function()
     vim.g.autoformat = not vim.g.autoformat

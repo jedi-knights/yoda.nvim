@@ -12,7 +12,8 @@ return {
       "mfussenegger/nvim-dap",
       "rcarriga/nvim-dap-ui",
     },
-    -- Install debugpy as a uv global tool so it is available across all projects.
+    -- Install debugpy as a uv global tool so it is available across all
+    -- projects.
     build = function()
       vim.fn.jobstart({ "uv", "tool", "install", "debugpy" }, {
         on_exit = function(_, code)
@@ -65,7 +66,8 @@ return {
   },
 
   -- Go DAP adapter. Configures Delve automatically so Go debugging works
-  -- without a .vscode/launch.json. Also adds :DapGoTest to debug individual tests.
+  -- without a .vscode/launch.json. Also adds :DapGoTest to debug individual
+  -- tests.
   {
     "leoluz/nvim-dap-go",
     ft = "go",
@@ -214,8 +216,10 @@ return {
       require("nvim-dap-virtual-text").setup()
 
       -- Load .vscode/launch.json if present in the project root.
-      -- type_to_filetypes maps the DAP adapter name to the filetype(s) it applies to,
-      -- which is required because launch.json uses adapter type names, not Neovim filetypes.
+      -- type_to_filetypes maps the DAP adapter name to the filetype(s) it
+      -- applies to,
+      -- which is required because launch.json uses adapter type names, not
+      -- Neovim filetypes.
       local vscode = require("dap.ext.vscode")
       local type_to_filetypes = { delve = { "go" }, python = { "python" } }
 
@@ -236,9 +240,12 @@ return {
 
       load_vscode_launch()
 
-      -- Reload when switching projects so per-repo launch configs are picked up.
-      -- pattern = "global" limits to :cd (session-wide) changes; ignores :lcd/:tcd
-      -- so the callback doesn't fire multiple times for a single directory change.
+      -- Reload when switching projects so per-repo launch configs are picked
+      -- up.
+      -- pattern = "global" limits to :cd (session-wide) changes; ignores
+      -- :lcd/:tcd
+      -- so the callback doesn't fire multiple times for a single directory
+      -- change.
       vim.api.nvim_create_autocmd("DirChanged", {
         group = vim.api.nvim_create_augroup(
           "dap_vscode_launch",

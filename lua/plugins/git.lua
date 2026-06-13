@@ -1,5 +1,6 @@
 -- lua/plugins/git.lua
--- Git integration: signs/blame (gitsigns), history viewer (diffview), staging UI (neogit).
+-- Git integration: signs/blame (gitsigns), history viewer (diffview), staging
+-- UI (neogit).
 
 return {
   {

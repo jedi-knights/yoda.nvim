@@ -1,6 +1,7 @@
 local notify = require("yoda-adapters.notification")
 
--- All Rust keymaps are buffer-local, registered only when a Rust file is opened.
+-- All Rust keymaps are buffer-local, registered only when a Rust file is
+-- opened.
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("YodaRustKeymaps", { clear = true }),
   pattern = "rust",
