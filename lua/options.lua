@@ -20,9 +20,12 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
--- 500ms: enough time for deliberate multi-key leader sequences without perceptible
--- lag on ambiguous operators (g, d, etc.). Was 1000ms when jk→<Esc> was active —
--- that mapping forced a long wait on every 'j'; now that it's removed, 500ms is safe.
+-- 500ms: enough time for deliberate multi-key leader sequences without
+-- perceptible
+-- lag on ambiguous operators (g, d, etc.). Was 1000ms when jk→<Esc> was active
+-- —
+-- that mapping forced a long wait on every 'j'; now that it's removed, 500ms is
+-- safe.
 vim.opt.timeoutlen = 500
 vim.opt.ttimeoutlen = 0
 vim.opt.autoread = true
@@ -30,7 +33,9 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-vim.opt.inccommand = "nosplit" -- live substitution preview inline (split opens a window, nosplit just highlights)
+-- live substitution preview inline (split opens a window, nosplit just
+-- highlights)
+vim.opt.inccommand = "nosplit"
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.colorcolumn = "80"
@@ -81,11 +86,12 @@ vim.opt.wildmode = "longest:full,full"
 vim.opt.laststatus = 3
 vim.opt.showcmd = true
 vim.opt.cmdheight = 1 -- noice.nvim provides a floating cmdline popup instead
-vim.opt.showtabline = 0 -- Hide tabline (use :bnext / :bprev to navigate buffers)
-vim.opt.confirm = true -- ask to save unsaved changes instead of refusing to quit
+vim.opt.showtabline = 0 -- Hide tabline (use :bnext/:bprev)
+vim.opt.confirm = true -- prompt to save instead of refusing to quit
 vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
 vim.opt.pumborder = "rounded" -- bordered completion popup menu (Neovim 0.12+)
-vim.opt.winborder = "rounded" -- global rounded borders for all floating windows (Neovim 0.12+)
+-- global rounded borders for all floating windows (Neovim 0.12+)
+vim.opt.winborder = "rounded"
 
 -- ============================================================================
 -- BACKUP & SHADA
@@ -111,8 +117,11 @@ vim.opt.shada = {
 -- ============================================================================
 
 vim.opt.termguicolors = true
-vim.opt.synmaxcol = 240 -- don't syntax-highlight past col 240 (prevents slowdown on minified/generated files)
-vim.opt.modelines = 0 -- don't scan file edges for modeline directives (unused; free per-open win)
+-- don't syntax-highlight past col 240 (prevents slowdown on
+-- minified/generated files)
+vim.opt.synmaxcol = 240
+-- don't scan file edges for modeline directives (unused; free per-open win)
+vim.opt.modelines = 0
 
 -- ============================================================================
 -- FOLDING
@@ -180,7 +189,8 @@ local disabled_built_ins = {
   "2html_plugin", -- also in lazy-plugins.lua disabled_plugins
   "logipat", -- also in lazy-plugins.lua disabled_plugins
   "rrhelper", -- also in lazy-plugins.lua disabled_plugins
-  "spellfile_plugin", -- note: lazy uses "spellfile" (filename); guard name differs
+  -- note: lazy uses "spellfile" (filename); guard name differs
+  "spellfile_plugin",
   "matchit", -- also in lazy-plugins.lua disabled_plugins
 }
 

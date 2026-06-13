@@ -20,7 +20,8 @@ return {
   },
 
   -- Extended text objects using treesitter. n_lines=50 looks up to 50 lines
-  -- away for object boundaries, handling long functions without missing closing braces.
+  -- away for object boundaries, handling long functions without missing closing
+  -- braces.
   {
     "echasnovski/mini.ai",
     event = "VeryLazy",
@@ -53,7 +54,8 @@ return {
     lazy = true,
   },
 
-  -- Fuzzy finder replacing fzf-lua. Keybindings match Jesalx/nixos-config style.
+  -- Fuzzy finder replacing fzf-lua. Keybindings match Jesalx/nixos-config
+  -- style.
   {
     "echasnovski/mini.pick",
     dependencies = { "echasnovski/mini.extra" },

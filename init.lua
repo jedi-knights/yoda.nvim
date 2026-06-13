@@ -96,7 +96,8 @@ vim.schedule(function()
     )
   end
 
-  -- Screen recording toggle (macOS only — requires ffmpeg and Screen Recording permission)
+  -- Screen recording toggle (macOS only — requires ffmpeg and Screen Recording
+  -- permission)
   local ok_sc, screencast = pcall(require, "yoda.screencast")
   if ok_sc then
     screencast.setup()
