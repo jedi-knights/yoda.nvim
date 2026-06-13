@@ -32,7 +32,10 @@ return {
       menu = {
         border = "rounded",
         draw = {
-          columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } },
+          columns = {
+            { "label", "label_description", gap = 1 },
+            { "kind_icon", "kind" },
+          },
         },
         max_height = 15,
       },

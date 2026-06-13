@@ -37,7 +37,11 @@ vim.api.nvim_create_autocmd("FileType", {
         end)
       else
         -- Normal Enter behavior
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes("<CR>", true, false, true),
+          "n",
+          false
+        )
       end
     end, { buffer = bufnr, desc = "Smart Enter with Go indentation" })
 

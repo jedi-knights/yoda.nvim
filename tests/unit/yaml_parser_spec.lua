@@ -307,7 +307,10 @@ environments:
 
       local result = yaml_parser.parse_ingress_mapping("test.yaml")
       assert.equals(5, #result.environments.prod)
-      assert.same({ "auto", "use1", "usw2", "euc1", "apse2" }, result.environments.prod)
+      assert.same(
+        { "auto", "use1", "usw2", "euc1", "apse2" },
+        result.environments.prod
+      )
     end)
 
     -- Note: Debug logging tests removed - yaml_parser now uses unified logger

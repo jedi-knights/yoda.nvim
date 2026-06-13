@@ -119,10 +119,13 @@ describe("large_file", function()
       assert.is_true(LargeFile.should_skip_autosave(buf))
     end)
 
-    it("returns false for normal buffer even when autosave disable is on", function()
-      LargeFile.setup({ disable = { autosave = true } })
-      assert.is_false(LargeFile.should_skip_autosave(buf))
-    end)
+    it(
+      "returns false for normal buffer even when autosave disable is on",
+      function()
+        LargeFile.setup({ disable = { autosave = true } })
+        assert.is_false(LargeFile.should_skip_autosave(buf))
+      end
+    )
   end)
 
   -- =========================================================================

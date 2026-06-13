@@ -42,7 +42,13 @@ local function convert_to_gif(mov)
           vim.notify("Screencast saved — " .. gif, vim.log.levels.INFO)
           os.remove(mov)
         else
-          vim.notify("ffmpeg conversion failed (exit " .. code .. ") — raw file kept: " .. mov, vim.log.levels.WARN)
+          vim.notify(
+            "ffmpeg conversion failed (exit "
+              .. code
+              .. ") — raw file kept: "
+              .. mov,
+            vim.log.levels.WARN
+          )
         end
       end)
     end,
@@ -54,7 +60,10 @@ local function start()
   local output_dir = vim.fn.fnamemodify(output_path, ":h")
 
   if output_dir == "" then
-    vim.notify("[screencast] Could not resolve output directory", vim.log.levels.ERROR)
+    vim.notify(
+      "[screencast] Could not resolve output directory",
+      vim.log.levels.ERROR
+    )
     return
   end
 
@@ -74,7 +83,10 @@ local function start()
 
   -- jobstart returns 0 (invalid command) or -1 (not executable) on failure.
   if job_id <= 0 then
-    vim.notify("[screencast] Failed to start screencapture (macOS only, check PATH and Screen Recording permission)", vim.log.levels.ERROR)
+    vim.notify(
+      "[screencast] Failed to start screencapture (macOS only, check PATH and Screen Recording permission)",
+      vim.log.levels.ERROR
+    )
     return
   end
 
@@ -122,7 +134,12 @@ function M.setup()
     return
   end
   _setup_done = true
-  vim.keymap.set("n", "<leader>tv", M.toggle, { desc = "[T]oggle [V]ideo recording" })
+  vim.keymap.set(
+    "n",
+    "<leader>tv",
+    M.toggle,
+    { desc = "[T]oggle [V]ideo recording" }
+  )
 end
 
 return M

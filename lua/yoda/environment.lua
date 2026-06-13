@@ -31,7 +31,11 @@ M.show_notification = function()
     end
 
     local msg = string.format("%s  Yoda is in %s mode", icon, env_label)
-    require("yoda-adapters.notification").notify(msg, "info", { title = "Yoda Environment", timeout = NOTIFICATION_TIMEOUT_MS })
+    require("yoda-adapters.notification").notify(
+      msg,
+      "info",
+      { title = "Yoda Environment", timeout = NOTIFICATION_TIMEOUT_MS }
+    )
   end)
 end
 
@@ -44,7 +48,11 @@ M.show_local_dev_notification = function()
 
   vim.schedule(function()
     local msg = "  Local Development Mode Active"
-    require("yoda-adapters.notification").notify(msg, "info", { title = "Yoda Development", timeout = NOTIFICATION_TIMEOUT_MS })
+    require("yoda-adapters.notification").notify(
+      msg,
+      "info",
+      { title = "Yoda Development", timeout = NOTIFICATION_TIMEOUT_MS }
+    )
   end)
 end
 

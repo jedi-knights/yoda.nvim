@@ -272,7 +272,13 @@ describe("picker_handler", function()
     it("saves selections to cache", function()
       local saved_data = nil
 
-      mock_config_loader.save_marker = function(path, env, region, markers, allure)
+      mock_config_loader.save_marker = function(
+        path,
+        env,
+        region,
+        markers,
+        allure
+      )
         saved_data = {
           path = path,
           env = env,
@@ -319,48 +325,54 @@ describe("picker_handler", function()
       package.loaded["yoda.terminal.venv"] = nil
     end)
 
-    it("completes YAML wizard without configuration display (moved to pytest-atlas)", function()
-      local completed = false
-      local result = nil
+    it(
+      "completes YAML wizard without configuration display (moved to pytest-atlas)",
+      function()
+        local completed = false
+        local result = nil
 
-      PickerHandler.handle_yaml_selection({
-        environments = { qa = { "auto" } },
-        env_order = { "qa" },
-      }, function(config)
-        completed = true
-        result = config
-      end)
+        PickerHandler.handle_yaml_selection({
+          environments = { qa = { "auto" } },
+          env_order = { "qa" },
+        }, function(config)
+          completed = true
+          result = config
+        end)
 
-      -- Should complete successfully with result
-      assert.is_true(completed)
-      assert.is_not_nil(result)
-      assert.equals("qa", result.environment)
-      assert.equals("auto", result.region)
-    end)
+        -- Should complete successfully with result
+        assert.is_true(completed)
+        assert.is_not_nil(result)
+        assert.equals("qa", result.environment)
+        assert.equals("auto", result.region)
+      end
+    )
 
-    it("completes JSON selection without configuration display (moved to pytest-atlas)", function()
-      local completed = false
-      local result = nil
+    it(
+      "completes JSON selection without configuration display (moved to pytest-atlas)",
+      function()
+        local completed = false
+        local result = nil
 
-      package.loaded["snacks.picker"] = {
-        select = function(items, opts, callback)
-          callback("qa (auto)")
-        end,
-      }
+        package.loaded["snacks.picker"] = {
+          select = function(items, opts, callback)
+            callback("qa (auto)")
+          end,
+        }
 
-      PickerHandler.handle_json_selection({
-        environments = { "qa" },
-        regions = { "auto" },
-      }, function(config)
-        completed = true
-        result = config
-      end)
+        PickerHandler.handle_json_selection({
+          environments = { "qa" },
+          regions = { "auto" },
+        }, function(config)
+          completed = true
+          result = config
+        end)
 
-      -- Should complete successfully with result
-      assert.is_true(completed)
-      assert.is_not_nil(result)
-      assert.equals("qa", result.environment)
-      assert.equals("auto", result.region)
-    end)
+        -- Should complete successfully with result
+        assert.is_true(completed)
+        assert.is_not_nil(result)
+        assert.equals("qa", result.environment)
+        assert.equals("auto", result.region)
+      end
+    )
   end)
 end)

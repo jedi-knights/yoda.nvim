@@ -28,9 +28,13 @@ return {
     -- the working directory when invoked from the project root.
     local function build_golangci_args()
       local args = { "run" }
-      local project_cfg = vim.fn.findfile(".golangci.yml", vim.fn.getcwd() .. ";")
+      local project_cfg =
+        vim.fn.findfile(".golangci.yml", vim.fn.getcwd() .. ";")
       if project_cfg ~= "" then
-        vim.list_extend(args, { "--config", vim.fn.fnamemodify(project_cfg, ":p") })
+        vim.list_extend(
+          args,
+          { "--config", vim.fn.fnamemodify(project_cfg, ":p") }
+        )
       else
         local user_cfg = vim.fn.expand("~/.config/golangci-lint/config.yml")
         if vim.fn.filereadable(user_cfg) == 1 then

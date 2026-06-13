@@ -17,7 +17,10 @@ function M.setup()
     -- Check if Mason is available
     local mason_ok, mason = pcall(require, "mason")
     if not mason_ok then
-      notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
+      notify.notify(
+        "❌ Mason not available. Install via :Lazy sync first",
+        "error"
+      )
       return
     end
 
@@ -41,8 +44,12 @@ function M.setup()
       { title = "Yoda Python Setup" }
     )
 
-    logger.info("✅ Python setup initiated. Restart Neovim after Mason installation completes.")
-  end, { desc = "Install Python development tools (basedpyright, debugpy, ruff) via Mason" })
+    logger.info(
+      "✅ Python setup initiated. Restart Neovim after Mason installation completes."
+    )
+  end, {
+    desc = "Install Python development tools (basedpyright, debugpy, ruff) via Mason",
+  })
 
   -- Stop pyright LSP
   vim.api.nvim_create_user_command("StopPyright", function()
@@ -54,7 +61,10 @@ function M.setup()
 
     for _, client in ipairs(clients) do
       client:stop()
-      notify.notify(string.format("Stopped pyright client (id:%d)", client.id), "info")
+      notify.notify(
+        string.format("Stopped pyright client (id:%d)", client.id),
+        "info"
+      )
     end
   end, { desc = "Stop pyright LSP clients (we use basedpyright)" })
 
@@ -62,14 +72,20 @@ function M.setup()
   vim.api.nvim_create_user_command("UninstallPyright", function()
     notify.notify("Uninstalling pyright from Mason...", "info")
     vim.cmd("MasonUninstall pyright")
-    notify.notify("✅ Pyright uninstalled!\nWe use basedpyright instead.\nRestart Neovim for changes to take effect.", "info")
+    notify.notify(
+      "✅ Pyright uninstalled!\nWe use basedpyright instead.\nRestart Neovim for changes to take effect.",
+      "info"
+    )
   end, { desc = "Uninstall pyright from Mason (we use basedpyright)" })
 
   -- Python virtual environment selector
   vim.api.nvim_create_user_command("YodaPythonVenv", function()
     local ok = pcall(vim.cmd, "VenvSelect")
     if not ok then
-      notify.notify("❌ venv-selector not available. Install via :Lazy sync", "error")
+      notify.notify(
+        "❌ venv-selector not available. Install via :Lazy sync",
+        "error"
+      )
     end
   end, { desc = "Select Python virtual environment" })
 end

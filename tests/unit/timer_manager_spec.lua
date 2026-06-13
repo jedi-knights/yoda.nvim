@@ -47,7 +47,12 @@ describe("timer_manager", function()
 
     it("accepts custom timer ID", function()
       local custom_id = "my_custom_timer"
-      local timer, timer_id = timer_manager.create_timer(function() end, 100, 0, custom_id)
+      local timer, timer_id = timer_manager.create_timer(
+        function() end,
+        100,
+        0,
+        custom_id
+      )
 
       assert.equals(custom_id, timer_id)
       assert.is_true(timer_manager.is_timer_active(custom_id))
@@ -85,7 +90,11 @@ describe("timer_manager", function()
 
     it("accepts custom timer ID", function()
       local custom_id = "my_vim_timer"
-      local timer_handle, timer_id = timer_manager.create_vim_timer(function() end, 100, custom_id)
+      local timer_handle, timer_id = timer_manager.create_vim_timer(
+        function() end,
+        100,
+        custom_id
+      )
 
       assert.equals(custom_id, timer_id)
       assert.is_true(timer_manager.is_vim_timer_active(custom_id))
@@ -96,7 +105,8 @@ describe("timer_manager", function()
         error("Test error")
       end
 
-      local timer_handle, timer_id = timer_manager.create_vim_timer(error_callback, 100)
+      local timer_handle, timer_id =
+        timer_manager.create_vim_timer(error_callback, 100)
 
       assert.is_not_nil(timer_handle)
       assert.is_not_nil(timer_id)
@@ -105,7 +115,10 @@ describe("timer_manager", function()
 
   describe("stop_vim_timer", function()
     it("stops vim timer", function()
-      local timer_handle, timer_id = timer_manager.create_vim_timer(function() end, 100)
+      local timer_handle, timer_id = timer_manager.create_vim_timer(
+        function() end,
+        100
+      )
 
       assert.is_true(timer_manager.is_vim_timer_active(timer_id))
 

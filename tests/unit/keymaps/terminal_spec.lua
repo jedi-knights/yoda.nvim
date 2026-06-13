@@ -12,21 +12,33 @@ describe("keymaps.terminal", function()
 
   it("maps <C-h> in terminal mode to move to the left window", function()
     local content = read_source()
-    assert.is_truthy(content:find('map%("t",%s*"<C%-h>"'), "Expected <C-h> terminal mode mapping for left window navigation")
+    assert.is_truthy(
+      content:find('map%(%s*"t",%s*"<C%-h>"'),
+      "Expected <C-h> terminal mode mapping for left window navigation"
+    )
   end)
 
   it("maps <C-j> in terminal mode to move to the window below", function()
     local content = read_source()
-    assert.is_truthy(content:find('map%("t",%s*"<C%-j>"'), "Expected <C-j> terminal mode mapping for down window navigation")
+    assert.is_truthy(
+      content:find('map%(%s*"t",%s*"<C%-j>"'),
+      "Expected <C-j> terminal mode mapping for down window navigation"
+    )
   end)
 
   it("maps <C-k> in terminal mode to move to the window above", function()
     local content = read_source()
-    assert.is_truthy(content:find('map%("t",%s*"<C%-k>"'), "Expected <C-k> terminal mode mapping for up window navigation")
+    assert.is_truthy(
+      content:find('map%(%s*"t",%s*"<C%-k>"'),
+      "Expected <C-k> terminal mode mapping for up window navigation"
+    )
   end)
 
   it("maps <C-l> in terminal mode to move to the right window", function()
     local content = read_source()
-    assert.is_truthy(content:find('map%("t",%s*"<C%-l>"'), "Expected <C-l> terminal mode mapping for right window navigation")
+    assert.is_truthy(
+      content:find('map%(%s*"t",%s*"<C%-l>"'),
+      "Expected <C-l> terminal mode mapping for right window navigation"
+    )
   end)
 end)

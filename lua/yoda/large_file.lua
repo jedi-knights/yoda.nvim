@@ -220,7 +220,11 @@ function M.enable_large_file_mode(buf, size)
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
     local size_str = format_size(size)
     notify.notify(
-      string.format("📊 Large file mode enabled for %s (%s)\nSome features disabled for better performance", filename, size_str),
+      string.format(
+        "📊 Large file mode enabled for %s (%s)\nSome features disabled for better performance",
+        filename,
+        size_str
+      ),
       "info",
       { title = "Large File" }
     )
@@ -244,7 +248,11 @@ function M.disable_large_file_mode(buf)
   vim.b[buf].editorconfig = true
 
   -- Notify user
-  notify.notify("📊 Large file mode disabled - reload buffer to re-enable features", "info", { title = "Large File" })
+  notify.notify(
+    "📊 Large file mode disabled - reload buffer to re-enable features",
+    "info",
+    { title = "Large File" }
+  )
 end
 
 --- Check and handle large file on buffer read
@@ -281,17 +289,30 @@ function M.setup_commands()
       local size = vim.b[buf].large_file_size or 0
       local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
       notify.notify(
-        string.format("Large file mode: ENABLED\nFile: %s\nSize: %s\nThreshold: %s", filename, format_size(size), format_size(config.size_threshold)),
+        string.format(
+          "Large file mode: ENABLED\nFile: %s\nSize: %s\nThreshold: %s",
+          filename,
+          format_size(size),
+          format_size(config.size_threshold)
+        ),
         "info",
         { title = "Large File Status" }
       )
     else
-      notify.notify("Large file mode: DISABLED", "info", { title = "Large File Status" })
+      notify.notify(
+        "Large file mode: DISABLED",
+        "info",
+        { title = "Large File Status" }
+      )
     end
   end, { desc = "Show large file mode status" })
 
   vim.api.nvim_create_user_command("LargeFileConfig", function()
-    notify.notify(vim.inspect(config), "info", { title = "Large File Configuration" })
+    notify.notify(
+      vim.inspect(config),
+      "info",
+      { title = "Large File Configuration" }
+    )
   end, { desc = "Show large file configuration" })
 end
 

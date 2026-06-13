@@ -24,7 +24,8 @@ local ALLURE_OPTIONS = {
   "No, skip Allure report",
 }
 
-local CACHE_FILE_PATH = vim.fn.stdpath("cache") .. "/yoda_testpicker_marker.json"
+local CACHE_FILE_PATH = vim.fn.stdpath("cache")
+  .. "/yoda_testpicker_marker.json"
 
 -- ============================================================================
 -- Cache Management (Extracted for DRY)
@@ -158,13 +159,17 @@ local function wizard_step_select_environment(env_names, callback)
   local cached = load_cached_config()
   local reordered = reorder_with_default_first(env_names, cached.environment)
 
-  safe_picker_select(reordered, { prompt = "Select Environment:" }, function(selected_env)
-    if not selected_env then
-      callback(nil)
-      return
+  safe_picker_select(
+    reordered,
+    { prompt = "Select Environment:" },
+    function(selected_env)
+      if not selected_env then
+        callback(nil)
+        return
+      end
+      callback(selected_env)
     end
-    callback(selected_env)
-  end)
+  )
 end
 
 --- Wizard Step 2: Select Region
@@ -176,7 +181,10 @@ local function wizard_step_select_region(env_region, selected_env, callback)
   local regions = (env_region.environments or env_region)[selected_env]
 
   if not regions or #regions == 0 then
-    vim.notify("No regions found for environment: " .. selected_env, vim.log.levels.WARN)
+    vim.notify(
+      "No regions found for environment: " .. selected_env,
+      vim.log.levels.WARN
+    )
     callback(nil)
     return
   end
@@ -253,38 +261,47 @@ function M.handle_yaml_selection(env_region, callback)
       return
     end
 
-    wizard_step_select_region(env_region, selected_env, function(selected_region)
-      if not selected_region then
-        callback(nil)
-        return
-      end
-
-      wizard_step_select_markers(function(markers_to_use)
-        if not markers_to_use then
+    wizard_step_select_region(
+      env_region,
+      selected_env,
+      function(selected_region)
+        if not selected_region then
           callback(nil)
           return
         end
 
-        wizard_step_select_allure(function(open_allure)
-          if open_allure == nil then
+        wizard_step_select_markers(function(markers_to_use)
+          if not markers_to_use then
             callback(nil)
             return
           end
 
-          -- Save and return results
-          save_cached_config(selected_env, selected_region, markers_to_use, open_allure)
+          wizard_step_select_allure(function(open_allure)
+            if open_allure == nil then
+              callback(nil)
+              return
+            end
 
-          -- NOTE: Configuration preview moved to pytest-atlas.nvim plugin
+            -- Save and return results
+            save_cached_config(
+              selected_env,
+              selected_region,
+              markers_to_use,
+              open_allure
+            )
 
-          callback({
-            environment = selected_env,
-            region = selected_region,
-            markers = markers_to_use,
-            open_allure = open_allure,
-          })
+            -- NOTE: Configuration preview moved to pytest-atlas.nvim plugin
+
+            callback({
+              environment = selected_env,
+              region = selected_region,
+              markers = markers_to_use,
+              open_allure = open_allure,
+            })
+          end)
         end)
-      end)
-    end)
+      end
+    )
   end)
 end
 
@@ -303,20 +320,27 @@ function M.handle_json_selection(env_region, callback)
 
   local reordered = reorder_with_default_first(items, default_label)
 
-  safe_picker_select(reordered, { prompt = "Select Test Environment:" }, function(choice)
-    if not choice then
-      callback(nil)
-      return
-    end
+  safe_picker_select(
+    reordered,
+    { prompt = "Select Test Environment:" },
+    function(choice)
+      if not choice then
+        callback(nil)
+        return
+      end
 
-    local env, region = parse_env_region_label(choice)
-    if env and region then
-      callback({ environment = env, region = region })
-    else
-      vim.notify("Failed to parse environment and region from selection", vim.log.levels.ERROR)
-      callback(nil)
+      local env, region = parse_env_region_label(choice)
+      if env and region then
+        callback({ environment = env, region = region })
+      else
+        vim.notify(
+          "Failed to parse environment and region from selection",
+          vim.log.levels.ERROR
+        )
+        callback(nil)
+      end
     end
-  end)
+  )
 end
 
 -- ============================================================================

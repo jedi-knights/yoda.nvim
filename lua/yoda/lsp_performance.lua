@@ -16,7 +16,8 @@ function M.track_lsp_attach(server_name, start_time)
   local elapsed = (vim.uv.hrtime() - start_time) / 1000000
 
   if not metrics.attach_times[server_name] then
-    metrics.attach_times[server_name] = { total = 0, count = 0, max = 0, min = math.huge }
+    metrics.attach_times[server_name] =
+      { total = 0, count = 0, max = 0, min = math.huge }
   end
 
   local metric = metrics.attach_times[server_name]
@@ -26,7 +27,10 @@ function M.track_lsp_attach(server_name, start_time)
   metric.min = math.min(metric.min, elapsed)
 
   if elapsed > 500 then
-    vim.notify(string.format("Slow LSP attach: %s took %.2fms", server_name, elapsed), vim.log.levels.WARN)
+    vim.notify(
+      string.format("Slow LSP attach: %s took %.2fms", server_name, elapsed),
+      vim.log.levels.WARN
+    )
   end
 end
 
@@ -59,7 +63,14 @@ function M.track_lsp_restart(server_name)
   metrics.restart_counts[server_name] = metrics.restart_counts[server_name] + 1
 
   if metrics.restart_counts[server_name] > 5 then
-    vim.notify(string.format("LSP %s has restarted %d times this session", server_name, metrics.restart_counts[server_name]), vim.log.levels.WARN)
+    vim.notify(
+      string.format(
+        "LSP %s has restarted %d times this session",
+        server_name,
+        metrics.restart_counts[server_name]
+      ),
+      vim.log.levels.WARN
+    )
   end
 end
 
@@ -107,7 +118,14 @@ function M.setup_commands()
       for server, data in pairs(report.attach_times) do
         table.insert(
           lines,
-          string.format("  %s: avg=%.2fms, min=%.2fms, max=%.2fms, count=%d", server, data.total / data.count, data.min, data.max, data.count)
+          string.format(
+            "  %s: avg=%.2fms, min=%.2fms, max=%.2fms, count=%d",
+            server,
+            data.total / data.count,
+            data.min,
+            data.max,
+            data.count
+          )
         )
       end
     end
@@ -120,7 +138,16 @@ function M.setup_commands()
       for root, data in pairs(report.venv_detection) do
         local avg_time = data.total / data.count
         local success_rate = (data.found / data.count) * 100
-        table.insert(lines, string.format("  %s: avg=%.2fms, success=%.1f%%, count=%d", root, avg_time, success_rate, data.count))
+        table.insert(
+          lines,
+          string.format(
+            "  %s: avg=%.2fms, success=%.1f%%, count=%d",
+            root,
+            avg_time,
+            success_rate,
+            data.count
+          )
+        )
       end
     end
 
@@ -131,7 +158,10 @@ function M.setup_commands()
     else
       for server, count in pairs(report.restarts) do
         local status = count > 5 and "warning" or "ok"
-        table.insert(lines, string.format("  [%s] %s: %d restarts", status, server, count))
+        table.insert(
+          lines,
+          string.format("  [%s] %s: %d restarts", status, server, count)
+        )
       end
     end
 
@@ -141,7 +171,16 @@ function M.setup_commands()
       table.insert(lines, "  No config times recorded")
     else
       for server, data in pairs(report.config_times) do
-        table.insert(lines, string.format("  %s: avg=%.2fms, max=%.2fms, count=%d", server, data.total / data.count, data.max, data.count))
+        table.insert(
+          lines,
+          string.format(
+            "  %s: avg=%.2fms, max=%.2fms, count=%d",
+            server,
+            data.total / data.count,
+            data.max,
+            data.count
+          )
+        )
       end
     end
 

@@ -52,15 +52,19 @@ return {
   event = "VeryLazy",
   dependencies = { "echasnovski/mini.icons" },
   config = function()
-    local diagnostics_component = has_diagnostic_status and {
-      diagnostic_status,
-      color = { fg = "#c8d3f5" },
-    } or "diagnostics"
+    local diagnostics_component = has_diagnostic_status
+        and {
+          diagnostic_status,
+          color = { fg = "#c8d3f5" },
+        }
+      or "diagnostics"
 
-    local lsp_status_component = has_lsp_status and {
-      lsp_status,
-      color = { fg = "#7aa2f7" },
-    } or nil
+    local lsp_status_component = has_lsp_status
+        and {
+          lsp_status,
+          color = { fg = "#7aa2f7" },
+        }
+      or nil
 
     require("lualine").setup({
       options = {

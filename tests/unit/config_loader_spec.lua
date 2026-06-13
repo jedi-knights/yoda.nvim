@@ -334,7 +334,13 @@ describe("config_loader", function()
         return vim.inspect(data) -- Simple mock
       end
 
-      config_loader.save_marker("/cache/marker.json", "qa", "auto", "bdd", false)
+      config_loader.save_marker(
+        "/cache/marker.json",
+        "qa",
+        "auto",
+        "bdd",
+        false
+      )
       assert.is_not_nil(written_content)
     end)
 
@@ -382,7 +388,13 @@ describe("config_loader", function()
         return "{}"
       end
 
-      config_loader.save_marker("/cache/marker.json", "qa", "auto", "bdd", false)
+      config_loader.save_marker(
+        "/cache/marker.json",
+        "qa",
+        "auto",
+        "bdd",
+        false
+      )
       assert.is_true(notified)
     end)
 
@@ -403,7 +415,13 @@ describe("config_loader", function()
         return "{}"
       end
 
-      config_loader.save_marker("/cache/marker.json", "prod", "use1", "unit,integration", true)
+      config_loader.save_marker(
+        "/cache/marker.json",
+        "prod",
+        "use1",
+        "unit,integration",
+        true
+      )
 
       assert.equals("prod", saved_data.environment)
       assert.equals("use1", saved_data.region)

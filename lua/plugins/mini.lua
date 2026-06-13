@@ -113,7 +113,8 @@ return {
           local items = {}
           -- Git changed files (staged + unstaged + untracked)
           local diff = vim.fn.systemlist("git diff --name-only")
-          local untracked = vim.fn.systemlist("git ls-files --others --exclude-standard")
+          local untracked =
+            vim.fn.systemlist("git ls-files --others --exclude-standard")
           for _, f in ipairs(diff) do
             table.insert(items, f)
           end
