@@ -91,7 +91,10 @@ function M.is_real_file_buffer(bufnr)
   local bo = vim.bo[bufnr]
   local bufname = vim.api.nvim_buf_get_name(bufnr)
 
-  return bo.buftype == "" and bo.filetype ~= "" and bo.filetype ~= "alpha" and bufname ~= ""
+  return bo.buftype == ""
+    and bo.filetype ~= ""
+    and bo.filetype ~= "alpha"
+    and bufname ~= ""
 end
 
 --- Check if buffer is modified

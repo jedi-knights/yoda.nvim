@@ -35,10 +35,25 @@ function M.setup()
   -- Global LSP handler optimizations for responsiveness
   -- vim.lsp.with() is deprecated in 0.12; use wrapper functions that merge config instead.
   vim.lsp.handlers["textDocument/hover"] = function(err, result, ctx, config)
-    vim.lsp.handlers.hover(err, result, ctx, vim.tbl_extend("force", config or {}, { border = "rounded" }))
+    vim.lsp.handlers.hover(
+      err,
+      result,
+      ctx,
+      vim.tbl_extend("force", config or {}, { border = "rounded" })
+    )
   end
-  vim.lsp.handlers["textDocument/signatureHelp"] = function(err, result, ctx, config)
-    vim.lsp.handlers.signature_help(err, result, ctx, vim.tbl_extend("force", config or {}, { border = "rounded" }))
+  vim.lsp.handlers["textDocument/signatureHelp"] = function(
+    err,
+    result,
+    ctx,
+    config
+  )
+    vim.lsp.handlers.signature_help(
+      err,
+      result,
+      ctx,
+      vim.tbl_extend("force", config or {}, { border = "rounded" })
+    )
   end
 
   -- gopls v0.21.1 workaround: in a Go workspace (go.work + multiple
@@ -49,10 +64,17 @@ function M.setup()
   -- those specific messages before vim.diagnostic.config() (below)
   -- renders them. Remove this once gopls v0.22+ ships.
   local default_publish = vim.lsp.handlers["textDocument/publishDiagnostics"]
-  vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+  vim.lsp.handlers["textDocument/publishDiagnostics"] = function(
+    err,
+    result,
+    ctx,
+    config
+  )
     if result and result.diagnostics then
       result.diagnostics = vim.tbl_filter(function(d)
-        return not (d.message and d.message:match("is not in your go%.mod file"))
+        return not (
+          d.message and d.message:match("is not in your go%.mod file")
+        )
       end, result.diagnostics)
     end
     return default_publish(err, result, ctx, config)
@@ -66,7 +88,10 @@ function M.setup()
       vim.lsp.config(name, config)
     end)
     if not success then
-      vim.notify(string.format("Failed to configure LSP server '%s': %s", name, err), vim.log.levels.WARN)
+      vim.notify(
+        string.format("Failed to configure LSP server '%s': %s", name, err),
+        vim.log.levels.WARN
+      )
       return false
     end
     return true
@@ -111,7 +136,13 @@ function M.setup()
         },
         usePlaceholders = true,
         completeUnimported = true,
-        directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+        directoryFilters = {
+          "-.git",
+          "-.vscode",
+          "-.idea",
+          "-.vscode-test",
+          "-node_modules",
+        },
         semanticTokens = false,
         buildFlags = { "-tags=integration" },
       },
@@ -125,7 +156,16 @@ function M.setup()
   safe_setup("lua_ls", {
     cmd = { "lua-language-server" },
     filetypes = { "lua" },
-    root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
+    root_markers = {
+      ".luarc.json",
+      ".luarc.jsonc",
+      ".luacheckrc",
+      ".stylua.toml",
+      "stylua.toml",
+      "selene.toml",
+      "selene.yml",
+      ".git",
+    },
     settings = {
       Lua = {
         runtime = { version = "LuaJIT" },
@@ -146,7 +186,14 @@ function M.setup()
   -- TypeScript setup
   safe_setup("ts_ls", {
     cmd = { "typescript-language-server", "--stdio" },
-    filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+    filetypes = {
+      "javascript",
+      "javascriptreact",
+      "javascript.jsx",
+      "typescript",
+      "typescriptreact",
+      "typescript.tsx",
+    },
     root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" },
   })
 
@@ -168,7 +215,15 @@ function M.setup()
   safe_setup("basedpyright", {
     cmd = { "basedpyright-langserver", "--stdio" },
     filetypes = { "python" },
-    root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
+    root_markers = {
+      "pyproject.toml",
+      "setup.py",
+      "setup.cfg",
+      "requirements.txt",
+      "Pipfile",
+      "pyrightconfig.json",
+      ".git",
+    },
     capabilities = python_capabilities,
     on_init = function(client)
       -- Disable document highlight immediately when server initializes
@@ -232,7 +287,14 @@ function M.setup()
   safe_setup("jdtls", {
     cmd = { "jdtls" },
     filetypes = { "java", "groovy" },
-    root_markers = { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" },
+    root_markers = {
+      "build.gradle",
+      "build.gradle.kts",
+      "pom.xml",
+      "settings.gradle",
+      "settings.gradle.kts",
+      ".git",
+    },
     settings = {
       java = {
         configuration = {
@@ -282,7 +344,13 @@ function M.setup()
   safe_setup("autotools_ls", {
     cmd = { "autotools-language-server" },
     filetypes = { "make", "automake", "config" },
-    root_markers = { "Makefile", "Makefile.am", "configure.ac", "GNUmakefile", ".git" },
+    root_markers = {
+      "Makefile",
+      "Makefile.am",
+      "configure.ac",
+      "GNUmakefile",
+      ".git",
+    },
   })
 
   -- Assembly setup (asm-lsp: GAS/NASM/GO asm, x86/x86-64, ARM, RISC-V, etc.)
@@ -355,14 +423,20 @@ function M.setup()
         -- Re-apply after dynamic capability registration completes (~500ms window)
         local timer_id = "basedpyright_highlight_" .. client.id
         local timer, id = timer_manager.create_timer(function()
-          if client.server_capabilities and client.server_capabilities.documentHighlightProvider then
+          if
+            client.server_capabilities
+            and client.server_capabilities.documentHighlightProvider
+          then
             client.server_capabilities.documentHighlightProvider = false
           end
         end, 500, 0, timer_id)
 
         if timer then
           vim.api.nvim_create_autocmd("LspDetach", {
-            group = vim.api.nvim_create_augroup("YodaBasedpyrightTimerCleanup", { clear = false }),
+            group = vim.api.nvim_create_augroup(
+              "YodaBasedpyrightTimerCleanup",
+              { clear = false }
+            ),
             desc = "Stop basedpyright highlight-disable timer on detach",
             callback = function(args)
               if args.data.client_id == client.id then
@@ -405,7 +479,10 @@ function M.setup()
               if settings.python and settings.python.analysis then
                 settings.python.analysis.extraPaths = extra_paths
               end
-              client.notify("workspace/didChangeConfiguration", { settings = settings })
+              client.notify(
+                "workspace/didChangeConfiguration",
+                { settings = settings }
+              )
             end
           end)
 
@@ -418,9 +495,16 @@ function M.setup()
       -- cursor. Only on CursorHold — CursorMovedI and CursorHoldI fire "very
       -- often" (per docs) and would add an LSP round-trip + render + clear on
       -- every keypress during insert mode with no UX benefit.
-      if not vim.b[event.buf]._yoda_hl_registered and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
+      if
+        not vim.b[event.buf]._yoda_hl_registered
+        and client:supports_method(
+          vim.lsp.protocol.Methods.textDocument_documentHighlight,
+          event.buf
+        )
+      then
         vim.b[event.buf]._yoda_hl_registered = true
-        local hl_group = vim.api.nvim_create_augroup("YodaLspHighlight", { clear = false })
+        local hl_group =
+          vim.api.nvim_create_augroup("YodaLspHighlight", { clear = false })
         vim.api.nvim_create_autocmd("CursorHold", {
           buffer = event.buf,
           group = hl_group,
@@ -438,12 +522,18 @@ function M.setup()
         -- { clear = true } would wipe the previous client's handler on each
         -- subsequent attach, leaving earlier clients without cleanup.
         vim.api.nvim_create_autocmd("LspDetach", {
-          group = vim.api.nvim_create_augroup("YodaLspDetach", { clear = false }),
+          group = vim.api.nvim_create_augroup(
+            "YodaLspDetach",
+            { clear = false }
+          ),
           buffer = event.buf,
           desc = "LSP: Clean up highlight autocmds on detach",
           callback = function(ev)
             vim.lsp.buf.clear_references()
-            vim.api.nvim_clear_autocmds({ group = "YodaLspHighlight", buffer = ev.buf })
+            vim.api.nvim_clear_autocmds({
+              group = "YodaLspHighlight",
+              buffer = ev.buf,
+            })
             vim.b[ev.buf]._yoda_hl_registered = nil
           end,
         })
@@ -460,42 +550,125 @@ function M.setup()
         -- expect. K is handled globally in keymaps/help.lua. <leader>ca and
         -- <leader>rn have been removed: they leaked into the <leader>c (Coverage)
         -- and <leader>r (Rust) prefix spaces. Use <leader>la and <leader>ln instead.
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = buf, desc = "LSP: Go to Definition" })
-        vim.keymap.set("n", "gr", vim.lsp.buf.references, { buffer = buf, desc = "LSP: Find References" })
-        vim.keymap.set("n", "gI", vim.lsp.buf.implementation, { buffer = buf, desc = "LSP: Go to Implementation" })
+        vim.keymap.set(
+          "n",
+          "gd",
+          vim.lsp.buf.definition,
+          { buffer = buf, desc = "LSP: Go to Definition" }
+        )
+        vim.keymap.set(
+          "n",
+          "gr",
+          vim.lsp.buf.references,
+          { buffer = buf, desc = "LSP: Find References" }
+        )
+        vim.keymap.set(
+          "n",
+          "gI",
+          vim.lsp.buf.implementation,
+          { buffer = buf, desc = "LSP: Go to Implementation" }
+        )
         -- K is handled globally in keymaps/help.lua: checks for LSP clients and
         -- falls back to :help — covers both LSP and non-LSP buffers without a
         -- buffer-local duplicate here.
-        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = buf, desc = "LSP: Code Action" })
-        vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, { buffer = buf, desc = "LSP: Signature Help" })
+        vim.keymap.set(
+          "n",
+          "<leader>ca",
+          vim.lsp.buf.code_action,
+          { buffer = buf, desc = "LSP: Code Action" }
+        )
+        vim.keymap.set(
+          "i",
+          "<C-h>",
+          vim.lsp.buf.signature_help,
+          { buffer = buf, desc = "LSP: Signature Help" }
+        )
 
         -- <leader>l* group: which-key discoverable LSP commands
-        vim.keymap.set("n", "<leader>ld", vim.lsp.buf.definition, { buffer = buf, desc = "LSP: Go to Definition" })
-        vim.keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { buffer = buf, desc = "LSP: Go to Declaration" })
-        vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, { buffer = buf, desc = "LSP: Go to Implementation" })
-        vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, { buffer = buf, desc = "LSP: Find References" })
-        vim.keymap.set("n", "<leader>lR", vim.lsp.buf.rename, { buffer = buf, desc = "LSP: Rename Symbol" })
-        vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, { buffer = buf, desc = "LSP: Code Action" })
-        vim.keymap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { buffer = buf, desc = "LSP: Document Symbols" })
-        vim.keymap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, { buffer = buf, desc = "LSP: Workspace Symbols" })
+        vim.keymap.set(
+          "n",
+          "<leader>ld",
+          vim.lsp.buf.definition,
+          { buffer = buf, desc = "LSP: Go to Definition" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>lD",
+          vim.lsp.buf.declaration,
+          { buffer = buf, desc = "LSP: Go to Declaration" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>li",
+          vim.lsp.buf.implementation,
+          { buffer = buf, desc = "LSP: Go to Implementation" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>lr",
+          vim.lsp.buf.references,
+          { buffer = buf, desc = "LSP: Find References" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>lR",
+          vim.lsp.buf.rename,
+          { buffer = buf, desc = "LSP: Rename Symbol" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>la",
+          vim.lsp.buf.code_action,
+          { buffer = buf, desc = "LSP: Code Action" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>ls",
+          vim.lsp.buf.document_symbol,
+          { buffer = buf, desc = "LSP: Document Symbols" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>lw",
+          vim.lsp.buf.workspace_symbol,
+          { buffer = buf, desc = "LSP: Workspace Symbols" }
+        )
         vim.keymap.set("n", "<leader>lf", function()
           vim.lsp.buf.format({ async = true })
         end, { buffer = buf, desc = "LSP: Format Buffer" })
-        vim.keymap.set("n", "<leader>le", vim.diagnostic.open_float, { buffer = buf, desc = "LSP: Show Diagnostics Float" })
-        vim.keymap.set("n", "<leader>lq", vim.diagnostic.setloclist, { buffer = buf, desc = "LSP: Set Loclist" })
+        vim.keymap.set(
+          "n",
+          "<leader>le",
+          vim.diagnostic.open_float,
+          { buffer = buf, desc = "LSP: Show Diagnostics Float" }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>lq",
+          vim.diagnostic.setloclist,
+          { buffer = buf, desc = "LSP: Set Loclist" }
+        )
 
         -- Toggle inlay hints
         vim.keymap.set("n", "<leader>lh", function()
           local buf_clients = vim.lsp.get_clients({ bufnr = buf })
           for _, c in ipairs(buf_clients) do
-            if c:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+            if
+              c:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint)
+            then
               local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = buf })
               vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = buf })
-              notify.notify(is_enabled and "Inlay hints disabled" or "Inlay hints enabled", "info")
+              notify.notify(
+                is_enabled and "Inlay hints disabled" or "Inlay hints enabled",
+                "info"
+              )
               return
             end
           end
-          notify.notify("Inlay hints not supported by any active LSP server", "warn")
+          notify.notify(
+            "Inlay hints not supported by any active LSP server",
+            "warn"
+          )
         end, { buffer = buf, desc = "Toggle Inlay Hints" })
       end)
     end,
@@ -530,7 +703,10 @@ function M.setup()
 
   -- Auto-restart Python LSP when entering different Python projects
   vim.api.nvim_create_autocmd("DirChanged", {
-    group = vim.api.nvim_create_augroup("YodaPythonLSPRestart", { clear = true }),
+    group = vim.api.nvim_create_augroup(
+      "YodaPythonLSPRestart",
+      { clear = true }
+    ),
     callback = function()
       local timer_id = "python_lsp_restart"
 
@@ -542,14 +718,23 @@ function M.setup()
         -- vim.g, vim.fs.root, and vim.lsp.get_clients are main-thread-only;
         -- timer callbacks run on the libuv thread, so schedule everything.
         vim.schedule(function()
-          local current_root = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
+          local current_root = vim.fs.root(
+            0,
+            { "pyproject.toml", "setup.py", "requirements.txt", ".git" }
+          )
           if current_root and vim.g.last_python_root ~= current_root then
             vim.g.last_python_root = current_root
 
             local clients = vim.lsp.get_clients({ name = "basedpyright" })
             if #clients > 0 then
               lsp_perf.track_lsp_restart("basedpyright")
-              notify.notify(string.format("Restarting Python LSP for project: %s", current_root), "info")
+              notify.notify(
+                string.format(
+                  "Restarting Python LSP for project: %s",
+                  current_root
+                ),
+                "info"
+              )
               for _, client in ipairs(clients) do
                 client:stop()
               end

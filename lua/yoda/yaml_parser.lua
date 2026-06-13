@@ -13,7 +13,8 @@ local M = {}
 
 -- Allow users to extend environments without modifying source (OCP principle)
 local function get_known_environments()
-  return vim.g.yoda_yaml_environments or { fastly = true, qa = true, prod = true }
+  return vim.g.yoda_yaml_environments
+    or { fastly = true, qa = true, prod = true }
 end
 
 -- Allow users to override YAML indentation if their file format differs
@@ -99,7 +100,10 @@ local function save_environment(environments, current_env, current_regions)
   end
 
   environments[current_env] = current_regions
-  logger.trace("Saved environment", { env = current_env, regions = #current_regions })
+  logger.trace(
+    "Saved environment",
+    { env = current_env, regions = #current_regions }
+  )
 end
 
 --- Process environment line
@@ -145,7 +149,11 @@ local function process_line(line, line_num, state)
   -- Check for environment definition
   local env_name = extract_environment_name(trimmed, indent)
   if env_name then
-    save_environment(state.environments, state.current_env, state.current_regions)
+    save_environment(
+      state.environments,
+      state.current_env,
+      state.current_regions
+    )
     state.current_env = env_name
     state.current_regions = {}
     log_new_environment(state.env_order, env_name, line_num)
@@ -177,7 +185,10 @@ end
 --- @return table|nil Table with environment names as keys and region arrays as values
 function M.parse_ingress_mapping(yaml_path)
   -- Input validation
-  assert(type(yaml_path) == "string" and yaml_path ~= "", "yaml_path must be a non-empty string")
+  assert(
+    type(yaml_path) == "string" and yaml_path ~= "",
+    "yaml_path must be a non-empty string"
+  )
 
   -- Read file
   local ok, content = read_yaml_file(yaml_path)

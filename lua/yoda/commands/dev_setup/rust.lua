@@ -16,7 +16,10 @@ function M.setup()
     -- Check if Mason is available
     local mason_ok, mason = pcall(require, "mason")
     if not mason_ok then
-      notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
+      notify.notify(
+        "❌ Mason not available. Install via :Lazy sync first",
+        "error"
+      )
       return
     end
 
@@ -37,8 +40,12 @@ function M.setup()
       { title = "Yoda Rust Setup" }
     )
 
-    logger.info("✅ Rust setup initiated. Restart Neovim after Mason installation completes.")
-  end, { desc = "Install Rust development tools (rust-analyzer, codelldb) via Mason" })
+    logger.info(
+      "✅ Rust setup initiated. Restart Neovim after Mason installation completes."
+    )
+  end, {
+    desc = "Install Rust development tools (rust-analyzer, codelldb) via Mason",
+  })
 end
 
 return M

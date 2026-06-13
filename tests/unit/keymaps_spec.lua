@@ -24,12 +24,18 @@ describe("keymaps", function()
     local keys = {}
 
     -- map("n", "<key>", ...) or map('n', '<key>', ...)
-    for mode, key in content:gmatch("map%s*%([\"'](%a+)[\"']%s*,%s*[\"']([^\"']+)[\"']") do
+    for mode, key in
+      content:gmatch("map%s*%([\"'](%a+)[\"']%s*,%s*[\"']([^\"']+)[\"']")
+    do
       table.insert(keys, { mode = mode, key = key })
     end
 
     -- vim.keymap.set("n", "<key>", ...) or vim.keymap.set('n', '<key>', ...)
-    for mode, key in content:gmatch("vim%.keymap%.set%s*%([\"'](%a+)[\"']%s*,%s*[\"']([^\"']+)[\"']") do
+    for mode, key in
+      content:gmatch(
+        "vim%.keymap%.set%s*%([\"'](%a+)[\"']%s*,%s*[\"']([^\"']+)[\"']"
+      )
+    do
       table.insert(keys, { mode = mode, key = key })
     end
 
@@ -38,7 +44,10 @@ describe("keymaps", function()
 
   it("has no within-file duplicate keymaps", function()
     local files = vim.fn.glob(keymap_dir .. "/*.lua", false, true)
-    assert.is_true(#files > 0, "Expected keymap files to exist in " .. keymap_dir)
+    assert.is_true(
+      #files > 0,
+      "Expected keymap files to exist in " .. keymap_dir
+    )
 
     local violations = {}
 
@@ -50,41 +59,74 @@ describe("keymaps", function()
       for _, entry in ipairs(keys) do
         local combo = entry.mode .. ":" .. entry.key
         if seen[combo] then
-          table.insert(violations, string.format("%s: '%s' (mode '%s') defined more than once", filename, entry.key, entry.mode))
+          table.insert(
+            violations,
+            string.format(
+              "%s: '%s' (mode '%s') defined more than once",
+              filename,
+              entry.key,
+              entry.mode
+            )
+          )
         else
           seen[combo] = true
         end
       end
     end
 
-    assert.equals(0, #violations, "Within-file keymap collisions found:\n  " .. table.concat(violations, "\n  "))
+    assert.equals(
+      0,
+      #violations,
+      "Within-file keymap collisions found:\n  "
+        .. table.concat(violations, "\n  ")
+    )
   end)
 
-  it("has no cross-file duplicate keymaps (excluding intentional ones)", function()
-    local files = vim.fn.glob(keymap_dir .. "/*.lua", false, true)
-    assert.is_true(#files > 0, "Expected keymap files to exist in " .. keymap_dir)
+  it(
+    "has no cross-file duplicate keymaps (excluding intentional ones)",
+    function()
+      local files = vim.fn.glob(keymap_dir .. "/*.lua", false, true)
+      assert.is_true(
+        #files > 0,
+        "Expected keymap files to exist in " .. keymap_dir
+      )
 
-    local seen = {} -- combo -> filename
-    local violations = {}
+      local seen = {} -- combo -> filename
+      local violations = {}
 
-    for _, filepath in ipairs(files) do
-      local keys = extract_keys(filepath)
-      local filename = vim.fn.fnamemodify(filepath, ":t")
+      for _, filepath in ipairs(files) do
+        local keys = extract_keys(filepath)
+        local filename = vim.fn.fnamemodify(filepath, ":t")
 
-      for _, entry in ipairs(keys) do
-        if not ALLOWED_CROSS_FILE_DUPLICATES[entry.key] then
-          local combo = entry.mode .. ":" .. entry.key
-          if seen[combo] then
-            table.insert(violations, string.format("'%s' (mode '%s') in both %s and %s", entry.key, entry.mode, seen[combo], filename))
-          else
-            seen[combo] = filename
+        for _, entry in ipairs(keys) do
+          if not ALLOWED_CROSS_FILE_DUPLICATES[entry.key] then
+            local combo = entry.mode .. ":" .. entry.key
+            if seen[combo] then
+              table.insert(
+                violations,
+                string.format(
+                  "'%s' (mode '%s') in both %s and %s",
+                  entry.key,
+                  entry.mode,
+                  seen[combo],
+                  filename
+                )
+              )
+            else
+              seen[combo] = filename
+            end
           end
         end
       end
-    end
 
-    assert.equals(0, #violations, "Cross-file keymap collisions found:\n  " .. table.concat(violations, "\n  "))
-  end)
+      assert.equals(
+        0,
+        #violations,
+        "Cross-file keymap collisions found:\n  "
+          .. table.concat(violations, "\n  ")
+      )
+    end
+  )
 
   it("finds keymap files for all modules listed in init.lua", function()
     local init_path = keymap_dir .. "/init.lua"
@@ -101,6 +143,11 @@ describe("keymaps", function()
       end
     end
 
-    assert.equals(0, #missing, "Keymap modules listed in init.lua but missing on disk:\n  " .. table.concat(missing, "\n  "))
+    assert.equals(
+      0,
+      #missing,
+      "Keymap modules listed in init.lua but missing on disk:\n  "
+        .. table.concat(missing, "\n  ")
+    )
   end)
 end)

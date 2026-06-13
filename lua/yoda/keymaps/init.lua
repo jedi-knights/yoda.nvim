@@ -21,6 +21,9 @@ local keymap_modules = {
 for _, mod in ipairs(keymap_modules) do
   local ok, err = pcall(require, mod)
   if not ok then
-    vim.notify("[yoda] Failed to load " .. mod .. ": " .. tostring(err), vim.log.levels.WARN)
+    vim.notify(
+      "[yoda] Failed to load " .. mod .. ": " .. tostring(err),
+      vim.log.levels.WARN
+    )
   end
 end

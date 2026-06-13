@@ -40,25 +40,37 @@ vim.schedule(function()
   if vim.uv.fs_stat(local_path) then
     local ok, err = pcall(require, "local")
     if not ok then
-      vim.notify("[yoda] Error in local.lua: " .. tostring(err), vim.log.levels.ERROR)
+      vim.notify(
+        "[yoda] Error in local.lua: " .. tostring(err),
+        vim.log.levels.ERROR
+      )
     end
   end
 
   -- Keymaps and autocmds are core — Neovim is largely unusable without them.
   local ok_km, err_km = pcall(require, "yoda.keymaps")
   if not ok_km then
-    vim.notify("[yoda] Failed to load yoda.keymaps: " .. tostring(err_km), vim.log.levels.ERROR)
+    vim.notify(
+      "[yoda] Failed to load yoda.keymaps: " .. tostring(err_km),
+      vim.log.levels.ERROR
+    )
   end
 
   local ok_ac, err_ac = pcall(require, "autocmds")
   if not ok_ac then
-    vim.notify("[yoda] Failed to load autocmds: " .. tostring(err_ac), vim.log.levels.ERROR)
+    vim.notify(
+      "[yoda] Failed to load autocmds: " .. tostring(err_ac),
+      vim.log.levels.ERROR
+    )
   end
 
   -- The following modules are non-fatal: Neovim remains usable without them.
   local ok_cmds, err_cmds = pcall(require, "yoda.commands")
   if not ok_cmds then
-    vim.notify("[yoda] Failed to load yoda.commands: " .. tostring(err_cmds), vim.log.levels.WARN)
+    vim.notify(
+      "[yoda] Failed to load yoda.commands: " .. tostring(err_cmds),
+      vim.log.levels.WARN
+    )
   end
 
   -- Initialize large file detection (setup() also registers user commands)
@@ -66,7 +78,10 @@ vim.schedule(function()
   if ok_lf then
     large_file.setup(vim.g.yoda_large_file or {})
   else
-    vim.notify("[yoda] Failed to load yoda.large_file: " .. tostring(large_file), vim.log.levels.WARN)
+    vim.notify(
+      "[yoda] Failed to load yoda.large_file: " .. tostring(large_file),
+      vim.log.levels.WARN
+    )
   end
 
   -- Show environment notifications if configured
@@ -75,7 +90,10 @@ vim.schedule(function()
     environment.show_notification()
     environment.show_local_dev_notification()
   else
-    vim.notify("[yoda] Failed to load yoda.environment: " .. tostring(environment), vim.log.levels.WARN)
+    vim.notify(
+      "[yoda] Failed to load yoda.environment: " .. tostring(environment),
+      vim.log.levels.WARN
+    )
   end
 
   -- Screen recording toggle (macOS only — requires ffmpeg and Screen Recording permission)
@@ -83,6 +101,9 @@ vim.schedule(function()
   if ok_sc then
     screencast.setup()
   else
-    vim.notify("[yoda] Failed to load yoda.screencast: " .. tostring(screencast), vim.log.levels.WARN)
+    vim.notify(
+      "[yoda] Failed to load yoda.screencast: " .. tostring(screencast),
+      vim.log.levels.WARN
+    )
   end
 end)

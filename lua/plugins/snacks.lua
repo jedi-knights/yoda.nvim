@@ -21,7 +21,12 @@ return {
            ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝
                                                      ]],
           keys = {
-            { icon = "🤖", key = "a", desc = "Open Code AI", action = "<cmd>ClaudeCode<CR>" },
+            {
+              icon = "🤖",
+              key = "a",
+              desc = "Open Code AI",
+              action = "<cmd>ClaudeCode<CR>",
+            },
             {
               icon = "📁",
               key = "e",
@@ -54,7 +59,12 @@ return {
                 require("mini.extra").pickers.oldfiles()
               end,
             },
-            { icon = "🔧", key = "l", desc = "Lazy", action = "<cmd>Lazy<CR>" },
+            {
+              icon = "🔧",
+              key = "l",
+              desc = "Lazy",
+              action = "<cmd>Lazy<CR>",
+            },
             { icon = "❌", key = "q", desc = "Quit", action = "<cmd>qa<CR>" },
           },
         },
@@ -62,7 +72,11 @@ return {
           { section = "header" },
           { section = "keys", gap = 1, padding = 1 },
           { section = "startup" },
-          { text = { { "May the force be with you", hl = "DashboardFooter" } }, align = "center", padding = 1 },
+          {
+            text = { { "May the force be with you", hl = "DashboardFooter" } },
+            align = "center",
+            padding = 1,
+          },
         },
       },
       -- snacks.explorer only accepts general settings (replace_netrw, trash).
@@ -121,7 +135,10 @@ return {
     -- Requires zoxide: brew install zoxide
     vim.keymap.set("n", "<leader>sp", function()
       if vim.fn.executable("zoxide") == 0 then
-        vim.notify("zoxide is not installed. See: https://github.com/ajeetdsouza/zoxide", vim.log.levels.WARN)
+        vim.notify(
+          "zoxide is not installed. See: https://github.com/ajeetdsouza/zoxide",
+          vim.log.levels.WARN
+        )
         return
       end
       require("snacks").picker.zoxide({
@@ -136,7 +153,8 @@ return {
     end, { desc = "[S]earch [P]rojects (zoxide)" })
 
     -- Global autocmd to handle file opening from explorer context
-    local explorer_group = vim.api.nvim_create_augroup("ExplorerFileOpen", { clear = true })
+    local explorer_group =
+      vim.api.nvim_create_augroup("ExplorerFileOpen", { clear = true })
     vim.api.nvim_create_autocmd("BufReadPost", {
       group = explorer_group,
       desc = "Redirect files opened in the explorer window to the main window",
