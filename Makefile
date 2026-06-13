@@ -58,11 +58,11 @@ test-verbose:
 
 # Lint code with stylua
 lint:
-	@find lua tests -name "*.lua" -type f | xargs stylua --check
+	@find init.lua lua tests -name "*.lua" -type f | xargs stylua --check
 
 # Format code with stylua
 format:
-	@find lua tests -name "*.lua" -type f | xargs stylua
+	@find init.lua lua tests -name "*.lua" -type f | xargs stylua
 
 # Performance benchmarking
 benchmark:
