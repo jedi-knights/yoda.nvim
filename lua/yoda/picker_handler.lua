@@ -241,7 +241,8 @@ end
 -- Configuration Display and Command Generation
 -- ============================================================================
 
--- NOTE: Pytest command generation functions have been moved to pytest-atlas.nvim plugin
+-- NOTE: Pytest command generation functions have been moved to
+-- pytest-atlas.nvim plugin
 
 -- ============================================================================
 -- Wizard Orchestration (Chain of wizard steps)
@@ -306,7 +307,8 @@ function M.handle_yaml_selection(env_region, callback)
 end
 
 --- Handle JSON/fallback single-step selection
---- Complexity: 6 (1 generate + 1 load + 1 if + 1 reorder + 1 picker + 1 parse check)
+--- Complexity: 6 (1 generate + 1 load + 1 if + 1 reorder + 1 picker + 1 parse
+--- check)
 --- @param env_region table Environment and region configuration
 --- @param callback function Callback function
 function M.handle_json_selection(env_region, callback)
@@ -347,6 +349,7 @@ end
 -- Public API
 -- ============================================================================
 
--- NOTE: Test configuration display and command generation functions have been moved to pytest-atlas.nvim plugin
+-- NOTE: Test configuration display and command generation functions have been
+-- moved to pytest-atlas.nvim plugin
 
 return M

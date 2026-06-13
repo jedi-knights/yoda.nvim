@@ -124,7 +124,8 @@ map("n", "<leader>tS", function()
   end
 end, { desc = "Test: Show environment status" })
 
--- Note: <leader>tt keymap is now defined in lua/plugins/testing.lua for lazy loading
+-- Note: <leader>tt keymap is now defined in lua/plugins/testing.lua for lazy
+-- loading
 
 map("n", "<leader>tL", function()
   local ok, logger = pcall(require, "pytest-atlas.logger")

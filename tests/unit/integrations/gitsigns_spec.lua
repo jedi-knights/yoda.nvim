@@ -98,7 +98,8 @@ describe("integrations.gitsigns", function()
       gitsigns.refresh_batched()
       gitsigns.reset_timers()
 
-      -- Wait past the batch window; timer was cancelled so no refresh should occur
+      -- Wait past the batch window; timer was cancelled so no refresh should
+      -- occur
       vim.wait(300)
       assert.equals(0, refresh_count)
     end)

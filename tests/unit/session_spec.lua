@@ -48,7 +48,8 @@ describe("session", function()
         return original_cmd(cmd)
       end
 
-      -- VimLeavePre cannot be fired in headless mode; invoke the callback directly
+      -- VimLeavePre cannot be fired in headless mode; invoke the callback
+      -- directly
       autocmds[1].callback()
 
       vim.cmd = original_cmd

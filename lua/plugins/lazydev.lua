@@ -1,6 +1,7 @@
 -- lua/plugins/lazydev.lua
 -- Fast Lua type annotations and API completion for Neovim plugins.
--- Only active for Lua files; blink.cmp sources it via lazydev.integrations.blink.
+-- Only active for Lua files; blink.cmp sources it via
+-- lazydev.integrations.blink.
 
 return {
   "folke/lazydev.nvim",

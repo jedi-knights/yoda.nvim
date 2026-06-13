@@ -33,7 +33,8 @@ function M.setup()
   })
 
   -- Global LSP handler optimizations for responsiveness
-  -- vim.lsp.with() is deprecated in 0.12; use wrapper functions that merge config instead.
+  -- vim.lsp.with() is deprecated in 0.12; use wrapper functions that merge
+  -- config instead.
   vim.lsp.handlers["textDocument/hover"] = function(err, result, ctx, config)
     vim.lsp.handlers.hover(
       err,
@@ -202,7 +203,8 @@ function M.setup()
   -- Document highlight is disabled in three places because basedpyright
   -- re-registers documentHighlightProvider via dynamic capability registration
   -- after the server initializes, overriding a single disable:
-  --   1. capabilities table (here) — advertise "we don't want it" during handshake
+  --   1. capabilities table (here) — advertise "we don't want it" during
+  --   handshake
   --   2. on_init callback        — strip the capability immediately on init
   --   3. LspAttach + 500ms timer — strip it again after dynamic re-registration
   -- Override shared capabilities to strip documentHighlight for basedpyright.
@@ -280,9 +282,12 @@ function M.setup()
   })
 
   -- Java setup (also works for Jenkinsfiles/Groovy)
-  -- NOTE: jdtls is intentionally absent from mason-lspconfig's ensure_installed.
-  -- The Eclipse JDT Language Server requires a workspace directory and JVM flags
-  -- that Mason cannot configure automatically — it must be installed and managed
+  -- NOTE: jdtls is intentionally absent from mason-lspconfig's
+  -- ensure_installed.
+  -- The Eclipse JDT Language Server requires a workspace directory and JVM
+  -- flags
+  -- that Mason cannot configure automatically — it must be installed and
+  -- managed
   -- manually (e.g. via Homebrew: `brew install jdtls`).
   safe_setup("jdtls", {
     cmd = { "jdtls" },
@@ -357,9 +362,11 @@ function M.setup()
   -- Hover docs are sourced from official Intel/ARM references; diagnostics are
   -- produced by shelling out to gcc/clang, so they degrade gracefully when no
   -- compiler is on PATH. .asm-lsp.toml lets a project pin its assembler/arch.
-  -- "nasm" is added beyond lspconfig's default { asm, vmasm }: Neovim assigns the
+  -- "nasm" is added beyond lspconfig's default { asm, vmasm }: Neovim assigns
+  -- the
   -- `nasm` filetype to *.nasm files, and asm-lsp supports the NASM dialect, so
-  -- without this those buffers would never get a server. *.s/*.S/*.asm all map to
+  -- without this those buffers would never get a server. *.s/*.S/*.asm all map
+  -- to
   -- the `asm` filetype regardless of dialect, so they're already covered.
   safe_setup("asm_lsp", {
     cmd = { "asm-lsp" },
@@ -407,7 +414,8 @@ function M.setup()
       end
 
       -- jdtls: disable formatting (handled by conform.nvim)
-      -- Commands (JdtlsQuiet, JdtlsBuild) are registered once in commands/lsp.lua
+      -- Commands (JdtlsQuiet, JdtlsBuild) are registered once in
+      -- commands/lsp.lua
       if client.name == "jdtls" then
         client.server_capabilities.documentFormattingProvider = false
         client.server_capabilities.documentRangeFormattingProvider = false
@@ -420,7 +428,8 @@ function M.setup()
       if client.name == "basedpyright" then
         client.server_capabilities.documentHighlightProvider = false
 
-        -- Re-apply after dynamic capability registration completes (~500ms window)
+        -- Re-apply after dynamic capability registration completes (~500ms
+        -- window)
         local timer_id = "basedpyright_highlight_" .. client.id
         local timer, id = timer_manager.create_timer(function()
           if
@@ -462,7 +471,8 @@ function M.setup()
             return table.concat({ ... }, "/")
           end
 
-          -- Build extraPaths: project root + src/ layout (covers src-layout packages)
+          -- Build extraPaths: project root + src/ layout (covers src-layout
+          -- packages)
           local extra_paths = { root_dir }
           local src_dir = join_path(root_dir, "src")
           if vim.fn.isdirectory(src_dir) == 1 then
@@ -548,8 +558,10 @@ function M.setup()
 
         -- Short vim-convention keymaps — muscle memory that experienced users
         -- expect. K is handled globally in keymaps/help.lua. <leader>ca and
-        -- <leader>rn have been removed: they leaked into the <leader>c (Coverage)
-        -- and <leader>r (Rust) prefix spaces. Use <leader>la and <leader>ln instead.
+        -- <leader>rn have been removed: they leaked into the <leader>c
+        -- (Coverage)
+        -- and <leader>r (Rust) prefix spaces. Use <leader>la and <leader>ln
+        -- instead.
         vim.keymap.set(
           "n",
           "gd",

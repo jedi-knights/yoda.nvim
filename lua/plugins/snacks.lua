@@ -121,7 +121,8 @@ return {
         auto_close = true,
       },
       image = {
-        enabled = false, -- Disabled: causes treesitter range errors on picker/dashboard buffers
+        -- Disabled: causes treesitter range errors on picker/dashboard buffers
+        enabled = false,
       },
       input = {
         enabled = true,
