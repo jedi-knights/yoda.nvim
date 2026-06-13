@@ -89,7 +89,10 @@ describe("integrations.gitsigns batching", function()
       vim.wait(250)
 
       local stats = gitsigns.get_batch_stats()
-      assert.is_false(stats.active, "Batch timer should be inactive after window")
+      assert.is_false(
+        stats.active,
+        "Batch timer should be inactive after window"
+      )
       assert.equals(1, stats.total_batches, "Should have completed 1 batch")
     end)
 
@@ -119,7 +122,11 @@ describe("integrations.gitsigns batching", function()
       vim.wait(250)
 
       -- Should only refresh buffer 1 once despite 3 requests
-      assert.equals(1, refresh_calls, "Should deduplicate and refresh buffer only once")
+      assert.equals(
+        1,
+        refresh_calls,
+        "Should deduplicate and refresh buffer only once"
+      )
     end)
 
     it("handles multiple different buffers", function()

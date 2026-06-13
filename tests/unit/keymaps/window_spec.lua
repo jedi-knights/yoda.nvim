@@ -12,21 +12,33 @@ describe("keymaps.window", function()
 
   it("maps <C-h> to move to the left window", function()
     local content = read_source()
-    assert.is_truthy(content:find("<C%-h>"), "Expected <C-h> mapping for left window navigation")
+    assert.is_truthy(
+      content:find("<C%-h>"),
+      "Expected <C-h> mapping for left window navigation"
+    )
   end)
 
   it("maps <C-j> to move to the window below", function()
     local content = read_source()
-    assert.is_truthy(content:find("<C%-j>"), "Expected <C-j> mapping for down window navigation")
+    assert.is_truthy(
+      content:find("<C%-j>"),
+      "Expected <C-j> mapping for down window navigation"
+    )
   end)
 
   it("maps <C-k> to move to the window above", function()
     local content = read_source()
-    assert.is_truthy(content:find("<C%-k>"), "Expected <C-k> mapping for up window navigation")
+    assert.is_truthy(
+      content:find("<C%-k>"),
+      "Expected <C-k> mapping for up window navigation"
+    )
   end)
 
   it("maps <C-l> to move to the right window", function()
     local content = read_source()
-    assert.is_truthy(content:find("<C%-l>"), "Expected <C-l> mapping for right window navigation")
+    assert.is_truthy(
+      content:find("<C%-l>"),
+      "Expected <C-l> mapping for right window navigation"
+    )
   end)
 end)

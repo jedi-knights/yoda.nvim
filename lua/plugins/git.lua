@@ -100,25 +100,70 @@ return {
           end, { expr = true, desc = "Git: Prev hunk" })
 
           -- Actions
-          map({ "n", "v" }, "<leader>hs", ":Gitsigns stage_hunk<CR>", { desc = "Git: Stage hunk" })
-          map({ "n", "v" }, "<leader>hr", ":Gitsigns reset_hunk<CR>", { desc = "Git: Reset hunk" })
-          map("n", "<leader>hS", gs.stage_buffer, { desc = "Git: Stage buffer" })
-          map("n", "<leader>hu", gs.undo_stage_hunk, { desc = "Git: Undo stage hunk" })
-          map("n", "<leader>hR", gs.reset_buffer, { desc = "Git: Reset buffer" })
-          map("n", "<leader>hp", gs.preview_hunk, { desc = "Git: Preview hunk" })
+          map(
+            { "n", "v" },
+            "<leader>hs",
+            ":Gitsigns stage_hunk<CR>",
+            { desc = "Git: Stage hunk" }
+          )
+          map(
+            { "n", "v" },
+            "<leader>hr",
+            ":Gitsigns reset_hunk<CR>",
+            { desc = "Git: Reset hunk" }
+          )
+          map(
+            "n",
+            "<leader>hS",
+            gs.stage_buffer,
+            { desc = "Git: Stage buffer" }
+          )
+          map(
+            "n",
+            "<leader>hu",
+            gs.undo_stage_hunk,
+            { desc = "Git: Undo stage hunk" }
+          )
+          map(
+            "n",
+            "<leader>hR",
+            gs.reset_buffer,
+            { desc = "Git: Reset buffer" }
+          )
+          map(
+            "n",
+            "<leader>hp",
+            gs.preview_hunk,
+            { desc = "Git: Preview hunk" }
+          )
           map("n", "<leader>hb", function()
             gs.blame_line({ full = true })
           end, { desc = "Git: Blame line (full)" })
-          map("n", "<leader>tb", gs.toggle_current_line_blame, { desc = "Git: Toggle line blame" })
+          map(
+            "n",
+            "<leader>tb",
+            gs.toggle_current_line_blame,
+            { desc = "Git: Toggle line blame" }
+          )
           map("n", "<leader>hd", gs.diffthis, { desc = "Git: Diff this" })
           map("n", "<leader>hD", function()
             gs.diffthis("~")
           end, { desc = "Git: Diff this (against last commit)" })
           -- <leader>hT not <leader>td: td conflicts with Test: Debug nearest
-          map("n", "<leader>hT", gs.toggle_deleted, { desc = "Git: Toggle deleted lines" })
+          map(
+            "n",
+            "<leader>hT",
+            gs.toggle_deleted,
+            { desc = "Git: Toggle deleted lines" }
+          )
 
           -- Text object
-          map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "Git: Select hunk" })
+          map(
+            { "o", "x" },
+            "ih",
+            ":<C-U>Gitsigns select_hunk<CR>",
+            { desc = "Git: Select hunk" }
+          )
         end,
       })
     end,
@@ -127,7 +172,13 @@ return {
   {
     "sindrets/diffview.nvim",
     lazy = true,
-    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewRefresh" },
+    cmd = {
+      "DiffviewOpen",
+      "DiffviewClose",
+      "DiffviewToggleFiles",
+      "DiffviewFocusFiles",
+      "DiffviewRefresh",
+    },
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       require("diffview").setup({

@@ -109,7 +109,10 @@ function M.detect_venv_async(root_dir, callback)
 
     -- Notify result
     if venv_path then
-      notify.notify(string.format("Python LSP: Using venv at %s", venv_path), "info")
+      notify.notify(
+        string.format("Python LSP: Using venv at %s", venv_path),
+        "info"
+      )
     else
       notify.notify("Python LSP: No venv found, using system Python", "info")
     end
@@ -134,7 +137,10 @@ function M.apply_venv_to_lsp(root_dir, venv_path)
         if settings.python then
           settings.python.pythonPath = venv_path
         end
-        client.notify("workspace/didChangeConfiguration", { settings = settings })
+        client.notify(
+          "workspace/didChangeConfiguration",
+          { settings = settings }
+        )
       end
     end
   end
@@ -189,7 +195,10 @@ end
 --- Setup user commands for venv management
 function M.setup_commands()
   vim.api.nvim_create_user_command("PythonVenvDetect", function()
-    local root_dir = vim.fs.root(0, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
+    local root_dir = vim.fs.root(
+      0,
+      { "pyproject.toml", "setup.py", "requirements.txt", ".git" }
+    )
     if not root_dir then
       notify.notify("No Python project root detected", "warn")
       return
@@ -215,7 +224,16 @@ function M.setup_commands()
     for root_dir, cached in pairs(venv_cache) do
       local age = (vim.uv.hrtime() - cached.timestamp) / 1000000000
       local status = age < stats.ttl_seconds and "✓" or "✗"
-      table.insert(lines, string.format("  %s %s: %s (age: %.1fs)", status, root_dir, cached.venv_path or "none", age))
+      table.insert(
+        lines,
+        string.format(
+          "  %s %s: %s (age: %.1fs)",
+          status,
+          root_dir,
+          cached.venv_path or "none",
+          age
+        )
+      )
     end
 
     notify.notify(table.concat(lines, "\n"), "info", { title = "Venv Cache" })

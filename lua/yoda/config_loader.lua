@@ -9,7 +9,11 @@ local M = {}
 function M.load_json_config(path)
   -- Input validation for perfect assertiveness
   if type(path) ~= "string" or path == "" then
-    vim.notify("load_json_config: path must be a non-empty string", vim.log.levels.ERROR, { title = "Config Loader Error" })
+    vim.notify(
+      "load_json_config: path must be a non-empty string",
+      vim.log.levels.ERROR,
+      { title = "Config Loader Error" }
+    )
     return nil
   end
 
@@ -104,7 +108,10 @@ function M.save_marker(cache_file, env, region, markers, open_allure)
     Path.new(cache_file):write(vim.json.encode(config), "w")
   end)
   if not ok then
-    vim.notify("Failed to save test picker marker: " .. tostring(err), vim.log.levels.WARN)
+    vim.notify(
+      "Failed to save test picker marker: " .. tostring(err),
+      vim.log.levels.WARN
+    )
   end
 end
 

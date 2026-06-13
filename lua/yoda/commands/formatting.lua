@@ -99,7 +99,13 @@ function M.setup()
   -- use-case without requiring the user to remember the current state.
   vim.api.nvim_create_user_command("ToggleFormat", function()
     vim.g.autoformat = not vim.g.autoformat
-    vim.notify(string.format("%s formatting on save", vim.g.autoformat and "Enabled" or "Disabled"), vim.log.levels.INFO)
+    vim.notify(
+      string.format(
+        "%s formatting on save",
+        vim.g.autoformat and "Enabled" or "Disabled"
+      ),
+      vim.log.levels.INFO
+    )
   end, { desc = "Toggle conform.nvim auto-formatting on save" })
 end
 

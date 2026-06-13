@@ -18,7 +18,17 @@ map("n", "<leader>kd", function()
 
   local lines = {}
   for _, map in ipairs(log) do
-    table.insert(lines, string.format("%s %s → %s [%s] (%s)", map.mode, map.lhs, map.rhs, map.desc or "", map.source))
+    table.insert(
+      lines,
+      string.format(
+        "%s %s → %s [%s] (%s)",
+        map.mode,
+        map.lhs,
+        map.rhs,
+        map.desc or "",
+        map.source
+      )
+    )
   end
 
   vim.cmd("new")
@@ -37,7 +47,10 @@ map("n", "<leader>kc", function()
   for _, map in ipairs(log) do
     local key = map.mode .. ":" .. map.lhs
     if seen[key] then
-      table.insert(conflicts, string.format("❌ Conflict: %s (%s)", map.lhs, map.mode))
+      table.insert(
+        conflicts,
+        string.format("❌ Conflict: %s (%s)", map.lhs, map.mode)
+      )
     else
       seen[key] = true
     end

@@ -31,7 +31,10 @@ local function wrap_callback(callback, timer_id)
   return function(...)
     local ok, err = pcall(callback, ...)
     if not ok then
-      vim.notify("Timer callback error [" .. timer_id .. "]: " .. tostring(err), vim.log.levels.ERROR)
+      vim.notify(
+        "Timer callback error [" .. timer_id .. "]: " .. tostring(err),
+        vim.log.levels.ERROR
+      )
     end
   end
 end

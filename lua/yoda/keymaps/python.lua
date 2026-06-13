@@ -86,7 +86,10 @@ vim.api.nvim_create_autocmd("FileType", {
     map("n", "<leader>pd", function()
       local ok, dap_python = pcall(require, "dap-python")
       if not ok then
-        notify.notify("dap-python not available. Opening standard DAP...", "warn")
+        notify.notify(
+          "dap-python not available. Opening standard DAP...",
+          "warn"
+        )
         require("dap").continue()
         return
       end
@@ -105,7 +108,10 @@ vim.api.nvim_create_autocmd("FileType", {
     map("n", "<leader>pv", function()
       local ok = pcall(vim.cmd, "VenvSelect")
       if not ok then
-        notify.notify("venv-selector not available. Install via :Lazy sync", "error")
+        notify.notify(
+          "venv-selector not available. Install via :Lazy sync",
+          "error"
+        )
       end
     end, { desc = "Python: Select venv" })
 

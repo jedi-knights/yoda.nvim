@@ -31,14 +31,22 @@ describe("mini.pick plugin spec", function()
   it("mini.pick has event or keys for lazy loading", function()
     local pick = find_spec("echasnovski/mini.pick")
     assert.is_not_nil(pick, "mini.pick spec not found")
-    local has_lazy_trigger = pick.event ~= nil or pick.keys ~= nil or pick.cmd ~= nil
-    assert.is_true(has_lazy_trigger, "mini.pick should have a lazy-loading trigger (event, keys, or cmd)")
+    local has_lazy_trigger = pick.event ~= nil
+      or pick.keys ~= nil
+      or pick.cmd ~= nil
+    assert.is_true(
+      has_lazy_trigger,
+      "mini.pick should have a lazy-loading trigger (event, keys, or cmd)"
+    )
   end)
 
   it("mini.pick depends on mini.extra", function()
     local pick = find_spec("echasnovski/mini.pick")
     assert.is_not_nil(pick, "mini.pick spec not found")
-    assert.is_not_nil(pick.dependencies, "mini.pick should declare dependencies")
+    assert.is_not_nil(
+      pick.dependencies,
+      "mini.pick should declare dependencies"
+    )
     local has_extra = false
     for _, dep in ipairs(pick.dependencies) do
       local dep_name = type(dep) == "string" and dep or dep[1]
@@ -75,7 +83,10 @@ describe("mini.pick plugin spec", function()
             break
           end
         end
-        assert.is_true(found, "Expected keymap '" .. expected.key .. "' not found in mini.pick keys")
+        assert.is_true(
+          found,
+          "Expected keymap '" .. expected.key .. "' not found in mini.pick keys"
+        )
       end
     end)
   end)

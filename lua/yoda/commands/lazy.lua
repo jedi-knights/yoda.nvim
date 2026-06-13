@@ -12,8 +12,14 @@ function M.setup()
     logger.set_level("debug")
 
     logger.info("=== Lazy.nvim Debug Information ===")
-    logger.debug("Lazy.nvim path", { path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" })
-    logger.debug("Plugin state path", { path = vim.fn.stdpath("state") .. "/lazy" })
+    logger.debug(
+      "Lazy.nvim path",
+      { path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" }
+    )
+    logger.debug(
+      "Plugin state path",
+      { path = vim.fn.stdpath("state") .. "/lazy" }
+    )
 
     -- Check if Lazy.nvim is loaded
     local ok, lazy = pcall(require, "lazy")
@@ -27,7 +33,10 @@ function M.setup()
       -- Check for problematic plugins
       for _, plugin in ipairs(plugins) do
         if plugin._.loaded and plugin._.load_error then
-          logger.error("Plugin with error", { plugin = plugin.name, error = plugin._.load_error })
+          logger.error(
+            "Plugin with error",
+            { plugin = plugin.name, error = plugin._.load_error }
+          )
         end
       end
     else

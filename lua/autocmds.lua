@@ -6,7 +6,11 @@ local augroup = vim.api.nvim_create_augroup
 -- so no require() runs in the BufWritePre callback.
 local ok_fts, filetype_settings = pcall(require, "yoda.filetype.settings")
 if not ok_fts then
-  vim.notify("[yoda] Failed to load yoda.filetype.settings: " .. tostring(filetype_settings), vim.log.levels.WARN)
+  vim.notify(
+    "[yoda] Failed to load yoda.filetype.settings: "
+      .. tostring(filetype_settings),
+    vim.log.levels.WARN
+  )
 end
 
 -- ============================================================================
@@ -21,7 +25,11 @@ autocmd({ "BufEnter", "FocusGained", "CmdlineLeave", "WinEnter" }, {
   group = line_numbers_group,
   desc = "Enable relative line numbers",
   callback = function()
-    if vim.wo.nu and not vim.wo.relativenumber and not vim.startswith(vim.api.nvim_get_mode().mode, "i") then
+    if
+      vim.wo.nu
+      and not vim.wo.relativenumber
+      and not vim.startswith(vim.api.nvim_get_mode().mode, "i")
+    then
       vim.wo.relativenumber = true
     end
   end,
@@ -136,7 +144,12 @@ autocmd("FileType", {
     -- For help buffers only bind q when the buffer is not modifiable
     -- (i.e. it is a rendered help page, not an editable scratch buffer)
     if args.match ~= "help" or not vim.bo[args.buf].modifiable then
-      vim.keymap.set("n", "q", "<cmd>quit<cr>", { buffer = args.buf, desc = "Close window" })
+      vim.keymap.set(
+        "n",
+        "q",
+        "<cmd>quit<cr>",
+        { buffer = args.buf, desc = "Close window" }
+      )
     end
   end,
 })
@@ -150,12 +163,19 @@ autocmd("FileType", {
 -- Loaded individually so one failure doesn't cascade to the rest.
 local ok_fd, filetype_detection = pcall(require, "yoda.filetype.detection")
 if not ok_fd then
-  vim.notify("[yoda] Failed to load yoda.filetype.detection: " .. tostring(filetype_detection), vim.log.levels.WARN)
+  vim.notify(
+    "[yoda] Failed to load yoda.filetype.detection: "
+      .. tostring(filetype_detection),
+    vim.log.levels.WARN
+  )
 end
 
 local ok_gr, git_refresh = pcall(require, "yoda.git_refresh")
 if not ok_gr then
-  vim.notify("[yoda] Failed to load yoda.git_refresh: " .. tostring(git_refresh), vim.log.levels.WARN)
+  vim.notify(
+    "[yoda] Failed to load yoda.git_refresh: " .. tostring(git_refresh),
+    vim.log.levels.WARN
+  )
 end
 
 -- Register VimLeavePre cleanup for all tracked timers.
@@ -166,7 +186,10 @@ if ok_timer then
     timer_manager.setup_cleanup()
   end
 else
-  vim.notify("[yoda] Failed to load yoda.timer_manager: " .. tostring(timer_manager), vim.log.levels.WARN)
+  vim.notify(
+    "[yoda] Failed to load yoda.timer_manager: " .. tostring(timer_manager),
+    vim.log.levels.WARN
+  )
 end
 
 -- Register VimLeavePre ShaDa write to prevent "file already exists" warnings.
@@ -174,7 +197,10 @@ local ok_session, session = pcall(require, "yoda.session")
 if ok_session then
   session.setup()
 else
-  vim.notify("[yoda] Failed to load yoda.session: " .. tostring(session), vim.log.levels.WARN)
+  vim.notify(
+    "[yoda] Failed to load yoda.session: " .. tostring(session),
+    vim.log.levels.WARN
+  )
 end
 
 if ok_fd then

@@ -17,7 +17,10 @@ return {
       vim.fn.jobstart({ "uv", "tool", "install", "debugpy" }, {
         on_exit = function(_, code)
           if code ~= 0 then
-            vim.notify("[yoda] Failed to install debugpy via uv (exit " .. code .. ")", vim.log.levels.ERROR)
+            vim.notify(
+              "[yoda] Failed to install debugpy via uv (exit " .. code .. ")",
+              vim.log.levels.ERROR
+            )
           end
         end,
       })
@@ -32,7 +35,8 @@ return {
       -- Python projects open in the same Neovim session.
       local function get_python_path()
         local venv_python = vim.fn.getcwd() .. "/.venv/bin/python"
-        return vim.uv.fs_stat(venv_python) and venv_python or vim.fn.exepath("python")
+        return vim.uv.fs_stat(venv_python) and venv_python
+          or vim.fn.exepath("python")
       end
 
       -- setup() configures the adapter and registers default launch configs.
@@ -222,7 +226,10 @@ return {
           -- surfaces as a notification rather than a raw Lua stack trace.
           local ok, err = pcall(vscode.load_launchjs, launch, type_to_filetypes)
           if not ok then
-            vim.notify("[dap] Failed to load launch.json: " .. tostring(err), vim.log.levels.WARN)
+            vim.notify(
+              "[dap] Failed to load launch.json: " .. tostring(err),
+              vim.log.levels.WARN
+            )
           end
         end
       end
@@ -233,7 +240,10 @@ return {
       -- pattern = "global" limits to :cd (session-wide) changes; ignores :lcd/:tcd
       -- so the callback doesn't fire multiple times for a single directory change.
       vim.api.nvim_create_autocmd("DirChanged", {
-        group = vim.api.nvim_create_augroup("dap_vscode_launch", { clear = true }),
+        group = vim.api.nvim_create_augroup(
+          "dap_vscode_launch",
+          { clear = true }
+        ),
         pattern = { "global" },
         callback = load_vscode_launch,
         desc = "Reload .vscode/launch.json when cwd changes",
@@ -258,10 +268,18 @@ return {
       -- by mason-nvim-dap (js-debug-adapter in ensure_installed).
       local mason_ok, mason_registry = pcall(require, "mason-registry")
       if mason_ok then
-        local pkg_ok, pkg = pcall(mason_registry.get_package, "js-debug-adapter")
+        local pkg_ok, pkg =
+          pcall(mason_registry.get_package, "js-debug-adapter")
         if pkg_ok and pkg and pkg:is_installed() then
-          local debugger_path = pkg:get_install_path() .. "/js-debug/src/dapDebugServer.js"
-          for _, adapter in ipairs({ "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" }) do
+          local debugger_path = pkg:get_install_path()
+            .. "/js-debug/src/dapDebugServer.js"
+          for _, adapter in ipairs({
+            "pwa-node",
+            "pwa-chrome",
+            "pwa-msedge",
+            "node-terminal",
+            "pwa-extensionHost",
+          }) do
             dap.adapters[adapter] = {
               type = "server",
               host = "localhost",
@@ -273,7 +291,12 @@ return {
             }
           end
 
-          for _, language in ipairs({ "typescript", "javascript", "typescriptreact", "javascriptreact" }) do
+          for _, language in ipairs({
+            "typescript",
+            "javascript",
+            "typescriptreact",
+            "javascriptreact",
+          }) do
             dap.configurations[language] = {
               -- Node.js debugging
               {
@@ -296,7 +319,10 @@ return {
                 request = "launch",
                 name = "Debug Jest Tests",
                 runtimeExecutable = "node",
-                runtimeArgs = { "./node_modules/jest/bin/jest.js", "--runInBand" },
+                runtimeArgs = {
+                  "./node_modules/jest/bin/jest.js",
+                  "--runInBand",
+                },
                 rootPath = "${workspaceFolder}",
                 cwd = "${workspaceFolder}",
                 console = "integratedTerminal",

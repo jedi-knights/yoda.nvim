@@ -18,7 +18,10 @@ function M.setup()
     callback = function()
       local ok, err = pcall(vim.cmd, "wshada!")
       if not ok then
-        vim.notify("[yoda] ShaDa write failed: " .. tostring(err), vim.log.levels.WARN)
+        vim.notify(
+          "[yoda] ShaDa write failed: " .. tostring(err),
+          vim.log.levels.WARN
+        )
       end
     end,
   })
