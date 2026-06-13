@@ -137,7 +137,7 @@ pytest-atlas ~
 ==============================================================================
 GIT INTEGRATION                                           *yoda-keymaps-git*
 
-    <leader>Gg      (n)    Open Neogit (interactive git interface)
+    <leader>gg      (n)    Open Neogit (interactive git interface)
     <leader>gB      (n)    Git blame full file (Fugitive)
 
 Gitsigns hunk operations (blame, stage, reset, diff, navigate) are registered
