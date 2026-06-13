@@ -172,7 +172,10 @@ describe("commands", function()
         print("FormatFeature error: " .. tostring(err))
       end
 
-      assert.is_true(ok, "FormatFeature should execute without error: " .. tostring(err or ""))
+      assert.is_true(
+        ok,
+        "FormatFeature should execute without error: " .. tostring(err or "")
+      )
 
       -- Clean up
       vim.api.nvim_buf_delete(bufnr, { force = true })

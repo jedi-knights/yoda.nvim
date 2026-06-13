@@ -43,7 +43,11 @@ function M.setup_autocmds(autocmd, augroup)
       file_changed_in_progress = true
 
       vim.schedule(function()
-        if args.buf and vim.api.nvim_buf_is_valid(args.buf) and vim.bo[args.buf].buftype == "" then
+        if
+          args.buf
+          and vim.api.nvim_buf_is_valid(args.buf)
+          and vim.bo[args.buf].buftype == ""
+        then
           gitsigns.refresh_batched()
         end
         file_changed_in_progress = false

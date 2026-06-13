@@ -155,7 +155,8 @@ package.preload["yoda-core.io"] = function()
       if not ok or #content == 0 then
         return nil
       end
-      local json_ok, result = pcall(vim.fn.json_decode, table.concat(content, "\n"))
+      local json_ok, result =
+        pcall(vim.fn.json_decode, table.concat(content, "\n"))
       if not json_ok then
         return nil
       end

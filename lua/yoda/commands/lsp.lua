@@ -37,7 +37,10 @@ local function debug_helm_setup()
 
   table.insert(lines, "\nPattern matches:")
   table.insert(lines, "  templates/ directory: " .. tostring(is_templates_dir))
-  table.insert(lines, "  charts/.../templates/: " .. tostring(is_charts_templates))
+  table.insert(
+    lines,
+    "  charts/.../templates/: " .. tostring(is_charts_templates)
+  )
   table.insert(lines, "  crds/ directory: " .. tostring(is_crds))
 
   -- Check LSP clients
@@ -77,7 +80,16 @@ local function lsp_status()
     for _, client in ipairs(clients) do
       local attached = client.attached_buffers[bufnr] ~= nil
       local root_dir = client.config and client.config.root_dir or "unknown"
-      table.insert(lines, string.format("  %s (id:%d): attached=%s, root=%s", client.name, client.id, attached, root_dir))
+      table.insert(
+        lines,
+        string.format(
+          "  %s (id:%d): attached=%s, root=%s",
+          client.name,
+          client.id,
+          attached,
+          root_dir
+        )
+      )
     end
   end
   table.insert(lines, "")
@@ -98,7 +110,14 @@ local function lsp_status()
   }
   for _, server in ipairs(available_servers) do
     local cmd_available = vim.fn.executable(server.cmd) == 1
-    table.insert(lines, string.format("  %s: %s", server.name, cmd_available and "available" or "not found"))
+    table.insert(
+      lines,
+      string.format(
+        "  %s: %s",
+        server.name,
+        cmd_available and "available" or "not found"
+      )
+    )
   end
   table.insert(lines, "========================")
 
@@ -120,14 +139,30 @@ local function python_lsp_debug()
     local client = clients[1]
     table.insert(lines, "Client name: " .. client.name)
     table.insert(lines, "Client ID: " .. client.id)
-    table.insert(lines, "Root dir: " .. (client.config and client.config.root_dir or "unknown"))
+    table.insert(
+      lines,
+      "Root dir: " .. (client.config and client.config.root_dir or "unknown")
+    )
 
-    if client.config and client.config.settings and client.config.settings.basedpyright then
+    if
+      client.config
+      and client.config.settings
+      and client.config.settings.basedpyright
+    then
       local settings = client.config.settings.basedpyright.analysis
       table.insert(lines, "Python path: " .. (settings.pythonPath or "default"))
-      table.insert(lines, "Extra paths: " .. vim.inspect(settings.extraPaths or {}))
-      table.insert(lines, "Auto search paths: " .. tostring(settings.autoSearchPaths or false))
-      table.insert(lines, "Diagnostic mode: " .. (settings.diagnosticMode or "default"))
+      table.insert(
+        lines,
+        "Extra paths: " .. vim.inspect(settings.extraPaths or {})
+      )
+      table.insert(
+        lines,
+        "Auto search paths: " .. tostring(settings.autoSearchPaths or false)
+      )
+      table.insert(
+        lines,
+        "Diagnostic mode: " .. (settings.diagnosticMode or "default")
+      )
     end
   else
     table.insert(lines, "No Python LSP clients attached!")
@@ -139,7 +174,10 @@ local function python_lsp_debug()
       table.insert(lines, "Install with: npm install -g basedpyright")
     end
 
-    local root = vim.fs.root(bufnr, { "pyproject.toml", "setup.py", "requirements.txt", ".git" })
+    local root = vim.fs.root(
+      bufnr,
+      { "pyproject.toml", "setup.py", "requirements.txt", ".git" }
+    )
     table.insert(lines, "Detected project root: " .. (root or "none"))
 
     local cwd = vim.fn.getcwd()
@@ -178,14 +216,27 @@ local function groovy_lsp_debug()
     local client = clients[1]
     table.insert(lines, "Client name: " .. client.name)
     table.insert(lines, "Client ID: " .. client.id)
-    table.insert(lines, "Root dir: " .. (client.config and client.config.root_dir or "unknown"))
-    table.insert(lines, "Status: " .. (client:is_stopped() and "stopped" or "running"))
+    table.insert(
+      lines,
+      "Root dir: " .. (client.config and client.config.root_dir or "unknown")
+    )
+    table.insert(
+      lines,
+      "Status: " .. (client:is_stopped() and "stopped" or "running")
+    )
 
-    if client.config and client.config.settings and client.config.settings.java then
+    if
+      client.config
+      and client.config.settings
+      and client.config.settings.java
+    then
       table.insert(lines, "Java settings configured: yes")
     end
 
-    table.insert(lines, "Client attached buffers: " .. vim.tbl_count(client.attached_buffers))
+    table.insert(
+      lines,
+      "Client attached buffers: " .. vim.tbl_count(client.attached_buffers)
+    )
   else
     table.insert(lines, "No JDTLS clients attached!")
 
@@ -196,7 +247,14 @@ local function groovy_lsp_debug()
       table.insert(lines, "Install Eclipse JDT Language Server")
     end
 
-    local root = vim.fs.root(bufnr, { "build.gradle", "build.gradle.kts", "pom.xml", "settings.gradle", "settings.gradle.kts", ".git" })
+    local root = vim.fs.root(bufnr, {
+      "build.gradle",
+      "build.gradle.kts",
+      "pom.xml",
+      "settings.gradle",
+      "settings.gradle.kts",
+      ".git",
+    })
     table.insert(lines, "Detected project root: " .. (root or "none"))
 
     if vim.fn.executable("java") == 1 then
@@ -211,9 +269,21 @@ local function groovy_lsp_debug()
 end
 
 function M.setup()
-  vim.api.nvim_create_user_command("YodaLspInfo", show_lsp_clients, { desc = "Show LSP clients for current buffer" })
-  vim.api.nvim_create_user_command("YodaHelmDebug", debug_helm_setup, { desc = "Debug Helm template detection and LSP" })
-  vim.api.nvim_create_user_command("LSPStatus", lsp_status, { desc = "Show comprehensive LSP status" })
+  vim.api.nvim_create_user_command(
+    "YodaLspInfo",
+    show_lsp_clients,
+    { desc = "Show LSP clients for current buffer" }
+  )
+  vim.api.nvim_create_user_command(
+    "YodaHelmDebug",
+    debug_helm_setup,
+    { desc = "Debug Helm template detection and LSP" }
+  )
+  vim.api.nvim_create_user_command(
+    "LSPStatus",
+    lsp_status,
+    { desc = "Show comprehensive LSP status" }
+  )
   vim.api.nvim_create_user_command("LSPRestart", function()
     vim.cmd("lsp restart *")
     vim.notify("LSP clients restarted", vim.log.levels.INFO)
@@ -221,8 +291,16 @@ function M.setup()
   vim.api.nvim_create_user_command("LSPInfo", function()
     vim.cmd("lsp")
   end, { desc = "Show LSP information" })
-  vim.api.nvim_create_user_command("PythonLSPDebug", python_lsp_debug, { desc = "Debug Python LSP configuration" })
-  vim.api.nvim_create_user_command("GroovyLSPDebug", groovy_lsp_debug, { desc = "Debug Groovy/Java LSP configuration" })
+  vim.api.nvim_create_user_command(
+    "PythonLSPDebug",
+    python_lsp_debug,
+    { desc = "Debug Python LSP configuration" }
+  )
+  vim.api.nvim_create_user_command(
+    "GroovyLSPDebug",
+    groovy_lsp_debug,
+    { desc = "Debug Groovy/Java LSP configuration" }
+  )
 
   -- jdtls commands — registered once here rather than in LspAttach to avoid
   -- errors from re-creating global commands on every buffer attach.

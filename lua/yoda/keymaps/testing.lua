@@ -53,7 +53,8 @@ map("n", "<leader>tO", function()
   end
 
   local found = win_utils.focus_window(function(win, buf, buf_name, ft)
-    return buf_name:match("Neotest Output Panel") or ft == "neotest-output-panel"
+    return buf_name:match("Neotest Output Panel")
+      or ft == "neotest-output-panel"
   end)
   if not found then
     notify.notify("Neotest output panel not open", "warn")
@@ -71,7 +72,10 @@ map("n", "<leader>tF", function()
     return ft == "neotest-summary"
   end)
   if not found then
-    notify.notify("Neotest summary not open. Use <leader>ts to open it.", "warn")
+    notify.notify(
+      "Neotest summary not open. Use <leader>ts to open it.",
+      "warn"
+    )
   end
 end, { desc = "Test: Focus summary window" })
 
@@ -93,7 +97,10 @@ map("n", "<leader>tc", function()
   elseif filetype == "lua" then
     notify.notify("Run tests with: make test", "info")
   else
-    notify.notify("No test runner configured for filetype: " .. filetype, "warn")
+    notify.notify(
+      "No test runner configured for filetype: " .. filetype,
+      "warn"
+    )
   end
 end, { desc = "Test: Run current file" })
 
@@ -102,12 +109,18 @@ map("n", "<leader>tS", function()
   if ok then
     local success, err = pcall(pytest_atlas.show_status)
     if not success then
-      notify.notify("Error showing pytest-atlas status: " .. tostring(err), "error")
+      notify.notify(
+        "Error showing pytest-atlas status: " .. tostring(err),
+        "error"
+      )
     end
   else
     local env = vim.env.TEST_ENVIRONMENT or "qa"
     local region = vim.env.TEST_REGION or "auto"
-    notify.notify(string.format("Current test environment: %s (%s)", env, region), "info")
+    notify.notify(
+      string.format("Current test environment: %s (%s)", env, region),
+      "info"
+    )
   end
 end, { desc = "Test: Show environment status" })
 

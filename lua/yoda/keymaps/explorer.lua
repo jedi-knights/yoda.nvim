@@ -7,13 +7,15 @@ vim.keymap.set("n", "<leader>e", function()
     return
   end
 
-  local all_explorer_wins = win_utils.find_all_windows(function(win, buf, buf_name, ft)
-    return ft == "snacks_picker_list"
-      or ft == "snacks_picker_input"
-      or ft == "snacks_layout_box"
-      or ft == "snacks-explorer"
-      or ft == "snacks_explorer"
-  end)
+  local all_explorer_wins = win_utils.find_all_windows(
+    function(win, buf, buf_name, ft)
+      return ft == "snacks_picker_list"
+        or ft == "snacks_picker_input"
+        or ft == "snacks_layout_box"
+        or ft == "snacks-explorer"
+        or ft == "snacks_explorer"
+    end
+  )
 
   if #all_explorer_wins > 0 then
     win_utils.close_windows(function(win, buf, buf_name, ft)

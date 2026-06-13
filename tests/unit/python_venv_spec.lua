@@ -123,7 +123,10 @@ describe("python_venv", function()
       local venv_path = "/tmp/test_project/.venv/bin/python"
       python_venv.apply_venv_to_lsp("/tmp/test_project", venv_path)
 
-      assert.equals(venv_path, mock_client.config.settings.basedpyright.analysis.pythonPath)
+      assert.equals(
+        venv_path,
+        mock_client.config.settings.basedpyright.analysis.pythonPath
+      )
       assert.equals(venv_path, mock_client.config.settings.python.pythonPath)
 
       vim.lsp.get_clients = original_get_clients
@@ -160,8 +163,13 @@ describe("python_venv", function()
       local venv_path = "/tmp/test_project/.venv/bin/python"
       python_venv.apply_venv_to_lsp("/tmp/test_project", venv_path)
 
-      assert.equals(venv_path, matching_client.config.settings.basedpyright.analysis.pythonPath)
-      assert.is_nil(non_matching_client.config.settings.basedpyright.analysis.pythonPath)
+      assert.equals(
+        venv_path,
+        matching_client.config.settings.basedpyright.analysis.pythonPath
+      )
+      assert.is_nil(
+        non_matching_client.config.settings.basedpyright.analysis.pythonPath
+      )
 
       vim.lsp.get_clients = original_get_clients
     end)
@@ -228,10 +236,13 @@ describe("python_venv", function()
       local callback_executed = false
       local returned_venv = "not_nil"
 
-      python_venv.detect_venv_async("/nonexistent/path/that/does/not/exist", function(venv_path)
-        callback_executed = true
-        returned_venv = venv_path
-      end)
+      python_venv.detect_venv_async(
+        "/nonexistent/path/that/does/not/exist",
+        function(venv_path)
+          callback_executed = true
+          returned_venv = venv_path
+        end
+      )
 
       vim.wait(200, function()
         return callback_executed

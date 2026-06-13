@@ -21,9 +21,39 @@ map("v", "<leader>p", "_dP", { desc = "Visual: Delete and paste over" })
 -- typed in insert mode while Neovim waited to see if 'k' would follow.
 -- Use <C-[> (equivalent to Escape) or the physical Escape key instead.
 
-map("n", "<up>", "<nop>", { desc = "Disabled: Use k - Arrow keys disabled to encourage hjkl" })
-map("n", "<down>", "<nop>", { desc = "Disabled: Use j - Arrow keys disabled to encourage hjkl" })
-map("n", "<left>", "<nop>", { desc = "Disabled: Use h - Arrow keys disabled to encourage hjkl" })
-map("n", "<right>", "<nop>", { desc = "Disabled: Use l - Arrow keys disabled to encourage hjkl" })
-map("n", "<pageup>", "<nop>", { desc = "Disabled: Use <C-u> - Page keys disabled for half-page scrolling" })
-map("n", "<pagedown>", "<nop>", { desc = "Disabled: Use <C-d> - Page keys disabled for half-page scrolling" })
+map(
+  "n",
+  "<up>",
+  "<nop>",
+  { desc = "Disabled: Use k - Arrow keys disabled to encourage hjkl" }
+)
+map(
+  "n",
+  "<down>",
+  "<nop>",
+  { desc = "Disabled: Use j - Arrow keys disabled to encourage hjkl" }
+)
+map(
+  "n",
+  "<left>",
+  "<nop>",
+  { desc = "Disabled: Use h - Arrow keys disabled to encourage hjkl" }
+)
+map(
+  "n",
+  "<right>",
+  "<nop>",
+  { desc = "Disabled: Use l - Arrow keys disabled to encourage hjkl" }
+)
+map(
+  "n",
+  "<pageup>",
+  "<nop>",
+  { desc = "Disabled: Use <C-u> - Page keys disabled for half-page scrolling" }
+)
+map(
+  "n",
+  "<pagedown>",
+  "<nop>",
+  { desc = "Disabled: Use <C-d> - Page keys disabled for half-page scrolling" }
+)

@@ -12,12 +12,18 @@ return {
     config = function()
       local mason_ok, mason = pcall(require, "mason")
       if not mason_ok then
-        vim.notify("[yoda] Failed to load mason: " .. tostring(mason), vim.log.levels.WARN)
+        vim.notify(
+          "[yoda] Failed to load mason: " .. tostring(mason),
+          vim.log.levels.WARN
+        )
         return
       end
       local setup_ok, err = pcall(mason.setup)
       if not setup_ok then
-        vim.notify("[yoda] mason.setup failed: " .. tostring(err), vim.log.levels.WARN)
+        vim.notify(
+          "[yoda] mason.setup failed: " .. tostring(err),
+          vim.log.levels.WARN
+        )
       end
     end,
   },
@@ -84,7 +90,12 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = { "codelldb", "debugpy", "delve", "js-debug-adapter" },
+        ensure_installed = {
+          "codelldb",
+          "debugpy",
+          "delve",
+          "js-debug-adapter",
+        },
         automatic_installation = true,
         handlers = {},
       })

@@ -15,7 +15,10 @@ vim.api.nvim_create_autocmd("FileType", {
     map("n", "<leader>rr", function()
       local ok, overseer = pcall(require, "overseer")
       if not ok then
-        notify.notify("Overseer not available. Running cargo run directly...", "warn")
+        notify.notify(
+          "Overseer not available. Running cargo run directly...",
+          "warn"
+        )
         vim.cmd("!cargo run")
         return
       end
@@ -25,7 +28,10 @@ vim.api.nvim_create_autocmd("FileType", {
     map("n", "<leader>rb", function()
       local ok, overseer = pcall(require, "overseer")
       if not ok then
-        notify.notify("Overseer not available. Running cargo build directly...", "warn")
+        notify.notify(
+          "Overseer not available. Running cargo build directly...",
+          "warn"
+        )
         vim.cmd("!cargo build")
         return
       end

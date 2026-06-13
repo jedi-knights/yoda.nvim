@@ -12,7 +12,10 @@ if not vim.uv.fs_stat(lazypath) then
     lazypath,
   })
   if vim.v.shell_error ~= 0 then
-    vim.notify("[yoda] Failed to clone lazy.nvim — check network/git", vim.log.levels.ERROR)
+    vim.notify(
+      "[yoda] Failed to clone lazy.nvim — check network/git",
+      vim.log.levels.ERROR
+    )
     return
   end
 end

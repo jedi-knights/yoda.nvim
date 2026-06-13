@@ -33,7 +33,10 @@ require("lazy").setup({
     config = function()
       local ok, adapters = pcall(require, "yoda-adapters")
       if not ok then
-        vim.notify("[yoda] Failed to load yoda-adapters: " .. tostring(adapters), vim.log.levels.ERROR)
+        vim.notify(
+          "[yoda] Failed to load yoda-adapters: " .. tostring(adapters),
+          vim.log.levels.ERROR
+        )
         return
       end
       if adapters and adapters.setup then
@@ -42,7 +45,10 @@ require("lazy").setup({
           picker_backend = nil,
         })
         if not setup_ok then
-          vim.notify("[yoda] yoda-adapters setup failed: " .. tostring(err), vim.log.levels.WARN)
+          vim.notify(
+            "[yoda] yoda-adapters setup failed: " .. tostring(err),
+            vim.log.levels.WARN
+          )
         end
       end
     end,
@@ -52,7 +58,10 @@ require("lazy").setup({
     config = function()
       local ok, core = pcall(require, "yoda-core")
       if not ok then
-        vim.notify("[yoda] Failed to load yoda-core: " .. tostring(core), vim.log.levels.ERROR)
+        vim.notify(
+          "[yoda] Failed to load yoda-core: " .. tostring(core),
+          vim.log.levels.ERROR
+        )
         return
       end
       if core and core.setup then
@@ -61,7 +70,10 @@ require("lazy").setup({
           dependencies = {},
         })
         if not setup_ok then
-          vim.notify("[yoda] yoda-core setup failed: " .. tostring(err), vim.log.levels.WARN)
+          vim.notify(
+            "[yoda] yoda-core setup failed: " .. tostring(err),
+            vim.log.levels.WARN
+          )
         end
       end
     end,
@@ -72,7 +84,10 @@ require("lazy").setup({
     config = function()
       local ok, logging = pcall(require, "yoda-logging")
       if not ok then
-        vim.notify("[yoda] Failed to load yoda-logging: " .. tostring(logging), vim.log.levels.ERROR)
+        vim.notify(
+          "[yoda] Failed to load yoda-logging: " .. tostring(logging),
+          vim.log.levels.ERROR
+        )
         return
       end
       if logging and logging.setup then
@@ -81,7 +96,10 @@ require("lazy").setup({
           level = logging.LEVELS and logging.LEVELS.INFO or 2,
         })
         if not setup_ok then
-          vim.notify("[yoda] yoda-logging setup failed: " .. tostring(err), vim.log.levels.WARN)
+          vim.notify(
+            "[yoda] yoda-logging setup failed: " .. tostring(err),
+            vim.log.levels.WARN
+          )
         end
       end
     end,
@@ -92,7 +110,10 @@ require("lazy").setup({
     config = function()
       local ok, terminal = pcall(require, "yoda-terminal")
       if not ok then
-        vim.notify("[yoda] Failed to load yoda-terminal: " .. tostring(terminal), vim.log.levels.ERROR)
+        vim.notify(
+          "[yoda] Failed to load yoda-terminal: " .. tostring(terminal),
+          vim.log.levels.ERROR
+        )
         return
       end
       if terminal and terminal.setup then
@@ -104,7 +125,10 @@ require("lazy").setup({
           commands = true,
         })
         if not setup_ok then
-          vim.notify("[yoda] yoda-terminal setup failed: " .. tostring(err), vim.log.levels.WARN)
+          vim.notify(
+            "[yoda] yoda-terminal setup failed: " .. tostring(err),
+            vim.log.levels.WARN
+          )
         end
       end
     end,
@@ -115,7 +139,10 @@ require("lazy").setup({
     config = function()
       local ok, window = pcall(require, "yoda-window")
       if not ok then
-        vim.notify("[yoda] Failed to load yoda-window: " .. tostring(window), vim.log.levels.ERROR)
+        vim.notify(
+          "[yoda] Failed to load yoda-window: " .. tostring(window),
+          vim.log.levels.ERROR
+        )
         return
       end
       if window and window.setup then
@@ -124,7 +151,10 @@ require("lazy").setup({
           enable_window_protection = true,
         })
         if not setup_ok then
-          vim.notify("[yoda] yoda-window setup failed: " .. tostring(err), vim.log.levels.WARN)
+          vim.notify(
+            "[yoda] yoda-window setup failed: " .. tostring(err),
+            vim.log.levels.WARN
+          )
         end
       end
     end,
@@ -134,7 +164,10 @@ require("lazy").setup({
     config = function()
       local ok, diagnostics = pcall(require, "yoda-diagnostics")
       if not ok then
-        vim.notify("[yoda] Failed to load yoda-diagnostics: " .. tostring(diagnostics), vim.log.levels.ERROR)
+        vim.notify(
+          "[yoda] Failed to load yoda-diagnostics: " .. tostring(diagnostics),
+          vim.log.levels.ERROR
+        )
         return
       end
       if diagnostics and diagnostics.setup then
@@ -142,7 +175,10 @@ require("lazy").setup({
           register_defaults = true,
         })
         if not setup_ok then
-          vim.notify("[yoda] yoda-diagnostics setup failed: " .. tostring(err), vim.log.levels.WARN)
+          vim.notify(
+            "[yoda] yoda-diagnostics setup failed: " .. tostring(err),
+            vim.log.levels.WARN
+          )
         end
       end
     end,

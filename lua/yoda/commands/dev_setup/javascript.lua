@@ -12,12 +12,17 @@ function M.setup()
     logger.set_strategy("console")
     logger.set_level("info")
 
-    logger.info("🟨 Setting up JavaScript/TypeScript development environment...")
+    logger.info(
+      "🟨 Setting up JavaScript/TypeScript development environment..."
+    )
 
     -- Check if Mason is available
     local mason_ok, mason = pcall(require, "mason")
     if not mason_ok then
-      notify.notify("❌ Mason not available. Install via :Lazy sync first", "error")
+      notify.notify(
+        "❌ Mason not available. Install via :Lazy sync first",
+        "error"
+      )
       return
     end
 
@@ -41,8 +46,12 @@ function M.setup()
       { title = "Yoda JavaScript Setup" }
     )
 
-    logger.info("✅ JavaScript setup initiated. Restart Neovim after Mason installation completes.")
-  end, { desc = "Install JavaScript development tools (ts_ls, js-debug-adapter, biome) via Mason" })
+    logger.info(
+      "✅ JavaScript setup initiated. Restart Neovim after Mason installation completes."
+    )
+  end, {
+    desc = "Install JavaScript development tools (ts_ls, js-debug-adapter, biome) via Mason",
+  })
 
   -- Node.js version detection
   vim.api.nvim_create_user_command("YodaNodeVersion", function()
@@ -50,7 +59,11 @@ function M.setup()
     if handle then
       local result = handle:read("*a")
       handle:close()
-      notify.notify("Node.js version: " .. result, "info", { title = "Node Version" })
+      notify.notify(
+        "Node.js version: " .. result,
+        "info",
+        { title = "Node Version" }
+      )
     else
       notify.notify("❌ Node.js not found", "error")
     end

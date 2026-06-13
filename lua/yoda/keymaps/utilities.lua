@@ -21,7 +21,12 @@ map("n", "<leader>D", function()
 end, { desc = "Util: Delete buffer content" })
 
 -- Toggle conform.nvim auto-format on save for the session.
-map("n", "<leader>uf", "<cmd>ToggleFormat<cr>", { desc = "Util: Toggle format on save" })
+map(
+  "n",
+  "<leader>uf",
+  "<cmd>ToggleFormat<cr>",
+  { desc = "Util: Toggle format on save" }
+)
 
 -- <leader>H mnemonic: Home screen. <leader>d is reserved for the Debug group.
 map("n", "<leader>H", function()
@@ -40,7 +45,10 @@ map("n", "<leader>tK", function()
   if not success then
     local alt_success = pcall(vim.cmd, "Showkeys")
     if not alt_success then
-      notify.notify("❌ Failed to toggle Showkeys - plugin may not be loaded", "error")
+      notify.notify(
+        "❌ Failed to toggle Showkeys - plugin may not be loaded",
+        "error"
+      )
     end
   end
 end, { desc = "Toggle: Show keys display" })

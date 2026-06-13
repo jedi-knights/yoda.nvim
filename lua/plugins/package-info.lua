@@ -35,14 +35,46 @@ return {
         vim.b[args.buf].package_info_setup = true
 
         local pkg = require("package-info")
-        vim.keymap.set("n", "<leader>jf", pkg.show, { desc = "JS: Fetch & show package versions", buffer = true, silent = true })
-        vim.keymap.set("n", "<leader>js", pkg.show, { desc = "JS: Show package info", buffer = true, silent = true })
-        vim.keymap.set("n", "<leader>ju", pkg.update, { desc = "JS: Update package", buffer = true, silent = true })
-        vim.keymap.set("n", "<leader>jd", pkg.delete, { desc = "JS: Delete package", buffer = true, silent = true })
-        vim.keymap.set("n", "<leader>ji", pkg.install, { desc = "JS: Install package", buffer = true, silent = true })
-        vim.keymap.set("n", "<leader>jv", pkg.change_version, { desc = "JS: Change version", buffer = true, silent = true })
+        vim.keymap.set("n", "<leader>jf", pkg.show, {
+          desc = "JS: Fetch & show package versions",
+          buffer = true,
+          silent = true,
+        })
+        vim.keymap.set(
+          "n",
+          "<leader>js",
+          pkg.show,
+          { desc = "JS: Show package info", buffer = true, silent = true }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>ju",
+          pkg.update,
+          { desc = "JS: Update package", buffer = true, silent = true }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>jd",
+          pkg.delete,
+          { desc = "JS: Delete package", buffer = true, silent = true }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>ji",
+          pkg.install,
+          { desc = "JS: Install package", buffer = true, silent = true }
+        )
+        vim.keymap.set(
+          "n",
+          "<leader>jv",
+          pkg.change_version,
+          { desc = "JS: Change version", buffer = true, silent = true }
+        )
 
-        vim.notify("Package.json opened. Use <leader>jf to fetch versions", vim.log.levels.INFO)
+        vim.notify(
+          "Package.json opened. Use <leader>jf to fetch versions",
+          vim.log.levels.INFO
+        )
       end,
     })
   end,
