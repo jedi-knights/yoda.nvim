@@ -3,7 +3,8 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
--- NOTE: hunk-level operations (<leader>hp preview, <leader>tb toggle blame, etc.)
+-- NOTE: hunk-level operations (<leader>hp preview, <leader>tb toggle blame,
+-- etc.)
 -- are registered as buffer-local keymaps inside the gitsigns on_attach callback
 -- in lua/plugins/git.lua. Global duplicates have been removed.
 

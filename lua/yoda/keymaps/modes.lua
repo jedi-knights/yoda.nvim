@@ -3,7 +3,8 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
--- Keep cursor vertically centered while scrolling and moving through search results.
+-- Keep cursor vertically centered while scrolling and moving through search
+-- results.
 -- Without zz the view jumps as the cursor approaches the top/bottom edge, which
 -- makes it harder to track context. nzzzv / Nzzzv also set the jumplist mark so
 -- <C-o>/<C-i> still work correctly.

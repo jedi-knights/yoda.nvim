@@ -1,6 +1,7 @@
 local notify = require("yoda-adapters.notification")
 
--- All JS/TS keymaps are buffer-local, registered only when a JS/TS file is opened.
+-- All JS/TS keymaps are buffer-local, registered only when a JS/TS file is
+-- opened.
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup(
     "YodaJavaScriptKeymaps",

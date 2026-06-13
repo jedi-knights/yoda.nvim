@@ -1,5 +1,6 @@
 -- lua/plugins/util.lua
--- Small utility plugins: repeat operator support, auto-indent detection, key display.
+-- Small utility plugins: repeat operator support, auto-indent detection, key
+-- display.
 
 return {
   -- Makes plugin-defined operators repeatable with `.`.

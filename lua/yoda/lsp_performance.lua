@@ -1,7 +1,8 @@
 local M = {}
 
 -- Cap venv_detection_times at this many unique root directories.
--- Projects accumulate across a session; without a bound this table grows forever.
+-- Projects accumulate across a session; without a bound this table grows
+-- forever.
 local MAX_VENV_ENTRIES = 50
 local venv_key_order = {} -- insertion-order list for FIFO eviction
 

@@ -315,7 +315,8 @@ describe("config_loader", function()
     end)
   end)
 
-  -- NOTE: load_pytest_markers() tests removed - functionality moved to pytest-atlas.nvim plugin
+  -- NOTE: load_pytest_markers() tests removed - functionality moved to
+  -- pytest-atlas.nvim plugin
 
   describe("save_marker()", function()
     it("saves marker configuration to cache file", function()

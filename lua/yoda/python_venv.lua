@@ -59,8 +59,10 @@ local function build_venv_paths(root_dir)
 end
 
 --- Walk a list of paths using non-blocking libuv fs_stat.
---- Invokes callback(path) with the first executable found, or callback(nil) if none.
---- vim.schedule is used for the final invocation so callers can safely call Neovim APIs.
+--- Invokes callback(path) with the first executable found, or callback(nil) if
+--- none.
+--- vim.schedule is used for the final invocation so callers can safely call
+--- Neovim APIs.
 --- @param paths table List of paths to check
 --- @param idx number Current index (start at 1)
 --- @param callback function Called with first executable path or nil

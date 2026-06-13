@@ -132,7 +132,8 @@ end
 --- Complexity: 6 (1 skip + 2 env checks + 2 region checks + 1 log)
 --- @param line string Line content
 --- @param line_num number Line number
---- @param state table Parser state {current_env, current_regions, environments, env_order}
+--- @param state table Parser state {current_env, current_regions, environments,
+--- env_order}
 local function process_line(line, line_num, state)
   local trimmed = line:match("^%s*(.-)%s*$")
 
@@ -182,7 +183,8 @@ end
 --- Parse YAML file and extract environments and regions
 --- Complexity: 4 (1 read check + 1 loop + 1 save + 1 finalize)
 --- @param yaml_path string Path to the YAML file
---- @return table|nil Table with environment names as keys and region arrays as values
+--- @return table|nil Table with environment names as keys and region arrays as
+--- values
 function M.parse_ingress_mapping(yaml_path)
   -- Input validation
   assert(

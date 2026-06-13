@@ -1,6 +1,7 @@
 local notify = require("yoda-adapters.notification")
 
--- All Python keymaps are buffer-local, registered only when a Python file is opened.
+-- All Python keymaps are buffer-local, registered only when a Python file is
+-- opened.
 -- Using FileType autocmd matches the pattern established in go.lua and prevents
 -- these bindings from polluting non-Python buffers.
 vim.api.nvim_create_autocmd("FileType", {

@@ -56,9 +56,12 @@ return {
     },
 
     sources = {
-      -- lazydev is intentionally absent here — it's ft=lua only (plugins/lsp.lua)
-      -- and is added via per_filetype below. Including it in default would cause
-      -- blink to attempt require("lazydev.integrations.blink") in every non-Lua buffer.
+      -- lazydev is intentionally absent here — it's ft=lua only
+      -- (plugins/lsp.lua)
+      -- and is added via per_filetype below. Including it in default would
+      -- cause
+      -- blink to attempt require("lazydev.integrations.blink") in every non-Lua
+      -- buffer.
       default = { "lsp", "path", "snippets", "buffer" },
       per_filetype = {
         lua = { "lsp", "path", "snippets", "lazydev" },
@@ -68,7 +71,8 @@ return {
         lsp = {
           score_offset = 100,
           max_items = 50,
-          -- async = true: non-default; prevents slow servers (basedpyright, jdtls)
+          -- async = true: non-default; prevents slow servers (basedpyright,
+          -- jdtls)
           -- from blocking the completion menu while they compute results.
           async = true,
           timeout_ms = 500,

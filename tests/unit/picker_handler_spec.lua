@@ -300,7 +300,8 @@ describe("picker_handler", function()
     end)
   end)
 
-  -- NOTE: display_current_config() and generate_command_preview() tests removed - functionality moved to pytest-atlas.nvim plugin
+  -- NOTE: display_current_config() and generate_command_preview() tests removed
+  -- - functionality moved to pytest-atlas.nvim plugin
 
   describe("integration with wizard completion", function()
     local original_notify
