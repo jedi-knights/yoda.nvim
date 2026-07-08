@@ -83,54 +83,60 @@ describe("claudecode plugin spec", function()
       find_key(spec, "<leader>ai")[2]()
     end)
 
-    it("reclaims the dashboard's width for Claude's window when the dashboard was open", function()
-      local reclaimed
-      package.loaded["yoda-window.utils"] = {
-        find_by_filetype = function(ft)
-          if ft == "snacks_dashboard" then
-            return 1
-          end
-          return nil
-        end,
-        reclaim_width = function(close_win, target_win)
-          reclaimed = { close_win = close_win, target_win = target_win }
-        end,
-      }
-      package.loaded["claudecode.terminal"] = {
-        get_active_terminal_bufnr = function()
-          return 42
-        end,
-      }
-      vim.cmd = function() end
-      vim.fn.bufwinid = function(buf)
-        assert.equals(42, buf)
-        return 7
+    it(
+      "reclaims the dashboard's width for Claude's window when the dashboard was open",
+      function()
+        local reclaimed
+        package.loaded["yoda-window.utils"] = {
+          find_by_filetype = function(ft)
+            if ft == "snacks_dashboard" then
+              return 1
+            end
+            return nil
+          end,
+          reclaim_width = function(close_win, target_win)
+            reclaimed = { close_win = close_win, target_win = target_win }
+          end,
+        }
+        package.loaded["claudecode.terminal"] = {
+          get_active_terminal_bufnr = function()
+            return 42
+          end,
+        }
+        vim.cmd = function() end
+        vim.fn.bufwinid = function(buf)
+          assert.equals(42, buf)
+          return 7
+        end
+
+        local spec = dofile(specpath)
+        find_key(spec, "<leader>ai")[2]()
+
+        assert.same({ close_win = 1, target_win = 7 }, reclaimed)
       end
+    )
 
-      local spec = dofile(specpath)
-      find_key(spec, "<leader>ai")[2]()
+    it(
+      "does not resize when Claude's terminal window can't be found",
+      function()
+        package.loaded["yoda-window.utils"] = {
+          find_by_filetype = function()
+            return 1
+          end,
+          reclaim_width = function()
+            error("reclaim_width should not be called without a Claude window")
+          end,
+        }
+        package.loaded["claudecode.terminal"] = {
+          get_active_terminal_bufnr = function()
+            return nil
+          end,
+        }
+        vim.cmd = function() end
 
-      assert.same({ close_win = 1, target_win = 7 }, reclaimed)
-    end)
-
-    it("does not resize when Claude's terminal window can't be found", function()
-      package.loaded["yoda-window.utils"] = {
-        find_by_filetype = function()
-          return 1
-        end,
-        reclaim_width = function()
-          error("reclaim_width should not be called without a Claude window")
-        end,
-      }
-      package.loaded["claudecode.terminal"] = {
-        get_active_terminal_bufnr = function()
-          return nil
-        end,
-      }
-      vim.cmd = function() end
-
-      local spec = dofile(specpath)
-      find_key(spec, "<leader>ai")[2]()
-    end)
+        local spec = dofile(specpath)
+        find_key(spec, "<leader>ai")[2]()
+      end
+    )
   end)
 end)
