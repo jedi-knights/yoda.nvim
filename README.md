@@ -154,6 +154,12 @@ Once installed, all language servers provide:
 | `<leader>sb` | Search open buffers (mini.pick) |
 
 ### 🤖 AI Features (Claude Code)
+
+> **Startup shortcut**: launch with `nvim claude` (or `nvim c`) to boot straight
+> into an AI workspace — Snacks explorer on the left, Claude Code expanded to
+> fill the space to its right, no dashboard. A real file/dir named `claude`/`c`
+> still opens normally. See `:help yoda-ai-startup`.
+
 | Keymap | Description |
 |--------|-------------|
 | `<leader>ai` | Toggle Claude Code |
