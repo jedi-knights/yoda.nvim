@@ -26,6 +26,20 @@ require("lazy-bootstrap")
 require("options")
 require("lazy-plugins")
 
+-- Register the `nvim claude` / `nvim c` startup mode before the scheduled
+-- block below: its VimEnter autocmd must be in place before VimEnter fires,
+-- which happens before the first vim.schedule callback runs. Snacks is already
+-- loaded (lazy = false) and the :ClaudeCode cmd trigger is registered by now.
+local ok_sm, startup_mode = pcall(require, "yoda.startup_mode")
+if ok_sm then
+  startup_mode.setup()
+else
+  vim.notify(
+    "[yoda] Failed to load yoda.startup_mode: " .. tostring(startup_mode),
+    vim.log.levels.WARN
+  )
+end
+
 -- ============================================================================
 -- Yoda Modules + Environment Setup
 -- ============================================================================

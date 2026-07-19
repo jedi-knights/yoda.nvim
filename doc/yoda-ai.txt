@@ -7,9 +7,10 @@ CONTENTS                                                   *yoda-ai-contents*
 
 1. Prerequisites ........................... |yoda-ai-prereqs|
 2. Claude Code Setup ....................... |yoda-ai-setup|
-3. Keymaps ................................. |yoda-ai-keymaps|
-4. Verification ............................ |yoda-ai-verify|
-5. Troubleshooting ......................... |yoda-ai-trouble|
+3. Startup Mode ............................ |yoda-ai-startup|
+4. Keymaps ................................. |yoda-ai-keymaps|
+5. Verification ............................ |yoda-ai-verify|
+6. Troubleshooting ......................... |yoda-ai-trouble|
 
 ==============================================================================
 PREREQUISITES                                               *yoda-ai-prereqs*
@@ -56,6 +57,29 @@ Yoda.nvim detects home/work environments via the YODA_ENV variable:
     # Home environment
     export YODA_ENV="home"
 <
+
+==============================================================================
+STARTUP MODE                                                *yoda-ai-startup*
+
+Launch Neovim directly into an AI workspace by passing "claude" (or the short
+alias "c") as the sole argument:
+>
+    nvim claude
+    nvim c
+<
+Instead of the dashboard, Yoda opens the Snacks explorer as a left sidebar and
+expands Claude Code to fill all horizontal space to its right, with the cursor
+in the Claude terminal so you can prompt immediately.
+
+This is the startup counterpart to <leader>ai (see |yoda-ai-keymaps|), which
+performs the same expand from within a running session.
+
+Notes:~
+  • Only a bare "claude"/"c" argument triggers the mode. If a file or
+    directory of that name exists in the current directory, Neovim edits it
+    normally instead.
+  • Any other launch is unaffected: `nvim`, `nvim <file>`, and multi-argument
+    invocations all behave exactly as before.
 
 ==============================================================================
 KEYMAPS                                                    *yoda-ai-keymaps*
