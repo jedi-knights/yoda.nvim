@@ -53,3 +53,6 @@ benchmarks/temp/
 # Test coverage output
 coverage/
 
+
+# Task tracking (local only)
+TODO.md
