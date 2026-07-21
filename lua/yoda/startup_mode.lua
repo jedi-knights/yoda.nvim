@@ -92,9 +92,28 @@ function M.start_claude_layout()
       pcall(vim.api.nvim_buf_delete, phantom_buf, { force = true })
     end
 
-    if vim.api.nvim_win_is_valid(claude_win) then
-      pcall(vim.api.nvim_set_current_win, claude_win)
-    end
+    -- Defer the final focus + terminal-insert to the next tick so it lands
+    -- *after* every other startup focus handler that runs later in the loop
+    -- (snacks picker `p:focus()`, ClaudeCode's own scheduled start_insert,
+    -- any dashboard eviction). A plain vim.schedule here fires too early --
+    -- claude gets focus, then one of those handlers steals it back and the
+    -- user boots into the sidebar/normal mode instead of typing to Claude.
+    -- Re-resolve the claude window at defer time because the buffer may
+    -- have been swapped during the intervening focus dance.
+    vim.defer_fn(function()
+      local ok, terminal_mod = pcall(require, "claudecode.terminal")
+      local buf = ok and terminal_mod.get_active_terminal_bufnr()
+      local win = buf and vim.fn.bufwinid(buf) or -1
+      if win == -1 or not vim.api.nvim_win_is_valid(win) then
+        return
+      end
+      -- pcall: window may close between the valid-check and the focus call
+      -- (async terminal spawn); silent failure is the intended degrade.
+      pcall(vim.api.nvim_set_current_win, win)
+      -- pcall: non-fatal if the buffer isn't yet a terminal in degraded
+      -- startup (missing plugin, spawn failure); the user just presses `i`.
+      pcall(vim.cmd, "startinsert")
+    end, 50)
   end)
 end
 
