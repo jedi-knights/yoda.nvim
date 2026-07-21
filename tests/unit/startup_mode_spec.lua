@@ -124,6 +124,7 @@ describe("yoda.startup_mode", function()
 
       originals.cmd = vim.cmd
       originals.schedule = vim.schedule
+      originals.defer_fn = vim.defer_fn
       originals.bufwinid = vim.fn.bufwinid
       originals.get_current_win = vim.api.nvim_get_current_win
       originals.get_current_buf = vim.api.nvim_get_current_buf
@@ -134,6 +135,11 @@ describe("yoda.startup_mode", function()
 
       -- Run scheduled work synchronously so assertions don't need an event tick.
       vim.schedule = function(fn)
+        fn()
+      end
+      -- The defer_fn tick that runs focus + startinsert after every other
+      -- startup focus handler; drive it synchronously in tests.
+      vim.defer_fn = function(fn, _)
         fn()
       end
       -- The phantom startup window/buffer that `nvim claude` opens.
@@ -154,6 +160,7 @@ describe("yoda.startup_mode", function()
     after_each(function()
       vim.cmd = originals.cmd
       vim.schedule = originals.schedule
+      vim.defer_fn = originals.defer_fn
       vim.fn.bufwinid = originals.bufwinid
       vim.api.nvim_get_current_win = originals.get_current_win
       vim.api.nvim_get_current_buf = originals.get_current_buf
@@ -214,6 +221,86 @@ describe("yoda.startup_mode", function()
         assert.equals(7, focused)
       end
     )
+
+    it("drops the cursor into terminal-insert mode inside Claude", function()
+      -- Regression: without `startinsert`, focus lands in Claude's terminal
+      -- window in normal mode, so the user has to press `i` before they can
+      -- type to Claude. Focus + startinsert must also happen in a deferred
+      -- tick *after* the layout work (buf_delete, set_current_win) so that
+      -- later startup focus handlers (snacks picker, ClaudeCode's own
+      -- scheduled start_insert) don't steal focus back to the sidebar.
+
+      -- Arrange
+      package.loaded["snacks"] = {
+        explorer = { open = function() end },
+      }
+      local events = {}
+      vim.cmd = function(c)
+        table.insert(events, "cmd:" .. c)
+      end
+      package.loaded["claudecode.terminal"] = {
+        get_active_terminal_bufnr = function()
+          return 42
+        end,
+      }
+      vim.fn.bufwinid = function()
+        return 7
+      end
+      package.loaded["yoda-window.utils"] = {
+        reclaim_width = function()
+          table.insert(events, "reclaim_width")
+        end,
+      }
+      vim.api.nvim_set_current_win = function()
+        table.insert(events, "set_current_win")
+      end
+      vim.api.nvim_buf_delete = function()
+        table.insert(events, "buf_delete")
+      end
+      -- Capture defer_fn ordering so we can prove the focus+startinsert ran
+      -- in the deferred tick, not inline with the layout work.
+      local deferred_ran = false
+      vim.defer_fn = function(fn, _)
+        table.insert(events, "defer_start")
+        fn()
+        deferred_ran = true
+        table.insert(events, "defer_end")
+      end
+
+      -- Act
+      startup_mode.start_claude_layout()
+
+      -- Assert
+      assert.is_true(deferred_ran, "defer_fn tick must run")
+      local idx = {}
+      for i, ev in ipairs(events) do
+        idx[ev] = idx[ev] or i
+      end
+      assert.is_truthy(idx["cmd:ClaudeCode"], "ClaudeCode must be issued")
+      assert.is_truthy(
+        idx["cmd:startinsert"],
+        "expected startinsert to be issued"
+      )
+      assert.is_true(
+        idx["cmd:startinsert"] > idx["defer_start"],
+        "startinsert must run inside the deferred tick, not the inline schedule"
+      )
+      assert.is_true(
+        idx["cmd:startinsert"] > idx["buf_delete"],
+        "startinsert must run after the phantom buffer is cleaned up"
+      )
+      assert.is_true(
+        idx["set_current_win"] > idx["buf_delete"],
+        "focus swap must happen after the phantom buffer is cleaned up"
+      )
+      local insert_count = 0
+      for _, ev in ipairs(events) do
+        if ev == "cmd:startinsert" then
+          insert_count = insert_count + 1
+        end
+      end
+      assert.equals(1, insert_count, "startinsert must be called exactly once")
+    end)
 
     it("degrades to a plain ClaudeCode when yoda-window is absent", function()
       -- Arrange
