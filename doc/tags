@@ -1,3 +1,4 @@
+expert.txt	expert.txt	/*expert.txt*
 yoda-ai	yoda.txt	/*yoda-ai*
 yoda-ai-contents	yoda-ai.txt	/*yoda-ai-contents*
 yoda-ai-keymaps	yoda-ai.txt	/*yoda-ai-keymaps*
@@ -59,6 +60,7 @@ yoda-editing-undo	yoda-editing.txt	/*yoda-editing-undo*
 yoda-editing-visual	yoda-editing.txt	/*yoda-editing-visual*
 yoda-editing-windows	yoda-editing.txt	/*yoda-editing-windows*
 yoda-editing.txt	yoda-editing.txt	/*yoda-editing.txt*
+yoda-expert	expert.txt	/*yoda-expert*
 yoda-features-contents	yoda-features.txt	/*yoda-features-contents*
 yoda-features-tool-indicators	yoda-features.txt	/*yoda-features-tool-indicators*
 yoda-features.txt	yoda-features.txt	/*yoda-features.txt*
