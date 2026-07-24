@@ -1,0 +1,102 @@
+*expert.txt*    Roadmap to Neovim expertise                     *yoda-expert*
+
+================================================================================
+BECOMING A NEOVIM EXPERT — A ROADMAP
+================================================================================
+
+Becoming a Neovim expert is a layered climb — treat it as three overlapping
+tracks, not a single path.
+
+
+--------------------------------------------------------------------------------
+1. MASTER THE EDITOR ITSELF (WEEKS, NOT DAYS)
+--------------------------------------------------------------------------------
+
+- vimtutor
+    30 minutes, non-negotiable starting point. Do it twice.
+
+- :help user-manual
+    The built-in usr_01.txt through usr_45.txt sequence is the single best Vim
+    curriculum ever written. Read one chapter per day.
+
+- Practice deliberately.
+    Pick one motion or operator per week (text objects, marks, macros,
+    registers, :global, :normal) and force yourself to use it until it's
+    muscle memory.
+
+- Learn :help navigation itself.
+    <C-]> jumps to tag, <C-t> jumps back, :helpgrep searches all help.
+
+
+--------------------------------------------------------------------------------
+2. LEARN LUA AND NEOVIM'S API (THE MULTIPLIER)
+--------------------------------------------------------------------------------
+
+- Lua fundamentals
+    Reference: :help luaref. Also read *Programming in Lua* (1st edition free
+    online, covers Lua 5.1 which matches LuaJIT).
+
+- :help lua-guide
+    Neovim's own Lua orientation. Start here after basic Lua syntax clicks.
+
+- :help api
+    The nvim_* functions. You don't memorize these; you learn the shape
+    of the API (buffers, windows, autocmds, keymaps, options) and grep
+    when needed.
+
+- Read plugin source.
+    Small, well-written plugins teach more than tutorials. Good reads:
+      - mini.nvim modules
+      - plenary.nvim
+      - nvim-lspconfig
+
+
+--------------------------------------------------------------------------------
+3. BUILD THINGS (WHERE EXPERTISE ACTUALLY FORMS)
+--------------------------------------------------------------------------------
+
+- Write your own config from scratch at least once.
+    Not a distro fork — a bare init.lua you understand every line of.
+
+- Write a small plugin.
+    A statusline component, a custom command, a text object. Publishing it
+    forces you to handle edge cases.
+
+- Contribute upstream.
+    Issues or PRs to plugins you use. This is where you learn idioms that
+    don't appear in docs.
+
+
+--------------------------------------------------------------------------------
+CADENCE
+--------------------------------------------------------------------------------
+
+- Daily:   use Neovim for real work. Expertise doesn't come from reading
+           about it.
+- Weekly:  one new capability, deliberately practiced.
+- Monthly: read one substantial plugin's source end to end.
+
+
+--------------------------------------------------------------------------------
+SIGNALS YOU'RE GETTING THERE
+--------------------------------------------------------------------------------
+
+- You reach for :help before Google.
+- You can read a plugin's init.lua spec and predict what it does before
+  running it.
+- You write Lua directly in the command line (:lua =vim.api.nvim_...) to
+  inspect state.
+- You debug with :messages, :checkhealth, and vim.print() instead of
+  print-tracing in the dark.
+
+
+--------------------------------------------------------------------------------
+THE SINGLE BIGGEST ACCELERATOR
+--------------------------------------------------------------------------------
+
+Stop configuring, start using.
+
+Most people who "want to learn Neovim" spend 90% of their time tweaking
+config and 10% editing. Flip that ratio.
+
+================================================================================
