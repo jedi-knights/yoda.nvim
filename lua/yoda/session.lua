@@ -11,9 +11,40 @@
 
 local M = {}
 
+-- A hard kill (SIGKILL, crash, force-quit) skips VimLeavePre entirely, so
+-- orphaned *.shada.tmp.* files can still accumulate despite the forced write
+-- above. Sweep them on startup instead, since that's the one point every
+-- session reliably passes through. Only remove tmp files older than 5
+-- minutes so an in-progress write from another concurrent instance is never
+-- touched.
+local STALE_AFTER_SECONDS = 300
+
+local function cleanup_stale_shada_tmp()
+  local shada_dir = vim.fn.stdpath("state") .. "/shada"
+  local now = os.time()
+  for _, path in ipairs(vim.fn.glob(shada_dir .. "/*.tmp.*", false, true)) do
+    local stat = vim.loop.fs_stat(path)
+    if stat and (now - stat.mtime.sec) > STALE_AFTER_SECONDS then
+      local ok, err = pcall(os.remove, path)
+      if not ok then
+        vim.notify(
+          "[yoda] failed to remove stale ShaDa temp file "
+            .. path
+            .. ": "
+            .. tostring(err),
+          vim.log.levels.WARN
+        )
+      end
+    end
+  end
+end
+
 function M.setup()
+  local group =
+    vim.api.nvim_create_augroup("YodaSessionCleanup", { clear = true })
+
   vim.api.nvim_create_autocmd("VimLeavePre", {
-    group = vim.api.nvim_create_augroup("YodaSessionCleanup", { clear = true }),
+    group = group,
     desc = "Force-write ShaDa on exit to prevent 'file already exists' warnings",
     callback = function()
       local ok, err = pcall(vim.cmd, "wshada!")
@@ -24,6 +55,12 @@ function M.setup()
         )
       end
     end,
+  })
+
+  vim.api.nvim_create_autocmd("VimEnter", {
+    group = group,
+    desc = "Remove stale orphaned ShaDa temp files left by hard-killed sessions",
+    callback = cleanup_stale_shada_tmp,
   })
 end
 

@@ -102,6 +102,19 @@ vim.opt.writebackup = false
 vim.opt.swapfile = false
 
 -- ShaDa (shared data) settings for better reliability
+--
+-- WHY per-project file: a single shared main.shada written by many concurrent
+-- nvim instances (common in this workflow) races on the same tmp.<letter>
+-- rename, orphaning temp files that eventually exhaust a-z and throw E138.
+-- Scoping the file to the cwd means only instances open in the *same*
+-- project can collide, which is far rarer.
+local shada_dir = vim.fn.stdpath("state") .. "/shada"
+vim.fn.mkdir(shada_dir, "p")
+local project_shada_file = shada_dir
+  .. "/proj"
+  .. vim.fn.getcwd():gsub("/", "%%")
+  .. ".shada"
+
 vim.opt.shada = {
   "!", -- Save global variables
   "'100", -- Save marks for last 100 files
@@ -110,6 +123,7 @@ vim.opt.shada = {
   "h", -- Disable hlsearch when loading
   "f1", -- Store file marks
   "r/tmp", -- Skip removable media
+  "n" .. project_shada_file,
 }
 
 -- ============================================================================
