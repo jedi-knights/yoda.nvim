@@ -53,7 +53,7 @@ map("n", "<leader>tK", function()
   end
 end, { desc = "Toggle: Show keys display" })
 
-map("n", "<leader>nl", function()
+local function show_notification_history()
   local ok, snacks = pcall(require, "snacks")
   if
     ok
@@ -63,27 +63,26 @@ map("n", "<leader>nl", function()
   then
     snacks.notifier.show_history()
   else
-    vim.cmd("messages")
+    vim.cmd.messages()
   end
-end, { desc = "Util: Show last message" })
+end
 
-map("n", "<leader>nh", function()
-  local ok, snacks = pcall(require, "snacks")
-  if
-    ok
-    and snacks
-    and snacks.notifier
-    and type(snacks.notifier.show_history) == "function"
-  then
-    snacks.notifier.show_history()
-  else
-    vim.cmd("messages")
-  end
-end, { desc = "Util: Show notification history" })
+map("n", "<leader>nl", show_notification_history, {
+  desc = "Util: Show last message",
+})
+
+map("n", "<leader>nh", show_notification_history, {
+  desc = "Util: Show notification history",
+})
 
 map("n", "<leader>nd", function()
   local ok, snacks = pcall(require, "snacks")
-  if ok and snacks and type(snacks.notifier.hide) == "function" then
+  if
+    ok
+    and snacks
+    and snacks.notifier
+    and type(snacks.notifier.hide) == "function"
+  then
     snacks.notifier.hide()
   else
     vim.notify("snacks.notifier not available", vim.log.levels.WARN)
