@@ -87,7 +87,10 @@ return {
         replace_netrw = true,
       },
       notifier = {
-        enabled = false, -- Disabled: noice.nvim handles vim.notify display
+        enabled = true,
+        timeout = 3000,
+        style = "compact",
+        top_down = false,
       },
       picker = {
         enabled = true,

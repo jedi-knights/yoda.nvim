@@ -85,7 +85,7 @@ vim.opt.wildmode = "longest:full,full"
 
 vim.opt.laststatus = 3
 vim.opt.showcmd = true
-vim.opt.cmdheight = 1 -- noice.nvim provides a floating cmdline popup instead
+vim.opt.cmdheight = 1
 vim.opt.showtabline = 0 -- Hide tabline (use :bnext/:bprev)
 vim.opt.confirm = true -- prompt to save instead of refusing to quit
 vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
