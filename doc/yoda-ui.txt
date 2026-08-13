@@ -5,75 +5,95 @@
 ==============================================================================
 CONTENTS                                              *yoda-ui-contents*
 
-1. Noice.nvim ............................... |yoda-ui-noice|
+1. snacks.notifier .......................... |yoda-ui-notifier|
 2. Compatibility Notes ...................... |yoda-ui-compat|
 3. Troubleshooting .......................... |yoda-ui-trouble|
 
 ==============================================================================
-NOICE.NVIM                                             *yoda-ui-noice*
+SNACKS.NOTIFIER                                        *yoda-ui-notifier*
 
-Yoda.nvim uses noice.nvim for an enhanced UI experience:
+Yoda.nvim uses `snacks.notifier` (from folke/snacks.nvim) as the
+`vim.notify` handler:
 
-  * Command line    Floating popup via `cmdline_popup` view
-  * Messages        Styled notifications via noice's built-in mini backend
-  * LSP overrides   Markdown rendering and hover borders
-  * History         Split view for message/notification history
+  * Messages        Floating notification popups (bottom-up stack)
+  * History         Scrollable history buffer via `snacks.notifier.show_history()`
+  * Dismiss         All active notifications via `snacks.notifier.hide()`
 
-Noice loads after the colorscheme (`priority = 900`, `lazy = false`)
-so its highlight groups register after the theme applies.
-Configuration lives in `lua/plugins/noice.lua`.
+Configuration lives in `lua/plugins/snacks.lua` under the `notifier` key:
+>lua
+    notifier = {
+      enabled  = true,
+      timeout  = 3000,     -- ms before a notification auto-dismisses
+      style    = "compact",
+      top_down = false,    -- newest notification at the bottom
+    }
+<
+snacks loads eagerly (`lazy = false`, `priority = 1000`) so `vim.notify`
+is intercepted before other plugins fire their first notifications.
 
-Dependencies:
-  * `MunifTanjim/nui.nvim` — UI component library
-  * `nvim-notify` is intentionally excluded; noice uses its built-in
-    mini backend for notifications
+The floating cmdline that noice previously provided is not replaced —
+the built-in Neovim cmdline is used instead, with `cmdheight = 0` so
+the reserved row disappears when idle (see |yoda-ui-cmdheight|).
 
 Keymaps~
 
-  `<leader>nl`   Show last message (`:Noice last`)
-  `<leader>nh`   Show notification history (`:Noice history`)
-  `<leader>nd`   Dismiss all notifications (`:Noice dismiss`)
+  `<leader>nl`   Show last message / notification history
+  `<leader>nh`   Show notification history
+  `<leader>nd`   Dismiss all active notifications
+
+Both `<leader>nl` and `<leader>nh` call `snacks.notifier.show_history()`,
+with a fallback to `:messages` if snacks is unavailable. Registration
+lives in `lua/yoda/keymaps/utilities.lua`.
 
 ==============================================================================
 COMPATIBILITY NOTES                                    *yoda-ui-compat*
 
+cmdheight                                              *yoda-ui-cmdheight*
+
+The cmdline row is hidden when idle (Neovim 0.8+):
+>lua
+    vim.opt.cmdheight = 0
+<
+The row auto-expands while typing `:` commands and collapses when the
+command completes. Long `:echo` output may occasionally trigger a
+`Press ENTER` prompt, since there is no persistent space to render into.
+
 winborder~
 
 Global rounded borders for all floating windows (Neovim 0.12+):
->
+>lua
     vim.opt.winborder = "rounded"
 <
-
 showmode~
 
-The built-in mode indicator is disabled (statusline shows the mode):
->
+The built-in mode indicator is disabled (the statusline shows the mode):
+>lua
     vim.opt.showmode = false
 <
-
 ==============================================================================
 TROUBLESHOOTING                                        *yoda-ui-trouble*
 
-Noice not loading~
+snacks not loading~
 
 Check that the plugin is installed:
->
-    :Lazy check noice.nvim
+>vim
+    :Lazy check snacks.nvim
 <
-
-Floating cmdline not appearing~
-
-Verify noice is active:
->
-    :checkhealth noice
-<
-
 Notifications not displaying~
 
-Confirm noice is active and intercepting vim.notify:
->
-    :checkhealth noice
+Confirm snacks is loaded and the notifier module is enabled:
+>vim
+    :lua =require("snacks").notifier ~= nil
+    :checkhealth snacks
 <
+If `snacks.notifier` is `nil`, verify the `notifier.enabled = true`
+setting in `lua/plugins/snacks.lua`.
 
+Cmdline row keeps reappearing~
+
+`vim.opt.cmdheight = 0` requires Neovim 0.8+. Confirm the version:
+>vim
+    :lua =vim.version()
+<
 ==============================================================================
-vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:ft=help:norl:
