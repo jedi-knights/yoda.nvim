@@ -54,26 +54,21 @@ map("n", "<leader>tK", function()
 end, { desc = "Toggle: Show keys display" })
 
 map("n", "<leader>nl", function()
-  local ok, noice = pcall(require, "noice")
-  if ok then
-    noice.cmd("last")
-  else
-    vim.cmd("messages")
-  end
+  vim.cmd("messages")
 end, { desc = "Util: Show last message" })
 
 map("n", "<leader>nh", function()
-  local ok, noice = pcall(require, "noice")
-  if ok then
-    noice.cmd("history")
+  local ok, snacks = pcall(require, "snacks")
+  if ok and snacks.notifier then
+    snacks.notifier.show_history()
   else
     vim.cmd("messages")
   end
 end, { desc = "Util: Show notification history" })
 
 map("n", "<leader>nd", function()
-  local ok, noice = pcall(require, "noice")
-  if ok then
-    noice.cmd("dismiss")
+  local ok, snacks = pcall(require, "snacks")
+  if ok and snacks.notifier then
+    snacks.notifier.hide()
   end
 end, { desc = "Util: Dismiss all notifications" })
