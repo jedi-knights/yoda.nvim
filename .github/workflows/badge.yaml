@@ -32,12 +32,63 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           ref: main
 
+      - name: Install neospec
+        run: |
+          set -euo pipefail
+
+          OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          ARCH="$(uname -m)"
+          case "$ARCH" in
+            x86_64)          ARCH="amd64" ;;
+            aarch64 | arm64) ARCH="arm64" ;;
+            *) echo "::error::Unsupported architecture: $ARCH"; exit 1 ;;
+          esac
+
+          VERSION="$(curl -fsSL -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/jedi-knights/neospec/releases/latest \
+            | grep '"tag_name"' | cut -d'"' -f4)"
+          if [ -z "$VERSION" ]; then
+            echo "::error::Failed to resolve neospec version"
+            exit 1
+          fi
+
+          VER="${VERSION#v}"
+          ARCHIVE="neospec_${VER}_${OS}_${ARCH}.tar.gz"
+          URL="https://github.com/jedi-knights/neospec/releases/download/${VERSION}/${ARCHIVE}"
+
+          echo "Installing neospec ${VERSION} (${OS}/${ARCH})"
+          curl -fsSL "$URL" | tar -xz -C "$RUNNER_TEMP" neospec
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+        shell: bash
+
       - name: Run tests and collect coverage
         id: neospec
-        uses: jedi-knights/neospec@v0
-        with:
-          formats: console,lcov
-          test-patterns: "tests/unit/**/*_spec.lua"
+        run: |
+          set -euo pipefail
+
+          # The jedi-knights/neospec@v0 action only exposes `neospec run`,
+          # which uses neospec's own embedded harness with no runtimepath
+          # bootstrap -- it never sources tests/minimal_init.lua, so the
+          # package.preload stubs for the yoda-* sibling plugins that most
+          # specs need would never be set up. `cover --runner=plenary-busted`
+          # instead wraps the *real* plenary.busted runner and reuses
+          # tests/minimal_init.lua verbatim, matching exactly what
+          # `make test` already runs in CI.
+          OUTPUT_FILE="$RUNNER_TEMP/neospec_output.txt"
+          PASSED=true
+          if ! neospec cover --runner=plenary-busted --dir=tests/yoda \
+            --minimal-init=tests/minimal_init.lua \
+            --format=console --format=lcov --coverage-dir=coverage \
+            2>&1 | tee "$OUTPUT_FILE"; then
+            PASSED=false
+          fi
+
+          PCT="$(grep -oE 'Coverage: [0-9]+\.[0-9]+%' "$OUTPUT_FILE" \
+            | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)"
+          echo "coverage-percentage=${PCT:-}" >> "$GITHUB_OUTPUT"
+
+          [ "$PASSED" = "true" ] || exit 1
+        shell: bash
 
       - name: Generate HTML coverage report
         run: |
