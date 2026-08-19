@@ -44,14 +44,23 @@ Prerequisites:~
   • ripgrep (for fuzzy finding)
   • Node.js (for some language servers)
 
+Yoda.nvim is a plugin; yoda-starter is the config you clone and own.
+
 Installation Steps:~
 >
-    # Clone the repository
-    git clone https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
-    
-    # Start Neovim (plugins will auto-install)
+    # Back up anything you already have
+    mv ~/.config/nvim ~/.config/nvim.bak
+    mv ~/.local/share/nvim ~/.local/share/nvim.bak
+
+    # Clone the starter
+    git clone https://github.com/jedi-knights/yoda-starter ~/.config/nvim
+    rm -rf ~/.config/nvim/.git
+
     nvim
 <
+Do NOT clone jedi-knights/yoda.nvim into ~/.config/nvim. That was the
+pre-v1.0.0 install path; the repository has no init.lua. Upgrading from
+v0.x is described in the project README.
 
 On first launch, Yoda.nvim will automatically:
   • Bootstrap lazy.nvim plugin manager
@@ -81,22 +90,28 @@ See |yoda-keymaps| for complete keymap reference.
 ==============================================================================
 CONFIGURATION                                           *yoda-configuration*
 
-Yoda.nvim follows the standard Neovim configuration structure:
+Configuration is passed as `opts` and consumed by require("yoda").setup().
+See |yoda-configuration| for the full schema.
 
-Configuration Files:~
-    init.lua                   Entry point
-    lua/options.lua            Vim options and settings
-    lua/keymaps.lua            Key mappings
-    lua/plugins.lua            Plugin specifications
-    lua/autocmds.lua           Automatic commands
+Your config (yoda-starter, cloned to ~/.config/nvim):~
+    init.lua                   Leader keys, then lua/config/lazy.lua
+    lua/config/lazy.lua        lazy.nvim bootstrap and options
+    lua/plugins/yoda.lua       yoda's opts, and which extras you want
+    lua/plugins/overrides.lua  Your plugins and your overrides
+
+The distribution itself (installed by lazy.nvim):~
+    lua/yoda/config.lua        Defaults schema, merge, validation
+    lua/yoda/options.lua       Distribution vim.opt defaults
+    lua/yoda/plugins/          Core plugin specs
+    lua/yoda/extras/lang/      Opt-in language stacks
 
 Customization:~
 
-To customize Yoda.nvim, edit the files in ~/.config/nvim/lua/:
+To customize Yoda.nvim, edit lua/plugins/yoda.lua in your config:
 
 Example - Adding custom keymaps:
 >
-    -- In lua/keymaps.lua
+    -- In lua/plugins/overrides.lua, from a plugin's config or init
     vim.keymap.set("n", "<leader>xx", ":MyCommand<CR>", 
         { desc = "My custom command" })
 <
@@ -209,7 +224,7 @@ Plugin Commands:~
 
 Adding New Plugins:~
 
-Edit lua/plugins.lua and add plugin specifications:
+Edit lua/plugins/overrides.lua in your config and add plugin specifications:
 >
     return {
       -- Existing plugins...
@@ -264,7 +279,7 @@ Getting Help:~
   • Use :messages to see error logs
 
 Configuration Files:~
-    ~/.config/nvim/           Main configuration directory
+    ~/.config/nvim/           Your config (yoda-starter)
     ~/.local/share/nvim/      Plugin data directory
     ~/.cache/nvim/            Cache directory
 
