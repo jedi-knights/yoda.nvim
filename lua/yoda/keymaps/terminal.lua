@@ -27,29 +27,46 @@ map("n", "<leader>Tt", function()
   })
 end, { desc = "Terminal: Floating shell" })
 
--- Navigate out of terminal mode with Ctrl + direction
+-- Navigate out of terminal mode with Ctrl + direction.
+--
+-- Deliberately NOT a string rhs ("<C-\><C-n><C-w>h"): that form feeds the
+-- window command back through the same typeahead queue the terminal job is
+-- reading from, and on a busy job (Claude Code redraws its TUI constantly)
+-- the mode switch can land while the wincmd gets dropped, leaving you in
+-- Normal mode in the same window. Splitting stopinsert from the wincmd with
+-- vim.schedule runs the window move on its own event-loop tick so it can't
+-- race the job's input handling.
+local function move_from_terminal(direction)
+  return function()
+    vim.cmd("stopinsert")
+    vim.schedule(function()
+      vim.cmd("wincmd " .. direction)
+    end)
+  end
+end
+
 map(
   "t",
   "<C-h>",
-  "<C-\\><C-n><C-w>h",
+  move_from_terminal("h"),
   { desc = "Window: Move left from terminal" }
 )
 map(
   "t",
   "<C-j>",
-  "<C-\\><C-n><C-w>j",
+  move_from_terminal("j"),
   { desc = "Window: Move down from terminal" }
 )
 map(
   "t",
   "<C-k>",
-  "<C-\\><C-n><C-w>k",
+  move_from_terminal("k"),
   { desc = "Window: Move up from terminal" }
 )
 map(
   "t",
   "<C-l>",
-  "<C-\\><C-n><C-w>l",
+  move_from_terminal("l"),
   { desc = "Window: Move right from terminal" }
 )
 
