@@ -50,6 +50,19 @@ return {
           autoload_configurations = true,
         },
       }
+
+      -- Register rustaceanvim's built-in neotest adapter with the yoda
+      -- registry so `:Neotest` discovers Rust tests via rust-analyzer.
+      local ok, rustaceanvim_neotest = pcall(require, "rustaceanvim.neotest")
+      if ok then
+        require("yoda.core.neotest_registry").register(rustaceanvim_neotest)
+      else
+        vim.notify(
+          "[neotest] rustaceanvim.neotest not available: "
+            .. tostring(rustaceanvim_neotest),
+          vim.log.levels.DEBUG
+        )
+      end
     end,
   },
 
