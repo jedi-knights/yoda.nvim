@@ -47,8 +47,5 @@ vim.schedule(function()
     end
   end
 
-  -- Legacy dual-read, removed in TODO.md Step 2C: honour
-  -- vim.g.yoda_large_file for anyone still setting it from local.lua.
-  -- nil merges to the defaults, so the unset case is unaffected.
-  require("yoda").setup({ large_file = vim.g.yoda_large_file })
+  require("yoda").setup({})
 end)

@@ -42,17 +42,14 @@ M.MARKER_DEFAULTS = {
 -- PUBLIC API
 -- ============================================================================
 
---- Get test configuration (user-overridable via require("yoda").setup or
---- vim.g.yoda_test_config).
+--- Get test configuration (user-overridable via
+--- require("yoda").setup({ testing = ... })).
 --- @return table Configuration with environments, markers, etc.
 function M.get_config()
-  -- Dual-read: prefer resolved opts.testing, fall back to vim.g.yoda_test_config.
   local resolved = require("yoda.config").get()
   local user_overrides = nil
   if resolved and resolved.testing and next(resolved.testing) ~= nil then
     user_overrides = resolved.testing
-  else
-    user_overrides = vim.g.yoda_test_config
   end
 
   if user_overrides then

@@ -55,9 +55,11 @@ Configuration~
 
 Tool indicators respect the `show_environment_notification` flag:
 >
-    vim.g.yoda_config = {
-      show_environment_notification = true,  -- default
-    }
+    require("yoda").setup({
+      ui = {
+        show_environment_notification = true,  -- default
+      },
+    })
 <
 
 Detection Logic~

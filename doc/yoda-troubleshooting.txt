@@ -81,7 +81,7 @@ Solutions:
 <
   2. Disable verbose startup:
 >
-       vim.g.yoda_config = { verbose_startup = false }
+       require("yoda").setup({ ui = { verbose_startup = false } })
 <
   3. Remove unused plugins:
 >

@@ -51,7 +51,7 @@ function M.check()
   else
     health.info(
       "require('yoda').setup(opts) has not been called yet — "
-        .. "consumers fall back to vim.g.yoda_* globals or defaults"
+        .. "consumers fall back to the defaults in yoda.config"
     )
   end
 
@@ -65,10 +65,14 @@ function M.check()
   if #set_legacy == 0 then
     health.ok("No legacy vim.g.yoda_* globals set")
   else
-    health.info(
-      "Legacy globals in use: "
+    -- warn, not info: as of v1.0.0 nothing reads these. A global left over
+    -- from a pre-1.0 config is silently doing nothing, which is exactly the
+    -- failure a health check exists to surface.
+    health.warn(
+      "Legacy globals set but IGNORED: "
         .. table.concat(set_legacy, ", ")
-        .. " — migrate to require('yoda').setup(opts) in v1.0.0"
+        .. " — nothing reads vim.g.yoda_* as of v1.0.0; move these to "
+        .. "require('yoda').setup(opts)"
     )
   end
 

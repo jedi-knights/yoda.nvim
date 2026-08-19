@@ -5,20 +5,25 @@ describe("environment", function()
   -- Save originals
   local original_env_yoda = vim.env.YODA_ENV
   local original_env_dev_local = vim.env.YODA_DEV_LOCAL
-  local original_config = vim.g.yoda_config
   local original_schedule = vim.schedule
+  local config = require("yoda.config")
+
+  --- Resolve opts.ui.show_environment_notification for one example.
+  local function set_notification(enabled)
+    config.resolve({ ui = { show_environment_notification = enabled } })
+  end
 
   before_each(function()
     vim.env.YODA_ENV = nil
     vim.env.YODA_DEV_LOCAL = nil
-    vim.g.yoda_config = nil
+    config._reset()
   end)
 
   after_each(function()
     vim.env.YODA_ENV = original_env_yoda
     vim.env.YODA_DEV_LOCAL = original_env_dev_local
-    vim.g.yoda_config = original_config
     vim.schedule = original_schedule
+    config._reset()
     package.loaded["yoda-adapters.notification"] = nil
   end)
 
@@ -55,8 +60,11 @@ describe("environment", function()
   end)
 
   describe("show_notification()", function()
-    it("does not notify when config disabled", function()
-      vim.g.yoda_config = nil -- No config
+    it("falls back to defaults when setup() has not run", function()
+      -- Pre-v1.0.0 an unset legacy global meant silence here. There is no
+      -- global leg any more: unresolved config falls back to yoda.config
+      -- defaults, where the notification is enabled.
+      config._reset()
       vim.env.YODA_ENV = "home"
 
       local scheduled_fn = nil
@@ -65,13 +73,12 @@ describe("environment", function()
       end
 
       environment.show_notification()
-      assert.is_nil(scheduled_fn) -- Should not schedule anything
+      assert.is_not_nil(scheduled_fn)
+      assert.is_true(config.defaults().ui.show_environment_notification)
     end)
 
     it("does not notify when show_environment_notification is false", function()
-      vim.g.yoda_config = {
-        show_environment_notification = false,
-      }
+      set_notification(false)
       vim.env.YODA_ENV = "home"
 
       local scheduled_fn = nil
@@ -84,9 +91,7 @@ describe("environment", function()
     end)
 
     it("notifies for home environment", function()
-      vim.g.yoda_config = {
-        show_environment_notification = true,
-      }
+      set_notification(true)
       vim.env.YODA_ENV = "home"
 
       local notified = false
@@ -110,9 +115,7 @@ describe("environment", function()
     end)
 
     it("notifies for work environment", function()
-      vim.g.yoda_config = {
-        show_environment_notification = true,
-      }
+      set_notification(true)
       vim.env.YODA_ENV = "work"
 
       local captured_msg = nil
@@ -133,9 +136,7 @@ describe("environment", function()
     end)
 
     it("passes correct options to notify", function()
-      vim.g.yoda_config = {
-        show_environment_notification = true,
-      }
+      set_notification(true)
       vim.env.YODA_ENV = "home"
 
       local captured_opts = nil
@@ -156,9 +157,7 @@ describe("environment", function()
     end)
 
     it("uses info level for notifications", function()
-      vim.g.yoda_config = {
-        show_environment_notification = true,
-      }
+      set_notification(true)
       vim.env.YODA_ENV = "home"
 
       local captured_level = nil
@@ -178,9 +177,7 @@ describe("environment", function()
     end)
 
     it("schedules notification asynchronously", function()
-      vim.g.yoda_config = {
-        show_environment_notification = true,
-      }
+      set_notification(true)
 
       local scheduled = false
       vim.schedule = function(fn)

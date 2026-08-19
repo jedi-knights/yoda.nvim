@@ -13,7 +13,7 @@
 | 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ⛔ **blocked on Step 3** — deleting them breaks the only working install path until yoda-starter exists |
 | 2A move sibling `yoda-*` specs out of `lazy-plugins.lua` | ✅ done — now `lua/yoda/plugins/foundation.lua` |
 | 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ✅ done — 18 core specs + 5 extras; `lua/plugins/` deleted |
-| 2C `opts` migration | 🟡 4 legacy `vim.g.yoda_*` read sites left (was 5) |
+| 2C `opts` migration | ✅ done — no legacy read sites remain; `:checkhealth yoda` warns on leftovers |
 | 2D strip defensive `pcall` scaffolding | 🟡 8 → 1 in `init.lua`; the survivor guards user-authored `local.lua` and is deliberate |
 | 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
 | 2E delete `lua/custom/plugins/` | ❌ remains |
@@ -153,14 +153,19 @@ Per `nvim-lazy.md` rule: **one plugin per file for logical groups.** Current 22 
 
 ### Step 2C: Config vessel migration (`vim.g.yoda_*` → `opts`)
 
-**Status (2026-08-19): partially done.** `lua/yoda/config.lua` provides the schema + resolved-`opts` accessor, `lua/yoda/health.lua` warns on legacy globals, and readers were migrated to *dual-read* (`7739e66`). What remains is **removing the legacy leg** — that removal is what makes the release breaking.
+**Status (2026-08-19): ✅ DONE.** The legacy leg is gone — nothing reads `vim.g.yoda_*` anywhere. `setup(opts)` is the only config vessel.
 
-Legacy `vim.g.yoda_*` readers still present:
-- [ ] `lua/options.lua:160` — seeds `vim.g.yoda_config`
-- [ ] `lua/yoda/ui/environment.lua:28`
-- [ ] `lua/yoda/core/yaml_parser.lua:29,35,40`
-- [ ] `lua/yoda/testing/defaults.lua:55`
-- [x] `init.lua` — `vim.g.yoda_large_file` is now passed explicitly through `setup({ large_file = ... })` and marked in-file as the removal point
+- `lua/yoda/options.lua` no longer seeds `vim.g.yoda_config`
+- `lua/yoda/ui/environment.lua` falls back to `config.defaults()`, not to globals
+- `lua/yoda/core/yaml_parser.lua` keeps local literal defaults deliberately — `config.defaults()` deep copies the whole schema and these run per parsed line
+- `lua/yoda/testing/defaults.lua` reads `opts.testing` only
+- `init.lua` calls `setup({})` with no passthrough
+
+`:checkhealth yoda` now **warns** (was: info) when a legacy global is still set — a global that silently does nothing is exactly what a health check should surface. Covered by `tests/yoda/health_spec.lua`.
+
+Docs updated in the same change for the five globals this removed (`yoda_config`, `yoda_yaml_*`, `yoda_test_config`, `yoda_large_file`, `yoda_picker_backend`), across `README.md` and 6 `doc/*.txt` files. All 14 `setup()` snippets in the docs are parse-checked.
+
+**Left alone deliberately:** `vim.g.yoda_terminal_*`, `vim.g.yoda_rust_format_on_save` and `vim.g.yoda_tool_indicators` are read by sibling plugins or are runtime state, not yoda's config vessel.
 
 Original notes:
 
