@@ -1,0 +1,248 @@
+-- lua/yoda/options.lua
+-- Distribution-level vim.opt defaults, built-in-plugin guards, and the
+-- legacy vim.g.yoda_config seed.
+--
+-- Applying is an explicit call, not a require() side effect, so a starter can
+-- opt out via opts.defaults.options without forking the plugin.
+
+local M = {}
+
+M._applied = false
+
+--- Apply yoda's option defaults. Idempotent -- the second and later calls are
+--- no-ops (see the guard below).
+--- @return boolean applied True on the call that actually applied
+function M.apply()
+  -- Idempotence guard: init.lua applies options before
+  -- lazy.setup() (the loaded_* built-in guards must fire first),
+  -- and setup(opts) applies them again on the normal path. The
+  -- second call must be a no-op rather than re-running the
+  -- scheduled clipboard hop.
+  if M._applied then
+    return false
+  end
+  M._applied = true
+
+  vim.opt.number = true
+  vim.opt.relativenumber = true
+  vim.opt.mouse = "a"
+  vim.opt.showmode = false
+  -- Deferred to avoid startup cost — clipboard sync with the OS has non-trivial
+  -- latency; scheduling it lets the rest of init complete first.
+  vim.schedule(function()
+    vim.opt.clipboard = "unnamedplus"
+  end)
+  vim.opt.breakindent = true
+  vim.opt.undofile = true
+  vim.opt.ignorecase = true
+  vim.opt.smartcase = true
+  vim.opt.signcolumn = "yes"
+  vim.opt.updatetime = 250
+  -- 500ms: enough time for deliberate multi-key leader sequences without
+  -- perceptible
+  -- lag on ambiguous operators (g, d, etc.). Was 1000ms when jk→<Esc> was active
+  -- —
+  -- that mapping forced a long wait on every 'j'; now that it's removed, 500ms is
+  -- safe.
+  vim.opt.timeoutlen = 500
+  vim.opt.ttimeoutlen = 0
+  vim.opt.autoread = true
+  vim.opt.splitright = true
+  vim.opt.splitbelow = true
+  vim.opt.list = true
+  vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+  -- live substitution preview inline (split opens a window, nosplit just
+  -- highlights)
+  vim.opt.inccommand = "nosplit"
+  vim.opt.cursorline = true
+  vim.opt.scrolloff = 10
+  vim.opt.colorcolumn = "80"
+  -- The ColorColumn highlight is re-applied on every ColorScheme change to
+  -- survive theme switches — see autocmds.lua (ColorColumnPersistent).
+
+  -- ============================================================================
+  -- INDENTATION
+  -- ============================================================================
+
+  vim.opt.tabstop = 2
+  vim.opt.softtabstop = 2
+  vim.opt.shiftwidth = 2
+  vim.opt.expandtab = true
+  vim.opt.autoindent = true
+  vim.opt.smartindent = true
+
+  -- ============================================================================
+  -- SEARCH
+  -- ============================================================================
+
+  vim.opt.hlsearch = true
+  vim.opt.incsearch = true
+
+  -- ============================================================================
+  -- COMPLETION
+  -- ============================================================================
+
+  vim.opt.completeopt = { "menu", "menuone", "noselect" }
+
+  -- ============================================================================
+  -- HELP & DOCUMENTATION
+  -- ============================================================================
+
+  -- Set keywordprg for K (Shift+K) help lookup
+  vim.opt.keywordprg = ":help"
+
+  -- ============================================================================
+  -- WILDCARD
+  -- ============================================================================
+
+  vim.opt.wildmode = "longest:full,full"
+
+  -- ============================================================================
+  -- STATUS LINE & TABLINE
+  -- ============================================================================
+
+  vim.opt.laststatus = 3
+  vim.opt.showcmd = true
+  vim.opt.cmdheight = 0
+  vim.opt.showtabline = 0 -- Hide tabline (use :bnext/:bprev)
+  vim.opt.confirm = true -- prompt to save instead of refusing to quit
+  vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
+  -- pumborder/winborder are Neovim 0.12+. yoda's declared minimum is 0.10.1,
+  -- and setting an unknown option raises "Invalid option (not found)" -- which
+  -- would abort apply() partway and take every option after this point with
+  -- it. Probe before setting rather than assuming the newer build.
+  if vim.fn.exists("&pumborder") == 1 then
+    vim.opt.pumborder = "rounded" -- bordered completion popup menu
+  end
+  if vim.fn.exists("&winborder") == 1 then
+    vim.opt.winborder = "rounded" -- rounded borders for all floating windows
+  end
+
+  -- ============================================================================
+  -- BACKUP & SHADA
+  -- ============================================================================
+
+  vim.opt.backup = false
+  vim.opt.writebackup = false
+  vim.opt.swapfile = false
+
+  -- ShaDa (shared data) settings for better reliability
+  --
+  -- WHY per-project file: a single shared main.shada written by many concurrent
+  -- nvim instances (common in this workflow) races on the same tmp.<letter>
+  -- rename, orphaning temp files that eventually exhaust a-z and throw E138.
+  -- Scoping the file to the cwd means only instances open in the *same*
+  -- project can collide, which is far rarer.
+  local shada_dir = vim.fn.stdpath("state") .. "/shada"
+  vim.fn.mkdir(shada_dir, "p")
+  local project_shada_file = shada_dir
+    .. "/proj"
+    .. vim.fn.getcwd():gsub("/", "%%")
+    .. ".shada"
+
+  vim.opt.shada = {
+    "!", -- Save global variables
+    "'100", -- Save marks for last 100 files
+    "<50", -- Save max 50 lines for each register
+    "s10", -- Max item size 10KB
+    "h", -- Disable hlsearch when loading
+    "f1", -- Store file marks
+    "r/tmp", -- Skip removable media
+    "n" .. project_shada_file,
+  }
+
+  -- ============================================================================
+  -- TERMINAL
+  -- ============================================================================
+
+  vim.opt.termguicolors = true
+  -- don't syntax-highlight past col 240 (prevents slowdown on
+  -- minified/generated files)
+  vim.opt.synmaxcol = 240
+  -- don't scan file edges for modeline directives (unused; free per-open win)
+  vim.opt.modelines = 0
+
+  -- ============================================================================
+  -- FOLDING
+  -- ============================================================================
+
+  vim.opt.foldmethod = "manual"
+  vim.opt.foldenable = false
+  vim.opt.foldlevel = 99
+
+  -- ============================================================================
+  -- YODA SPECIFIC
+  -- ============================================================================
+
+  -- Backend overrides (optional — adapters auto-detect if not set).
+  -- Must be set here (before lazy-plugins loads) to take effect.
+  -- Notify backends:  "snacks" | "native"
+  -- Picker backends:  "snacks" | "mini.pick" | "native"
+  -- vim.g.yoda_notify_backend = "snacks"
+  -- vim.g.yoda_picker_backend = "snacks"
+
+  -- Configuration for Yoda.nvim (only set if not already configured)
+  if not vim.g.yoda_config then
+    vim.g.yoda_config = {
+      verbose_startup = false,
+      show_loading_messages = false,
+      show_environment_notification = true,
+      enable_startup_profiling = false,
+      show_startup_report = false,
+      profiling_verbose = false,
+    }
+  end
+
+  -- Suppress LSP deprecation warning
+  vim.g.lspconfig_deprecation_warning = false
+  vim.env.LSPCONFIG_DEPRECATION_WARNING = "0"
+
+  -- Disable built-in plugins via loaded guards.
+  --
+  -- WHY this approach: setting vim.g["loaded_X"] = 1 fires *synchronously*,
+  -- before lazy.setup() runs and resets the rtp. This guards the brief startup
+  -- window between Neovim launch and lazy taking control — without these guards
+  -- Neovim's own plugin loader could source these files first.
+  --
+  -- RELATION TO lazy-plugins.lua: several entries here also appear in that
+  -- file's `disabled_plugins` list. That is intentional belt-and-suspenders:
+  --   1. These loaded guards fire first (early guard, before rtp reset).
+  --   2. lazy's disabled_plugins fires after rtp reset (permanent exclusion).
+  -- Entries unique to THIS list are not managed by lazy because they require
+  -- the early guard (e.g. netrw family, zip, tar) or have a different loaded
+  -- guard name than lazy expects (spellfile_plugin vs spellfile).
+  local disabled_built_ins = {
+    "netrw", -- file explorer — replaced by snacks.explorer
+    "netrwPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "netrwSettings",
+    "netrwFileHandlers",
+    "gzip", -- also in lazy-plugins.lua disabled_plugins
+    "zip",
+    "zipPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "tar",
+    "tarPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "getscript", -- also in lazy-plugins.lua disabled_plugins
+    "getscriptPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "vimball", -- also in lazy-plugins.lua disabled_plugins
+    "vimballPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "2html_plugin", -- also in lazy-plugins.lua disabled_plugins
+    "logipat", -- also in lazy-plugins.lua disabled_plugins
+    "rrhelper", -- also in lazy-plugins.lua disabled_plugins
+    -- note: lazy uses "spellfile" (filename); guard name differs
+    "spellfile_plugin",
+    "matchit", -- also in lazy-plugins.lua disabled_plugins
+  }
+
+  for _, plugin in pairs(disabled_built_ins) do
+    vim.g["loaded_" .. plugin] = 1
+  end
+
+  return true
+end
+
+--- Reset the applied guard. Test-only.
+function M._reset()
+  M._applied = false
+end
+
+return M
