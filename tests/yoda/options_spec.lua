@@ -75,7 +75,23 @@ describe("yoda.options", function()
     end
   end)
 
-  it("seeds vim.g.yoda_config only when unset", function()
+  it("does not seed the legacy vim.g.yoda_config global", function()
+    -- v1.0.0 drops the global config vessel entirely. apply() used to seed
+    -- vim.g.yoda_config so pre-setup() readers had something to read; nothing
+    -- reads it now, so seeding it would only resurrect a dead path.
+    -- Arrange
+    vim.g.yoda_config = nil
+
+    -- Act
+    options.apply()
+
+    -- Assert
+    assert.is_nil(vim.g.yoda_config)
+  end)
+
+  it("leaves an existing legacy global untouched", function()
+    -- A user's stale global is not cleared -- :checkhealth yoda warns about
+    -- it instead, so it stays visible rather than silently vanishing.
     -- Arrange
     vim.g.yoda_config = { verbose_startup = true }
 
@@ -84,5 +100,6 @@ describe("yoda.options", function()
 
     -- Assert
     assert.is_true(vim.g.yoda_config.verbose_startup)
+    vim.g.yoda_config = nil
   end)
 end)

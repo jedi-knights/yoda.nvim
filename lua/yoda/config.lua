@@ -2,22 +2,23 @@
 -- Public config surface for yoda. Owns the defaults schema, the merge, and
 -- the resolved-state holder consulted by every module that needs a knob.
 --
--- Precedence (during the v1.0.0 transition):
---   1. opts passed to require("yoda").setup(opts)   -- new
---   2. vim.g.yoda_* globals                          -- legacy, dual-read
---   3. defaults() below
+-- Precedence:
+--   1. opts passed to require("yoda").setup(opts)
+--   2. defaults() below
 --
--- Phase 2 of the v1.0.0 restructure adds require("yoda").setup(opts) as the
--- primary entry point and drops the vim.g fallback. Until then, get()
--- returns nil unless resolve() has been called — callers explicitly handle
--- both cases so nothing breaks for users on the legacy path.
+-- vim.g.yoda_* globals are no longer read anywhere. :checkhealth yoda warns
+-- when one is still set so a stale pre-1.0 config surfaces instead of
+-- silently doing nothing.
+--
+-- get() returns nil until resolve() has run. Callers that can execute before
+-- setup() fall back to defaults() explicitly rather than assuming.
 
 local M = {}
 
 local DEFAULTS = {
   -- Advisory metadata — actual extras loading is via LazyVim-style
   -- `{ import = "yoda.extras.lang.rust" }` in the starter (see
-  -- ARCHITECTURE.md §5).
+  -- ARCHITECTURE.md "Extras loading").
   extras = {},
 
   ui = {
@@ -101,8 +102,8 @@ function M.resolve(opts)
 end
 
 --- Return the resolved config, or nil if resolve() hasn't been called yet.
---- Callers on the legacy vim.g.yoda_* path handle the nil case by falling
---- back to their existing global reads.
+--- Callers that can run before setup() handle the nil case by falling back
+--- to defaults() explicitly.
 --- @return table|nil
 function M.get()
   return M._resolved

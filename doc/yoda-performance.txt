@@ -56,11 +56,13 @@ own plugins, follow the same pattern:
 
 Disable Verbose Startup~
 >
-    -- In init.lua
-    vim.g.yoda_config = {
-      verbose_startup = false,
-      show_loading_messages = false,
-    }
+    -- In your lazy.nvim spec for yoda.nvim
+    require("yoda").setup({
+      ui = {
+        verbose_startup = false,
+        show_loading_messages = false,
+      },
+    })
 <
 
 Clean Unused Plugins~

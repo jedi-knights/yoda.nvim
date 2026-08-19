@@ -283,12 +283,17 @@ See `:help yoda-configuration` for more details.
 
 ### Startup Messages
 ```lua
--- In init.lua
-vim.g.yoda_config = {
-  verbose_startup = false,
-  show_environment_notification = true
-}
+-- In your lazy.nvim spec for yoda.nvim
+require("yoda").setup({
+  ui = {
+    verbose_startup = false,
+    show_environment_notification = true,
+  },
+})
 ```
+
+> `vim.g.yoda_*` globals were the pre-v1.0.0 config vessel and are no longer
+> read. `:checkhealth yoda` warns if any are still set.
 
 ## 🤖 AI Usage Examples
 

@@ -41,13 +41,18 @@ Startup Messages~
 
 Control what you see when Neovim starts:
 >
-    -- In init.lua or options.lua
-    vim.g.yoda_config = {
-      verbose_startup = false,              -- Show detailed startup messages
-      show_loading_messages = false,        -- Show plugin loading messages
-      show_environment_notification = true  -- Show environment notification
-    }
+    -- In your lazy.nvim spec for yoda.nvim
+    require("yoda").setup({
+      ui = {
+        verbose_startup = false,             -- Detailed startup messages
+        show_loading_messages = false,       -- Plugin loading messages
+        show_environment_notification = true -- Environment notification
+      },
+    })
 <
+NOTE: vim.g.yoda_* globals were the pre-v1.0.0 config vessel and are no
+longer read anywhere. :checkhealth yoda warns if any are still set.
+
 
 Environment Mode~
 
@@ -383,19 +388,27 @@ YAML Parser~
 Extend the set of recognized deployment environment names used by the
 YAML parser (default: fastly, qa, prod):
 >
-    vim.g.yoda_yaml_environments = {
-      fastly  = true,
-      qa      = true,
-      prod    = true,
-      staging = true,  -- add staging
-      dev     = true,  -- add dev
-    }
+    require("yoda").setup({
+      yaml = {
+        known_environments = {
+          fastly  = true,
+          qa      = true,
+          prod    = true,
+          staging = true,  -- add staging
+          dev     = true,  -- add dev
+        },
+      },
+    })
 <
 
 Override indentation levels if your YAML schema differs:
 >
-    vim.g.yoda_yaml_env_indent    = 2   -- default
-    vim.g.yoda_yaml_region_indent = 6   -- default
+    require("yoda").setup({
+      yaml = {
+        env_indent    = 2,  -- default
+        region_indent = 6,  -- default
+      },
+    })
 <
 
 Picker Backend~
@@ -403,20 +416,25 @@ Picker Backend~
 Override the automatic picker backend detection
 (default order: snacks → mini.pick → native):
 >
-    vim.g.yoda_picker_backend = "snacks"     -- force snacks
-    vim.g.yoda_picker_backend = "mini.pick"  -- force mini.pick
-    vim.g.yoda_picker_backend = "native"     -- force vim.ui.select
+    require("yoda").setup({
+      adapters = {
+        picker = "snacks",     -- or "mini.pick", or "native"
+        notification = "snacks", -- or "native"
+      },
+    })
 <
 
 Large File Handling~
 
 See |yoda-large-file| for full documentation.
 >
-    vim.g.yoda_large_file = {
-      size_threshold    = 100 * 1024,  -- 100KB
-      show_notification = true,
-      disable = { treesitter = true, lsp = true, gitsigns = true },
-    }
+    require("yoda").setup({
+      large_file = {
+        size_threshold    = 100 * 1024,  -- 100KB
+        show_notification = true,
+        disable = { treesitter = true, lsp = true, gitsigns = true },
+      },
+    })
 <
 
 Variable Reference~
