@@ -130,17 +130,20 @@ describe("keymaps", function()
   )
 
   it("finds keymap files for all modules listed in init.lua", function()
-    local init_path = keymap_dir .. "/init.lua"
-    local lines = vim.fn.readfile(init_path)
-    assert.is_not_nil(lines, "keymaps/init.lua should exist")
+    -- Reads the declared module list directly. This previously scraped
+    -- init.lua for `require("yoda.keymaps.<name>")` call sites, but the list
+    -- is a table of strings passed to pcall(require, mod) -- the pattern
+    -- matched nothing and the assertion passed vacuously.
+    local modules = require("yoda.keymaps").modules
+    assert.is_true(#modules > 0, "keymaps/init.lua should declare modules")
 
-    local content = table.concat(lines, "\n")
     local missing = {}
-
-    for module in content:gmatch('require%("yoda%.keymaps%.([^"]+)"%)') do
-      local filepath = keymap_dir .. "/" .. module .. ".lua"
+    for _, mod in ipairs(modules) do
+      local name = mod:match("^yoda%.keymaps%.(.+)$")
+      assert.is_not_nil(name, "unexpected module name: " .. mod)
+      local filepath = keymap_dir .. "/" .. name .. ".lua"
       if vim.fn.filereadable(filepath) == 0 then
-        table.insert(missing, module .. ".lua")
+        table.insert(missing, name .. ".lua")
       end
     end
 

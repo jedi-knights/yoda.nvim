@@ -9,14 +9,10 @@
 --       require("yoda").setup(opts)
 --     end }
 --
--- NOTE: lua/options.lua, lua/autocmds.lua, and lua/yoda/keymaps apply their
--- effects as a side effect of require() (module caching makes a second
--- require() of an already-loaded module a no-op), so opts.defaults.
--- {options,keymaps,autocmds} remain advisory metadata only until those
--- modules are decomposed into explicit apply() functions decoupled from
--- require() -- tracked in TODO.md Step 2A. This entry point wires the
--- modules that are already require()/setup() decoupled: commands,
--- ui/large_file, ui/environment, ui/startup_mode, screencast.
+-- opts.defaults.{options,keymaps,autocmds} are real switches: yoda.options,
+-- yoda.autocmds and yoda.keymaps each expose an explicit apply() rather than
+-- acting on require(), so a starter can turn any of them off without forking
+-- the plugin.
 
 local M = {}
 
@@ -31,6 +27,18 @@ function M.setup(opts)
   -- config.resolve() already validates opts is a table-or-nil and raises
   -- otherwise; no need to duplicate that check here.
   local resolved = config.resolve(opts)
+
+  -- Distribution defaults first -- commands and UI wiring below assume the
+  -- option values and augroups these establish.
+  if resolved.defaults.options then
+    require("yoda.options").apply()
+  end
+  if resolved.defaults.keymaps then
+    require("yoda.keymaps").apply()
+  end
+  if resolved.defaults.autocmds then
+    require("yoda.autocmds").apply()
+  end
 
   require("yoda.commands")
 
