@@ -1,4 +1,4 @@
--- tests/unit/integrations/gitsigns_spec.lua
+-- tests/yoda/integrations/gitsigns_spec.lua
 -- Tests for GitSigns integration
 
 local helpers = require("tests.helpers")

@@ -1,4 +1,4 @@
--- tests/unit/python_venv_spec.lua
+-- tests/yoda/python_venv_spec.lua
 -- Tests for Python virtual environment detection
 
 local helpers = require("tests.helpers")

@@ -1,4 +1,4 @@
--- tests/unit/plugins/claudecode_spec.lua
+-- tests/yoda/plugins/claudecode_spec.lua
 -- Validates the claudecode.nvim plugin spec and the <leader>ai dashboard
 -- expand behavior: closing the dashboard and growing Claude's window into
 -- the space it freed via yoda-window.nvim's reclaim_width.

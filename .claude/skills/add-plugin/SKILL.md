@@ -67,7 +67,7 @@ After `:Lazy sync`, the lock file gains the new entry. Stage only the new entry 
 
 Run `/validate` (or `make lint && make test`). All tests must pass. Fix any failures in place — never skip.
 
-If the plugin adds public Lua API surface in `lua/yoda/`, confirm a test exists in the mirrored `tests/unit/` path.
+If the plugin adds public Lua API surface in `lua/yoda/`, confirm a test exists in the mirrored `tests/yoda/` path.
 
 ## Step 7 — Commit
 
