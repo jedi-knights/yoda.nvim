@@ -39,9 +39,9 @@ jobs:
 
       - name: Install Neovim
         run: |
-          curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz" -o nvim.tar.gz
+          curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" -o nvim.tar.gz
           tar xzf nvim.tar.gz
-          sudo mv nvim-linux64 /opt/nvim
+          sudo mv nvim-linux-x86_64 /opt/nvim
           echo "/opt/nvim/bin" >> "$GITHUB_PATH"
 
       - name: Verify Neovim
