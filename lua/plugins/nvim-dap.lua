@@ -1,99 +1,13 @@
 -- lua/plugins/nvim-dap.lua
--- DAP core + language adapters. Adapters are lazy-loaded by filetype and
--- wired into dap.configurations in their own config callbacks.
+-- DAP core: nvim-dap + dap-ui + virtual text + shared keymaps + launch.json
+-- loading + dapui autolisteners. Per-language adapters live in sibling files:
+--   - plugins/nvim-dap-python.lua
+--   - plugins/nvim-dap-go.lua
+-- JS/TS adapter+configuration wiring stays here for now; it has no dedicated
+-- language plugin spec to hang off and moves to `extras/lang/node.lua` in
+-- Phase 2 of the v1.0.0 restructure.
 
 return {
-  -- Python DAP adapter. Installs debugpy via uv and resolves the project
-  -- venv at session-start time so multi-project sessions get the right python.
-  {
-    "mfussenegger/nvim-dap-python",
-    ft = "python",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "rcarriga/nvim-dap-ui",
-    },
-    -- Install debugpy as a uv global tool so it is available across all
-    -- projects.
-    build = function()
-      vim.fn.jobstart({ "uv", "tool", "install", "debugpy" }, {
-        on_exit = function(_, code)
-          if code ~= 0 then
-            vim.notify(
-              "[yoda] Failed to install debugpy via uv (exit " .. code .. ")",
-              vim.log.levels.ERROR
-            )
-          end
-        end,
-      })
-    end,
-    config = function()
-      local dap = require("dap")
-      local dap_python = require("dap-python")
-
-      -- Resolves the project venv at call time, not at plugin-load time.
-      -- nvim-dap calls function values in configurations when a session starts,
-      -- so getcwd() returns the correct project root even across multiple
-      -- Python projects open in the same Neovim session.
-      local function get_python_path()
-        local venv_python = vim.fn.getcwd() .. "/.venv/bin/python"
-        return vim.uv.fs_stat(venv_python) and venv_python
-          or vim.fn.exepath("python")
-      end
-
-      -- setup() configures the adapter and registers default launch configs.
-      -- We pass the current project's python for the initial adapter setup.
-      dap_python.setup(get_python_path())
-      dap_python.test_runner = "pytest"
-
-      -- Patch all registered configurations to use the dynamic resolver so
-      -- subsequent projects in the same session get the right venv too.
-      for _, config in ipairs(dap.configurations.python) do
-        config.pythonPath = get_python_path
-      end
-
-      table.insert(dap.configurations.python, {
-        type = "python",
-        request = "launch",
-        name = "Launch file with arguments",
-        program = "${file}",
-        pythonPath = get_python_path,
-        args = function()
-          local args_string = vim.fn.input("Arguments: ")
-          return vim.split(args_string, " +")
-        end,
-      })
-    end,
-  },
-
-  -- Go DAP adapter. Configures Delve automatically so Go debugging works
-  -- without a .vscode/launch.json. Also adds :DapGoTest to debug individual
-  -- tests.
-  {
-    "leoluz/nvim-dap-go",
-    ft = "go",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "rcarriga/nvim-dap-ui",
-    },
-    keys = {
-      {
-        "<leader>dt",
-        function()
-          require("dap-go").debug_test()
-        end,
-        desc = "Debug: Go Test (nearest)",
-      },
-      {
-        "<leader>dT",
-        function()
-          require("dap-go").debug_last_test()
-        end,
-        desc = "Debug: Go Test (last)",
-      },
-    },
-    opts = {},
-  },
-
   {
     "mfussenegger/nvim-dap",
     dependencies = {
@@ -216,12 +130,28 @@ return {
       require("nvim-dap-virtual-text").setup()
 
       -- Load .vscode/launch.json if present in the project root.
-      -- type_to_filetypes maps the DAP adapter name to the filetype(s) it
-      -- applies to,
-      -- which is required because launch.json uses adapter type names, not
-      -- Neovim filetypes.
+      -- type_to_filetypes maps DAP adapter names to filetype(s) so launch.json
+      -- entries (keyed by adapter type) resolve to Neovim ft configurations.
+      -- Mappings for every language yoda supports live here; language spec
+      -- files don't need to edit this table — adding a new language just
+      -- means adding one line here (yagni over a full registry for 3–5 pins).
       local vscode = require("dap.ext.vscode")
-      local type_to_filetypes = { delve = { "go" }, python = { "python" } }
+      local type_to_filetypes = {
+        delve = { "go" },
+        python = { "python" },
+        ["pwa-node"] = {
+          "typescript",
+          "javascript",
+          "typescriptreact",
+          "javascriptreact",
+        },
+        ["pwa-chrome"] = {
+          "typescript",
+          "javascript",
+          "typescriptreact",
+          "javascriptreact",
+        },
+      }
 
       local function load_vscode_launch()
         local launch = vim.fn.getcwd() .. "/.vscode/launch.json"
@@ -272,7 +202,8 @@ return {
       -- mxsdev/nvim-dap-vscode-js was abandoned in 2023; its only role was
       -- calling dap.adapters[name] = { type = "server", ... } for each pwa-*
       -- type, which we do here instead. The adapter binary is still managed
-      -- by mason-nvim-dap (js-debug-adapter in ensure_installed).
+      -- by mason-nvim-dap (js-debug-adapter in ensure_installed). Moves to
+      -- extras/lang/node.lua in Phase 2 of the v1.0.0 restructure.
       local mason_ok, mason_registry = pcall(require, "mason-registry")
       if mason_ok then
         local pkg_ok, pkg =
