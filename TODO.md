@@ -20,7 +20,8 @@
 | 2F docs rewrite | 🟡 "The yoda way", CLAUDE.md positioning/ICP and CONTRIBUTING done; install-model rewrite + migration guide ⛔ blocked on Step 3 |
 | 2G CI on plenary | ✅ done (smoke-test job still not added) |
 | 2H cut v1.0.0 | ❌ not cut — automation itself is proven (v0.2.0 → v0.3.1) |
-| Step 3 yoda-starter | ❌ repo does not exist yet |
+| Step 3A yoda-starter repo | ✅ **published** — https://github.com/jedi-knights/yoda-starter (public, template) |
+| Step 3B dogfood | ❌ not started — the gate before cutting v1.0.0 |
 
 **For future Claude:** read this file top-to-bottom before touching any code. All context needed to resume is here or linked from here. This is a **persistent handoff document**, not the ephemeral session `TODO.md` referenced in the root `CLAUDE.md` — that convention was for in-session scratch; this file overrides it for the duration of the v1.0.0 restructure.
 
@@ -240,10 +241,26 @@ yoda-starter/                     (cloned into ~/.config/nvim/)
 └── README.md                     -- "Clone this into ~/.config/nvim/"
 ```
 
-- [ ] Create the repo on GitHub
-- [ ] Mark it as a **template repository** in GitHub settings (so users can click "Use this template" on GitHub)
-- [ ] Add README with install instructions matching the LazyVim starter's shape
-- [ ] Tag the starter repo separately — usually a starter follows the plugin's major version (starter v1.x tracks yoda v1.x)
+- [x] **Created and published:** https://github.com/jedi-knights/yoda-starter — public, marked as a template repository, topics set.
+- [x] README with install instructions in the LazyVim-starter shape, including an `NVIM_APPNAME` try-it-without-committing path.
+- [ ] Tag the starter (starter v1.x tracks yoda v1.x). **Deliberately not tagged yet** — tagging it before yoda v1.0.0 exists would promise a pairing that is not real.
+
+**Shipped layout** (as built, matches the plan):
+
+```
+init.lua                   -- leader keys, then require("config.lazy")
+lua/config/lazy.lua        -- lazy.nvim bootstrap + performance/rtp/ui tuning
+lua/plugins/yoda.lua       -- yoda.nvim spec: import, opts, extras
+lua/plugins/overrides.lua  -- empty; the file users actually edit
+stylua.toml, LICENSE, README.md, .gitignore
+```
+
+**Two decisions worth knowing:**
+
+- **Options are applied from the spec's `init`, not `config`.** The `vim.g.loaded_*` built-in guards must fire before lazy sources the plugins they disable, which is earlier than `config` runs. `yoda.options.apply()` is idempotent, so `setup()` re-applying it is a no-op — this is exactly why that guard was added in 2A.
+- **The starter tracks `branch = "main"`, not `version = "*"`.** yoda v1.0.0 is not tagged, and `version = "*"` would silently resolve to v0.3.1 — which predates the plugin shape and would not work at all. Both the spec comment and the README say to switch at v1.0.0.
+
+**Verified before publishing** by installing into an isolated `NVIM_APPNAME` sandbox: `setup()` runs, options apply, 131 normal-mode keymaps register (9 in the `<leader>a` AI group), the `YodaStartupMode` autocmd installs, 16 `Yoda*` commands define, no legacy `vim.g.yoda_*` global is set, and tokyonight applies. A fresh clone of the published repo re-verified.
 
 ### Step 3B: Dogfood — migrate your own dotfiles
 
