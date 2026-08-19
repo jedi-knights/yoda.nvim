@@ -1,7 +1,15 @@
 -- lua/lazy-plugins.lua
 -- Setup lazy.nvim with plugins
 
-require("lazy").setup({
+--- True when the user has created at least one lua/custom/plugins/*.lua.
+--- The directory is gitignored and ships empty, so importing it blindly
+--- would fail on a fresh clone.
+local function has_custom_plugins()
+  local dir = vim.fn.stdpath("config") .. "/lua/custom/plugins"
+  return #vim.fn.glob(dir .. "/*.lua", false, true) > 0
+end
+
+local spec = {
   -- Core specs: one plugin per file in lua/yoda/plugins/. Includes
   -- foundation.lua, which carries the six first-party yoda-* siblings
   -- that used to be declared inline here.
@@ -17,13 +25,20 @@ require("lazy").setup({
   { import = "yoda.extras.lang.node" },
   { import = "yoda.extras.lang.python" },
   { import = "yoda.extras.lang.rust" },
+}
 
-  -- User customizations: add your own plugins in lua/custom/plugins/
-  -- This directory is gitignored so your changes won't conflict with upstream
-  -- yoda updates.
-  -- See lua/custom/plugins/init.lua for instructions.
-  { import = "custom.plugins" },
-}, {
+-- Personal overrides, if the user has created any. yoda-the-plugin ships no
+-- stub for these on purpose: lua/custom/ sits outside lua/yoda/, so a tracked
+-- file would put a generic `custom.*` module on every consumer's runtimepath.
+-- Appended conditionally because lazy.nvim errors on an import that resolves
+-- to nothing.
+--
+-- Step 3 replaces this with the starter's lua/plugins/overrides.lua.
+if has_custom_plugins() then
+  table.insert(spec, { import = "custom.plugins" })
+end
+
+require("lazy").setup(spec, {
   defaults = {
     lazy = true,
     version = false,
