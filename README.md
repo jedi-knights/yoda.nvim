@@ -112,15 +112,129 @@ One schema in `lua/yoda/config.lua`, merged and validated on the way in.
 - **ripgrep** (for fuzzy finding)
 
 ### Installation
-```bash
-# Clone and install
-git clone https://github.com/jedi-knights/yoda ~/.config/nvim
 
-# Start Neovim (plugins will auto-install)
+Yoda.nvim is a **plugin**, and [**yoda-starter**](https://github.com/jedi-knights/yoda-starter)
+is the config you clone and own. That split lets you update the distribution
+without your personal configuration fighting it.
+
+```bash
+# Back up anything you already have
+mv ~/.config/nvim ~/.config/nvim.bak
+mv ~/.local/share/nvim ~/.local/share/nvim.bak
+
+# Clone the starter — or click "Use this template" on GitHub first
+git clone https://github.com/jedi-knights/yoda-starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
+
 nvim
 ```
 
-That's it! The first launch will automatically bootstrap all plugins.
+First launch bootstraps lazy.nvim and installs everything.
+
+#### Try it without touching your current setup
+
+```bash
+git clone https://github.com/jedi-knights/yoda-starter ~/.config/yoda
+NVIM_APPNAME=yoda nvim
+```
+
+Remove `~/.config/yoda` and `~/.local/share/yoda` to undo it.
+
+> **Do not clone this repository into `~/.config/nvim`.** That was the
+> pre-v1.0.0 install path and no longer works — this repo has no `init.lua`.
+> See [Upgrading from v0.x](#-upgrading-from-v0x).
+
+## 🔼 Upgrading from v0.x
+
+Before v1.0.0 you installed Yoda by cloning this repository straight into
+`~/.config/nvim`. That path is gone — this repository no longer has an
+`init.lua`, because it is now a plugin rather than a config.
+
+Migration is a move, not a rewrite. Your customisations carry over.
+
+**1. Note what you customised.** Two places held it:
+
+- `lua/custom/plugins/*.lua` — your own plugins and overrides
+- `lua/local.lua` — machine-local settings, if you had one
+
+Copy both somewhere safe before you start.
+
+**2. Replace the config.**
+
+```bash
+mv ~/.config/nvim ~/.config/nvim.v0
+git clone https://github.com/jedi-knights/yoda-starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
+```
+
+**3. Move your customisations in.**
+
+| v0.x | v1.0.0 |
+|---|---|
+| `lua/custom/plugins/*.lua` | `lua/plugins/overrides.lua` |
+| `lua/local.lua` | `lua/local.lua` (unchanged) |
+
+The override file takes the same lazy.nvim specs you already had — paste them
+into the returned table.
+
+**4. Move your settings to `opts`.** This is the one part that is not a copy.
+`vim.g.yoda_*` globals are no longer read; configuration goes through
+`opts` in `lua/plugins/yoda.lua`:
+
+```lua
+-- before (v0.x, in init.lua or local.lua)
+vim.g.yoda_config     = { show_environment_notification = true }
+vim.g.yoda_large_file = { size_threshold = 200 * 1024 }
+
+-- after (v1.0.0, in lua/plugins/yoda.lua)
+opts = {
+  ui         = { show_environment_notification = true },
+  large_file = { size_threshold = 200 * 1024 },
+}
+```
+
+| v0.x global | v1.0.0 `opts` key |
+|---|---|
+| `vim.g.yoda_config.verbose_startup` | `ui.verbose_startup` |
+| `vim.g.yoda_config.show_loading_messages` | `ui.show_loading_messages` |
+| `vim.g.yoda_config.show_environment_notification` | `ui.show_environment_notification` |
+| `vim.g.yoda_config.show_startup_report` | `ui.show_startup_report` |
+| `vim.g.yoda_config.enable_startup_profiling` | `profiling.enable` |
+| `vim.g.yoda_config.profiling_verbose` | `profiling.verbose` |
+| `vim.g.yoda_large_file` | `large_file` |
+| `vim.g.yoda_test_config` | `testing` |
+| `vim.g.yoda_yaml_environments` | `yaml.known_environments` |
+| `vim.g.yoda_yaml_env_indent` | `yaml.env_indent` |
+| `vim.g.yoda_yaml_region_indent` | `yaml.region_indent` |
+| `vim.g.yoda_picker_backend` | `adapters.picker` |
+| `vim.g.yoda_notify_backend` | `adapters.notification` |
+
+Run **`:checkhealth yoda`** afterwards — it warns about any legacy global you
+missed, naming each one. A global left behind is silently ignored, so the
+health check is how you find it.
+
+**5. Opt into your languages.** Language stacks are no longer installed
+unconditionally. Uncomment the ones you use in `lua/plugins/yoda.lua`:
+
+```lua
+{ import = "yoda.extras.lang.go" },
+{ import = "yoda.extras.lang.python" },
+```
+
+If a language tool you relied on has vanished, this is why.
+
+**6. Once it works**, delete `~/.config/nvim.v0`.
+
+### What if I want to stay on v0.x?
+
+Nothing forces the upgrade. Pin the old layout:
+
+```bash
+git clone --branch v0.1.0 https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
+```
+
+That tag still contains the pre-v1.0.0 config-repo layout. It receives no
+further updates.
 
 ## 🔧 Language Support
 
@@ -283,10 +397,7 @@ Yoda.nvim uses a modular architecture:
 
 ```
 yoda.nvim/
-├── init.lua                 # Config entry point (becomes yoda-starter's in v1.0.0)
 ├── lua/
-│   ├── lazy-bootstrap.lua   # lazy.nvim bootstrap
-│   ├── lazy-plugins.lua     # lazy.nvim setup + spec imports
 │   └── yoda/                # ── the plugin ──
 │       ├── init.lua         # Public API: setup(opts)
 │       ├── config.lua       # Defaults schema, merge, validation
@@ -307,9 +418,9 @@ yoda.nvim/
 └── doc/                     # :help yoda
 ```
 
-Personal plugin overrides go in `lua/custom/plugins/*.lua` — gitignored and
-untracked, so nothing ships to consumers. In v1.0.0 this becomes the starter's
-`lua/plugins/overrides.lua`.
+There is no `init.lua` here on purpose. The config half — entry point, lazy
+bootstrap, `lazy.setup()` tuning and your personal overrides — lives in
+[yoda-starter](https://github.com/jedi-knights/yoda-starter).
 
 ## ⚙️ Quick Configuration
 

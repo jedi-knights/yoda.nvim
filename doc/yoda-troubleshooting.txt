@@ -267,7 +267,8 @@ Complete Reset~
     rm -rf ~/.local/state/nvim
 
     # Reinstall
-    git clone https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
+    git clone https://github.com/jedi-knights/yoda-starter ~/.config/nvim
+    rm -rf ~/.config/nvim/.git
     nvim
 <
 

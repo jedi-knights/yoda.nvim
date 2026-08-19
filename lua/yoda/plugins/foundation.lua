@@ -1,10 +1,10 @@
 -- lua/yoda/plugins/foundation.lua
 -- The six first-party yoda-* sibling plugins the distribution is built on.
 --
--- Moved out of lua/lazy-plugins.lua so they survive that file's deletion in
--- Step 3 -- these are distribution plugins and belong to yoda-the-plugin,
--- whereas the lazy.setup() tuning that surrounded them (performance,
--- disabled_plugins, ui, change_detection) belongs to the starter.
+-- These are distribution plugins and belong to yoda-the-plugin. The
+-- lazy.setup() tuning that used to surround them (performance,
+-- disabled_plugins, ui, change_detection) now lives in yoda-starter's
+-- lua/config/lazy.lua.
 --
 -- All six are deferred to VeryLazy: nothing before UIEnter needs them. Load
 -- order between them is expressed with `dependencies`, not event ordering.

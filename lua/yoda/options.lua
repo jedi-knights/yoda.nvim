@@ -192,8 +192,8 @@ function M.apply()
   -- window between Neovim launch and lazy taking control — without these guards
   -- Neovim's own plugin loader could source these files first.
   --
-  -- RELATION TO lazy-plugins.lua: several entries here also appear in that
-  -- file's `disabled_plugins` list. That is intentional belt-and-suspenders:
+  -- RELATION TO THE STARTER: several entries here also appear in
+  -- yoda-starter's lua/config/lazy.lua `disabled_plugins` list. That is intentional belt-and-suspenders:
   --   1. These loaded guards fire first (early guard, before rtp reset).
   --   2. lazy's disabled_plugins fires after rtp reset (permanent exclusion).
   -- Entries unique to THIS list are not managed by lazy because they require
@@ -201,24 +201,24 @@ function M.apply()
   -- guard name than lazy expects (spellfile_plugin vs spellfile).
   local disabled_built_ins = {
     "netrw", -- file explorer — replaced by snacks.explorer
-    "netrwPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "netrwPlugin", -- also in the starter's disabled_plugins
     "netrwSettings",
     "netrwFileHandlers",
-    "gzip", -- also in lazy-plugins.lua disabled_plugins
+    "gzip", -- also in the starter's disabled_plugins
     "zip",
-    "zipPlugin", -- also in lazy-plugins.lua disabled_plugins
+    "zipPlugin", -- also in the starter's disabled_plugins
     "tar",
-    "tarPlugin", -- also in lazy-plugins.lua disabled_plugins
-    "getscript", -- also in lazy-plugins.lua disabled_plugins
-    "getscriptPlugin", -- also in lazy-plugins.lua disabled_plugins
-    "vimball", -- also in lazy-plugins.lua disabled_plugins
-    "vimballPlugin", -- also in lazy-plugins.lua disabled_plugins
-    "2html_plugin", -- also in lazy-plugins.lua disabled_plugins
-    "logipat", -- also in lazy-plugins.lua disabled_plugins
-    "rrhelper", -- also in lazy-plugins.lua disabled_plugins
+    "tarPlugin", -- also in the starter's disabled_plugins
+    "getscript", -- also in the starter's disabled_plugins
+    "getscriptPlugin", -- also in the starter's disabled_plugins
+    "vimball", -- also in the starter's disabled_plugins
+    "vimballPlugin", -- also in the starter's disabled_plugins
+    "2html_plugin", -- also in the starter's disabled_plugins
+    "logipat", -- also in the starter's disabled_plugins
+    "rrhelper", -- also in the starter's disabled_plugins
     -- note: lazy uses "spellfile" (filename); guard name differs
     "spellfile_plugin",
-    "matchit", -- also in lazy-plugins.lua disabled_plugins
+    "matchit", -- also in the starter's disabled_plugins
   }
 
   for _, plugin in pairs(disabled_built_ins) do

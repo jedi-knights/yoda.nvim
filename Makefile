@@ -57,11 +57,11 @@ test-file:
 
 # Lint code with stylua
 lint:
-	@find init.lua lua tests -name "*.lua" -type f | xargs stylua --check
+	@find lua tests -name "*.lua" -type f | xargs stylua --check
 
 # Format code with stylua
 format:
-	@find init.lua lua tests -name "*.lua" -type f | xargs stylua
+	@find lua tests -name "*.lua" -type f | xargs stylua
 
 # Performance benchmarking
 benchmark:

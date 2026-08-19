@@ -30,7 +30,7 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     env:
-      # Pin to the minimum supported Neovim (matches init.lua declared minimum).
+      # Pin to the minimum supported Neovim (matches README.md / doc/yoda.txt).
       # Bump alongside any change to the declared minimum version.
       NVIM_VERSION: v0.10.4
     steps:
