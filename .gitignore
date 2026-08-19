@@ -43,9 +43,10 @@ node_modules/
 
 /plugin_dev.lua
 
-# User customizations (keep the stub but ignore personal plugin files)
-/lua/custom/plugins/*.lua
-!/lua/custom/plugins/init.lua
+# User customizations — personal plugin files, never tracked. No stub is
+# committed: lua/custom/ is outside lua/yoda/, so a tracked file would ship
+# a generic `custom.*` module to every consumer's runtimepath.
+/lua/custom/
 
 # Benchmark temporary files
 benchmarks/temp/

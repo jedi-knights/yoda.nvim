@@ -16,7 +16,7 @@
 | 2C `opts` migration | ✅ done — no legacy read sites remain; `:checkhealth yoda` warns on leftovers |
 | 2D strip defensive `pcall` scaffolding | 🟡 8 → 1 in `init.lua`; the survivor guards user-authored `local.lua` and is deliberate |
 | 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
-| 2E delete `lua/custom/plugins/` | ❌ remains |
+| 2E delete `lua/custom/plugins/` | ✅ done — stub removed, import probed |
 | 2F docs rewrite | ❌ `README.md:59` still shows the old clone-into-nvim-config install |
 | 2G CI on plenary | ✅ done (smoke-test job still not added) |
 | 2H cut v1.0.0 | ❌ not cut — automation itself is proven (v0.2.0 → v0.3.1) |
@@ -186,7 +186,13 @@ Load-order note: with `opts` there's no more scheduled block dance. The `opts` m
 
 ### Step 2E: `lua/custom/plugins/` — delete
 
-- [ ] Delete `lua/custom/plugins/` — this becomes yoda-starter's `lua/plugins/overrides.lua`. Not needed in yoda-the-plugin.
+- [x] **DONE.** The tracked `lua/custom/plugins/init.lua` stub is gone and `.gitignore` now ignores `lua/custom/` wholesale.
+
+  **Stronger reason than "not needed":** `lua/custom/` sits *outside* `lua/yoda/`, so a consumer installing `jedi-knights/yoda.nvim` via lazy.nvim gets the whole repo on their runtimepath — a tracked stub there would ship a generic `custom.*` module into every user's namespace.
+
+  `lua/lazy-plugins.lua` now probes for `lua/custom/plugins/*.lua` and only appends the import when the user has actually created one (lazy.nvim errors on an import resolving to nothing). Step 3 replaces that with the starter's `lua/plugins/overrides.lua`.
+
+  Note: `lua/lazy-bootstrap.lua` and `lua/lazy-plugins.lua` pollute the consumer namespace the same way (`require("lazy-bootstrap")`). That is not fixable here — they are the config half and are deleted in Step 3.
 
 ### Step 2F: Docs
 
