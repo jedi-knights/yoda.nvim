@@ -9,18 +9,36 @@ local logger = require("yoda-logging.logger")
 local M = {}
 
 -- ============================================================================
--- Constants (configurable via vim.g.yoda_yaml_*)
+-- Configuration (dual-read: opts → vim.g → default)
 -- ============================================================================
 
--- Allow users to extend environments without modifying source (OCP principle)
+-- Reads resolve at call time so setup(opts) can take effect mid-session
+-- without a restart. Precedence during the v1.0.0 transition:
+--   1. require("yoda").setup(opts).yaml.*   (new)
+--   2. vim.g.yoda_yaml_*                    (legacy)
+--   3. hard-coded defaults below
+local function yaml_config()
+  local ok, config = pcall(require, "yoda.config")
+  local resolved = ok and config.get()
+  return resolved and resolved.yaml or nil
+end
+
 local function get_known_environments()
-  return vim.g.yoda_yaml_environments
+  local cfg = yaml_config()
+  return (cfg and cfg.known_environments)
+    or vim.g.yoda_yaml_environments
     or { fastly = true, qa = true, prod = true }
 end
 
--- Allow users to override YAML indentation if their file format differs
-local ENVIRONMENT_INDENT = vim.g.yoda_yaml_env_indent or 2
-local REGION_INDENT = vim.g.yoda_yaml_region_indent or 6
+local function environment_indent()
+  local cfg = yaml_config()
+  return (cfg and cfg.env_indent) or vim.g.yoda_yaml_env_indent or 2
+end
+
+local function region_indent()
+  local cfg = yaml_config()
+  return (cfg and cfg.region_indent) or vim.g.yoda_yaml_region_indent or 6
+end
 
 -- ============================================================================
 -- Helper Functions (Low Complexity)
@@ -54,7 +72,7 @@ end
 --- @param indent number Line indentation
 --- @return string|nil Environment name if valid
 local function extract_environment_name(trimmed, indent)
-  if indent ~= ENVIRONMENT_INDENT then
+  if indent ~= environment_indent() then
     return nil
   end
 
@@ -73,7 +91,7 @@ end
 --- @param current_env string|nil Current environment context
 --- @return string|nil Region name if valid
 local function extract_region_name(trimmed, indent, current_env)
-  if indent ~= REGION_INDENT or not current_env then
+  if indent ~= region_indent() or not current_env then
     return nil
   end
 
