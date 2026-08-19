@@ -1,4 +1,4 @@
--- lua/plugins/nvim-lint.lua
+-- lua/yoda/plugins/nvim-lint.lua
 
 return {
   "mfussenegger/nvim-lint",

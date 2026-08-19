@@ -1,4 +1,4 @@
--- lua/plugins/claudecode.lua
+-- lua/yoda/plugins/ai.lua
 
 -- <leader>ai toggles Claude Code. If the dashboard is on screen, close it and
 -- grow Claude into the space it freed (via yoda-window.nvim's reclaim_width,

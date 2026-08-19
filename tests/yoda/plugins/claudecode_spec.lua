@@ -4,7 +4,7 @@
 -- the space it freed via yoda-window.nvim's reclaim_width.
 
 describe("claudecode plugin spec", function()
-  local specpath = vim.fn.getcwd() .. "/lua/plugins/claudecode.lua"
+  local specpath = vim.fn.getcwd() .. "/lua/yoda/plugins/ai.lua"
 
   local function find_key(spec, lhs)
     for _, key in ipairs(spec.keys) do

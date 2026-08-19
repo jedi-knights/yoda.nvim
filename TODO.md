@@ -1,6 +1,6 @@
 # yoda.nvim — v1.0.0 restructure handoff
 
-**Status:** Step 1 done. Step 2 partially done — 2A entry points, 2D test-runner swap and 2G CI have landed; **2B (spec move to `lua/yoda/plugins/` + `extras/lang/`) has not started and is the biggest remaining chunk.** Step 3 not started.
+**Status:** Step 1 done. Step 2 substantially done — 2A entry points, **2B spec move**, 2D test-runner swap and 2G CI have landed. Remaining: the 2A deletions, finishing 2C, the 2D `pcall` strip, 2E, 2F docs, and the 2H v1.0.0 cut. Step 3 not started.
 **Written:** 2026-08-18 after `/architect grill` session that decided the v1.0.0 direction.
 **Last audited:** 2026-08-19 against `main` @ `1e0ef8b`. Re-audit before trusting the checkboxes below — they drift.
 
@@ -10,7 +10,7 @@
 |---|---|
 | 2A entry points (`init.lua`, `config.lua`, `plugin/yoda.lua`, `doc/yoda.txt`) | ✅ done |
 | 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ❌ remain |
-| 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ❌ **not started** (both dirs empty; 25 specs still in `lua/plugins/`) |
+| 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ✅ done — 18 core specs + 5 extras; `lua/plugins/` deleted |
 | 2C `opts` migration | 🟡 dual-read + health check landed; legacy `vim.g.yoda_*` readers remain |
 | 2D strip defensive `pcall` scaffolding | ❌ 8 `pcall`s still in top-level `init.lua` |
 | 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
@@ -97,7 +97,16 @@ Restructure the repo into a plugin-shaped distribution. Land as a **single conve
 
 ### Step 2B: Move + split plugin specs to `lua/yoda/plugins/`
 
-**Status (2026-08-19): NOT STARTED — this is the biggest remaining chunk.** `lua/yoda/plugins/` and `lua/yoda/extras/` both exist but are empty; all 25 specs still live in `lua/plugins/`. The *language split* has been done (`a5be8cf` split the bundled DAP + testing specs into `neotest-go.lua`, `neotest-node.lua`, `neotest-python.lua`, `nvim-dap-go.lua`, `nvim-dap-python.lua`), so the adapters are already separated — they just need to **move** into `lua/yoda/extras/lang/` and be gated behind `opts.extras`. The core specs need to move into `lua/yoda/plugins/`.
+**Status (2026-08-19): ✅ DONE.** `lua/plugins/` is deleted. 18 core specs now live in `lua/yoda/plugins/` and 5 opt-in language stacks in `lua/yoda/extras/lang/`.
+
+Deltas from the plan below, worth knowing:
+
+- **18 core specs, not 17.** The table below omits `util.lua` (vim-repeat + vim-sleuth + showkeys). It is core and moved as-is.
+- **The JS/TS DAP block needed a seam, not a move.** It was inline in the nvim-dap spec because it has no wrapper plugin. lazy.nvim *overwrites* `config` when a plugin is declared twice rather than merging it, so an extra cannot re-declare nvim-dap to add adapters. Added `lua/yoda/core/dap_registry.lua` — a deliberate mirror of the existing `yoda.core.neotest_registry` — plus `tests/yoda/core/dap_registry_spec.lua`. `extras/lang/node.lua` registers a configurator; `plugins/dap-core.lua` drains the queue. Works in either load order.
+- **Behavior-preserving on purpose.** `lua/lazy-plugins.lua` imports all five extras, matching the unconditional install these plugins had before. Deciding which extras are on by default is the starter's job in Step 3.
+- **Not gated behind `opts.extras`** — per ARCHITECTURE.md "Extras loading", `opts.extras` is advisory metadata only; lazy.nvim resolves its spec graph before any `config` callback fires, so explicit `{ import = ... }` entries are the mechanism. The Q3 wording in the decisions table above predates that finding.
+
+Original plan:
 
 Per `nvim-lazy.md` rule: **one plugin per file for logical groups.** Current 22 files → 17 core specs (splitting bundled ones):
 

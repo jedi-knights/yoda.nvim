@@ -1,4 +1,4 @@
--- lua/plugins/difftool.lua
+-- lua/yoda/plugins/difftool.lua
 -- Built-in difftool (Neovim 0.12+), loaded via :packadd
 
 return {

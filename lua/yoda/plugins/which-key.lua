@@ -1,4 +1,4 @@
--- lua/plugins/which-key.lua
+-- lua/yoda/plugins/which-key.lua
 -- Shows pending keymap completions after a brief delay.
 
 return {

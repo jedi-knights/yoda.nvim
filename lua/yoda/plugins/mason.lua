@@ -1,4 +1,4 @@
--- lua/plugins/mason.lua
+-- lua/yoda/plugins/mason.lua
 -- Mason core + bridge plugins for LSP and DAP auto-installation.
 -- Load order matters: mason.nvim must initialize before the bridge plugins
 -- call into its registry, which lazy.nvim guarantees via dependencies.

@@ -1,4 +1,4 @@
--- lua/plugins/blink-cmp.lua
+-- lua/yoda/plugins/blink-cmp.lua
 
 return {
   "saghen/blink.cmp",

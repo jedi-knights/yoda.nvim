@@ -1,4 +1,4 @@
--- lua/plugins/plenary.lua
+-- lua/yoda/plugins/plenary.lua
 
 return {
   "nvim-lua/plenary.nvim",

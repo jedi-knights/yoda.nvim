@@ -1,6 +1,9 @@
--- lua/plugins/rust.lua
--- Rust development: rustaceanvim (LSP/DAP/neotest via rust-analyzer) and
+-- lua/yoda/extras/lang/rust.lua
+-- Opt-in Rust stack: rustaceanvim (LSP/DAP/neotest via rust-analyzer) and
 -- crates.nvim (Cargo.toml).
+--
+-- Enable from the starter:
+--   { import = "yoda.extras.lang.rust" }
 
 return {
   -- Filetype plugin: no setup() call needed, activates automatically for *.rs
