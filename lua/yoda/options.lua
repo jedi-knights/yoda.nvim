@@ -1,6 +1,5 @@
 -- lua/yoda/options.lua
--- Distribution-level vim.opt defaults, built-in-plugin guards, and the
--- legacy vim.g.yoda_config seed.
+-- Distribution-level vim.opt defaults and built-in-plugin guards.
 --
 -- Applying is an explicit call, not a require() side effect, so a starter can
 -- opt out via opts.defaults.options without forking the plugin.
@@ -174,24 +173,13 @@ function M.apply()
   -- YODA SPECIFIC
   -- ============================================================================
 
-  -- Backend overrides (optional — adapters auto-detect if not set).
-  -- Must be set here (before lazy-plugins loads) to take effect.
-  -- Notify backends:  "snacks" | "native"
-  -- Picker backends:  "snacks" | "mini.pick" | "native"
-  -- vim.g.yoda_notify_backend = "snacks"
-  -- vim.g.yoda_picker_backend = "snacks"
-
-  -- Configuration for Yoda.nvim (only set if not already configured)
-  if not vim.g.yoda_config then
-    vim.g.yoda_config = {
-      verbose_startup = false,
-      show_loading_messages = false,
-      show_environment_notification = true,
-      enable_startup_profiling = false,
-      show_startup_report = false,
-      profiling_verbose = false,
-    }
-  end
+  -- Backend overrides and UI/profiling toggles are opts now, not globals:
+  --   require("yoda").setup({
+  --     adapters = { notification = "snacks", picker = "snacks" },
+  --     ui = { show_environment_notification = true },
+  --   })
+  -- Adapters auto-detect when left unset. See lua/yoda/config.lua for the
+  -- full schema.
 
   -- Suppress LSP deprecation warning
   vim.g.lspconfig_deprecation_warning = false

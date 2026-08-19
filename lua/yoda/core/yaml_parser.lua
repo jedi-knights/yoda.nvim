@@ -9,14 +9,17 @@ local logger = require("yoda-logging.logger")
 local M = {}
 
 -- ============================================================================
--- Configuration (dual-read: opts → vim.g → default)
+-- Configuration (opts → default)
 -- ============================================================================
 
 -- Reads resolve at call time so setup(opts) can take effect mid-session
--- without a restart. Precedence during the v1.0.0 transition:
---   1. require("yoda").setup(opts).yaml.*   (new)
---   2. vim.g.yoda_yaml_*                    (legacy)
---   3. hard-coded defaults below
+-- without a restart. Precedence:
+--   1. require("yoda").setup(opts).yaml.*
+--   2. the literals below
+--
+-- The literals are duplicated from yoda.config's DEFAULTS rather than read
+-- from config.defaults(): these run per parsed line, and defaults() deep
+-- copies the whole schema on every call.
 local function yaml_config()
   local ok, config = pcall(require, "yoda.config")
   local resolved = ok and config.get()
@@ -26,18 +29,17 @@ end
 local function get_known_environments()
   local cfg = yaml_config()
   return (cfg and cfg.known_environments)
-    or vim.g.yoda_yaml_environments
     or { fastly = true, qa = true, prod = true }
 end
 
 local function environment_indent()
   local cfg = yaml_config()
-  return (cfg and cfg.env_indent) or vim.g.yoda_yaml_env_indent or 2
+  return (cfg and cfg.env_indent) or 2
 end
 
 local function region_indent()
   local cfg = yaml_config()
-  return (cfg and cfg.region_indent) or vim.g.yoda_yaml_region_indent or 6
+  return (cfg and cfg.region_indent) or 6
 end
 
 -- ============================================================================

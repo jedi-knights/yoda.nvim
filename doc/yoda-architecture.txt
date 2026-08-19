@@ -98,10 +98,10 @@ Open/Closed:~
 Extensible without modification:
 >
     -- Users can configure without editing source
-    vim.g.yoda_test_config = {
-      environments = { custom_envs },
-    }
-    vim.g.yoda_picker_backend = "mini.pick"
+    require("yoda").setup({
+      testing  = { environments = { custom_envs } },
+      adapters = { picker = "mini.pick" },
+    })
 <
 
 Liskov Substitution:~
@@ -249,7 +249,7 @@ YAML parsing utilities:
 <
 
 Configuration Hierarchy:~
-1. User overrides (vim.g.yoda_config)
+1. User overrides (require("yoda").setup(opts))
 2. Environment variables
 3. Configuration files (JSON/YAML)
 4. Sensible defaults
