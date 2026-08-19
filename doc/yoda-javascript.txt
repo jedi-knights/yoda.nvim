@@ -222,7 +222,7 @@ Create `biome.json` in your project root:
 
 Using ESLint + Prettier instead~
 
-Edit `lua/plugins/conform.lua` and `lua/plugins/nvim-lint.lua`:
+Edit `lua/yoda/plugins/conform.lua` and `lua/yoda/plugins/nvim-lint.lua`:
 >
     javascript = { "prettier" },    -- conform.lua
     typescript = { "prettier" },

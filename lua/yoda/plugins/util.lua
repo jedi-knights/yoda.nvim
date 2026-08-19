@@ -1,4 +1,4 @@
--- lua/plugins/util.lua
+-- lua/yoda/plugins/util.lua
 -- Small utility plugins: repeat operator support, auto-indent detection, key
 -- display.
 

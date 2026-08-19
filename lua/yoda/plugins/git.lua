@@ -1,4 +1,4 @@
--- lua/plugins/git.lua
+-- lua/yoda/plugins/git.lua
 -- Git integration: signs/blame (gitsigns), history viewer (diffview), staging
 -- UI (neogit).
 

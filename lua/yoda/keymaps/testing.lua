@@ -124,7 +124,7 @@ map("n", "<leader>tS", function()
   end
 end, { desc = "Test: Show environment status" })
 
--- Note: <leader>tt keymap is now defined in lua/plugins/testing.lua for lazy
+-- Note: <leader>tt keymap is now defined in lua/yoda/extras/lang/python.lua for lazy
 -- loading
 
 map("n", "<leader>tL", function()

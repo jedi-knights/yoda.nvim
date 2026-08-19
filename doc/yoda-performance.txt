@@ -82,7 +82,7 @@ Treesitter~
 
 Only install parsers for languages you use:
 >
-    -- In lua/plugins/nvim-treesitter.lua
+    -- In lua/yoda/plugins/treesitter.lua
     opts = {
       ensure_installed = {
         "lua", "vim", "vimdoc", "query",

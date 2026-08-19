@@ -184,8 +184,20 @@ require("lazy").setup({
     end,
   }),
 
-  -- All plugins: one file per plugin in lua/plugins/
-  { import = "plugins" },
+  -- Core specs: one plugin per file in lua/yoda/plugins/.
+  { import = "yoda.plugins" },
+
+  -- Opt-in language stacks. In the v1.0.0 plugin+starter shape these lines
+  -- live in the starter and users delete the ones they do not want (see
+  -- ARCHITECTURE.md "Extras loading"). This repo -- which is still its own
+  -- config until Step 2A lands -- imports all five so the restructure is
+  -- behavior-preserving: every one of these plugins was unconditionally
+  -- installed from lua/plugins/ before the move.
+  { import = "yoda.extras.lang.lua" },
+  { import = "yoda.extras.lang.go" },
+  { import = "yoda.extras.lang.node" },
+  { import = "yoda.extras.lang.python" },
+  { import = "yoda.extras.lang.rust" },
 
   -- User customizations: add your own plugins in lua/custom/plugins/
   -- This directory is gitignored so your changes won't conflict with upstream

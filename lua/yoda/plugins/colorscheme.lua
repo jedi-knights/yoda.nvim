@@ -1,4 +1,4 @@
--- lua/plugins/tokyonight.lua
+-- lua/yoda/plugins/colorscheme.lua
 
 return {
   "folke/tokyonight.nvim",

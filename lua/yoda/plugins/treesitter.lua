@@ -1,4 +1,4 @@
--- lua/plugins/nvim-treesitter.lua
+-- lua/yoda/plugins/treesitter.lua
 --
 -- Uses the new nvim-treesitter main branch API (post-rewrite).
 -- The legacy require("nvim-treesitter.configs").setup() was removed;
