@@ -1,4 +1,4 @@
--- tests/unit/startup_mode_spec.lua
+-- tests/yoda/startup_mode_spec.lua
 -- Validates the `nvim claude` startup mode: argv detection (mode_from_argv)
 -- and the layout builder (start_claude_layout) that opens the Snacks explorer,
 -- launches Claude Code, and grows Claude into the space right of the explorer

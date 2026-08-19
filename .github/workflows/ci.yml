@@ -29,15 +29,29 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    env:
+      # Pin to the minimum supported Neovim (matches init.lua declared minimum).
+      # Bump alongside any change to the declared minimum version.
+      NVIM_VERSION: v0.10.4
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install Neovim
+        run: |
+          curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" -o nvim.tar.gz
+          tar xzf nvim.tar.gz
+          sudo mv nvim-linux-x86_64 /opt/nvim
+          echo "/opt/nvim/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Neovim
+        run: nvim --version
+
+      - name: Clone plenary.nvim
+        run: git clone --depth=1 https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
+
       - name: Run tests
-        uses: jedi-knights/neospec@v0.1.4
-        with:
-          verbose: "true"
-          test-patterns: "tests/unit/**/*_spec.lua"
+        run: make test
 
   validate:
     name: Validate

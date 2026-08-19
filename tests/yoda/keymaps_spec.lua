@@ -1,4 +1,4 @@
--- tests/unit/keymaps_spec.lua
+-- tests/yoda/keymaps_spec.lua
 -- Static analysis tests for keymap collision detection.
 -- Parses source files directly — no runtime dependencies required.
 

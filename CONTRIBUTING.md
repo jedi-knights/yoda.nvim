@@ -68,16 +68,19 @@ git checkout -b fix/bug-description
 
 ### 3. Write Tests (Required!)
 
-**All new code must have tests.** We maintain ~95% test coverage.
+**All new code must have tests.** Specs live under `tests/yoda/`, mirroring `lua/yoda/`.
 
 ```bash
 # Create test file
-cp tests/unit/config_spec.lua tests/unit/your_module_spec.lua
+cp tests/yoda/config_loader_spec.lua tests/yoda/your_module_spec.lua
 
 # Edit tests
-nvim tests/unit/your_module_spec.lua
+nvim tests/yoda/your_module_spec.lua
 
-# Run tests
+# Run one spec
+make test-file FILE=tests/yoda/your_module_spec.lua
+
+# Run all specs
 make test
 ```
 

@@ -1,4 +1,4 @@
--- tests/unit/git_refresh_spec.lua
+-- tests/yoda/git_refresh_spec.lua
 -- Unit tests for lua/yoda/git_refresh.lua
 
 describe("git_refresh", function()

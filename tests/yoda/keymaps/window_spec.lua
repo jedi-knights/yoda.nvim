@@ -1,4 +1,4 @@
--- tests/unit/keymaps/window_spec.lua
+-- tests/yoda/keymaps/window_spec.lua
 -- Verify window navigation keymaps are defined in the source file.
 
 describe("keymaps.window", function()
