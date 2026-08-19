@@ -1,8 +1,30 @@
 # Yoda.nvim - AI Assistant Context
 
+## Positioning (locked)
+
+**Yoda.nvim is an AI-first Neovim distribution.**
+
+The differentiator versus LazyVim is being opinionated toward AI-augmented
+development. Core ships the `nvim claude` / `nvim c` boot mode, `claudecode.nvim`
+integration, the reserved `<leader>a` namespace, and AI-workspace layout
+defaults. Language stacks (Rust, Python, Go, Node) are opt-in extras, not core.
+
+Do not propose changes that weaken this positioning without new evidence.
+
+## ICP (locked)
+
+**A public Neovim distribution with a LazyVim-parity install shape** — not a
+personal config, not "Omar's dotfiles packaged."
+
+Everything downstream inherits from this: release automation, per-plugin pinning
+discipline, docs quality, the semver contract, deprecation windows. If a change
+would only make sense for a personal config, stop and raise it.
+
 ## Project Overview
 
-Yoda.nvim is a comprehensive Neovim distribution focused on providing an excellent development experience with AI integration, LSP support, and modern development tools.
+Yoda.nvim is a comprehensive Neovim distribution focused on providing an
+excellent development experience with AI integration, LSP support, and modern
+development tools.
 
 ## Validation Commands
 
