@@ -59,7 +59,7 @@ intentionally after running `:Lazy sync` and verifying things still work.
 ENABLING AUTO-UPDATES                               *yoda-plugins-auto*
 
 If you want Lazy.nvim to check for updates automatically, edit
-`lua/lazy-plugins.lua` and set the checker options:
+`lua/config/lazy.lua` in your config and set the checker options:
 
 Option 1: Background update checker~
 >
