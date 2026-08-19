@@ -198,7 +198,7 @@ KEYMAPS CUSTOMIZATION                             *yoda-config-keymaps*
 
 Adding Custom Keymaps~
 
-Add your keymaps in lua/keymaps.lua:
+Add your keymaps from lua/plugins/overrides.lua in your config:
 >
     -- Custom keymap examples
     vim.keymap.set("n", "<leader>xx", ":MyCommand<CR>", 
@@ -240,7 +240,7 @@ PLUGIN MANAGEMENT                                 *yoda-config-plugins*
 
 Adding New Plugins~
 
-Add plugins to lua/plugins.lua:
+Add plugins to lua/plugins/overrides.lua in your config:
 >
     return {
       -- Existing plugins...

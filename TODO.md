@@ -10,14 +10,14 @@
 |---|---|
 | 2A entry points (`init.lua`, `config.lua`, `plugin/yoda.lua`, `doc/yoda.txt`) | ✅ done |
 | 2A `apply()` decoupling + `opts.defaults.*` gating | ✅ done |
-| 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ⛔ **blocked on Step 3** — deleting them breaks the only working install path until yoda-starter exists |
+| 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ✅ done — repo is now plugin-only |
 | 2A move sibling `yoda-*` specs out of `lazy-plugins.lua` | ✅ done — now `lua/yoda/plugins/foundation.lua` |
 | 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ✅ done — 18 core specs + 5 extras; `lua/plugins/` deleted |
 | 2C `opts` migration | ✅ done — no legacy read sites remain; `:checkhealth yoda` warns on leftovers |
 | 2D strip defensive `pcall` scaffolding | 🟡 8 → 1 in `init.lua`; the survivor guards user-authored `local.lua` and is deliberate |
 | 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
 | 2E delete `lua/custom/plugins/` | ✅ done — stub removed, import probed |
-| 2F docs rewrite | 🟡 "The yoda way", CLAUDE.md positioning/ICP and CONTRIBUTING done; install-model rewrite + migration guide ⛔ blocked on Step 3 |
+| 2F docs rewrite | ✅ done — install model rewritten, migration guide written |
 | 2G CI on plenary | ✅ done (smoke-test job still not added) |
 | 2H cut v1.0.0 | ❌ not cut — automation itself is proven (v0.2.0 → v0.3.1) |
 | Step 3A yoda-starter repo | ✅ **published** — https://github.com/jedi-knights/yoda-starter (public, template) |
@@ -96,7 +96,7 @@ Restructure the repo into a plugin-shaped distribution. Land as a **single conve
 - [x] Create `plugin/yoda.lua` — bootstrap user commands so lazy-loading works
 - [x] Create `doc/yoda.txt` — vimdoc help file; a full `doc/yoda-*.txt` tree now exists
 - [x] **DECIDED (a), done.** `lua/options.lua` → `lua/yoda/options.lua` and `lua/autocmds.lua` → `lua/yoda/autocmds.lua`, both with an explicit `apply()`; `lua/yoda/keymaps/init.lua` gains `apply()` + `M.modules`. `setup()` gates all three on `opts.defaults.*`, so those keys are real switches now rather than advisory metadata. `yoda.options.apply()` carries an idempotence guard — `init.lua` must apply options *before* `lazy.setup()` for the `vim.g.loaded_*` guards to bite, and `setup()` applies them again on the normal path.
-- [ ] ⛔ **BLOCKED — do not do this until Step 3A exists.** Deleting the top-level entry points removes the only working install path; yoda-starter has to be publishable first. `init.lua` has instead been reduced to 51 lines in the starter's own shape, so the Step 3 move is a copy rather than a rewrite.
+- [x] **DONE.** `init.lua`, `lua/lazy-bootstrap.lua` and `lua/lazy-plugins.lua` are deleted. The repo is a plugin only — it has no entry point and cannot be cloned into `~/.config/nvim`. Verified by booting yoda-starter against this tree: setup runs, 131 normal-mode keymaps, 16 `Yoda*` commands, tokyonight applies — identical to the pre-deletion baseline.
 - [x] **DONE.** The six sibling `yoda-*` specs are now `lua/yoda/plugins/foundation.lua` (19 core spec files). `lua/lazy-plugins.lua` is down to 83 lines and holds only imports plus the `lazy.setup()` tuning (`performance`, `disabled_plugins`, `ui`, `change_detection`) — all of which is the starter's job in Step 3.
 
   **Finding, not yet acted on:** `YODA_DEV_LOCAL` points at `$HOME/src/github/jedi-knights` (no `.com`), which does not exist on this machine — the real checkout root is `$HOME/src/github.com/jedi-knights`, and none of the six siblings are cloned anywhere locally. `README.md:265-270` documents the same no-`.com` path, so it is consistent rather than a typo in one place. Left exactly as-is in the move and pinned by a test; decide whether to correct the path or the README before Step 3.
@@ -197,9 +197,9 @@ Load-order note: with `opts` there's no more scheduled block dance. The `opts` m
 
 ### Step 2F: Docs
 
-- [ ] ⛔ **BLOCKED on Step 3A.** Rewrite `README.md` for the plugin+starter install model. The install snippet must point at yoda-starter, which does not exist yet — documenting a clone URL that 404s is worse than leaving the current instructions, which at least work.
+- [x] **DONE.** `README.md`, `doc/yoda.txt`, `doc/yoda-installation.txt`, `doc/yoda-troubleshooting.txt`, `doc/yoda-configuration.txt`, `doc/yoda-plugins.txt` and `doc/yoda-lsp.txt` all describe the starter install. `doc/yoda-installation.txt` now offers three methods: clone the starter, use the GitHub template, or trial side-by-side with `NVIM_APPNAME`.
 - [x] **DONE.** "The yoda way" section in `README.md` covering the four opinions that distinguish yoda: the `nvim claude` / `nvim c` boot mode, the reserved `<leader>a` namespace, opt-in language extras, and `opts`-based config. The intro now leads with AI-first positioning rather than "beginner-friendly setup". Internal anchors verified.
-- [ ] ⛔ **BLOCKED on Step 3A.** Migration guide for v0.1.0 users — same reason: the migration target does not exist yet.
+- [x] **DONE.** "Upgrading from v0.x" in `README.md`: six steps, a full `vim.g.yoda_*` → `opts` mapping table for all 13 keys, a pointer to `:checkhealth yoda` for finding missed globals, a note that language extras are now opt-in (the likeliest "something vanished" cause), and a stay-on-v0.x escape hatch pinning the `v0.1.0` tag.
 - [x] **DONE.** `CONTRIBUTING.md` names the plenary/busted runner and the `tests/minimal_init.lua` bootstrap. The neospec `make install` step it warned about was already gone (removed in `dea6a97`); nothing referenced it.
 - [x] **DONE.** `CLAUDE.md` now opens with the locked Positioning and ICP sections, both marked as not-to-be-relitigated.
 

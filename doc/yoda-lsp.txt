@@ -90,7 +90,7 @@ Key Components~
 File Structure~
 >
     lua/yoda/lsp.lua           Main LSP configuration
-    lua/plugins.lua            LSP plugin specifications
+    lua/yoda/plugins/mason.lua LSP plugin specifications
     lua/yoda/commands.lua      LSP-related commands
 <
 

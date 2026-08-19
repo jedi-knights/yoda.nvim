@@ -61,37 +61,47 @@ Fedora/RHEL:
 ==============================================================================
 QUICK INSTALLATION                               *yoda-installation-quick*
 
-Method 1: Git Clone (Recommended)~
+Yoda.nvim is a plugin. The config you clone and own is yoda-starter:
+
+    https://github.com/jedi-knights/yoda-starter
+
+lazy.nvim installs and updates yoda.nvim itself, like any other plugin.
+
+Method 1: Clone the Starter (Recommended)~
 >
-    # Backup existing config (optional)
-    mv ~/.config/nvim ~/.config/nvim.backup
-    
-    # Clone the repository
-    git clone https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
-    
-    # Start Neovim
+    # Back up anything you already have
+    mv ~/.config/nvim ~/.config/nvim.bak
+    mv ~/.local/share/nvim ~/.local/share/nvim.bak
+
+    # Clone the starter and take ownership of it
+    git clone https://github.com/jedi-knights/yoda-starter ~/.config/nvim
+    rm -rf ~/.config/nvim/.git
+
     nvim
 <
 
-Method 2: Shallow Clone (Faster)~
+Method 2: Use the GitHub Template~
+
+yoda-starter is a template repository. Click "Use this template" on GitHub
+to create your own copy, then clone that instead — your configuration lives
+in your own repo with its own history.
 >
-    # Shallow clone for faster download
-    git clone --depth=1 https://github.com/jedi-knights/yoda.nvim ~/.config/nvim
-    
-    # Start Neovim  
+    git clone https://github.com/<you>/<your-config> ~/.config/nvim
     nvim
 <
 
-Method 3: Manual Installation~
+Method 3: Side-by-side Trial~
+
+NVIM_APPNAME keeps this entirely separate from an existing ~/.config/nvim:
 >
-    # Create Neovim config directory
-    mkdir -p ~/.config/nvim
-    
-    # Download and extract
-    curl -L https://github.com/jedi-knights/yoda.nvim/archive/main.tar.gz | tar -xz
-    mv yoda.nvim-main/* ~/.config/nvim/
-    rm -rf yoda.nvim-main
+    git clone https://github.com/jedi-knights/yoda-starter ~/.config/yoda
+    NVIM_APPNAME=yoda nvim
 <
+Remove ~/.config/yoda and ~/.local/share/yoda to undo it.
+
+NOTE: cloning jedi-knights/yoda.nvim into ~/.config/nvim was the
+pre-v1.0.0 install path and no longer works — that repository has no
+init.lua. See the project README for upgrade instructions.
 
 ==============================================================================
 FIRST LAUNCH                                   *yoda-installation-first-launch*
