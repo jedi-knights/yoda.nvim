@@ -18,8 +18,17 @@ local NOTIFICATION_TIMEOUT_MS = 2000 -- Environment notification timeout
 --- Show environment notification on startup
 --- Displays which mode Yoda is running in (Home/Work)
 M.show_notification = function()
-  local yoda_config = vim.g.yoda_config
-  if not (yoda_config and yoda_config.show_environment_notification) then
+  -- Dual-read: prefer resolved opts, fall back to vim.g. Both paths gate
+  -- the notification behind `show_environment_notification`.
+  local resolved = require("yoda.config").get()
+  local should_show
+  if resolved then
+    should_show = resolved.ui and resolved.ui.show_environment_notification
+  else
+    local yoda_config = vim.g.yoda_config
+    should_show = yoda_config and yoda_config.show_environment_notification
+  end
+  if not should_show then
     return
   end
 
