@@ -107,9 +107,16 @@ function M.apply()
   vim.opt.showtabline = 0 -- Hide tabline (use :bnext/:bprev)
   vim.opt.confirm = true -- prompt to save instead of refusing to quit
   vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
-  vim.opt.pumborder = "rounded" -- bordered completion popup menu (Neovim 0.12+)
-  -- global rounded borders for all floating windows (Neovim 0.12+)
-  vim.opt.winborder = "rounded"
+  -- pumborder/winborder are Neovim 0.12+. yoda's declared minimum is 0.10.1,
+  -- and setting an unknown option raises "Invalid option (not found)" -- which
+  -- would abort apply() partway and take every option after this point with
+  -- it. Probe before setting rather than assuming the newer build.
+  if vim.fn.exists("&pumborder") == 1 then
+    vim.opt.pumborder = "rounded" -- bordered completion popup menu
+  end
+  if vim.fn.exists("&winborder") == 1 then
+    vim.opt.winborder = "rounded" -- rounded borders for all floating windows
+  end
 
   -- ============================================================================
   -- BACKUP & SHADA

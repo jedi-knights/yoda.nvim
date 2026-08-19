@@ -50,6 +50,31 @@ describe("yoda.options", function()
     assert.is_true(vim.opt.expandtab:get())
   end)
 
+  it(
+    "does not raise on a Neovim older than the newest options it sets",
+    function()
+      -- Regression guard: pumborder/winborder are 0.12+, but yoda supports
+      -- 0.10.1+. Setting an unknown option raises and aborts the rest of
+      -- apply(), so these must be probed rather than assumed.
+      -- Act / Assert
+      assert.has_no.errors(function()
+        options.apply()
+      end)
+    end
+  )
+
+  it("only sets 0.12+ options when the running Neovim has them", function()
+    -- Act
+    options.apply()
+
+    -- Assert
+    if vim.fn.exists("&winborder") == 1 then
+      -- vim.o, not vim.opt: winborder is list-like, so opt:get() returns
+      -- { "rounded" } rather than the string.
+      assert.equals("rounded", vim.o.winborder)
+    end
+  end)
+
   it("seeds vim.g.yoda_config only when unset", function()
     -- Arrange
     vim.g.yoda_config = { verbose_startup = true }
