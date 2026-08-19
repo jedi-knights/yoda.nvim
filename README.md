@@ -224,26 +224,34 @@ Open any topic with `:help <tag>` inside Neovim.
 Yoda.nvim uses a modular architecture:
 
 ```
-~/.config/nvim/
-├── init.lua                 # Entry point
+yoda.nvim/
+├── init.lua                 # Config entry point (becomes yoda-starter's in v1.0.0)
 ├── lua/
-│   ├── options.lua          # Neovim options
-│   ├── autocmds.lua         # Auto-commands
-│   ├── lazy-plugins.lua     # Lazy.nvim + plugin setup
-│   ├── lazy-bootstrap.lua   # Lazy.nvim bootstrap
-│   ├── plugins/             # One file per plugin
-│   ├── custom/plugins/      # User-local plugin overrides (gitignored)
-│   └── yoda/
-│       ├── keymaps/         # Domain-grouped keymap modules
+│   ├── lazy-bootstrap.lua   # lazy.nvim bootstrap
+│   ├── lazy-plugins.lua     # lazy.nvim setup + spec imports
+│   └── yoda/                # ── the plugin ──
+│       ├── init.lua         # Public API: setup(opts)
+│       ├── config.lua       # Defaults schema, merge, validation
+│       ├── options.lua      # Distribution vim.opt defaults — apply()
+│       ├── autocmds.lua     # Non-plugin autocommands — apply()
+│       ├── health.lua       # :checkhealth yoda
+│       ├── plugins/         # Core plugin specs, one plugin per file
+│       ├── extras/lang/     # Opt-in language stacks (lua/rust/python/go/node)
+│       ├── core/            # Pure logic — no vim.api, headless-testable
+│       ├── ui/              # vim.api wiring (autocmds, buffers, notifications)
+│       ├── keymaps/         # Domain-grouped keymap modules — apply()
 │       ├── commands/        # User-facing Ex commands
 │       ├── buffer/          # Buffer state utilities
 │       ├── filetype/        # Filetype detection & settings
 │       ├── integrations/    # Third-party plugin wiring
-│       ├── testing/         # Test configuration defaults
-│       ├── lsp.lua          # LSP setup
-│       ├── environment.lua  # Home/work environment detection
-│       └── [other modules]  # Specialised functionality
+│       └── testing/         # Test configuration defaults
+├── plugin/yoda.lua          # Bootstrap commands, so lazy-loading works
+└── doc/                     # :help yoda
 ```
+
+Personal plugin overrides go in `lua/custom/plugins/*.lua` — gitignored and
+untracked, so nothing ships to consumers. In v1.0.0 this becomes the starter's
+`lua/plugins/overrides.lua`.
 
 ## ⚙️ Quick Configuration
 
