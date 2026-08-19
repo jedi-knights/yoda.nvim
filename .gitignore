@@ -54,5 +54,8 @@ benchmarks/temp/
 coverage/
 
 
-# Task tracking (local only)
-TODO.md
+# Task tracking (local only) — /TODO.md is deliberately committed for the
+# v1.0.0 restructure handoff (see the file's header for rationale). Ignore
+# ephemeral session TODO.md files anywhere under subdirectories.
+**/TODO.md
+!/TODO.md
