@@ -26,12 +26,13 @@ Yoda.nvim is a comprehensive Neovim distribution focused on providing an excelle
 
 ### Testing
 ```bash
-make test              # Run all specs with coverage (via neospec)
-make test-verbose      # Run with verbose output (for CI/debugging)
+make test                          # Run all specs via plenary.nvim
+make test-file FILE=tests/yoda/x_spec.lua   # Run a single spec
 ```
-- Test runner: `neospec` (binary installed via `make install`)
-- Spec discovery and coverage settings live in `neospec.toml`
-- Specs use plenary-style `describe` / `it` blocks under `tests/unit/**/*_spec.lua`
+- Test runner: `plenary.busted` (`PlenaryBustedDirectory`) — no Go toolchain
+- Bootstrap: `tests/minimal_init.lua` locates plenary at `$PLENARY_PATH`, `/tmp/plenary.nvim`, or the local lazy install (falls back to a one-shot lazy install for fresh clones)
+- Specs live under `tests/yoda/**/*_spec.lua`, mirroring `lua/yoda/`
+- CI clones plenary to `/tmp/plenary.nvim` before invoking `make test`
 
 ### Linting
 ```bash
@@ -43,7 +44,6 @@ make format            # Auto-format code with stylua
 
 ### Other Available Commands
 ```bash
-make install           # Install / update the neospec test runner
 make benchmark         # Run all performance benchmarks
 make benchmark-startup # Startup time
 make benchmark-buffers # Buffer switching
@@ -64,11 +64,11 @@ make help              # Show all available commands
 
 ## Testing Framework
 
-- Runner: `neospec` (Go binary) — configured by `neospec.toml`, bootstrapped by `tests/minimal_init_fast.lua`
-- Specs use plenary-style `describe` / `it` blocks
-- Test files mirror the `lua/` directory structure in `tests/unit/`
-- Coverage is collected for `lua/yoda/` and written to `coverage/` in `console` and `lcov` formats
-- Mock patterns are used for external dependencies
+- Runner: `plenary.busted` (`PlenaryBustedDirectory`) — bootstrapped by `tests/minimal_init.lua`
+- Specs use plenary-style `describe` / `it` / `before_each` / `after_each` blocks
+- Test files mirror the `lua/` directory structure in `tests/yoda/`
+- Coverage is not collected in v1.0.0 (luacov integration deferred; see `ARCHITECTURE.md`)
+- Mock patterns are used for external dependencies; the `yoda-*.nvim` sibling plugins are stubbed via `package.preload` in `tests/minimal_init.lua`
 
 ## Architecture Notes
 

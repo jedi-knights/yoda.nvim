@@ -1,4 +1,4 @@
--- tests/unit/buffer/state_checker_spec.lua
+-- tests/yoda/buffer/state_checker_spec.lua
 -- Tests for buffer state checker module
 
 local helpers = require("tests.helpers")

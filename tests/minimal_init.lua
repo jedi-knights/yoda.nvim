@@ -1,5 +1,6 @@
--- Fast minimal init.lua for running tests
--- Optimized version that skips unnecessary plugin loading
+-- Minimal init for plenary.nvim-based test runs.
+-- Boots yoda's runtimepath, locates plenary, and stubs the yoda-* sibling
+-- plugins so unit tests can run in isolation.
 
 -- Get the root directory
 local root = vim.fn.fnamemodify(vim.fn.getcwd(), ":p")
@@ -8,9 +9,13 @@ local root = vim.fn.fnamemodify(vim.fn.getcwd(), ":p")
 vim.opt.runtimepath:prepend(root)
 vim.opt.runtimepath:append(root .. "/lua")
 
--- Set up package.path to find yoda modules
-package.path = package.path .. ";" .. root .. "/lua/?.lua"
-package.path = package.path .. ";" .. root .. "/lua/?/init.lua"
+-- Prepend the repo's lua/ to package.path so require() finds our copy
+-- before any personal ~/.config/nvim install of yoda that sits earlier in rtp.
+package.path = root
+  .. "/lua/?.lua;"
+  .. root
+  .. "/lua/?/init.lua;"
+  .. package.path
 
 -- Minimal Neovim settings for testing
 vim.opt.swapfile = false
@@ -54,44 +59,50 @@ vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.loaded_netrwSettings = 1
 
--- Fast bootstrap for plenary only (if needed)
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-local plenary_path = vim.fn.stdpath("data") .. "/lazy/plenary.nvim"
+-- Locate plenary. CI clones it to /tmp/plenary.nvim before invoking; local dev
+-- typically has it under lazy.nvim's data dir. Fall back to a one-shot install
+-- via lazy so a fresh `make test` on a new machine still works.
+-- Empty-string fallback: ipairs stops on the first nil, so an unset
+-- PLENARY_PATH would silently skip the /tmp and lazy candidates.
+local plenary_candidates = {
+  os.getenv("PLENARY_PATH") or "",
+  "/tmp/plenary.nvim",
+  vim.fn.stdpath("data") .. "/lazy/plenary.nvim",
+}
+local plenary_ready = false
+for _, path in ipairs(plenary_candidates) do
+  if path ~= "" and vim.uv.fs_stat(path) then
+    vim.opt.rtp:prepend(path)
+    -- --noplugin skips plugin/plenary.vim; source it explicitly so
+    -- PlenaryBustedDirectory / PlenaryBustedFile get registered.
+    vim.cmd("runtime plugin/plenary.vim")
+    plenary_ready = true
+    break
+  end
+end
 
--- Only install if plenary is missing
-if not vim.uv.fs_stat(plenary_path) then
-  -- Bootstrap lazy.nvim if not present
+if not plenary_ready then
+  local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
   if not vim.uv.fs_stat(lazypath) then
     vim.fn.system({
       "git",
       "clone",
       "--filter=blob:none",
-      "https://github.com/folke/lazy.nvim.git",
       "--branch=stable",
+      "https://github.com/folke/lazy.nvim.git",
       lazypath,
     })
   end
   vim.opt.rtp:prepend(lazypath)
-
-  -- Install only plenary
   require("lazy").setup({
-    {
-      "nvim-lua/plenary.nvim",
-      lazy = false,
-    },
+    { "nvim-lua/plenary.nvim", lazy = false },
   }, {
     install = { missing = true },
     ui = { border = "rounded" },
-    checker = { enabled = false }, -- Skip update checks
-    change_detection = { enabled = false }, -- Skip file watching
-    performance = {
-      cache = { enabled = false }, -- Skip cache for faster startup
-    },
+    checker = { enabled = false },
+    change_detection = { enabled = false },
+    performance = { cache = { enabled = false } },
   })
-else
-  -- Plenary already exists, just add it to runtimepath
-  vim.opt.rtp:prepend(lazypath)
-  vim.opt.rtp:prepend(plenary_path)
 end
 
 -- Note: vim.cmd mocking removed - was causing exit code issues in CI

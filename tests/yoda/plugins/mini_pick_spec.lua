@@ -1,4 +1,4 @@
--- tests/unit/plugins/mini_pick_spec.lua
+-- tests/yoda/plugins/mini_pick_spec.lua
 -- Validates mini.pick and mini.extra plugin specs are correctly defined.
 
 describe("mini.pick plugin spec", function()
