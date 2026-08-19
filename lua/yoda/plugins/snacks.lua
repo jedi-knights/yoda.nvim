@@ -1,4 +1,4 @@
--- lua/plugins/snacks.lua
+-- lua/yoda/plugins/snacks.lua
 
 return {
   "folke/snacks.nvim",

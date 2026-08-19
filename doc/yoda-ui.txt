@@ -19,7 +19,7 @@ Yoda.nvim uses `snacks.notifier` (from folke/snacks.nvim) as the
   * History         Scrollable history buffer via `snacks.notifier.show_history()`
   * Dismiss         All active notifications via `snacks.notifier.hide()`
 
-Configuration lives in `lua/plugins/snacks.lua` under the `notifier` key:
+Configuration lives in `lua/yoda/plugins/snacks.lua` under the `notifier` key:
 >lua
     notifier = {
       enabled  = true,
@@ -87,7 +87,7 @@ Confirm snacks is loaded and the notifier module is enabled:
     :checkhealth snacks
 <
 If `snacks.notifier` is `nil`, verify the `notifier.enabled = true`
-setting in `lua/plugins/snacks.lua`.
+setting in `lua/yoda/plugins/snacks.lua`.
 
 Cmdline row keeps reappearing~
 

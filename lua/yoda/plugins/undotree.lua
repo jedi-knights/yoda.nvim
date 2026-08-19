@@ -1,4 +1,4 @@
--- lua/plugins/undotree.lua
+-- lua/yoda/plugins/undotree.lua
 -- Built-in undotree (Neovim 0.12+), loaded via :packadd
 
 return {

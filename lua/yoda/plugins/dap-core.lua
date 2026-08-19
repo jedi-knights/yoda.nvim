@@ -1,11 +1,11 @@
--- lua/plugins/nvim-dap.lua
+-- lua/yoda/plugins/dap-core.lua
 -- DAP core: nvim-dap + dap-ui + virtual text + shared keymaps + launch.json
--- loading + dapui autolisteners. Per-language adapters live in sibling files:
---   - plugins/nvim-dap-python.lua
---   - plugins/nvim-dap-go.lua
--- JS/TS adapter+configuration wiring stays here for now; it has no dedicated
--- language plugin spec to hang off and moves to `extras/lang/node.lua` in
--- Phase 2 of the v1.0.0 restructure.
+-- loading + dapui autolisteners.
+--
+-- Per-language adapters are opt-in extras, not core -- see
+-- lua/yoda/extras/lang/{python,go,node}.lua. They attach by registering a
+-- configurator with yoda.core.dap_registry, which this spec drains at the
+-- end of its config.
 
 return {
   {
@@ -198,86 +198,10 @@ return {
         dapui.close()
       end
 
-      -- JS/TS: register vscode-js-debug adapters directly (no wrapper plugin).
-      -- mxsdev/nvim-dap-vscode-js was abandoned in 2023; its only role was
-      -- calling dap.adapters[name] = { type = "server", ... } for each pwa-*
-      -- type, which we do here instead. The adapter binary is still managed
-      -- by mason-nvim-dap (js-debug-adapter in ensure_installed). Moves to
-      -- extras/lang/node.lua in Phase 2 of the v1.0.0 restructure.
-      local mason_ok, mason_registry = pcall(require, "mason-registry")
-      if mason_ok then
-        local pkg_ok, pkg =
-          pcall(mason_registry.get_package, "js-debug-adapter")
-        if pkg_ok and pkg and pkg:is_installed() then
-          local debugger_path = pkg:get_install_path()
-            .. "/js-debug/src/dapDebugServer.js"
-          for _, adapter in ipairs({
-            "pwa-node",
-            "pwa-chrome",
-            "pwa-msedge",
-            "node-terminal",
-            "pwa-extensionHost",
-          }) do
-            dap.adapters[adapter] = {
-              type = "server",
-              host = "localhost",
-              port = "${port}",
-              executable = {
-                command = "node",
-                args = { debugger_path, "${port}" },
-              },
-            }
-          end
-
-          for _, language in ipairs({
-            "typescript",
-            "javascript",
-            "typescriptreact",
-            "javascriptreact",
-          }) do
-            dap.configurations[language] = {
-              -- Node.js debugging
-              {
-                type = "pwa-node",
-                request = "launch",
-                name = "Launch file",
-                program = "${file}",
-                cwd = "${workspaceFolder}",
-              },
-              {
-                type = "pwa-node",
-                request = "attach",
-                name = "Attach",
-                processId = require("dap.utils").pick_process,
-                cwd = "${workspaceFolder}",
-              },
-              -- Jest debugging
-              {
-                type = "pwa-node",
-                request = "launch",
-                name = "Debug Jest Tests",
-                runtimeExecutable = "node",
-                runtimeArgs = {
-                  "./node_modules/jest/bin/jest.js",
-                  "--runInBand",
-                },
-                rootPath = "${workspaceFolder}",
-                cwd = "${workspaceFolder}",
-                console = "integratedTerminal",
-                internalConsoleOptions = "neverOpen",
-              },
-              -- Chrome debugging
-              {
-                type = "pwa-chrome",
-                request = "launch",
-                name = "Launch Chrome",
-                url = "http://localhost:3000",
-                webRoot = "${workspaceFolder}",
-              },
-            }
-          end
-        end
-      end
+      -- Per-language adapters (extras/lang/*) contribute here rather than
+      -- re-declaring this spec: lazy.nvim overwrites `config` on a repeat
+      -- plugin definition instead of merging it.
+      require("yoda.core.dap_registry").apply(dap)
     end,
   },
 }

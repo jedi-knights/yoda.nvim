@@ -6,7 +6,7 @@ end
 -- NOTE: hunk-level operations (<leader>hp preview, <leader>tb toggle blame,
 -- etc.)
 -- are registered as buffer-local keymaps inside the gitsigns on_attach callback
--- in lua/plugins/git.lua. Global duplicates have been removed.
+-- in lua/yoda/plugins/git.lua. Global duplicates have been removed.
 
 map("n", "<leader>gg", function()
   require("neogit").open()

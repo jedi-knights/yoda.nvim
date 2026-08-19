@@ -5,7 +5,7 @@ describe("mini.pick plugin spec", function()
   local specs
 
   before_each(function()
-    specs = dofile(vim.fn.getcwd() .. "/lua/plugins/mini.lua")
+    specs = dofile(vim.fn.getcwd() .. "/lua/yoda/plugins/mini.lua")
   end)
 
   --- Find a spec entry by its plugin name (first element).
