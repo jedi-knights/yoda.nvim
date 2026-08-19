@@ -172,6 +172,11 @@ Then create a Pull Request on GitHub.
 
 ### Running Tests
 
+Tests run on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)'s busted
+harness. `tests/minimal_init.lua` locates plenary at `$PLENARY_PATH`,
+`/tmp/plenary.nvim`, or the local lazy install, falling back to a one-shot lazy
+install on a fresh clone — so `make test` works with no out-of-band setup step.
+
 ```bash
 make test           # Run all tests
 <leader>tt          # From Neovim: run current test file
