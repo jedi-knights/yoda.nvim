@@ -1,7 +1,25 @@
 # yoda.nvim — v1.0.0 restructure handoff
 
-**Status:** Step 1 done. Steps 2 and 3 remain.
+**Status:** Step 1 done. Step 2 partially done — 2A entry points, 2D test-runner swap and 2G CI have landed; **2B (spec move to `lua/yoda/plugins/` + `extras/lang/`) has not started and is the biggest remaining chunk.** Step 3 not started.
 **Written:** 2026-08-18 after `/architect grill` session that decided the v1.0.0 direction.
+**Last audited:** 2026-08-19 against `main` @ `1e0ef8b`. Re-audit before trusting the checkboxes below — they drift.
+
+### Remaining at a glance
+
+| Item | State |
+|---|---|
+| 2A entry points (`init.lua`, `config.lua`, `plugin/yoda.lua`, `doc/yoda.txt`) | ✅ done |
+| 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ❌ remain |
+| 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ❌ **not started** (both dirs empty; 25 specs still in `lua/plugins/`) |
+| 2C `opts` migration | 🟡 dual-read + health check landed; legacy `vim.g.yoda_*` readers remain |
+| 2D strip defensive `pcall` scaffolding | ❌ 8 `pcall`s still in top-level `init.lua` |
+| 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
+| 2E delete `lua/custom/plugins/` | ❌ remains |
+| 2F docs rewrite | ❌ `README.md:59` still shows the old clone-into-nvim-config install |
+| 2G CI on plenary | ✅ done (smoke-test job still not added) |
+| 2H cut v1.0.0 | ❌ not cut — automation itself is proven (v0.2.0 → v0.3.1) |
+| Step 3 yoda-starter | ❌ repo does not exist yet |
+
 **For future Claude:** read this file top-to-bottom before touching any code. All context needed to resume is here or linked from here. This is a **persistent handoff document**, not the ephemeral session `TODO.md` referenced in the root `CLAUDE.md` — that convention was for in-session scratch; this file overrides it for the duration of the v1.0.0 restructure.
 
 ---
@@ -56,7 +74,9 @@ Differentiator vs LazyVim: opinionated toward AI-augmented development. Core shi
 - ✅ `v0.1.0` annotated tag pushed to origin, pointing at `3c5bc76`; tag message contains grill summary — `git show v0.1.0` to read
 - ✅ Release workflow verified to run without cutting a spurious release
 
-**⚠️ Caveat to validate on Step 2:** On the first workflow run (before v0.1.0 tag was pushed), go-semantic-release logged `analyzed commits total=933 parsed=933 → No releasable changes found` despite plenty of `feat:` / `fix:` commits in history. Likely explanation: needs an existing baseline tag before it will cut. Now that v0.1.0 exists, the Step 2 `feat!:` commit **should** trigger v1.0.0. If it doesn't after merging Step 2's PR, add a `.releaserc.json` (or equivalent go-semantic-release config file) tuning `initial-version` or branch rules before continuing. Reference other repos' configs for the pattern.
+**✅ Caveat RESOLVED (2026-08-19):** go-semantic-release now cuts releases normally — `v0.2.0`, `v0.3.0` and `v0.3.1` were all computed from conventional commits after the `v0.1.0` baseline existed. The baseline-tag theory below was correct. Publish config was further fixed by PR #74 (owner/repo env) and PR #76 (`.semantic-release.yaml`). No `.releaserc.json` tuning is needed; the Step 2 `feat!:` commit should bump to v1.0.0 cleanly.
+
+**⚠️ Original caveat, kept for context:** On the first workflow run (before v0.1.0 tag was pushed), go-semantic-release logged `analyzed commits total=933 parsed=933 → No releasable changes found` despite plenty of `feat:` / `fix:` commits in history. Likely explanation: needs an existing baseline tag before it will cut. Now that v0.1.0 exists, the Step 2 `feat!:` commit **should** trigger v1.0.0. If it doesn't after merging Step 2's PR, add a `.releaserc.json` (or equivalent go-semantic-release config file) tuning `initial-version` or branch rules before continuing. Reference other repos' configs for the pattern.
 
 ---
 
@@ -68,14 +88,16 @@ Restructure the repo into a plugin-shaped distribution. Land as a **single conve
 
 ### Step 2A: New plugin entry points
 
-- [ ] Create `lua/yoda/init.lua` — public API returning `setup(opts)`; delegates to `config` / `plugins` / etc. per `nvim-lua.md` plugin architecture rule
-- [ ] Create `lua/yoda/config.lua` — defaults + `vim.tbl_deep_extend("force", defaults, opts)` merge; also validates with `vim.validate` per rule
-- [ ] Create `plugin/yoda.lua` — bootstrap user commands (`:Yoda`, `:YodaExtras`, etc.) so lazy-loading works
-- [ ] Create `doc/yoda.txt` — vimdoc help file, `:help yoda` becomes discoverable
+- [x] Create `lua/yoda/init.lua` — public API returning `setup(opts)` (landed in `ea15fff`, PR #73)
+- [x] Create `lua/yoda/config.lua` — defaults + merge + `vim.validate`; schema and health check landed in `7739e66` (PR #72)
+- [x] Create `plugin/yoda.lua` — bootstrap user commands so lazy-loading works
+- [x] Create `doc/yoda.txt` — vimdoc help file; a full `doc/yoda-*.txt` tree now exists
 - [ ] Delete top-level `init.lua`, `lua/lazy-bootstrap.lua`, `lua/lazy-plugins.lua` — these move to yoda-starter's job
 - [ ] `lua/options.lua` and `lua/autocmds.lua` — decision needed: (a) stay as yoda-owned modules that `setup()` calls, or (b) move to yoda-starter. Recommend (a) — they're distribution-level defaults, not user config
 
 ### Step 2B: Move + split plugin specs to `lua/yoda/plugins/`
+
+**Status (2026-08-19): NOT STARTED — this is the biggest remaining chunk.** `lua/yoda/plugins/` and `lua/yoda/extras/` both exist but are empty; all 25 specs still live in `lua/plugins/`. The *language split* has been done (`a5be8cf` split the bundled DAP + testing specs into `neotest-go.lua`, `neotest-node.lua`, `neotest-python.lua`, `nvim-dap-go.lua`, `nvim-dap-python.lua`), so the adapters are already separated — they just need to **move** into `lua/yoda/extras/lang/` and be gated behind `opts.extras`. The core specs need to move into `lua/yoda/plugins/`.
 
 Per `nvim-lazy.md` rule: **one plugin per file for logical groups.** Current 22 files → 17 core specs (splitting bundled ones):
 
@@ -117,7 +139,16 @@ Per `nvim-lazy.md` rule: **one plugin per file for logical groups.** Current 22 
 
 ### Step 2C: Config vessel migration (`vim.g.yoda_*` → `opts`)
 
-Grep for every `vim.g.yoda_*` usage and migrate to `opts.<name>` via the `require("yoda").setup(opts)` path.
+**Status (2026-08-19): partially done.** `lua/yoda/config.lua` provides the schema + resolved-`opts` accessor, `lua/yoda/health.lua` warns on legacy globals, and readers were migrated to *dual-read* (`7739e66`). What remains is **removing the legacy leg** — that removal is what makes the release breaking.
+
+Legacy `vim.g.yoda_*` readers still present:
+- [ ] `lua/options.lua:160` — seeds `vim.g.yoda_config`
+- [ ] `lua/yoda/ui/environment.lua:28`
+- [ ] `lua/yoda/core/yaml_parser.lua:29,35,40`
+- [ ] `lua/yoda/testing/defaults.lua:55`
+- [ ] `init.lua:96` — `vim.g.yoda_large_file`
+
+Original notes:
 
 Known globals (grep to confirm — this list may be incomplete):
 - [ ] `vim.g.yoda_large_file` → `opts.large_file` (see `init.lua:93` and `lua/yoda/large_file.lua`)
@@ -129,7 +160,8 @@ Load-order note: with `opts` there's no more scheduled block dance. The `opts` m
 ### Step 2D: Parked tactical decisions (from grill Unresolved section)
 
 - [ ] **Strip defensive `pcall`-around-every-module scaffolding** from the current `init.lua`. Public distributions **fail loud** (assert/error surfacing at the boundary), not silently-degrade. Current pattern is a personal-config habit that hides regressions from contributors. Convert to plain `require()` + let errors propagate; the plugin lifecycle boundary handles them.
-- [ ] **Swap `neospec` (custom Go binary test runner) → `plenary.nvim`** for the test suite. Rationale: `plenary.nvim` requires zero out-of-band install step — lazy.nvim fetches it like any other plugin dependency — whereas `neospec` always needs a separate install step before `make test` works. Update `Makefile` (currently `go install github.com/jedi-knights/neospec/cmd/neospec@latest` — could switch to `brew install jedi-knights/tap/neospec` now that the formula is published, but that's still an extra manual step `plenary.nvim` doesn't need), `.github/workflows/ci.yml` (currently uses `jedi-knights/neospec@v0.1.4`), `tests/minimal_init_fast.lua`, `neospec.toml` (delete).
+- [x] **DONE (`dea6a97`, PR #66) — swapped `neospec` (custom Go binary test runner) → `plenary.nvim`.** `Makefile` and `.github/workflows/ci.yml` now run plenary; `neospec.toml` is gone. `.github/workflows/badge.yaml` still installs neospec for the coverage badge (`121e810`) — that is deliberate, plenary has no coverage story. Original rationale kept below.
+- [ ] ~~**Swap `neospec` (custom Go binary test runner) → `plenary.nvim`**~~ for the test suite. Rationale: `plenary.nvim` requires zero out-of-band install step — lazy.nvim fetches it like any other plugin dependency — whereas `neospec` always needs a separate install step before `make test` works. Update `Makefile` (currently `go install github.com/jedi-knights/neospec/cmd/neospec@latest` — could switch to `brew install jedi-knights/tap/neospec` now that the formula is published, but that's still an extra manual step `plenary.nvim` doesn't need), `.github/workflows/ci.yml` (currently uses `jedi-knights/neospec@v0.1.4`), `tests/minimal_init_fast.lua`, `neospec.toml` (delete).
 
   **Update, 2026-08-19:** the `brew install jedi-knights/tap/neospec` path documented in neospec's README was previously dead — the formula was never published (`jedi-knights/homebrew-tap`'s `Formula/` had no `neospec.rb`, and GoReleaser had no `brews:` block to generate one). Fixed via [neospec#26](https://github.com/jedi-knights/neospec/pull/26) (adds the `brews:` block + `HOMEBREW_TAP_GITHUB_TOKEN` so future releases auto-publish) and [homebrew-tap#4](https://github.com/jedi-knights/homebrew-tap/pull/4) (backfilled `Formula/neospec.rb` for the existing v0.4.0 release, checksums verified against the real release asset). Both merged 2026-08-19 — `brew install jedi-knights/tap/neospec` now actually works. This does not change the recommendation above: the zero-out-of-band-install argument for `plenary.nvim` still holds regardless of which install method `neospec` offers.
 
@@ -147,12 +179,13 @@ Load-order note: with `opts` there's no more scheduled block dance. The `opts` m
 
 ### Step 2G: CI updates
 
-- [ ] Update `.github/workflows/ci.yml`:
-  - Test job: swap `jedi-knights/neospec@v0.1.4` step → run plenary via `nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/"` or similar
-  - Consider adding a smoke-test job: install yoda-the-plugin in a fresh Neovim + yoda-starter layout, boot, verify `:Yoda` commands work, verify no errors on VimEnter
+- [x] Update `.github/workflows/ci.yml` — test job now clones plenary to `/tmp/plenary.nvim` and runs `make test`; the `jedi-knights/neospec@v0.1.4` action is gone
+- [ ] Still to do — add a smoke-test job: install yoda-the-plugin in a fresh Neovim + yoda-starter layout, boot, verify `:Yoda` commands work, verify no errors on VimEnter
 - [ ] Verify release workflow still works after the restructure (the ci.yml changes may need corresponding release.yml tweaks if the CI job names change)
 
 ### Step 2H: Verify release automation (THE big validation moment)
+
+**Release automation is already proven** — `v0.2.0`, `v0.3.0`, `v0.3.1` were cut automatically from conventional commits. The remaining risk is only whether `feat!:` produces a *major* bump.
 
 - [ ] Merge PR for `feat!: repackage as installable plugin`
 - [ ] Watch the Release workflow run — should compute v1.0.0 from the `feat!:` marker (breaking change → major bump from v0.1.0 → v1.0.0)
