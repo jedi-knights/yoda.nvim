@@ -17,7 +17,7 @@
 | 2D strip defensive `pcall` scaffolding | 🟡 8 → 1 in `init.lua`; the survivor guards user-authored `local.lua` and is deliberate |
 | 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
 | 2E delete `lua/custom/plugins/` | ✅ done — stub removed, import probed |
-| 2F docs rewrite | ❌ `README.md:59` still shows the old clone-into-nvim-config install |
+| 2F docs rewrite | 🟡 "The yoda way", CLAUDE.md positioning/ICP and CONTRIBUTING done; install-model rewrite + migration guide ⛔ blocked on Step 3 |
 | 2G CI on plenary | ✅ done (smoke-test job still not added) |
 | 2H cut v1.0.0 | ❌ not cut — automation itself is proven (v0.2.0 → v0.3.1) |
 | Step 3 yoda-starter | ❌ repo does not exist yet |
@@ -196,11 +196,11 @@ Load-order note: with `opts` there's no more scheduled block dance. The `opts` m
 
 ### Step 2F: Docs
 
-- [ ] Rewrite `README.md` for plugin+starter install model (install snippet shows yoda-starter clone, not the old direct-config clone)
-- [ ] Add "The yoda way" section covering AI-first ergonomics: `nvim claude`/`nvim c` boot mode, claudecode integration, snacks-dashboard AI keymaps, `<leader>ai*` conventions
-- [ ] Migration guide for v0.1.0 users: "if you're on the old clone-into-nvim-config path, here's how to switch to yoda-starter"
-- [ ] Update `CONTRIBUTING.md` for the new dev loop (no more `make install` for neospec; use plenary via `:PlenaryBustedDirectory` or Makefile target)
-- [ ] Update `CLAUDE.md` if needed — the ICP + positioning are now decided, add them to the top of the file
+- [ ] ⛔ **BLOCKED on Step 3A.** Rewrite `README.md` for the plugin+starter install model. The install snippet must point at yoda-starter, which does not exist yet — documenting a clone URL that 404s is worse than leaving the current instructions, which at least work.
+- [x] **DONE.** "The yoda way" section in `README.md` covering the four opinions that distinguish yoda: the `nvim claude` / `nvim c` boot mode, the reserved `<leader>a` namespace, opt-in language extras, and `opts`-based config. The intro now leads with AI-first positioning rather than "beginner-friendly setup". Internal anchors verified.
+- [ ] ⛔ **BLOCKED on Step 3A.** Migration guide for v0.1.0 users — same reason: the migration target does not exist yet.
+- [x] **DONE.** `CONTRIBUTING.md` names the plenary/busted runner and the `tests/minimal_init.lua` bootstrap. The neospec `make install` step it warned about was already gone (removed in `dea6a97`); nothing referenced it.
+- [x] **DONE.** `CLAUDE.md` now opens with the locked Positioning and ICP sections, both marked as not-to-be-relitigated.
 
 ### Step 2G: CI updates
 

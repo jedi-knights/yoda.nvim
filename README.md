@@ -37,14 +37,72 @@
 
 ## ✨ What is Yoda.nvim?
 
-Yoda.nvim is a modern Neovim distribution that provides:
+**Yoda.nvim is an AI-first Neovim distribution.**
 
-- **🎯 Beginner-friendly setup** with sensible defaults and guided onboarding
-- **🤖 AI-powered development** with Claude Code integration
+Plenty of distributions treat an AI assistant as one more plugin to install and
+bind a key to. Yoda treats it as part of the editor: there is a boot mode that
+opens straight into an AI workspace, a reserved `<leader>a` namespace, and
+layout defaults built around keeping a conversation and your code on screen at
+once.
+
+Everything else is table stakes, and Yoda ships it:
+
+- **🤖 AI-first ergonomics** — see [The yoda way](#-the-yoda-way) below
 - **🎨 Beautiful modern UI** with TokyoNight theme and enhanced components
 - **⚡ Fast performance** with lazy-loading and optimized startup
 - **🛠️ Comprehensive tooling** for LSP, testing, debugging, and Git integration
 - **⌨️ Smart keymap discovery** with Which-Key and multiple keystroke display options
+- **🧩 Opt-in language stacks** — Rust, Python, Go and Node are extras, not core
+
+## 🧘 The yoda way
+
+Four opinions distinguish Yoda from a general-purpose distribution. If you
+disagree with all four, another distribution will suit you better — and that is
+a fine outcome.
+
+### 1. The assistant gets a boot mode, not just a keymap
+
+```bash
+nvim claude    # or: nvim c
+```
+
+Boots directly into an AI workspace: Snacks explorer on the left, Claude Code
+expanded to fill the space beside it, no dashboard in the way. Opening a real
+file or directory named `claude` or `c` still does the obvious thing — the
+argument is only treated as a mode when it does not name something on disk.
+
+### 2. `<leader>a` is reserved for AI, permanently
+
+The whole prefix belongs to the assistant, registered with which-key as its own
+group. Toggle, focus, resume, model selection, buffer context, sending a visual
+selection, accepting and denying diffs all live there — see
+[AI Features](#-ai-features-claude-code) for the full table. Yoda will not
+reassign `<leader>a` to something else later.
+
+### 3. Language stacks are opt-in, core is small
+
+Core carries the editor: completion, LSP, treesitter, git, testing and debug
+scaffolding. Language-specific adapters are **extras**, enabled explicitly:
+
+```lua
+{ import = "yoda.extras.lang.rust" },
+{ import = "yoda.extras.lang.python" },
+```
+
+A Go developer should not pay startup cost for the Rust toolchain.
+
+### 4. Configuration is `opts`, validated, in one place
+
+```lua
+require("yoda").setup({
+  ui         = { show_environment_notification = true },
+  large_file = { size_threshold = 100 * 1024 },
+})
+```
+
+One schema in `lua/yoda/config.lua`, merged and validated on the way in.
+`vim.g.yoda_*` globals were the pre-v1.0.0 vessel and are no longer read —
+`:checkhealth yoda` warns if any are still set.
 
 ## 🚀 Quick Start
 
