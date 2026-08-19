@@ -1,4 +1,4 @@
--- lua/plugins/lualine.lua
+-- lua/yoda/plugins/lualine.lua
 
 --- Diagnostic status component using vim.diagnostic.status() (Neovim 0.12+).
 --- Falls back to the built-in "diagnostics" string component on older versions.

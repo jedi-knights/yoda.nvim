@@ -1,4 +1,4 @@
--- lua/plugins/mini.lua
+-- lua/yoda/plugins/mini.lua
 -- Consolidated mini.nvim modules. Each entry keeps its own load strategy —
 -- icons must be eager (devicons shim), pairs on InsertEnter, the rest VeryLazy.
 

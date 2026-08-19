@@ -1,6 +1,8 @@
--- lua/plugins/neotest-go.lua
--- Go neotest adapter. Split out of testing.lua in P2. Moves to
--- extras/lang/go.lua in Phase 2 of the v1.0.0 restructure.
+-- lua/yoda/extras/lang/go.lua
+-- Opt-in Go stack: neotest-golang + nvim-dap-go.
+--
+-- Enable from the starter:
+--   { import = "yoda.extras.lang.go" }
 
 return {
   {
@@ -27,5 +29,31 @@ return {
         )
       end
     end,
+  },
+
+  {
+    "leoluz/nvim-dap-go",
+    ft = "go",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "rcarriga/nvim-dap-ui",
+    },
+    keys = {
+      {
+        "<leader>dt",
+        function()
+          require("dap-go").debug_test()
+        end,
+        desc = "Debug: Go Test (nearest)",
+      },
+      {
+        "<leader>dT",
+        function()
+          require("dap-go").debug_last_test()
+        end,
+        desc = "Debug: Go Test (last)",
+      },
+    },
+    opts = {},
   },
 }

@@ -6,7 +6,7 @@
 -- workspace instead of the dashboard: the Snacks explorer opens as a left
 -- sidebar and Claude Code is expanded to fill all horizontal space to its
 -- right. This is the *startup* counterpart to the in-session `<leader>ai`
--- dashboard-expand behavior in lua/plugins/claudecode.lua, and it reuses the
+-- dashboard-expand behavior in lua/yoda/plugins/ai.lua, and it reuses the
 -- same yoda-window.nvim reclaim_width helper so the two stay visually
 -- consistent.
 --
@@ -47,7 +47,7 @@ function M.start_claude_layout()
 
   -- Claude's terminal spawns asynchronously; defer until its window exists so
   -- reclaim_width can measure and resize it. Mirrors the pattern in
-  -- lua/plugins/claudecode.lua.
+  -- lua/yoda/plugins/ai.lua.
   vim.schedule(function()
     local term_ok, terminal = pcall(require, "claudecode.terminal")
     local term_buf = term_ok and terminal.get_active_terminal_bufnr()

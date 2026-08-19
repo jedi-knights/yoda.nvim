@@ -1,5 +1,5 @@
 -- Load keymap modules individually so one failure doesn't cascade to the rest.
--- debug keymaps are in lua/plugins/debugging.lua (lazy keys — loads dap on
+-- debug keymaps are in lua/yoda/plugins/dap-core.lua (lazy keys — loads dap on
 -- first keypress)
 local keymap_modules = {
   "yoda.keymaps.help",

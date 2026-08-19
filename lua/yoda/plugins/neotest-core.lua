@@ -1,9 +1,9 @@
--- lua/plugins/testing.lua
+-- lua/yoda/plugins/neotest-core.lua
 -- Neotest core + nvim-coverage. Per-language adapters live in sibling files:
---   - plugins/neotest-python.lua (+ pytest-atlas picker)
---   - plugins/neotest-go.lua
---   - plugins/neotest-node.lua (jest + vitest)
---   - plugins/neotest-rust.lua (rustaceanvim.neotest)
+--   - extras/lang/python.lua (+ pytest-atlas picker)
+--   - extras/lang/go.lua
+--   - extras/lang/node.lua (jest + vitest)
+--   - extras/lang/rust.lua (rustaceanvim.neotest)
 -- Adapters register into yoda.core.neotest_registry, which re-invokes
 -- neotest.setup() on late registrations so per-language files that load after
 -- the core still attach.

@@ -1,4 +1,4 @@
--- lua/plugins/conform.lua
+-- lua/yoda/plugins/conform.lua
 
 return {
   "stevearc/conform.nvim",
