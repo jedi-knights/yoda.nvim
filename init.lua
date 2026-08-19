@@ -1,55 +1,41 @@
 -- init.lua
--- Yoda.nvim - A custom Neovim distribution
+-- yoda.nvim -- config entry point.
+--
+-- TRANSITIONAL: in the v1.0.0 plugin+starter shape this file belongs to
+-- jedi-knights/yoda-starter, not to the plugin (TODO.md Step 3). It is kept
+-- deliberately thin and starter-shaped so that move is a copy rather than a
+-- rewrite, and so everything below it is exercised through the same
+-- require("yoda").setup(opts) path a real consumer will use.
 
--- Enable faster lua module loading (available since Neovim 0.9; min is 0.10.1)
 vim.loader.enable()
 
--- ============================================================================
--- Early Setup
--- ============================================================================
-
--- Set leader key early (before plugins/keymaps)
+-- Leader must be set before any keymap is defined.
 vim.g.mapleader = " "
--- maplocalleader intentionally matches mapleader — filetype plugins that use
--- <localleader> will share the same key, which is acceptable because we have
--- no conflicting local-leader bindings. If that changes, set this to "\\".
+-- maplocalleader intentionally matches mapleader -- filetype plugins that use
+-- <localleader> share the same key, which is acceptable because we have no
+-- conflicting local-leader bindings. If that changes, set this to "\\".
 vim.g.maplocalleader = " "
 
--- ============================================================================
--- Core Bootstrap
--- ============================================================================
-
--- Bootstrap lazy.nvim
 require("lazy-bootstrap")
 
--- Load base configuration
-require("options")
+-- Options must precede lazy.setup(): the vim.g.loaded_* built-in guards only
+-- take effect if they are set before the plugins they disable are sourced.
+-- apply() is idempotent, so setup() re-applying them below is a no-op.
+require("yoda.options").apply()
+
 require("lazy-plugins")
 
--- Register the `nvim claude` / `nvim c` startup mode before the scheduled
--- block below: its VimEnter autocmd must be in place before VimEnter fires,
--- which happens before the first vim.schedule callback runs. Snacks is already
--- loaded (lazy = false) and the :ClaudeCode cmd trigger is registered by now.
-local ok_sm, startup_mode = pcall(require, "yoda.startup_mode")
-if ok_sm then
-  startup_mode.setup()
-else
-  vim.notify(
-    "[yoda] Failed to load yoda.startup_mode: " .. tostring(startup_mode),
-    vim.log.levels.WARN
-  )
-end
+-- Registered before the scheduled block: this installs a VimEnter autocmd,
+-- and VimEnter fires before the first vim.schedule callback runs. Snacks is
+-- already loaded (lazy = false) and the :ClaudeCode cmd trigger is registered
+-- by this point.
+require("yoda.ui.startup_mode").setup()
 
--- ============================================================================
--- Yoda Modules + Environment Setup
--- ============================================================================
-
--- Defer until the event loop starts, after lazy.nvim plugin initialization
--- is complete. local.lua loads first so any globals it sets (e.g.
--- vim.g.yoda_large_file) are visible to the setup() calls that follow.
 vim.schedule(function()
-  -- Load local configuration if it exists. Use fs_stat to detect presence so
-  -- we never need to pattern-match against Neovim's module-not-found message.
+  -- Optional machine-local overrides. pcall is deliberate here and is not the
+  -- silent-degradation pattern ARCHITECTURE.md rules out: local.lua is
+  -- user-authored and absent from the repo, so a typo in it must not brick
+  -- startup for the distribution around it.
   local local_path = vim.fn.stdpath("config") .. "/lua/local.lua"
   if vim.uv.fs_stat(local_path) then
     local ok, err = pcall(require, "local")
@@ -61,69 +47,8 @@ vim.schedule(function()
     end
   end
 
-  -- Keymaps and autocmds are core — Neovim is largely unusable without them.
-  local ok_km, err_km = pcall(require, "yoda.keymaps")
-  if not ok_km then
-    vim.notify(
-      "[yoda] Failed to load yoda.keymaps: " .. tostring(err_km),
-      vim.log.levels.ERROR
-    )
-  end
-
-  local ok_ac, err_ac = pcall(require, "autocmds")
-  if not ok_ac then
-    vim.notify(
-      "[yoda] Failed to load autocmds: " .. tostring(err_ac),
-      vim.log.levels.ERROR
-    )
-  end
-
-  -- The following modules are non-fatal: Neovim remains usable without them.
-  local ok_cmds, err_cmds = pcall(require, "yoda.commands")
-  if not ok_cmds then
-    vim.notify(
-      "[yoda] Failed to load yoda.commands: " .. tostring(err_cmds),
-      vim.log.levels.WARN
-    )
-  end
-
-  -- Initialize large file detection (setup() also registers user commands).
-  -- Dual-read: prefer resolved opts.large_file, fall back to vim.g.
-  local ok_lf, large_file = pcall(require, "yoda.large_file")
-  if ok_lf then
-    local resolved = require("yoda.config").get()
-    local lf_opts = (resolved and resolved.large_file)
-      or vim.g.yoda_large_file
-      or {}
-    large_file.setup(lf_opts)
-  else
-    vim.notify(
-      "[yoda] Failed to load yoda.large_file: " .. tostring(large_file),
-      vim.log.levels.WARN
-    )
-  end
-
-  -- Show environment notifications if configured
-  local ok_env, environment = pcall(require, "yoda.environment")
-  if ok_env then
-    environment.show_notification()
-    environment.show_local_dev_notification()
-  else
-    vim.notify(
-      "[yoda] Failed to load yoda.environment: " .. tostring(environment),
-      vim.log.levels.WARN
-    )
-  end
-
-  -- Screen recording toggle (macOS only — requires ffmpeg and Screen Recording
-  -- permission)
-  local ok_sc, screencast = pcall(require, "yoda.screencast")
-  if ok_sc then
-    screencast.setup()
-  else
-    vim.notify(
-      "[yoda] Failed to load yoda.screencast: " .. tostring(screencast),
-      vim.log.levels.WARN
-    )
-  end
+  -- Legacy dual-read, removed in TODO.md Step 2C: honour
+  -- vim.g.yoda_large_file for anyone still setting it from local.lua.
+  -- nil merges to the defaults, so the unset case is unaffected.
+  require("yoda").setup({ large_file = vim.g.yoda_large_file })
 end)
