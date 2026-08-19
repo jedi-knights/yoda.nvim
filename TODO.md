@@ -11,7 +11,7 @@
 | 2A entry points (`init.lua`, `config.lua`, `plugin/yoda.lua`, `doc/yoda.txt`) | ✅ done |
 | 2A `apply()` decoupling + `opts.defaults.*` gating | ✅ done |
 | 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ⛔ **blocked on Step 3** — deleting them breaks the only working install path until yoda-starter exists |
-| 2A move sibling `yoda-*` specs out of `lazy-plugins.lua` | ❌ remains |
+| 2A move sibling `yoda-*` specs out of `lazy-plugins.lua` | ✅ done — now `lua/yoda/plugins/foundation.lua` |
 | 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ✅ done — 18 core specs + 5 extras; `lua/plugins/` deleted |
 | 2C `opts` migration | 🟡 4 legacy `vim.g.yoda_*` read sites left (was 5) |
 | 2D strip defensive `pcall` scaffolding | 🟡 8 → 1 in `init.lua`; the survivor guards user-authored `local.lua` and is deliberate |
@@ -96,7 +96,9 @@ Restructure the repo into a plugin-shaped distribution. Land as a **single conve
 - [x] Create `doc/yoda.txt` — vimdoc help file; a full `doc/yoda-*.txt` tree now exists
 - [x] **DECIDED (a), done.** `lua/options.lua` → `lua/yoda/options.lua` and `lua/autocmds.lua` → `lua/yoda/autocmds.lua`, both with an explicit `apply()`; `lua/yoda/keymaps/init.lua` gains `apply()` + `M.modules`. `setup()` gates all three on `opts.defaults.*`, so those keys are real switches now rather than advisory metadata. `yoda.options.apply()` carries an idempotence guard — `init.lua` must apply options *before* `lazy.setup()` for the `vim.g.loaded_*` guards to bite, and `setup()` applies them again on the normal path.
 - [ ] ⛔ **BLOCKED — do not do this until Step 3A exists.** Deleting the top-level entry points removes the only working install path; yoda-starter has to be publishable first. `init.lua` has instead been reduced to 51 lines in the starter's own shape, so the Step 3 move is a copy rather than a rewrite.
-- [ ] Move the six sibling `yoda-*` plugin specs out of `lua/lazy-plugins.lua` into a core spec file (`lua/yoda/plugins/foundation.lua`). They are distribution plugins and must survive the deletion of `lazy-plugins.lua`; the `lazy.setup()` tuning around them (`performance`, `disabled_plugins`, `ui`, `change_detection`) is the starter's job.
+- [x] **DONE.** The six sibling `yoda-*` specs are now `lua/yoda/plugins/foundation.lua` (19 core spec files). `lua/lazy-plugins.lua` is down to 83 lines and holds only imports plus the `lazy.setup()` tuning (`performance`, `disabled_plugins`, `ui`, `change_detection`) — all of which is the starter's job in Step 3.
+
+  **Finding, not yet acted on:** `YODA_DEV_LOCAL` points at `$HOME/src/github/jedi-knights` (no `.com`), which does not exist on this machine — the real checkout root is `$HOME/src/github.com/jedi-knights`, and none of the six siblings are cloned anywhere locally. `README.md:265-270` documents the same no-`.com` path, so it is consistent rather than a typo in one place. Left exactly as-is in the move and pinned by a test; decide whether to correct the path or the README before Step 3.
 
 ### Step 2B: Move + split plugin specs to `lua/yoda/plugins/`
 
