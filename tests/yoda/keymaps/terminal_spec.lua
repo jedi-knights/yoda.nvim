@@ -1,4 +1,4 @@
--- tests/unit/keymaps/terminal_spec.lua
+-- tests/yoda/keymaps/terminal_spec.lua
 -- Verify terminal keymaps are defined in the source file.
 
 describe("keymaps.terminal", function()

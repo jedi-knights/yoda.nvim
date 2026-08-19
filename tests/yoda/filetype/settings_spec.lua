@@ -1,4 +1,4 @@
--- tests/unit/filetype/settings_spec.lua
+-- tests/yoda/filetype/settings_spec.lua
 -- Tests for filetype settings module
 
 local helpers = require("tests.helpers")

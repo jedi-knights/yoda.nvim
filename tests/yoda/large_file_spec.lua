@@ -1,4 +1,4 @@
--- tests/unit/large_file_spec.lua
+-- tests/yoda/large_file_spec.lua
 -- Unit tests for lua/yoda/large_file.lua
 
 local LargeFile = require("yoda.large_file")

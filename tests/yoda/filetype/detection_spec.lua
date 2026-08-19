@@ -1,4 +1,4 @@
--- tests/unit/filetype/detection_spec.lua
+-- tests/yoda/filetype/detection_spec.lua
 -- Tests for filetype detection module
 
 local helpers = require("tests.helpers")
