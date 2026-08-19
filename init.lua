@@ -87,10 +87,15 @@ vim.schedule(function()
     )
   end
 
-  -- Initialize large file detection (setup() also registers user commands)
+  -- Initialize large file detection (setup() also registers user commands).
+  -- Dual-read: prefer resolved opts.large_file, fall back to vim.g.
   local ok_lf, large_file = pcall(require, "yoda.large_file")
   if ok_lf then
-    large_file.setup(vim.g.yoda_large_file or {})
+    local resolved = require("yoda.config").get()
+    local lf_opts = (resolved and resolved.large_file)
+      or vim.g.yoda_large_file
+      or {}
+    large_file.setup(lf_opts)
   else
     vim.notify(
       "[yoda] Failed to load yoda.large_file: " .. tostring(large_file),
