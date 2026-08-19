@@ -9,10 +9,12 @@
 | Item | State |
 |---|---|
 | 2A entry points (`init.lua`, `config.lua`, `plugin/yoda.lua`, `doc/yoda.txt`) | ✅ done |
-| 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ❌ remain |
+| 2A `apply()` decoupling + `opts.defaults.*` gating | ✅ done |
+| 2A deletions (top-level `init.lua`, `lazy-bootstrap`, `lazy-plugins`) | ⛔ **blocked on Step 3** — deleting them breaks the only working install path until yoda-starter exists |
+| 2A move sibling `yoda-*` specs out of `lazy-plugins.lua` | ❌ remains |
 | 2B move specs → `lua/yoda/plugins/` + `lua/yoda/extras/lang/` | ✅ done — 18 core specs + 5 extras; `lua/plugins/` deleted |
-| 2C `opts` migration | 🟡 dual-read + health check landed; legacy `vim.g.yoda_*` readers remain |
-| 2D strip defensive `pcall` scaffolding | ❌ 8 `pcall`s still in top-level `init.lua` |
+| 2C `opts` migration | 🟡 4 legacy `vim.g.yoda_*` read sites left (was 5) |
+| 2D strip defensive `pcall` scaffolding | 🟡 8 → 1 in `init.lua`; the survivor guards user-authored `local.lua` and is deliberate |
 | 2D neospec → plenary | ✅ done (`badge.yaml` still uses neospec for coverage, deliberate) |
 | 2E delete `lua/custom/plugins/` | ❌ remains |
 | 2F docs rewrite | ❌ `README.md:59` still shows the old clone-into-nvim-config install |
@@ -92,8 +94,9 @@ Restructure the repo into a plugin-shaped distribution. Land as a **single conve
 - [x] Create `lua/yoda/config.lua` — defaults + merge + `vim.validate`; schema and health check landed in `7739e66` (PR #72)
 - [x] Create `plugin/yoda.lua` — bootstrap user commands so lazy-loading works
 - [x] Create `doc/yoda.txt` — vimdoc help file; a full `doc/yoda-*.txt` tree now exists
-- [ ] Delete top-level `init.lua`, `lua/lazy-bootstrap.lua`, `lua/lazy-plugins.lua` — these move to yoda-starter's job
-- [ ] `lua/options.lua` and `lua/autocmds.lua` — decision needed: (a) stay as yoda-owned modules that `setup()` calls, or (b) move to yoda-starter. Recommend (a) — they're distribution-level defaults, not user config
+- [x] **DECIDED (a), done.** `lua/options.lua` → `lua/yoda/options.lua` and `lua/autocmds.lua` → `lua/yoda/autocmds.lua`, both with an explicit `apply()`; `lua/yoda/keymaps/init.lua` gains `apply()` + `M.modules`. `setup()` gates all three on `opts.defaults.*`, so those keys are real switches now rather than advisory metadata. `yoda.options.apply()` carries an idempotence guard — `init.lua` must apply options *before* `lazy.setup()` for the `vim.g.loaded_*` guards to bite, and `setup()` applies them again on the normal path.
+- [ ] ⛔ **BLOCKED — do not do this until Step 3A exists.** Deleting the top-level entry points removes the only working install path; yoda-starter has to be publishable first. `init.lua` has instead been reduced to 51 lines in the starter's own shape, so the Step 3 move is a copy rather than a rewrite.
+- [ ] Move the six sibling `yoda-*` plugin specs out of `lua/lazy-plugins.lua` into a core spec file (`lua/yoda/plugins/foundation.lua`). They are distribution plugins and must survive the deletion of `lazy-plugins.lua`; the `lazy.setup()` tuning around them (`performance`, `disabled_plugins`, `ui`, `change_detection`) is the starter's job.
 
 ### Step 2B: Move + split plugin specs to `lua/yoda/plugins/`
 
@@ -155,7 +158,7 @@ Legacy `vim.g.yoda_*` readers still present:
 - [ ] `lua/yoda/ui/environment.lua:28`
 - [ ] `lua/yoda/core/yaml_parser.lua:29,35,40`
 - [ ] `lua/yoda/testing/defaults.lua:55`
-- [ ] `init.lua:96` — `vim.g.yoda_large_file`
+- [x] `init.lua` — `vim.g.yoda_large_file` is now passed explicitly through `setup({ large_file = ... })` and marked in-file as the removal point
 
 Original notes:
 
