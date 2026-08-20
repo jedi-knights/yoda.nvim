@@ -53,9 +53,13 @@ test-file: require-neospec
 # Run the suite and emit coverage reports. Used by the Badge workflow; the
 # test execution is identical to `make test`, so the badge measures exactly
 # what CI verifies rather than a second, drifting runner configuration.
+# --coverage-include is a substring match, so it must be narrow enough to
+# exclude Neovim's own runtime. `lua/` is NOT enough: runtime paths contain
+# `runtime/lua/vim/...`, which leaks vim/F.lua and friends into the report as
+# relative paths genhtml then fails to resolve.
 test-coverage: require-neospec
 	@$(NEOSPEC) run --init-file=$(SPEC_INIT) --pattern='$(SPEC_GLOB)' \
-		--neovim-version=$(NVIM_VERSION) \
+		--neovim-version=$(NVIM_VERSION) --coverage-include=lua/yoda \
 		--format=console --format=lcov --coverage-dir=coverage
 
 # Fail with an actionable message rather than a cryptic "command not found".
