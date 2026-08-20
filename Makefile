@@ -5,7 +5,7 @@
 NEOSPEC     ?= neospec
 # Keep in step with .github/workflows/ci.yml — the suite is verified against
 # the minimum supported Neovim, not whatever is installed locally.
-NVIM_VERSION ?= v0.10.4
+NVIM_VERSION ?= v0.11.0
 
 SPEC_DIR    ?= tests/yoda
 SPEC_INIT   ?= tests/minimal_init.lua

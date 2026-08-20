@@ -16,7 +16,7 @@ CONTENTS                                                   *yoda-ai-contents*
 PREREQUISITES                                               *yoda-ai-prereqs*
 
 Required Software:~
-  • Neovim 0.10.1 or later
+  • Neovim 0.11 or later
   • Node.js 18 or later
   • Git
 
