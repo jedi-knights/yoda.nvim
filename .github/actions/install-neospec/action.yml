@@ -1,0 +1,37 @@
+name: Install neospec
+description: >
+  Install the neospec test runner and put it on PATH. Shared by the CI and
+  Badge workflows so the two cannot drift onto different versions — that
+  divergence is what silently broke the badge job once already.
+
+runs:
+  using: composite
+  steps:
+    - name: Install neospec
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+        ARCH="$(uname -m)"
+        case "$ARCH" in
+          x86_64)          ARCH="amd64" ;;
+          aarch64 | arm64) ARCH="arm64" ;;
+          *) echo "::error::Unsupported architecture: $ARCH"; exit 1 ;;
+        esac
+
+        VERSION="$(curl -fsSL -H "Accept: application/vnd.github+json" \
+          https://api.github.com/repos/jedi-knights/neospec/releases/latest \
+          | grep '"tag_name"' | cut -d'"' -f4)"
+        if [ -z "$VERSION" ]; then
+          echo "::error::Failed to resolve neospec version"
+          exit 1
+        fi
+
+        VER="${VERSION#v}"
+        ARCHIVE="neospec_${VER}_${OS}_${ARCH}.tar.gz"
+        URL="https://github.com/jedi-knights/neospec/releases/download/${VERSION}/${ARCHIVE}"
+
+        echo "Installing neospec ${VERSION} (${OS}/${ARCH})"
+        curl -fsSL "$URL" | tar -xz -C "$RUNNER_TEMP" neospec
+        echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
