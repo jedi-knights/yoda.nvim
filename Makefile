@@ -57,9 +57,14 @@ test-file: require-neospec
 # exclude Neovim's own runtime. `lua/` is NOT enough: runtime paths contain
 # `runtime/lua/vim/...`, which leaks vim/F.lua and friends into the report as
 # relative paths genhtml then fails to resolve.
+# --coverage-source makes files that no test loads count against the total.
+# Without it the report only contains modules some spec happened to require,
+# which silently flatters the percentage: untested code is exactly the code
+# most likely never to be loaded. Requires neospec >= v0.6.0.
 test-coverage: require-neospec
 	@$(NEOSPEC) run --init-file=$(SPEC_INIT) --pattern='$(SPEC_GLOB)' \
 		--neovim-version=$(NVIM_VERSION) --coverage-include=lua/yoda \
+		--coverage-source='lua/**/*.lua' \
 		--format=console --format=lcov --coverage-dir=coverage
 
 # Fail with an actionable message rather than a cryptic "command not found".
