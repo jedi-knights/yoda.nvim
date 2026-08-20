@@ -26,7 +26,9 @@ describe("python_venv", function()
         callback_count = callback_count + 1
       end)
 
-      vim.wait(200)
+      vim.wait(200, function()
+        return callback_count == 1
+      end)
       assert.equals(1, callback_count)
     end)
 
@@ -38,13 +40,22 @@ describe("python_venv", function()
         callback_count = callback_count + 1
       end)
 
-      vim.wait(200)
+      vim.wait(200, function()
+        return callback_count == 1
+      end)
 
       python_venv.detect_venv_async(root_dir, function()
         callback_count = callback_count + 1
       end)
 
-      vim.wait(50)
+      -- The second call is a cache hit dispatched via a single vim.schedule,
+      -- but under system load the first call's real async fs_stat chain can
+      -- occasionally still be in flight past 200ms -- poll for the actual
+      -- condition instead of guessing a fixed sleep, matching the pattern
+      -- used elsewhere in this file.
+      vim.wait(500, function()
+        return callback_count == 2
+      end)
       assert.equals(2, callback_count)
     end)
 
