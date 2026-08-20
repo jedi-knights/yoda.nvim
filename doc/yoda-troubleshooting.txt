@@ -41,7 +41,7 @@ INSTALLATION ISSUES                                  *yoda-trouble-install*
 
 Neovim Version Too Old~
 
-Error: "This configuration requires Neovim 0.10.1+"
+Error: "This configuration requires Neovim 0.11+"
 >
     # Check current version
     nvim --version
