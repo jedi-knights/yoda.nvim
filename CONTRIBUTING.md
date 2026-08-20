@@ -24,7 +24,7 @@ Yoda.nvim maintains world-class code quality (10/10):
 
 ### Prerequisites
 
-- **Neovim 0.10.1+**
+- **Neovim 0.11+**
 - **Git**
 - **StyLua** (for code formatting): `cargo install stylua`
 - **Make** (optional but recommended)

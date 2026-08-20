@@ -106,7 +106,7 @@ function M.apply()
   vim.opt.showtabline = 0 -- Hide tabline (use :bnext/:bprev)
   vim.opt.confirm = true -- prompt to save instead of refusing to quit
   vim.opt.shortmess:append("I") -- suppress the :intro splash screen on startup
-  -- pumborder/winborder are Neovim 0.12+. yoda's declared minimum is 0.10.1,
+  -- pumborder/winborder are Neovim 0.12+. yoda's declared minimum is 0.11,
   -- and setting an unknown option raises "Invalid option (not found)" -- which
   -- would abort apply() partway and take every option after this point with
   -- it. Probe before setting rather than assuming the newer build.
