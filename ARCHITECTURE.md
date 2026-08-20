@@ -109,10 +109,16 @@ Every key maps 1:1 to what `vim.g.yoda_*` covered in the pre-v1 config. Defaults
 - **Bootstrap**: `tests/minimal_init.lua` prepends the repo to runtimepath and stubs the `yoda-*` siblings; neospec supplies the harness
 - **`core/` modules** are exercised without loading Neovim's plugin runtime, so the fast test loop stays fast
 
-Coverage is emitted by `make test-coverage` (lcov). **Known limitation:** neospec's
-instrumentation records only lines that executed, so the reported percentage is
-always ~100% and cannot detect untested code. The number is not currently a
-meaningful quality signal — see the note in `README.md`.
+Coverage is emitted by `make test-coverage` (lcov), and covers lines *and*
+functions. It requires neospec >= v0.6.0, which counts executable-but-unexecuted
+lines, includes source files no test loads (via `--coverage-source`), and emits
+lcov `FN`/`FNDA` records.
+
+The number is a real signal now — it was ~100% by construction before v0.6.0,
+because the denominator was the set of lines that had executed. Current state is
+roughly 38% line and 38% function coverage; the largest gaps are the keymap
+modules, whose bodies register mappings while the callbacks never run under
+test.
 
 ## LSP
 
