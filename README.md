@@ -87,9 +87,34 @@ scaffolding. Language-specific adapters are **extras**, enabled explicitly:
 ```lua
 { import = "yoda.extras.lang.rust" },
 { import = "yoda.extras.lang.python" },
+{ import = "yoda.extras.lang.java" },
 ```
 
 A Go developer should not pay startup cost for the Rust toolchain.
+
+| extra | LSP | tests | debug |
+|---|---|---|---|
+| `lang.lua` | lazydev | — | — |
+| `lang.go` | gopls (core) | neotest-golang | nvim-dap-go |
+| `lang.python` | basedpyright (core) | neotest-python | nvim-dap-python |
+| `lang.node` | ts_ls (core) | jest + vitest | vscode-js-debug |
+| `lang.rust` | rust-analyzer | rustaceanvim | rustaceanvim |
+| `lang.java` | jdtls¹ | neotest-java | java-debug-adapter |
+| `lang.csharp` | omnisharp | neotest-dotnet | netcoredbg |
+| `lang.ruby` | ruby-lsp | rspec + minitest | nvim-dap-ruby |
+| `lang.vbnet` | omnisharp² | — | netcoredbg |
+| `lang.perl` | perlnavigator | — | perl-debug-adapter |
+| `lang.ocaml` | ocaml-lsp | — | — |
+| `lang.cobol` | cobol_ls | — | — |
+
+¹ jdtls needs a workspace directory and JVM flags Mason cannot supply, so
+install it out of band (`brew install jdtls`). Everything else installs
+automatically via Mason.
+
+² omnisharp serves both C# and VB.NET — its filetypes are `cs` and `vb`.
+
+A dash means no integration exists for that language, not that it was
+skipped. Shipping a neotest adapter for COBOL would mean inventing one.
 
 ### 4. Configuration is `opts`, validated, in one place
 
@@ -405,7 +430,7 @@ yoda.nvim/
 │       ├── autocmds.lua     # Non-plugin autocommands — apply()
 │       ├── health.lua       # :checkhealth yoda
 │       ├── plugins/         # Core plugin specs, one plugin per file
-│       ├── extras/lang/     # Opt-in language stacks (lua/rust/python/go/node)
+│       ├── extras/lang/     # Opt-in language stacks (12 languages)
 │       ├── core/            # Pure logic — no vim.api, headless-testable
 │       ├── ui/              # vim.api wiring (autocmds, buffers, notifications)
 │       ├── keymaps/         # Domain-grouped keymap modules — apply()

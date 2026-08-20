@@ -51,20 +51,27 @@ return {
       -- Enable installed servers. mason-lspconfig's automatic_enable feature
       -- calls vim.lsp.enable() for each installed server, which creates the
       -- FileType autocmd and starts the server for any already-open buffers.
+      local servers = {
+        "gopls",
+        "lua_ls",
+        "ts_ls",
+        "basedpyright",
+        "yamlls",
+        "autotools_ls", -- Makefile/Autotools LSP server
+        "asm_lsp", -- Assembly LSP server (GAS/NASM, x86/ARM/RISC-V)
+        "marksman", -- Markdown LSP server
+        -- NOTE: jdtls (Java/Groovy) is intentionally absent — it requires
+        -- manual installation (e.g. `brew install jdtls`) because Mason
+        -- cannot configure the workspace directory and JVM flags it needs.
+      }
+
+      -- Servers contributed by opt-in language extras. They register at
+      -- spec-resolution time, which is well before this VeryLazy config, so
+      -- everything enabled in the starter is present here.
+      vim.list_extend(servers, require("yoda.core.lsp_registry").servers())
+
       require("mason-lspconfig").setup({
-        ensure_installed = {
-          "gopls",
-          "lua_ls",
-          "ts_ls",
-          "basedpyright",
-          "yamlls",
-          "autotools_ls", -- Makefile/Autotools LSP server
-          "asm_lsp", -- Assembly LSP server (GAS/NASM, x86/ARM/RISC-V)
-          "marksman", -- Markdown LSP server
-          -- NOTE: jdtls (Java/Groovy) is intentionally absent — it requires
-          -- manual installation (e.g. `brew install jdtls`) because Mason
-          -- cannot configure the workspace directory and JVM flags it needs.
-        },
+        ensure_installed = servers,
         -- Override the default handler to prevent mason-lspconfig from
         -- auto-configuring servers. All vim.lsp.config calls are made
         -- exclusively by yoda.lsp.setup() above.
@@ -94,12 +101,12 @@ return {
     },
     config = function()
       require("mason-nvim-dap").setup({
-        ensure_installed = {
+        ensure_installed = vim.list_extend({
           "codelldb",
           "debugpy",
           "delve",
           "js-debug-adapter",
-        },
+        }, require("yoda.core.lsp_registry").dap_adapters()),
         automatic_installation = true,
         handlers = {},
       })
