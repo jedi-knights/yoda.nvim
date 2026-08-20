@@ -55,8 +55,13 @@ benchmarks/temp/
 coverage/
 
 
-# Task tracking (local only) — /TODO.md is deliberately committed for the
-# v1.0.0 restructure handoff (see the file's header for rationale). Ignore
-# ephemeral session TODO.md files anywhere under subdirectories.
+# Task tracking (local only). The /TODO.md exception that lived here covered
+# the v1.0.0 restructure handoff doc, which was removed once the migration
+# completed — without dropping the negation, a fresh session TODO.md at the
+# repo root would be tracked again.
 **/TODO.md
-!/TODO.md
+
+# Lock file written by Neovim's built-in vim.pack. Machine-specific: it
+# records absolute paths to local plugin checkouts. yoda uses lazy.nvim, so
+# this only appears when experimenting with vim.pack in a local session.
+/nvim-pack-lock.json
