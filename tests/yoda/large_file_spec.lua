@@ -1,5 +1,9 @@
 -- tests/yoda/large_file_spec.lua
--- Unit tests for lua/yoda/large_file.lua
+-- Unit tests for lua/yoda/large_file.lua, a backwards-compat shim that
+-- re-exports lua/yoda/ui/large_file.lua verbatim -- both module names
+-- resolve to the same table, so these tests exercise the real
+-- implementation.
+local helpers = require("tests.helpers")
 
 local LargeFile = require("yoda.large_file")
 
@@ -173,6 +177,206 @@ describe("large_file", function()
       assert.is_not_nil(vim.api.nvim_get_commands({})["LargeFileDisable"])
       assert.is_not_nil(vim.api.nvim_get_commands({})["LargeFileStatus"])
       assert.is_not_nil(vim.api.nvim_get_commands({})["LargeFileConfig"])
+    end)
+
+    describe("command bodies", function()
+      local notify_spy_fn, notify_spy_data
+      local original_notify_fn
+
+      before_each(function()
+        -- ui/large_file.lua captured `local notify =
+        -- require("yoda-adapters.notification")` once at module load, long
+        -- before this test runs, so replacing package.loaded's entry has
+        -- no effect on that already-bound reference. Mutate the existing
+        -- table's `notify` field in place instead.
+        notify_spy_fn, notify_spy_data = helpers.spy()
+        local notification = package.loaded["yoda-adapters.notification"]
+        original_notify_fn = notification.notify
+        notification.notify = notify_spy_fn
+        LargeFile.setup_commands()
+      end)
+
+      after_each(function()
+        package.loaded["yoda-adapters.notification"].notify = original_notify_fn
+      end)
+
+      it(
+        "LargeFileEnable enables large-file mode for the current buffer",
+        function()
+          -- Arrange
+          vim.api.nvim_set_current_buf(buf)
+          vim.api.nvim_buf_set_name(buf, "/tmp/yoda_large_file_enable.lua")
+
+          -- Act
+          vim.api.nvim_exec2("LargeFileEnable", {})
+
+          -- Assert
+          assert.is_true(LargeFile.is_large_file(buf))
+        end
+      )
+
+      it(
+        "LargeFileDisable disables large-file mode for the current buffer",
+        function()
+          -- Arrange
+          LargeFile.enable_large_file_mode(buf, 200 * 1024)
+          vim.api.nvim_set_current_buf(buf)
+
+          -- Act
+          vim.api.nvim_exec2("LargeFileDisable", {})
+
+          -- Assert
+          assert.is_false(LargeFile.is_large_file(buf))
+        end
+      )
+
+      it(
+        "LargeFileStatus reports ENABLED with size and threshold when active",
+        function()
+          -- Arrange
+          LargeFile.enable_large_file_mode(buf, 200 * 1024)
+          vim.api.nvim_set_current_buf(buf)
+          vim.api.nvim_buf_set_name(buf, "/tmp/yoda_large_file_status.lua")
+
+          -- Act
+          vim.api.nvim_exec2("LargeFileStatus", {})
+
+          -- Assert
+          assert.matches("ENABLED", notify_spy_data.last_call[1])
+          assert.matches(
+            "yoda_large_file_status%.lua",
+            notify_spy_data.last_call[1]
+          )
+        end
+      )
+
+      it("LargeFileStatus reports DISABLED when inactive", function()
+        -- Arrange
+        vim.api.nvim_set_current_buf(buf)
+
+        -- Act
+        vim.api.nvim_exec2("LargeFileStatus", {})
+
+        -- Assert
+        assert.matches("DISABLED", notify_spy_data.last_call[1])
+      end)
+
+      it("LargeFileConfig notifies the current configuration", function()
+        -- Act
+        vim.api.nvim_exec2("LargeFileConfig", {})
+
+        -- Assert
+        assert.matches("size_threshold", notify_spy_data.last_call[1])
+      end)
+    end)
+  end)
+
+  -- =========================================================================
+  describe("setup()'s BufReadPre autocmd", function()
+    it("registers a callback that delegates to on_buf_read", function()
+      -- Arrange
+      LargeFile.setup({})
+      local original = vim.uv.fs_stat
+      vim.uv.fs_stat = function()
+        return { size = 200 * 1024 }
+      end
+      vim.api.nvim_buf_set_name(buf, "/fake/autocmd_large_file.lua")
+      local callback = vim.api.nvim_get_autocmds({
+        group = "YodaLargeFile",
+        event = "BufReadPre",
+      })[1].callback
+
+      -- Act
+      callback({ buf = buf })
+
+      -- Assert
+      assert.is_true(LargeFile.is_large_file(buf))
+
+      vim.uv.fs_stat = original
+    end)
+  end)
+
+  -- =========================================================================
+  describe("scheduled feature disabling", function()
+    before_each(function()
+      LargeFile.setup({})
+    end)
+
+    after_each(function()
+      package.loaded["nvim-treesitter.highlight"] = nil
+      package.loaded.gitsigns = nil
+    end)
+
+    it("detaches treesitter highlighting after the buffer settles", function()
+      -- Arrange
+      local detach_spy, detach_data = helpers.spy()
+      package.loaded["nvim-treesitter.highlight"] = { detach = detach_spy }
+
+      -- Act
+      LargeFile.enable_large_file_mode(buf, 200 * 1024)
+      vim.wait(50, function()
+        return detach_data.called
+      end)
+
+      -- Assert
+      helpers.assert_called_with(detach_data, buf)
+    end)
+
+    it(
+      "does not error when nvim-treesitter.highlight is unavailable",
+      function()
+        -- Act
+        LargeFile.enable_large_file_mode(buf, 200 * 1024)
+        local ok = pcall(vim.wait, 50)
+
+        -- Assert
+        assert.is_true(ok)
+      end
+    )
+
+    it("detaches every LSP client attached to the buffer", function()
+      -- Arrange
+      local detach_spy, detach_data = helpers.spy()
+      local client = { id = 1, detach = detach_spy }
+      local original_get_clients = vim.lsp.get_clients
+      vim.lsp.get_clients = function()
+        return { client }
+      end
+
+      -- Act
+      LargeFile.enable_large_file_mode(buf, 200 * 1024)
+      vim.wait(50, function()
+        return detach_data.called
+      end)
+
+      -- Assert: client:detach(buf) passes `client` as the implicit self arg
+      helpers.assert_called_with(detach_data, client, buf)
+
+      vim.lsp.get_clients = original_get_clients
+    end)
+
+    it("detaches gitsigns when it is loaded", function()
+      -- Arrange
+      local detach_spy, detach_data = helpers.spy()
+      package.loaded.gitsigns = { detach = detach_spy }
+
+      -- Act
+      LargeFile.enable_large_file_mode(buf, 200 * 1024)
+      vim.wait(50, function()
+        return detach_data.called
+      end)
+
+      -- Assert
+      helpers.assert_called_with(detach_data, buf)
+    end)
+
+    it("does not error when gitsigns is not loaded", function()
+      -- Act
+      LargeFile.enable_large_file_mode(buf, 200 * 1024)
+      local ok = pcall(vim.wait, 50)
+
+      -- Assert
+      assert.is_true(ok)
     end)
   end)
 end)
