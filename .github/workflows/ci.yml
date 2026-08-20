@@ -29,26 +29,15 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    env:
-      # Pin to the minimum supported Neovim (matches README.md / doc/yoda.txt).
-      # Bump alongside any change to the declared minimum version.
-      NVIM_VERSION: v0.10.4
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install Neovim
-        run: |
-          curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" -o nvim.tar.gz
-          tar xzf nvim.tar.gz
-          sudo mv nvim-linux-x86_64 /opt/nvim
-          echo "/opt/nvim/bin" >> "$GITHUB_PATH"
-
-      - name: Verify Neovim
-        run: nvim --version
-
-      - name: Clone plenary.nvim
-        run: git clone --depth=1 https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
+      # neospec is the test runner and downloads its own pinned Neovim, so no
+      # separate Neovim install or plenary clone is needed. The version the
+      # suite runs against is set by NVIM_VERSION in the Makefile.
+      - name: Install neospec
+        uses: ./.github/actions/install-neospec
 
       - name: Run tests
         run: make test

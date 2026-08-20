@@ -53,7 +53,7 @@ plugin/yoda.lua       -- bootstrap user commands so lazy-loading works
 doc/yoda.txt          -- vimdoc: :help yoda
 ```
 
-`core/` and `ui/` are a mandatory split: every domain module with mixed pure logic + Neovim API access is decomposed into a `core/` half (testable) and a `ui/` half (wiring). This unlocks headless plenary tests and enforces the layering rule from `~/.claude/rules/nvim-lua.md`.
+`core/` and `ui/` are a mandatory split: every domain module with mixed pure logic + Neovim API access is decomposed into a `core/` half (testable) and a `ui/` half (wiring). This unlocks headless unit tests and enforces the layering rule from `~/.claude/rules/nvim-lua.md`.
 
 ## Extras loading
 
@@ -104,12 +104,15 @@ Every key maps 1:1 to what `vim.g.yoda_*` covered in the pre-v1 config. Defaults
 
 ## Testing
 
-- **Runner**: `plenary.nvim` (`plenary.test_harness`) — no Go toolchain required for contributors
+- **Runner**: [`neospec`](https://github.com/jedi-knights/neospec) — a single binary that fetches its own pinned Neovim
 - **Layout**: `tests/yoda/**/*_spec.lua` mirrors `lua/yoda/**/*.lua`
-- **Bootstrap**: `tests/minimal_init.lua` prepends the repo and a `/tmp/plenary.nvim` clone to runtimepath
+- **Bootstrap**: `tests/minimal_init.lua` prepends the repo to runtimepath and stubs the `yoda-*` siblings; neospec supplies the harness
 - **`core/` modules** are exercised without loading Neovim's plugin runtime, so the fast test loop stays fast
 
-Coverage tooling (`luacov`) is deferred to v1.1 — plenary has no native lcov integration.
+Coverage is emitted by `make test-coverage` (lcov). **Known limitation:** neospec's
+instrumentation records only lines that executed, so the reported percentage is
+always ~100% and cannot detect untested code. The number is not currently a
+meaningful quality signal — see the note in `README.md`.
 
 ## LSP
 
