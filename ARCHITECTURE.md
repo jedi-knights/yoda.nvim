@@ -44,7 +44,7 @@ lua/yoda/
 ├── health.lua        -- :checkhealth yoda
 │
 ├── plugins/          -- 17 core specs, one plugin per file
-├── extras/lang/      -- opt-in language stacks (lua, rust, python, go, node)
+├── extras/lang/      -- opt-in language stacks (12 languages)
 │
 ├── core/             -- pure logic, NO vim.api imports (headless-testable)
 └── ui/               -- vim.api wiring (autocmds, buffer options, notifications)
@@ -66,6 +66,14 @@ return {
   { import = "yoda.extras.lang.python" },
 }
 ```
+
+Extras contribute to core plugins through registries rather than by
+re-declaring their specs: `yoda.core.neotest_registry` for test adapters,
+`yoda.core.dap_registry` for debug adapters, and `yoda.core.lsp_registry` for
+LSP servers and Mason debug-adapter packages. All three exist for the same
+reason — lazy.nvim merges specs for a plugin but replaces `config` rather than
+merging it, so an extra that re-declared `mason.nvim` or `nvim-dap` would
+silently destroy the core configuration.
 
 `opts.extras` is **not** a load switch — lazy.nvim resolves its spec graph before any `config` callback fires, so an extras field on `opts` can't drive imports. Explicit `import` entries are the mechanism.
 
