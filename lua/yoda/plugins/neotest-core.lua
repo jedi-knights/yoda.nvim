@@ -109,7 +109,14 @@ return {
     lazy = true,
     cmd = { "Coverage", "CoverageLoad", "CoverageShow", "CoverageHide" },
     config = function()
-      local ok, err = pcall(require("coverage").setup)
+      -- pcall(require("coverage").setup) would evaluate require("coverage")
+      -- while resolving pcall's own argument, outside pcall's protection --
+      -- a missing/broken nvim-coverage install would raise uncaught.
+      -- Wrapping the whole require+call in a closure keeps both steps
+      -- inside the protected call.
+      local ok, err = pcall(function()
+        require("coverage").setup()
+      end)
       if not ok then
         vim.notify(
           "[coverage] setup failed: " .. tostring(err),
