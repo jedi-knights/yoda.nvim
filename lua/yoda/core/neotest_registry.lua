@@ -46,7 +46,13 @@ end
 
 function M._apply_setup()
   M._base_opts.adapters = M._adapters
-  local ok, err = pcall(require("neotest").setup, M._base_opts)
+  -- pcall(require("neotest").setup, ...) would evaluate require("neotest")
+  -- while resolving pcall's own argument, outside pcall's protection -- a
+  -- missing/broken neotest install would raise uncaught. Wrapping the whole
+  -- require+call in a closure keeps both steps inside the protected call.
+  local ok, err = pcall(function()
+    require("neotest").setup(M._base_opts)
+  end)
   if not ok then
     vim.notify(
       "[neotest] setup failed: " .. tostring(err),
