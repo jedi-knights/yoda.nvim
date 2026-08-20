@@ -122,7 +122,13 @@ test.
 
 ## LSP
 
-Currently `mason.nvim` + `mason-lspconfig` drive server setup. Migration to native `vim.lsp.config` + `lsp/<server>.lua` per Neovim 0.11+ is deferred to v1.1 — it's a substantial rewrite orthogonal to the v1.0.0 restructure.
+Server setup (`lua/yoda/lsp.lua`) uses native `vim.lsp.config`/`vim.lsp.enable`
+directly (Neovim 0.11+) rather than `nvim-lspconfig`; `mason.nvim` is retained
+only for installing/updating the underlying language-server binaries. This
+migration is why the declared minimum Neovim version is 0.11, not 0.10.1 — see
+the version-floor fix in the coverage push (`lsp.lua` had 0% coverage, so
+nothing had exercised `vim.lsp.config` against the documented 0.10.4 test
+pin until then).
 
 ## Release model
 
