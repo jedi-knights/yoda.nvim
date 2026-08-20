@@ -48,13 +48,13 @@ development tools.
 
 ### Testing
 ```bash
-make test                          # Run all specs via plenary.nvim
+make test                          # Run all specs via neospec
 make test-file FILE=tests/yoda/x_spec.lua   # Run a single spec
 ```
-- Test runner: `plenary.busted` (`PlenaryBustedDirectory`) — no Go toolchain
-- Bootstrap: `tests/minimal_init.lua` locates plenary at `$PLENARY_PATH`, `/tmp/plenary.nvim`, or the local lazy install (falls back to a one-shot lazy install for fresh clones)
+- Test runner: [`neospec`](https://github.com/jedi-knights/neospec) — install with `brew install jedi-knights/tap/neospec`. It downloads and caches its own pinned Neovim, so no system Neovim is needed for `make test`
+- Bootstrap: `tests/minimal_init.lua`, passed as `--init-file`. It sets runtimepath and the `yoda-*` sibling stubs only — the harness itself (describe/it/assert) comes from neospec
 - Specs live under `tests/yoda/**/*_spec.lua`, mirroring `lua/yoda/`
-- CI clones plenary to `/tmp/plenary.nvim` before invoking `make test`
+- CI installs neospec via `.github/actions/install-neospec`, shared with the Badge workflow so the two cannot drift
 
 ### Linting
 ```bash
@@ -86,8 +86,8 @@ make help              # Show all available commands
 
 ## Testing Framework
 
-- Runner: `plenary.busted` (`PlenaryBustedDirectory`) — bootstrapped by `tests/minimal_init.lua`
-- Specs use plenary-style `describe` / `it` / `before_each` / `after_each` blocks
+- Runner: `neospec`, using its embedded harness
+- Specs use busted-style `describe` / `it` / `before_each` / `after_each` blocks. neospec's assert namespace covers the luassert subset this suite uses; `assert.has_no.*` chains are NOT available — use `local ok = pcall(fn); assert.is_true(ok)`
 - Test files mirror the `lua/` directory structure in `tests/yoda/`
 - Coverage is not collected in v1.0.0 (luacov integration deferred; see `ARCHITECTURE.md`)
 - Mock patterns are used for external dependencies; the `yoda-*.nvim` sibling plugins are stubbed via `package.preload` in `tests/minimal_init.lua`

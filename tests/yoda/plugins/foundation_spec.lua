@@ -112,9 +112,8 @@ describe("plugins.foundation", function()
 
     -- Act / Assert
     for _, spec in ipairs(specs) do
-      assert.has_no.errors(function()
-        spec.config()
-      end, spec.name)
+      local ok = pcall(spec.config)
+      assert.is_true(ok, spec.name)
     end
   end)
 end)

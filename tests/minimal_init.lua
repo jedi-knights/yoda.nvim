@@ -1,6 +1,11 @@
--- Minimal init for plenary.nvim-based test runs.
--- Boots yoda's runtimepath, locates plenary, and stubs the yoda-* sibling
--- plugins so unit tests can run in isolation.
+-- Minimal init for neospec test runs, passed via `neospec run --init-file`.
+-- Boots yoda's runtimepath and stubs the yoda-* sibling plugins so unit tests
+-- can run in isolation.
+--
+-- No test-runner bootstrap here: neospec supplies describe/it/before_each/
+-- after_each and the assert namespace from its own embedded harness. plenary
+-- is still a *runtime* dependency of several plugins (neotest, gitsigns,
+-- rustaceanvim) -- it is simply no longer the test runner.
 
 -- Get the root directory
 local root = vim.fn.fnamemodify(vim.fn.getcwd(), ":p")
@@ -58,52 +63,6 @@ vim.g.loaded_rrhelper = 1
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.loaded_netrwSettings = 1
-
--- Locate plenary. CI clones it to /tmp/plenary.nvim before invoking; local dev
--- typically has it under lazy.nvim's data dir. Fall back to a one-shot install
--- via lazy so a fresh `make test` on a new machine still works.
--- Empty-string fallback: ipairs stops on the first nil, so an unset
--- PLENARY_PATH would silently skip the /tmp and lazy candidates.
-local plenary_candidates = {
-  os.getenv("PLENARY_PATH") or "",
-  "/tmp/plenary.nvim",
-  vim.fn.stdpath("data") .. "/lazy/plenary.nvim",
-}
-local plenary_ready = false
-for _, path in ipairs(plenary_candidates) do
-  if path ~= "" and vim.uv.fs_stat(path) then
-    vim.opt.rtp:prepend(path)
-    -- --noplugin skips plugin/plenary.vim; source it explicitly so
-    -- PlenaryBustedDirectory / PlenaryBustedFile get registered.
-    vim.cmd("runtime plugin/plenary.vim")
-    plenary_ready = true
-    break
-  end
-end
-
-if not plenary_ready then
-  local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-  if not vim.uv.fs_stat(lazypath) then
-    vim.fn.system({
-      "git",
-      "clone",
-      "--filter=blob:none",
-      "--branch=stable",
-      "https://github.com/folke/lazy.nvim.git",
-      lazypath,
-    })
-  end
-  vim.opt.rtp:prepend(lazypath)
-  require("lazy").setup({
-    { "nvim-lua/plenary.nvim", lazy = false },
-  }, {
-    install = { missing = true },
-    ui = { border = "rounded" },
-    checker = { enabled = false },
-    change_detection = { enabled = false },
-    performance = { cache = { enabled = false } },
-  })
-end
 
 -- Note: vim.cmd mocking removed - was causing exit code issues in CI
 

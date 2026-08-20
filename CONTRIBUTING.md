@@ -172,10 +172,17 @@ Then create a Pull Request on GitHub.
 
 ### Running Tests
 
-Tests run on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)'s busted
-harness. `tests/minimal_init.lua` locates plenary at `$PLENARY_PATH`,
-`/tmp/plenary.nvim`, or the local lazy install, falling back to a one-shot lazy
-install on a fresh clone — so `make test` works with no out-of-band setup step.
+Tests run on [neospec](https://github.com/jedi-knights/neospec), which downloads
+and caches its own pinned Neovim — so the only prerequisite is neospec itself:
+
+```bash
+brew install jedi-knights/tap/neospec
+```
+
+`tests/minimal_init.lua` is passed as `--init-file`; it sets up runtimepath and
+the `yoda-*` sibling stubs. The harness (`describe` / `it` / `assert`) comes from
+neospec. Note that `assert.has_no.*` chains are not available — use
+`local ok = pcall(fn); assert.is_true(ok)`.
 
 ```bash
 make test           # Run all tests
