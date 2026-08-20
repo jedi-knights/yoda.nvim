@@ -69,6 +69,144 @@ describe("filetype.settings", function()
       vim.api.nvim_buf_delete(buf, { force = true })
     end)
 
+    it("applies NeogitCommitMessage settings (commit profile)", function()
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_set_current_buf(buf)
+
+      settings.apply("NeogitCommitMessage")
+
+      assert.is_true(vim.opt_local.spell:get())
+      assert.is_true(vim.opt_local.wrap:get())
+      assert.equals(72, vim.opt_local.textwidth:get())
+      assert.equals("manual", vim.opt_local.foldmethod:get())
+
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end)
+
+    it("applies the neogit performance profile for NeogitStatus", function()
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_set_current_buf(buf)
+
+      settings.apply("NeogitStatus")
+
+      assert.equals("manual", vim.opt_local.foldmethod:get())
+      assert.equals(2000, vim.opt_local.updatetime:get())
+      assert.is_true(vim.opt_local.lazyredraw:get())
+      assert.is_false(vim.opt_local.cursorline:get())
+      assert.equals(200, vim.opt_local.synmaxcol:get())
+
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end)
+
+    it("applies the neogit performance profile for NeogitPopup", function()
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_set_current_buf(buf)
+
+      settings.apply("NeogitPopup")
+
+      assert.equals("manual", vim.opt_local.foldmethod:get())
+      assert.is_true(vim.opt_local.lazyredraw:get())
+
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end)
+
+    it("applies helm settings", function()
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_set_current_buf(buf)
+
+      settings.apply("helm")
+
+      assert.equals("# %s", vim.opt_local.commentstring:get())
+      assert.equals("yaml", vim.opt_local.syntax:get())
+      assert.is_false(vim.opt_local.wrap:get())
+      assert.is_true(vim.opt_local.expandtab:get())
+      assert.equals(2, vim.opt_local.shiftwidth:get())
+      assert.equals(2, vim.opt_local.tabstop:get())
+
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end)
+
+    it(
+      "applies properties settings and disables treesitter highlight",
+      function()
+        local buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_set_current_buf(buf)
+
+        settings.apply("properties")
+
+        assert.equals("# %s", vim.opt_local.commentstring:get())
+        assert.equals("conf", vim.opt_local.syntax:get())
+        assert.equals(2, vim.opt_local.shiftwidth:get())
+        assert.is_false(vim.b.ts_highlight)
+
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end
+    )
+
+    it("applies go settings", function()
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_set_current_buf(buf)
+
+      settings.apply("go")
+
+      assert.equals("// %s", vim.opt_local.commentstring:get())
+      assert.equals(4, vim.opt_local.shiftwidth:get())
+      assert.equals(4, vim.opt_local.tabstop:get())
+      assert.is_true(vim.opt_local.autoindent:get())
+      assert.is_false(vim.opt_local.smartindent:get())
+      assert.is_true(vim.opt_local.cindent:get())
+      -- cinkeys is a comma-list option -- :get() returns it pre-parsed into
+      -- a table, so compare the raw buffer-local string form instead.
+      assert.equals("0{,0},0),0#,!^F,o,O,e,<:>", vim.bo.cinkeys)
+
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end)
+
+    describe("snacks-explorer", function()
+      local original_mode, original_vim_cmd
+
+      before_each(function()
+        original_mode = vim.fn.mode
+        original_vim_cmd = vim.cmd
+      end)
+
+      after_each(function()
+        vim.fn.mode = original_mode
+        vim.cmd = original_vim_cmd
+      end)
+
+      it(
+        "stops insert mode once the buffer settles if not in normal mode",
+        function()
+          vim.fn.mode = function()
+            return "i"
+          end
+          local cmd_spy, cmd_data = helpers.spy()
+          vim.cmd = cmd_spy
+
+          settings.apply("snacks-explorer")
+          vim.wait(50, function()
+            return cmd_data.called
+          end)
+
+          helpers.assert_called_with(cmd_data, "stopinsert")
+        end
+      )
+
+      it("does not stop insert mode when already in normal mode", function()
+        vim.fn.mode = function()
+          return "n"
+        end
+        local cmd_spy, cmd_data = helpers.spy()
+        vim.cmd = cmd_spy
+
+        settings.apply("snacks-explorer")
+        vim.wait(50)
+
+        helpers.assert_not_called(cmd_data)
+      end)
+    end)
+
     it("does nothing for unsupported filetype", function()
       local buf = vim.api.nvim_create_buf(false, true)
       vim.api.nvim_set_current_buf(buf)
