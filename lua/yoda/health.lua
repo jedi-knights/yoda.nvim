@@ -31,11 +31,11 @@ function M.check()
   health.start("yoda")
 
   -- Neovim version
-  if vim.fn.has("nvim-0.10.1") == 1 then
-    health.ok("Neovim >= 0.10.1 (found " .. tostring(vim.version()) .. ")")
+  if vim.fn.has("nvim-0.11") == 1 then
+    health.ok("Neovim >= 0.11 (found " .. tostring(vim.version()) .. ")")
   else
     health.error(
-      "Neovim 0.10.1+ required (found " .. tostring(vim.version()) .. ")"
+      "Neovim 0.11+ required (found " .. tostring(vim.version()) .. ")"
     )
   end
 
