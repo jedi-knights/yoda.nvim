@@ -51,7 +51,7 @@ describe("plugins.neotest-core", function()
     end)
 
     it(
-      "warns about the missing plenary adapter, then raises when neotest itself is unavailable",
+      "warns about the missing plenary adapter and degrades gracefully when neotest itself is unavailable",
       function()
         -- Arrange
         local notify_spy, notify_data = helpers.spy()
@@ -60,22 +60,22 @@ describe("plugins.neotest-core", function()
         -- Act
         local ok = pcall(neotest_spec.config)
 
-        -- Assert: the plenary-adapter pcall is genuinely protective (it
-        -- notifies and continues), but registry.setup() -> _apply_setup()
-        -- does `pcall(require("neotest").setup, ...)` -- the same
-        -- argument-evaluation-order bug as nvim-coverage's config() below:
-        -- require("neotest") runs while resolving pcall's argument, outside
-        -- pcall's own protection, so it raises uncaught here. Characterizing
-        -- the actual behavior, not the intended one -- see the finding noted
-        -- in this PR's description.
-        assert.is_false(ok)
-        local found_plenary_warning = false
+        -- Assert: both the plenary-adapter pcall and registry.setup() ->
+        -- _apply_setup()'s pcall(function() require("neotest").setup(...)
+        -- end) are genuinely protective, so config() never raises even
+        -- when neither neotest-plenary nor neotest itself is available.
+        assert.is_true(ok)
+        local found_plenary_warning, found_setup_error = false, false
         for _, call in ipairs(notify_data.calls) do
           if call[1]:find("neotest%-plenary not available") then
             found_plenary_warning = true
           end
+          if call[1]:find("%[neotest%] setup failed") then
+            found_setup_error = true
+          end
         end
         assert.is_true(found_plenary_warning)
+        assert.is_true(found_setup_error)
 
         restore()
       end
@@ -121,14 +121,23 @@ describe("plugins.neotest-core", function()
     end)
 
     it(
-      "raises when nvim-coverage is unavailable -- pcall does not protect require()",
+      "notifies an error instead of raising when nvim-coverage is unavailable",
       function()
-        -- pcall(require("coverage").setup) evaluates require("coverage")
-        -- while resolving the argument to pcall, outside pcall's own
-        -- protection -- a pre-existing latent bug (should be
-        -- pcall(function() require("coverage").setup() end)), not
-        -- something to paper over here.
-        assert.is_false(pcall(coverage_spec.config))
+        -- Arrange
+        local notify_spy, notify_data = helpers.spy()
+        local restore = helpers.mock(vim, "notify", notify_spy)
+
+        -- Act
+        local ok = pcall(coverage_spec.config)
+
+        -- Assert: pcall(function() require("coverage").setup() end) keeps
+        -- both the require() and the setup() call inside the protected
+        -- call, so a missing plugin degrades to a notification instead of
+        -- an uncaught error.
+        assert.is_true(ok)
+        assert.matches("%[coverage%] setup failed", notify_data.last_call[1])
+
+        restore()
       end
     )
 
