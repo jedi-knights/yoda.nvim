@@ -107,7 +107,7 @@ One schema in `lua/yoda/config.lua`, merged and validated on the way in.
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Neovim 0.10.1+**
+- **Neovim 0.11+**
 - **Git**
 - **ripgrep** (for fuzzy finding)
 

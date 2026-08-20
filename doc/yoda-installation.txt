@@ -15,7 +15,7 @@ CONTENTS                                           *yoda-installation-contents*
 PREREQUISITES                                     *yoda-installation-prereqs*
 
 System Requirements:~
-  • Neovim 0.10.1 or later
+  • Neovim 0.11 or later
   • Git
   • ripgrep (for fuzzy finding)
 
@@ -133,7 +133,7 @@ Verify Installation:~
 1. Check Neovim Version:
 >
     nvim --version
-    # Should show 0.10.1 or higher
+    # Should show 0.11 or higher
 <
 
 2. Check Plugin Installation:
@@ -169,7 +169,7 @@ TROUBLESHOOTING                           *yoda-installation-troubleshooting*
 Common Issues:~
 
 1. Neovim Version Too Old~
-Error: "This configuration requires Neovim 0.10.1+"
+Error: "This configuration requires Neovim 0.11+"
 Solution:
 >
     # Update Neovim to latest version
