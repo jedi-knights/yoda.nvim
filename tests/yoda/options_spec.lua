@@ -56,10 +56,11 @@ describe("yoda.options", function()
       -- Regression guard: pumborder/winborder are 0.12+, but yoda supports
       -- 0.10.1+. Setting an unknown option raises and aborts the rest of
       -- apply(), so these must be probed rather than assumed.
-      -- Act / Assert
-      assert.has_no.errors(function()
-        options.apply()
-      end)
+      -- Act
+      local ok = pcall(options.apply)
+
+      -- Assert
+      assert.is_true(ok)
     end
   )
 
