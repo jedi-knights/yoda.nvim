@@ -172,5 +172,52 @@ describe("extras.lang.csharp", function()
         restore()
       end
     )
+
+    it(
+      "program() prompts for the dll path with a Debug default, for both cs and vb",
+      function()
+        -- Arrange
+        local restore_exec = helpers.mock(vim.fn, "executable", function()
+          return 1
+        end)
+        local restore_cwd = helpers.mock(vim.fn, "getcwd", function()
+          return "/proj/csharp-app"
+        end)
+        local captured_prompts = {}
+        local restore_input = helpers.mock(
+          vim.fn,
+          "input",
+          function(prompt, default, completion)
+            table.insert(captured_prompts, {
+              prompt = prompt,
+              default = default,
+              completion = completion,
+            })
+            return "/proj/csharp-app/bin/Debug/app.dll"
+          end
+        )
+        dap_spec.init()
+        local fake_dap = { adapters = {}, configurations = {} }
+        dap_registry.apply(fake_dap)
+
+        -- Act: invoke program() on both filetypes so both closures are entered.
+        local cs_result = fake_dap.configurations.cs[1].program()
+        local vb_result = fake_dap.configurations.vb[1].program()
+
+        -- Assert
+        assert.equals("/proj/csharp-app/bin/Debug/app.dll", cs_result)
+        assert.equals("/proj/csharp-app/bin/Debug/app.dll", vb_result)
+        assert.equals(2, #captured_prompts)
+        for _, p in ipairs(captured_prompts) do
+          assert.equals("Path to dll: ", p.prompt)
+          assert.equals("/proj/csharp-app/bin/Debug/", p.default)
+          assert.equals("file", p.completion)
+        end
+
+        restore_input()
+        restore_cwd()
+        restore_exec()
+      end
+    )
   end)
 end)
