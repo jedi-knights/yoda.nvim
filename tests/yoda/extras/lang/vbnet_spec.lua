@@ -178,5 +178,44 @@ describe("extras.lang.vbnet", function()
 
       restore()
     end)
+
+    it("program() prompts for the dll path with a Debug default", function()
+      -- Arrange
+      local restore_exec = helpers.mock(vim.fn, "executable", function()
+        return 1
+      end)
+      local restore_cwd = helpers.mock(vim.fn, "getcwd", function()
+        return "/proj/vbnet-app"
+      end)
+      local captured
+      local restore_input = helpers.mock(
+        vim.fn,
+        "input",
+        function(prompt, default, completion)
+          captured = {
+            prompt = prompt,
+            default = default,
+            completion = completion,
+          }
+          return "/proj/vbnet-app/bin/Debug/app.dll"
+        end
+      )
+      dap_spec.init()
+      local fake_dap = { adapters = {}, configurations = {} }
+      dap_registry.apply(fake_dap)
+
+      -- Act
+      local result = fake_dap.configurations.vb[1].program()
+
+      -- Assert
+      assert.equals("/proj/vbnet-app/bin/Debug/app.dll", result)
+      assert.equals("Path to dll: ", captured.prompt)
+      assert.equals("/proj/vbnet-app/bin/Debug/", captured.default)
+      assert.equals("file", captured.completion)
+
+      restore_input()
+      restore_cwd()
+      restore_exec()
+    end)
   end)
 end)
