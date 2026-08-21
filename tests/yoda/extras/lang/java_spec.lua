@@ -1,5 +1,7 @@
 -- tests/yoda/extras/lang/java_spec.lua
+local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
+local neotest_registry = require("yoda.core.neotest_registry")
 
 describe("extras.lang.java", function()
   local specs
@@ -15,12 +17,16 @@ describe("extras.lang.java", function()
 
   before_each(function()
     registry._reset()
+    neotest_registry._reset()
     package.loaded["yoda.extras.lang.java"] = nil
+    package.loaded["neotest-java"] = nil
     specs = require("yoda.extras.lang.java")
   end)
 
   after_each(function()
     registry._reset()
+    neotest_registry._reset()
+    package.loaded["neotest-java"] = nil
   end)
 
   it(
@@ -46,6 +52,10 @@ describe("extras.lang.java", function()
       spec.ft,
       "nvim-jdtls must be filetype-gated so it costs nothing when unused"
     )
+    assert.is_true(
+      vim.tbl_contains(spec.dependencies or {}, "mfussenegger/nvim-dap"),
+      "nvim-jdtls must depend on nvim-dap so :JdtlsDebugTest resolves"
+    )
   end)
 
   it("declares neotest-java", function()
@@ -70,5 +80,50 @@ describe("extras.lang.java", function()
         assert.is_true(ok, tostring(spec[1]))
       end
     end
+  end)
+
+  describe("neotest-java config()", function()
+    local neotest_spec
+
+    before_each(function()
+      neotest_spec = by_name("rcasia/neotest-java")
+    end)
+
+    it(
+      "registers the adapter with neotest_registry when neotest-java loads",
+      function()
+        -- Arrange
+        local fake_adapter = { name = "neotest-java-fake" }
+        package.loaded["neotest-java"] = function(_opts)
+          return fake_adapter
+        end
+
+        -- Act
+        neotest_spec.config()
+
+        -- Assert
+        assert.equals(1, #neotest_registry.adapters())
+        assert.equals(fake_adapter, neotest_registry.adapters()[1])
+      end
+    )
+
+    it("warns without registering when the adapter factory raises", function()
+      -- Arrange
+      package.loaded["neotest-java"] = function(_opts)
+        error("java factory blew up")
+      end
+      local notify_spy, notify_data = helpers.spy()
+      local restore = helpers.mock(vim, "notify", notify_spy)
+
+      -- Act
+      neotest_spec.config()
+
+      -- Assert
+      assert.matches("Java adapter setup failed", notify_data.last_call[1])
+      assert.equals(vim.log.levels.WARN, notify_data.last_call[2])
+      assert.equals(0, #neotest_registry.adapters())
+
+      restore()
+    end)
   end)
 end)
