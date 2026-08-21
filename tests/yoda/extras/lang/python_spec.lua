@@ -292,6 +292,65 @@ describe("extras.lang.python", function()
       vim.fn.input = original_input
     end)
 
+    describe("pythonPath() stored on dap configurations", function()
+      -- Covers the venv-hit branch of get_python_path(). Without invoking the
+      -- stored closure, LuaCov silently marks the "or vim.fn.exepath(...)"
+      -- fallback as the only path exercised: no test in the suite actually
+      -- calls pythonPath() with vim.uv.fs_stat returning truthy.
+      it("returns cwd/.venv/bin/python when the project venv exists", function()
+        -- Arrange
+        dap_python_spec.config()
+        local added = dap.configurations.python[#dap.configurations.python]
+        local restore_cwd = helpers.mock(vim.fn, "getcwd", function()
+          return "/proj/py-app"
+        end)
+        local restore_stat = helpers.mock(vim.uv, "fs_stat", function(path)
+          if path == "/proj/py-app/.venv/bin/python" then
+            return { type = "file" }
+          end
+          return nil
+        end)
+
+        -- Act
+        local result = added.pythonPath()
+
+        -- Assert
+        assert.equals("/proj/py-app/.venv/bin/python", result)
+
+        restore_stat()
+        restore_cwd()
+      end)
+
+      it(
+        "falls back to vim.fn.exepath('python') when the venv is absent",
+        function()
+          -- Arrange
+          dap_python_spec.config()
+          local added = dap.configurations.python[#dap.configurations.python]
+          local restore_cwd = helpers.mock(vim.fn, "getcwd", function()
+            return "/proj/no-venv"
+          end)
+          local restore_stat = helpers.mock(vim.uv, "fs_stat", function()
+            return nil
+          end)
+          local restore_exepath = helpers.mock(vim.fn, "exepath", function(bin)
+            assert.equals("python", bin)
+            return "/usr/local/bin/python"
+          end)
+
+          -- Act
+          local result = added.pythonPath()
+
+          -- Assert
+          assert.equals("/usr/local/bin/python", result)
+
+          restore_exepath()
+          restore_stat()
+          restore_cwd()
+        end
+      )
+    end)
+
     describe("build()", function()
       it("installs debugpy via uv", function()
         -- Arrange
