@@ -403,6 +403,38 @@ describe("picker_handler", function()
     )
 
     it(
+      "extract_env_names iterates environments dict when env_order is absent (L111)",
+      function()
+        -- Arrange: capture the env names shown in the first picker call.
+        local first_picker_items
+        package.loaded["snacks.picker"] = {
+          select = function(items, _opts, callback)
+            if not first_picker_items then
+              first_picker_items = items
+            end
+            callback(items[1])
+          end,
+        }
+
+        -- Act: no env_order forces the for-pairs loop at L110-112 to run,
+        -- exercising the table.insert on L111 for each key.
+        PickerHandler.handle_yaml_selection({
+          environments = {
+            qa = { "auto" },
+            prod = { "auto" },
+          },
+        }, function() end)
+
+        -- Assert: both env keys made it through the loop, sorted.
+        assert.is_not_nil(first_picker_items)
+        assert.equals(2, #first_picker_items)
+        table.sort(first_picker_items)
+        assert.equals("prod", first_picker_items[1])
+        assert.equals("qa", first_picker_items[2])
+      end
+    )
+
+    it(
       "warns and cancels when the selected environment has no regions",
       function()
         -- Arrange

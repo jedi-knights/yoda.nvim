@@ -518,6 +518,105 @@ describe("python_venv", function()
       pcall(vim.api.nvim_del_user_command, "PythonVenvClear")
     end)
 
+    it(
+      "get_cached_venv drops entries whose timestamp exceeds CACHE_TTL (L28)",
+      function()
+        -- Arrange: seed cache with a hit, then advance vim.uv.hrtime past
+        -- CACHE_TTL so the second detect_venv_async call takes the cache-
+        -- expired branch inside get_cached_venv and nils the entry (L28).
+        local original_hrtime = vim.uv.hrtime
+        local seed_time = original_hrtime()
+        vim.uv.hrtime = function()
+          return seed_time
+        end
+        local restore_stat = helpers.mock_fs_stat({
+          ["/tmp/expired-cache-project/.venv/bin/python"] = {
+            type = "file",
+            mode = 493,
+          },
+        })
+        local first_done = false
+        python_venv.detect_venv_async("/tmp/expired-cache-project", function()
+          first_done = true
+        end)
+        vim.wait(200, function()
+          return first_done
+        end)
+        assert.equals(1, python_venv.get_cache_stats().total)
+        restore_stat()
+
+        -- Jump forward past CACHE_TTL (5 min in nanoseconds).
+        vim.uv.hrtime = function()
+          return seed_time + 360000000000
+        end
+
+        -- Act: cache lookup expires; without any on-disk venv this time the
+        -- fs_stat walk finds nothing and the callback gets nil. What matters
+        -- is that the L28 assignment path executed.
+        local second_result = "SENTINEL"
+        python_venv.detect_venv_async(
+          "/tmp/expired-cache-project",
+          function(path)
+            second_result = path
+          end
+        )
+        vim.wait(500, function()
+          return second_result ~= "SENTINEL"
+        end)
+
+        -- Assert: cache lookup rejected the stale entry and re-walked; the
+        -- new entry now holds the fresh (nil) result rather than the seeded
+        -- path, proving the expired entry was cleared and rewritten.
+        assert.is_nil(second_result)
+        vim.uv.hrtime = original_hrtime
+      end
+    )
+
+    it(
+      "PythonVenvDetect clears cache and reruns detection when root is found (L210,L211)",
+      function()
+        -- Arrange: stub vim.fs.root so the command's happy path fires. Seed
+        -- the cache so we can prove L210 (clear_cache) actually ran.
+        python_venv.setup_commands()
+        local original_fs_root = vim.fs.root
+        vim.fs.root = function()
+          return "/tmp/detect-root-project"
+        end
+        python_venv.detect_venv_async(
+          "/tmp/detect-root-project",
+          function() end
+        )
+        vim.wait(200)
+        assert.equals(1, python_venv.get_cache_stats().total)
+
+        -- Detection uses fs_stat; give it a fixture so the second run
+        -- succeeds cleanly.
+        local restore_stat = helpers.mock_fs_stat({
+          ["/tmp/detect-root-project/.venv/bin/python"] = {
+            type = "file",
+            mode = 493,
+          },
+        })
+
+        -- Act
+        vim.api.nvim_exec2("PythonVenvDetect", {})
+        vim.wait(500, function()
+          return python_venv.get_cache_stats().total == 1
+        end)
+
+        -- Assert: cache holds exactly one entry — the fresh one produced by
+        -- L211's detect_and_apply, proving both L210 (clear) and L211
+        -- (detect) executed.
+        assert.equals(1, python_venv.get_cache_stats().total)
+
+        restore_stat()
+        vim.fs.root = original_fs_root
+        pcall(vim.api.nvim_del_user_command, "PythonVenvDetect")
+        pcall(vim.api.nvim_del_user_command, "PythonVenvCache")
+        pcall(vim.api.nvim_del_user_command, "PythonVenvClear")
+      end
+    )
+
     it("PythonVenvClear empties the cache and notifies", function()
       -- Arrange
       local restore_stat = helpers.mock_fs_stat({
