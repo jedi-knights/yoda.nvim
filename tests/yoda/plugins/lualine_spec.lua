@@ -140,5 +140,62 @@ describe("plugins.lualine", function()
       assert.matches("%.%.%.$", result)
       assert.is_true(#result < 60)
     end)
+
+    it("formats INFO severity count when present (L21 truthy)", function()
+      -- Arrange
+      local severity = vim.diagnostic.severity
+      vim.diagnostic.status = function()
+        return { [severity.INFO] = 3 }
+      end
+      local diagnostic_status = setup_data.last_call[1].sections.lualine_b[3][1]
+
+      -- Act
+      local result = diagnostic_status()
+
+      -- Assert
+      assert.matches("3", result)
+    end)
+
+    it("formats HINT severity count when present (L24 truthy)", function()
+      -- Arrange
+      local severity = vim.diagnostic.severity
+      vim.diagnostic.status = function()
+        return { [severity.HINT] = 7 }
+      end
+      local diagnostic_status = setup_data.last_call[1].sections.lualine_b[3][1]
+
+      -- Act
+      local result = diagnostic_status()
+
+      -- Assert
+      assert.matches("7", result)
+    end)
+
+    it(
+      "diagnostic_status returns empty string when vim.diagnostic.status disappears at runtime (L6 truthy)",
+      function()
+        -- Arrange: capture the closure while has_diagnostic_status was true,
+        -- then remove vim.diagnostic.status. The closure's L6 guard should
+        -- fire and return the empty string rather than raising.
+        local diagnostic_status =
+          setup_data.last_call[1].sections.lualine_b[3][1]
+        vim.diagnostic.status = nil
+
+        -- Act / Assert
+        assert.equals("", diagnostic_status())
+      end
+    )
+
+    it(
+      "lsp_status returns empty string when vim.lsp.status disappears at runtime (L33 truthy)",
+      function()
+        -- Arrange
+        local lsp_status = setup_data.last_call[1].sections.lualine_c[3][1]
+        vim.lsp.status = nil
+
+        -- Act / Assert
+        assert.equals("", lsp_status())
+      end
+    )
   end)
 end)
