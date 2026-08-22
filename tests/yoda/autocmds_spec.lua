@@ -763,6 +763,40 @@ describe("yoda.autocmds", function()
       restore_require()
     end)
 
+    it(
+      "VimResized returns early when yoda.timer_manager failed to load",
+      function()
+        -- Arrange: the L257 `if not ok_timer then return end` guard inside
+        -- the VimResized callback captures the failed pcall result from
+        -- setup. Existing "warns and continues" test hits the OUTER
+        -- ok_timer branch inside apply() but never fires the autocmd, so
+        -- the inner guard was untested. Firing VimResized without the
+        -- guard would raise because timer_manager is the error string, not
+        -- the module -- pcalling the callback validates the early return.
+        local restore_require = force_require_failure("yoda.timer_manager")
+        local restore_notify = helpers.mock(vim, "notify", function() end)
+        pcall(autocmds.apply)
+        local ac = get_autocmd("YodaResizeSplits", "VimResized")
+        assert.is_not_nil(ac, "VimResized autocmd not registered")
+
+        -- Act: call the captured callback directly. If the guard fails, the
+        -- next line (`timer_manager.is_vim_timer_active`) raises because
+        -- timer_manager is the error string, not the module.
+        local ok, err = pcall(ac.callback, {})
+
+        -- Assert
+        assert.is_true(
+          ok,
+          "VimResized should return early, got: " .. tostring(err)
+        )
+        -- No timer was created (would-be timer_id would be "vim_resized")
+        assert.is_false(timer_manager.is_vim_timer_active("vim_resized"))
+
+        restore_notify()
+        restore_require()
+      end
+    )
+
     it("warns and continues when yoda.session fails to load", function()
       -- Arrange
       local restore_require = force_require_failure("yoda.session")
