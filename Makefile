@@ -4,8 +4,13 @@
 # system Neovim is required for `make test`.
 NEOSPEC     ?= neospec
 # Keep in step with .github/workflows/ci.yml — the suite is verified against
-# the minimum supported Neovim, not whatever is installed locally.
-NVIM_VERSION ?= v0.11.0
+# the minimum supported Neovim, not whatever is installed locally. Bumped
+# from v0.11.0 to v0.12.0 to unlock &pumborder / &winborder options; the
+# `has("nvim-0.11")` health check in lua/yoda/health.lua still targets 0.11
+# as the plugin's runtime floor -- users on 0.11.x can still run yoda, they
+# just need 0.12+ to run the test suite (neospec fetches its own Neovim, so
+# a system upgrade isn't required).
+NVIM_VERSION ?= v0.12.0
 
 SPEC_DIR    ?= tests/yoda
 SPEC_INIT   ?= tests/minimal_init.lua
