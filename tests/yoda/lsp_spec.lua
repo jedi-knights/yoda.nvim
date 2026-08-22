@@ -839,4 +839,378 @@ describe("yoda.lsp", function()
       assert.is_true(ok)
     end)
   end)
+
+  describe("basedpyright post-attach timer + LspDetach cleanup", function()
+    -- Covers L435 (`if client.server_capabilities and
+    -- .documentHighlightProvider then`) inside the 500ms timer callback, and
+    -- L451 (`if args.data.client_id == client.id then`) inside the LspDetach
+    -- cleanup autocmd. Both live behind create_timer and LspDetach dispatch,
+    -- so neither was reached by the phase-1 tests.
+
+    local buf
+    local original_get_client_by_id
+    local original_create_timer
+    local original_stop_timer
+    local captured_timer_cb
+    local captured_timer_id
+
+    local function attach_callback()
+      lsp.setup()
+      local acs = vim.api.nvim_get_autocmds({
+        group = "YodaLspConfig",
+        event = "LspAttach",
+      })
+      return acs[1].callback
+    end
+
+    before_each(function()
+      buf = vim.api.nvim_create_buf(false, true)
+      original_get_client_by_id = vim.lsp.get_client_by_id
+      original_create_timer = timer_manager.create_timer
+      original_stop_timer = timer_manager.stop_timer
+      captured_timer_cb = nil
+      captured_timer_id = nil
+      -- Capture the timer callback rather than letting it run for real.
+      timer_manager.create_timer = function(cb, _timeout, _repeat, timer_id)
+        captured_timer_cb = cb
+        captured_timer_id = timer_id
+        return {}, timer_id
+      end
+    end)
+
+    after_each(function()
+      vim.lsp.get_client_by_id = original_get_client_by_id
+      timer_manager.create_timer = original_create_timer
+      timer_manager.stop_timer = original_stop_timer
+      if vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end
+      pcall(
+        vim.api.nvim_clear_autocmds,
+        { group = "YodaBasedpyrightTimerCleanup" }
+      )
+    end)
+
+    it(
+      "timer callback re-disables documentHighlightProvider when the server re-enables it",
+      function()
+        -- Arrange
+        local callback = attach_callback()
+        local client = fake_client({
+          name = "basedpyright",
+          id = 42,
+          server_capabilities = { documentHighlightProvider = true },
+        })
+        vim.lsp.get_client_by_id = function()
+          return client
+        end
+        callback({ buf = buf, data = { client_id = 42 } })
+        -- The LspAttach handler runs on_init synchronously via the vim.lsp
+        -- lifecycle, but here we drive it directly -- so the immediate
+        -- documentHighlightProvider=false at LspAttach fires *before* the
+        -- timer callback. Simulate the server re-enabling it (the exact
+        -- race the timer exists to catch).
+        client.server_capabilities.documentHighlightProvider = true
+        assert.is_function(captured_timer_cb)
+
+        -- Act
+        captured_timer_cb()
+
+        -- Assert
+        assert.is_false(client.server_capabilities.documentHighlightProvider)
+      end
+    )
+
+    it(
+      "timer callback no-ops when server_capabilities was cleared entirely",
+      function()
+        -- Arrange
+        local callback = attach_callback()
+        local client = fake_client({
+          name = "basedpyright",
+          id = 43,
+          server_capabilities = { documentHighlightProvider = true },
+        })
+        vim.lsp.get_client_by_id = function()
+          return client
+        end
+        callback({ buf = buf, data = { client_id = 43 } })
+        -- Simulate the client losing server_capabilities entirely (client
+        -- stopped, edge case). The `if client.server_capabilities and ...`
+        -- guard exists exactly to survive this.
+        client.server_capabilities = nil
+
+        -- Act / Assert: must not raise on nil server_capabilities.
+        local ok = pcall(captured_timer_cb)
+        assert.is_true(ok)
+      end
+    )
+
+    -- Dispatch a real LspDetach autocmd for the cleanup group. Lifts the
+    -- eventignore="all" set in minimal_init.lua so the autocmd actually
+    -- runs, and restores it afterward.
+    local function dispatch_lsp_detach(client_id)
+      local original_eventignore = vim.o.eventignore
+      vim.o.eventignore = ""
+      vim.api.nvim_exec_autocmds("LspDetach", {
+        group = "YodaBasedpyrightTimerCleanup",
+        data = { client_id = client_id },
+      })
+      vim.o.eventignore = original_eventignore
+    end
+
+    it(
+      "LspDetach for the matching client_id stops the highlight-disable timer",
+      function()
+        -- Arrange
+        local callback = attach_callback()
+        local client = fake_client({
+          name = "basedpyright",
+          id = 77,
+          server_capabilities = { documentHighlightProvider = true },
+        })
+        vim.lsp.get_client_by_id = function()
+          return client
+        end
+        callback({ buf = buf, data = { client_id = 77 } })
+        local stop_spy, stop_data = helpers.spy()
+        timer_manager.stop_timer = stop_spy
+
+        -- Act
+        dispatch_lsp_detach(77)
+
+        -- Assert
+        helpers.assert_called(stop_data)
+        assert.equals(captured_timer_id, stop_data.last_call[1])
+      end
+    )
+
+    it(
+      "LspDetach for a non-matching client_id leaves the timer alone",
+      function()
+        -- Arrange
+        local callback = attach_callback()
+        local client = fake_client({
+          name = "basedpyright",
+          id = 77,
+          server_capabilities = { documentHighlightProvider = true },
+        })
+        vim.lsp.get_client_by_id = function()
+          return client
+        end
+        callback({ buf = buf, data = { client_id = 77 } })
+        local stop_spy, stop_data = helpers.spy()
+        timer_manager.stop_timer = stop_spy
+
+        -- Act: detach a *different* client
+        dispatch_lsp_detach(999)
+
+        -- Assert
+        helpers.assert_not_called(stop_data)
+      end
+    )
+  end)
+
+  describe("DirChanged Python-restart handler", function()
+    -- Covers L725 (`if timer_manager.is_vim_timer_active(timer_id) then`),
+    -- L737 (`if current_root and vim.g.last_python_root ~= current_root then`),
+    -- L741 (`if #clients > 0 then`), and L750 (`for _, client in ipairs(...)`)
+    -- inside the DirChanged callback + its scheduled inner timer.
+
+    local original_create_vim_timer
+    local original_is_vim_timer_active
+    local original_stop_vim_timer
+    local original_fs_root
+    local original_get_clients
+    local original_last_python_root
+    local captured_inner_cb
+
+    local function dispatch_dirchanged()
+      lsp.setup()
+      -- eventignore="all" is set in minimal_init.lua to prevent test
+      -- pollution -- temporarily lift it so DirChanged autocmds actually
+      -- fire.
+      local original_eventignore = vim.o.eventignore
+      vim.o.eventignore = ""
+      vim.api.nvim_exec_autocmds("DirChanged", {
+        group = "YodaPythonLSPRestart",
+      })
+      vim.o.eventignore = original_eventignore
+    end
+
+    before_each(function()
+      original_create_vim_timer = timer_manager.create_vim_timer
+      original_is_vim_timer_active = timer_manager.is_vim_timer_active
+      original_stop_vim_timer = timer_manager.stop_vim_timer
+      original_fs_root = vim.fs.root
+      original_get_clients = vim.lsp.get_clients
+      original_last_python_root = vim.g.last_python_root
+      captured_inner_cb = nil
+      -- Capture the inner timer callback so we can invoke it directly
+      -- rather than blocking for 1000ms.
+      timer_manager.create_vim_timer = function(cb, _delay, _timer_id)
+        captured_inner_cb = cb
+        return 1, _timer_id
+      end
+    end)
+
+    after_each(function()
+      timer_manager.create_vim_timer = original_create_vim_timer
+      timer_manager.is_vim_timer_active = original_is_vim_timer_active
+      timer_manager.stop_vim_timer = original_stop_vim_timer
+      vim.fs.root = original_fs_root
+      vim.lsp.get_clients = original_get_clients
+      vim.g.last_python_root = original_last_python_root
+      pcall(vim.api.nvim_clear_autocmds, { group = "YodaPythonLSPRestart" })
+    end)
+
+    it(
+      "stops a previously scheduled restart timer before creating a new one",
+      function()
+        -- Arrange
+        timer_manager.is_vim_timer_active = function()
+          return true
+        end
+        local stop_spy, stop_data = helpers.spy()
+        timer_manager.stop_vim_timer = stop_spy
+
+        -- Act
+        dispatch_dirchanged()
+
+        -- Assert
+        helpers.assert_called(stop_data)
+        assert.equals("python_lsp_restart", stop_data.last_call[1])
+      end
+    )
+
+    it(
+      "does not call stop_vim_timer when no previous restart is pending",
+      function()
+        -- Arrange
+        timer_manager.is_vim_timer_active = function()
+          return false
+        end
+        local stop_spy, stop_data = helpers.spy()
+        timer_manager.stop_vim_timer = stop_spy
+
+        -- Act
+        dispatch_dirchanged()
+
+        -- Assert
+        helpers.assert_not_called(stop_data)
+      end
+    )
+
+    it(
+      "restarts every basedpyright client when the project root changes",
+      function()
+        -- Arrange
+        timer_manager.is_vim_timer_active = function()
+          return false
+        end
+        vim.fs.root = function()
+          return "/proj/py-app"
+        end
+        vim.g.last_python_root = nil
+        local stop_spy_a, stop_data_a = helpers.spy()
+        local stop_spy_b, stop_data_b = helpers.spy()
+        vim.lsp.get_clients = function(opts)
+          if opts and opts.name == "basedpyright" then
+            return {
+              { stop = stop_spy_a, name = "basedpyright" },
+              { stop = stop_spy_b, name = "basedpyright" },
+            }
+          end
+          return {}
+        end
+        dispatch_dirchanged()
+        assert.is_function(captured_inner_cb)
+
+        -- Act
+        captured_inner_cb()
+        vim.wait(20)
+
+        -- Assert
+        helpers.assert_called(stop_data_a)
+        helpers.assert_called(stop_data_b)
+        assert.equals("/proj/py-app", vim.g.last_python_root)
+      end
+    )
+
+    it(
+      "does not restart anything when no basedpyright clients are active",
+      function()
+        -- Arrange
+        timer_manager.is_vim_timer_active = function()
+          return false
+        end
+        vim.fs.root = function()
+          return "/proj/no-lsp"
+        end
+        vim.g.last_python_root = nil
+        vim.lsp.get_clients = function()
+          return {}
+        end
+        dispatch_dirchanged()
+
+        -- Act
+        captured_inner_cb()
+        vim.wait(20)
+
+        -- Assert: last_python_root still updates (root was new), but no
+        -- clients to stop.
+        assert.equals("/proj/no-lsp", vim.g.last_python_root)
+      end
+    )
+
+    it(
+      "no-ops when the project root has not changed from vim.g.last_python_root",
+      function()
+        -- Arrange
+        timer_manager.is_vim_timer_active = function()
+          return false
+        end
+        vim.fs.root = function()
+          return "/proj/same"
+        end
+        vim.g.last_python_root = "/proj/same"
+        local stop_spy, stop_data = helpers.spy()
+        vim.lsp.get_clients = function()
+          return { { stop = stop_spy, name = "basedpyright" } }
+        end
+        dispatch_dirchanged()
+
+        -- Act
+        captured_inner_cb()
+        vim.wait(20)
+
+        -- Assert: same root, no stop should fire.
+        helpers.assert_not_called(stop_data)
+      end
+    )
+
+    it("no-ops when vim.fs.root returns nil (no project detected)", function()
+      -- Arrange
+      timer_manager.is_vim_timer_active = function()
+        return false
+      end
+      vim.fs.root = function()
+        return nil
+      end
+      vim.g.last_python_root = "/proj/prior"
+      local stop_spy, stop_data = helpers.spy()
+      vim.lsp.get_clients = function()
+        return { { stop = stop_spy, name = "basedpyright" } }
+      end
+      dispatch_dirchanged()
+
+      -- Act
+      captured_inner_cb()
+      vim.wait(20)
+
+      -- Assert: no root, no stop, last_python_root untouched.
+      helpers.assert_not_called(stop_data)
+      assert.equals("/proj/prior", vim.g.last_python_root)
+    end)
+  end)
 end)
