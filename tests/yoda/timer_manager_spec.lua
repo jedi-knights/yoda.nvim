@@ -223,4 +223,112 @@ describe("timer_manager", function()
       assert.equals(0, vim_count)
     end)
   end)
+
+  describe("edge cases exposed by branch instrumentation", function()
+    it(
+      "wrap_callback notifies with ERROR when the callback raises (L33 truthy)",
+      function()
+        -- Arrange: create a real timer with a raising callback and wait
+        -- long enough for the wrapped pcall to catch it.
+        local notify_spy, notify_data = helpers.spy()
+        local restore_notify = helpers.mock(vim, "notify", notify_spy)
+
+        -- Act
+        local _timer, timer_id = timer_manager.create_timer(function()
+          error("simulated timer callback failure")
+        end, 10, 0)
+        vim.wait(200, function()
+          for _, call in ipairs(notify_data.calls) do
+            if call[1] and call[1]:find("Timer callback error", 1, true) then
+              return true
+            end
+          end
+          return false
+        end)
+
+        -- Assert
+        local found = false
+        for _, call in ipairs(notify_data.calls) do
+          if call[1] and call[1]:find("Timer callback error", 1, true) then
+            found = true
+            assert.is_true(call[1]:find(timer_id, 1, true) ~= nil)
+            assert.equals(vim.log.levels.ERROR, call[2])
+            break
+          end
+        end
+        assert.is_true(found, "expected 'Timer callback error' notify")
+
+        restore_notify()
+      end
+    )
+
+    it(
+      "create_timer returns nil and notifies when vim.uv.new_timer returns nil (L58 truthy)",
+      function()
+        -- Arrange
+        vim.uv.new_timer = function()
+          return nil
+        end
+        local notify_spy, notify_data = helpers.spy()
+        local restore_notify = helpers.mock(vim, "notify", notify_spy)
+
+        -- Act
+        local timer, timer_id = timer_manager.create_timer(
+          function() end,
+          100,
+          0,
+          "no_timer_test"
+        )
+
+        -- Assert
+        assert.is_nil(timer)
+        assert.is_nil(timer_id)
+        local found = false
+        for _, call in ipairs(notify_data.calls) do
+          if call[1] and call[1]:find("Failed to create timer", 1, true) then
+            found = true
+            assert.equals(vim.log.levels.ERROR, call[2])
+          end
+        end
+        assert.is_true(found, "expected 'Failed to create timer' notify")
+
+        restore_notify()
+      end
+    )
+
+    it(
+      "create_vim_timer returns nil and notifies when vim.fn.timer_start returns -1 (L123 truthy)",
+      function()
+        -- Arrange
+        vim.fn.timer_start = function()
+          return -1
+        end
+        local notify_spy, notify_data = helpers.spy()
+        local restore_notify = helpers.mock(vim, "notify", notify_spy)
+
+        -- Act
+        local handle, timer_id = timer_manager.create_vim_timer(
+          function() end,
+          100,
+          "no_vim_timer_test"
+        )
+
+        -- Assert
+        assert.is_nil(handle)
+        assert.is_nil(timer_id)
+        local found = false
+        for _, call in ipairs(notify_data.calls) do
+          if
+            call[1] and call[1]:find("Failed to create vim timer", 1, true)
+          then
+            found = true
+            assert.equals(vim.log.levels.ERROR, call[2])
+          end
+        end
+        assert.is_true(found, "expected 'Failed to create vim timer' notify")
+
+        restore_notify()
+      end
+    )
+  end)
 end)
