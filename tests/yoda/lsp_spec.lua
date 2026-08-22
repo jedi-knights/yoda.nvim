@@ -1213,4 +1213,134 @@ describe("yoda.lsp", function()
       assert.equals("/proj/prior", vim.g.last_python_root)
     end)
   end)
+
+  describe("YodaLspDetach highlight-cleanup callback", function()
+    -- Covers lsp.lua:541 -- the LspDetach callback that clears references
+    -- and removes the YodaLspHighlight autocmds. Fires when a supporting
+    -- client detaches from the buffer.
+    it("clears references and removes the YodaLspHighlight autocmds", function()
+      -- Arrange: run an LspAttach with a client that supports
+      -- documentHighlight so the LspDetach autocmd + highlight autocmds
+      -- get registered.
+      local original_get_client_by_id = vim.lsp.get_client_by_id
+      local buf = vim.api.nvim_create_buf(false, true)
+      lsp.setup()
+      local acs = vim.api.nvim_get_autocmds({
+        group = "YodaLspConfig",
+        event = "LspAttach",
+      })
+      local attach_cb = acs[1].callback
+      local client = {
+        id = 55,
+        name = "gopls",
+        server_capabilities = {},
+        config = {},
+        supports_method = function()
+          return true
+        end,
+        stop = function() end,
+        detach = function() end,
+        notify = function() end,
+      }
+      vim.lsp.get_client_by_id = function()
+        return client
+      end
+      attach_cb({ buf = buf, data = { client_id = 55 } })
+      vim.wait(20)
+      assert.is_true(vim.b[buf]._yoda_hl_registered)
+
+      -- Grab the detach callback from the YodaLspDetach group.
+      local detach_acs = vim.api.nvim_get_autocmds({
+        group = "YodaLspDetach",
+        event = "LspDetach",
+        buffer = buf,
+      })
+      assert.is_true(
+        #detach_acs >= 1,
+        "expected at least one LspDetach autocmd on buffer " .. buf
+      )
+      local clear_calls = 0
+      local original_clear = vim.lsp.buf.clear_references
+      vim.lsp.buf.clear_references = function()
+        clear_calls = clear_calls + 1
+      end
+
+      -- Act
+      detach_acs[1].callback({ buf = buf })
+
+      -- Assert: clear_references fired, buffer flag cleared, highlight
+      -- autocmds gone from the buffer.
+      assert.equals(1, clear_calls)
+      assert.is_nil(vim.b[buf]._yoda_hl_registered)
+      local remaining = vim.api.nvim_get_autocmds({
+        group = "YodaLspHighlight",
+        buffer = buf,
+      })
+      assert.equals(0, #remaining)
+
+      vim.lsp.buf.clear_references = original_clear
+      vim.lsp.get_client_by_id = original_get_client_by_id
+      if vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end
+    end)
+  end)
+
+  describe("<leader>lf format keymap", function()
+    -- Covers lsp.lua:648 -- the async format callback bound to <leader>lf.
+    it("invokes vim.lsp.buf.format with async = true", function()
+      -- Arrange
+      local original_get_client_by_id = vim.lsp.get_client_by_id
+      local buf = vim.api.nvim_create_buf(false, true)
+      lsp.setup()
+      local attach_cb = vim.api.nvim_get_autocmds({
+        group = "YodaLspConfig",
+        event = "LspAttach",
+      })[1].callback
+      local client = {
+        id = 77,
+        name = "gopls",
+        server_capabilities = {},
+        config = {},
+        supports_method = function()
+          return false
+        end,
+        stop = function() end,
+        detach = function() end,
+        notify = function() end,
+      }
+      vim.lsp.get_client_by_id = function()
+        return client
+      end
+      attach_cb({ buf = buf, data = { client_id = 77 } })
+      vim.wait(50)
+
+      local original_format = vim.lsp.buf.format
+      local captured_opts
+      vim.lsp.buf.format = function(opts)
+        captured_opts = opts
+      end
+      local cb
+      for _, km in ipairs(vim.api.nvim_buf_get_keymap(buf, "n")) do
+        if km.desc == "LSP: Format Buffer" then
+          cb = km.callback
+          break
+        end
+      end
+      assert.is_function(cb, "<leader>lf keymap not registered")
+
+      -- Act
+      cb()
+
+      -- Assert
+      assert.is_not_nil(captured_opts)
+      assert.is_true(captured_opts.async)
+
+      vim.lsp.buf.format = original_format
+      vim.lsp.get_client_by_id = original_get_client_by_id
+      if vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end
+    end)
+  end)
 end)

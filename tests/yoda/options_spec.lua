@@ -103,4 +103,27 @@ describe("yoda.options", function()
     assert.is_true(vim.g.yoda_config.verbose_startup)
     vim.g.yoda_config = nil
   end)
+
+  it("defers the clipboard sync to a scheduled callback", function()
+    -- Arrange: clear clipboard so we observe the scheduled write.
+    local original_clipboard = vim.opt.clipboard:get()
+    vim.opt.clipboard = ""
+
+    -- Act
+    options.apply()
+    -- The clipboard assignment is inside a vim.schedule callback. Give the
+    -- event loop a chance to drain it.
+    vim.wait(50, function()
+      return vim.tbl_contains(vim.opt.clipboard:get(), "unnamedplus")
+    end)
+
+    -- Assert
+    assert.is_true(
+      vim.tbl_contains(vim.opt.clipboard:get(), "unnamedplus"),
+      "expected 'unnamedplus' in clipboard after schedule drained"
+    )
+
+    -- Restore
+    vim.opt.clipboard = original_clipboard
+  end)
 end)

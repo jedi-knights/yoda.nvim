@@ -330,5 +330,34 @@ describe("timer_manager", function()
         restore_notify()
       end
     )
+
+    it(
+      "setup_cleanup's VimLeavePre callback stops every active timer",
+      function()
+        -- Arrange: register the cleanup autocmd, then create two timers so
+        -- there's actually something to stop.
+        timer_manager.setup_cleanup()
+        timer_manager.create_timer(function() end, 100, 0, "cleanup_test_loop")
+        timer_manager.create_vim_timer(function() end, 100, "cleanup_test_vim")
+        local loop_before, vim_before = timer_manager.get_timer_count()
+        assert.equals(1, loop_before)
+        assert.equals(1, vim_before)
+
+        local acs = vim.api.nvim_get_autocmds({
+          group = "YodaTimerCleanup",
+          event = "VimLeavePre",
+        })
+        assert.equals(1, #acs, "VimLeavePre autocmd not registered")
+
+        -- Act: invoke the callback directly (VimLeavePre can't be fired in
+        -- headless test mode).
+        acs[1].callback({})
+
+        -- Assert
+        local loop_after, vim_after = timer_manager.get_timer_count()
+        assert.equals(0, loop_after)
+        assert.equals(0, vim_after)
+      end
+    )
   end)
 end)
