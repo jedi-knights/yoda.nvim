@@ -246,4 +246,35 @@ describe("yoda.screencast", function()
       restore_notify()
     end)
   end)
+
+  it(
+    "toggle() ERRORs and does not start capture when output dir cannot be resolved (L62 truthy)",
+    function()
+      -- Arrange: force fnamemodify(":h") to return "" so start() bails
+      -- before mkdir/jobstart. This is the L62 truthy branch.
+      local original_fnamemodify = vim.fn.fnamemodify
+      vim.fn.fnamemodify = function(_path, mod)
+        if mod == ":h" then
+          return ""
+        end
+        return original_fnamemodify(_path, mod)
+      end
+      local notify_spy, notify_data = helpers.spy()
+      local restore_notify = helpers.mock(vim, "notify", notify_spy)
+
+      -- Act
+      screencast.toggle()
+
+      -- Assert
+      assert.matches(
+        "Could not resolve output directory",
+        notify_data.last_call[1]
+      )
+      assert.equals(vim.log.levels.ERROR, notify_data.last_call[2])
+      assert.equals(0, #jobstart_calls, "jobstart must NOT run on this path")
+
+      vim.fn.fnamemodify = original_fnamemodify
+      restore_notify()
+    end
+  )
 end)
