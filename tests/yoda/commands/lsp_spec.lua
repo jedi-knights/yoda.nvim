@@ -337,6 +337,73 @@ describe("commands.lsp", function()
       end
     )
 
+    it(
+      "reports basedpyright-langserver as available when it is on PATH (L170 truthy)",
+      function()
+        -- Arrange
+        vim.lsp.get_clients = function()
+          return {}
+        end
+        local restore_exec = helpers.mock(vim.fn, "executable", function(bin)
+          return bin == "basedpyright-langserver" and 1 or 0
+        end)
+        local spy_fn, spy_data = helpers.spy()
+        local restore = helpers.mock(vim, "notify", spy_fn)
+
+        -- Act
+        vim.cmd("PythonLSPDebug")
+
+        -- Assert
+        local text = spy_data.last_call[1]
+        assert.is_true(
+          contains(text, "basedpyright-langserver is available"),
+          "expected 'available' line, got: " .. text
+        )
+
+        restore()
+        restore_exec()
+      end
+    )
+
+    it(
+      "reports each venv path as found when it exists (L192 truthy)",
+      function()
+        -- Arrange
+        vim.lsp.get_clients = function()
+          return {}
+        end
+        local restore_exec = helpers.mock(vim.fn, "executable", function(bin)
+          -- All /.venv/, /venv/, /env/ paths report as executable so every
+          -- iteration hits the truthy arm.
+          if bin:match("/%.venv/bin/python$") then
+            return 1
+          end
+          if bin:match("/venv/bin/python$") then
+            return 1
+          end
+          if bin:match("/env/bin/python$") then
+            return 1
+          end
+          return 0
+        end)
+        local spy_fn, spy_data = helpers.spy()
+        local restore = helpers.mock(vim, "notify", spy_fn)
+
+        -- Act
+        vim.cmd("PythonLSPDebug")
+
+        -- Assert
+        local text = spy_data.last_call[1]
+        assert.is_true(
+          contains(text, "  found: "),
+          "expected 'found:' line, got: " .. text
+        )
+
+        restore()
+        restore_exec()
+      end
+    )
+
     it("reports basedpyright settings when a client is attached", function()
       -- Arrange
       vim.lsp.get_clients = function()
@@ -393,6 +460,59 @@ describe("commands.lsp", function()
         assert.is_true(contains(text, "No JDTLS clients attached!"))
 
         restore()
+      end
+    )
+
+    it("reports jdtls as available when it is on PATH (L243 truthy)", function()
+      -- Arrange
+      vim.lsp.get_clients = function()
+        return {}
+      end
+      local restore_exec = helpers.mock(vim.fn, "executable", function(bin)
+        return bin == "jdtls" and 1 or 0
+      end)
+      local spy_fn, spy_data = helpers.spy()
+      local restore = helpers.mock(vim, "notify", spy_fn)
+
+      -- Act
+      vim.cmd("GroovyLSPDebug")
+
+      -- Assert
+      local text = spy_data.last_call[1]
+      assert.is_true(
+        contains(text, "jdtls is available"),
+        "expected 'jdtls is available', got: " .. text
+      )
+
+      restore()
+      restore_exec()
+    end)
+
+    it(
+      "reports 'Java runtime not found' when java is absent (L260 falsy arm)",
+      function()
+        -- Arrange
+        vim.lsp.get_clients = function()
+          return {}
+        end
+        local restore_exec = helpers.mock(vim.fn, "executable", function()
+          return 0 -- neither jdtls nor java on PATH
+        end)
+        local spy_fn, spy_data = helpers.spy()
+        local restore = helpers.mock(vim, "notify", spy_fn)
+
+        -- Act
+        vim.cmd("GroovyLSPDebug")
+
+        -- Assert
+        local text = spy_data.last_call[1]
+        assert.is_true(
+          contains(text, "Java runtime not found"),
+          "expected 'Java runtime not found', got: " .. text
+        )
+
+        restore()
+        restore_exec()
       end
     )
 
