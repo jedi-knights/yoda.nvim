@@ -61,10 +61,16 @@ test-file: require-neospec
 # Without it the report only contains modules some spec happened to require,
 # which silently flatters the percentage: untested code is exactly the code
 # most likely never to be loaded. Requires neospec >= v0.6.0.
+# --branch-instrumentation emits BRDA/BRF/BRH records via AST rewriting so
+# genhtml reports real branch coverage. Without it, LuaCov silently omits
+# lines inside uninvoked function bodies from the total -- a file with a
+# defined-but-never-called closure reads as 100% line coverage while its
+# body is entirely unexercised. Requires neospec >= v0.17.2.
 test-coverage: require-neospec
 	@$(NEOSPEC) run --init-file=$(SPEC_INIT) --pattern='$(SPEC_GLOB)' \
 		--neovim-version=$(NVIM_VERSION) --coverage-include=lua/yoda \
 		--coverage-source='lua/**/*.lua' \
+		--branch-instrumentation \
 		--format=console --format=lcov --coverage-dir=coverage
 
 # Fail with an actionable message rather than a cryptic "command not found".
