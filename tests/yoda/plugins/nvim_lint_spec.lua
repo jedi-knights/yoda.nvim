@@ -136,6 +136,40 @@ describe("plugins.nvim-lint", function()
       end
     )
 
+    it(
+      "path-mode=abs arg is a function returning the current buffer's absolute path",
+      function()
+        -- Arrange
+        local lint = fresh_lint_stub()
+        package.loaded.lint = lint
+        spec.config()
+        local args = lint.linters.golangcilint.args
+        -- The lazy arg is a function value living somewhere in the list;
+        -- find it and invoke it. There is exactly one function in args.
+        local lazy_path_fn
+        for _, a in ipairs(args) do
+          if type(a) == "function" then
+            lazy_path_fn = a
+            break
+          end
+        end
+        assert.is_function(lazy_path_fn, "expected a lazy path arg function")
+
+        -- Mock the current buffer name so we can assert on the return.
+        local buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(buf, "/proj/pkg/main.go")
+        vim.api.nvim_set_current_buf(buf)
+
+        -- Act
+        local result = lazy_path_fn()
+
+        -- Assert
+        assert.matches("/proj/pkg/main%.go$", result)
+
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end
+    )
+
     it("registers golangcilint using nvim-lint's own parser", function()
       -- Arrange
       local lint = fresh_lint_stub()

@@ -254,6 +254,48 @@ describe("plugins.treesitter", function()
       -- Assert
       helpers.assert_called_with(select_data, "@function.outer", "textobjects")
     end)
+
+    it("'if' selects the inner function text object", function()
+      -- Arrange
+      local select_spy, select_data = helpers.spy()
+      package.loaded["nvim-treesitter-textobjects.select"] =
+        { select_textobject = select_spy }
+      local callback = find_keymap("if").callback
+
+      -- Act
+      callback()
+
+      -- Assert
+      helpers.assert_called_with(select_data, "@function.inner", "textobjects")
+    end)
+
+    it("'ac' selects the outer class text object", function()
+      -- Arrange
+      local select_spy, select_data = helpers.spy()
+      package.loaded["nvim-treesitter-textobjects.select"] =
+        { select_textobject = select_spy }
+      local callback = find_keymap("ac").callback
+
+      -- Act
+      callback()
+
+      -- Assert
+      helpers.assert_called_with(select_data, "@class.outer", "textobjects")
+    end)
+
+    it("'ic' selects the inner class text object", function()
+      -- Arrange
+      local select_spy, select_data = helpers.spy()
+      package.loaded["nvim-treesitter-textobjects.select"] =
+        { select_textobject = select_spy }
+      local callback = find_keymap("ic").callback
+
+      -- Act
+      callback()
+
+      -- Assert
+      helpers.assert_called_with(select_data, "@class.inner", "textobjects")
+    end)
   end)
 
   it("sets the Gherkin commentstring for .feature files", function()

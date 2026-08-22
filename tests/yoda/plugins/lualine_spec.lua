@@ -115,6 +115,24 @@ describe("plugins.lualine", function()
       )
     end)
 
+    it("cwd basename component returns the tail of vim.fn.getcwd()", function()
+      -- Arrange
+      local cwd_component = setup_data.last_call[1].sections.lualine_c[1][1]
+      assert.is_function(cwd_component)
+      local restore = helpers.mock(vim.fn, "getcwd", function()
+        return "/proj/nested/deep-app"
+      end)
+
+      -- Act
+      local result = cwd_component()
+
+      -- Assert
+      assert.equals("deep-app", result)
+      assert.equals("📁", setup_data.last_call[1].sections.lualine_c[1].icon)
+
+      restore()
+    end)
+
     it("returns an empty string when there is no LSP status", function()
       -- Arrange
       vim.lsp.status = function()
