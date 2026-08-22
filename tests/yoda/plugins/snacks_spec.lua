@@ -270,6 +270,36 @@ describe("plugins.snacks", function()
     )
 
     it(
+      "opens a new split when no non-explorer window exists (L184 truthy)",
+      function()
+        -- Arrange: only window is the explorer. When the callback fires
+        -- with a regular file buffer, the for loop finds no candidate ->
+        -- target_win is nil -> vsplit branch runs.
+        other_buf = vim.api.nvim_create_buf(false, false)
+        local cmds_seen = {}
+        local original_vim_cmd = vim.cmd
+        -- Preserve callable semantics but capture invocations.
+        vim.cmd = setmetatable({}, {
+          __call = function(_, arg)
+            table.insert(cmds_seen, arg)
+          end,
+          __index = original_vim_cmd,
+        })
+
+        -- Act
+        trigger(other_buf)
+
+        -- Assert
+        assert.is_true(
+          vim.tbl_contains(cmds_seen, "rightbelow vsplit"),
+          "expected vim.cmd('rightbelow vsplit') to fire"
+        )
+
+        vim.cmd = original_vim_cmd
+      end
+    )
+
+    it(
       "redirects a regular file into an existing non-explorer window",
       function()
         -- Arrange: `:vsplit` clones the current (explorer) buffer into the

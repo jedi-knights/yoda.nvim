@@ -56,4 +56,56 @@ describe("commands.formatting", function()
       assert.matches("Enabled formatting on save", notify_data.last_call[1])
     end)
   end)
+
+  describe(":FormatFeature", function()
+    it(
+      "aligns Examples blocks and flushes them when the block ends (L68 truthy)",
+      function()
+        -- Arrange: layout must exit the Examples block on a non-pipe line
+        -- to hit `if in_examples and #example_lines > 0 then` -- that's the
+        -- flush-and-align branch. Without a trailing non-pipe line the loop
+        -- just finishes with example_lines still in flight, exercising the
+        -- post-loop cleanup rather than this branch.
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_set_current_buf(bufnr)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+          "Feature: Example flush",
+          "  Scenario: X",
+          "    Examples:",
+          "      | a | bb |",
+          "      | 1 | 22 |",
+          "  Scenario: Y", -- exits the Examples block; L68 fires here
+        })
+        vim.notify = function() end
+
+        -- Act
+        vim.api.nvim_exec2("FormatFeature", {})
+
+        -- Assert: format_example_block replaced the raw pipe lines with
+        -- the "      | ..." aligned form (its prefix is a 6-space indent
+        -- followed by "| "). The Scenario: Y line that exited the block
+        -- is preserved verbatim. Both are downstream effects of L68
+        -- firing -- without it, example_lines would linger and get
+        -- flushed only after the loop.
+        local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+        local saw_aligned = false
+        for _, line in ipairs(lines) do
+          -- format_example_block's output always begins with "      | "
+          -- (six spaces + pipe + space).
+          if line:sub(1, 8) == "      | " and line:find("a") then
+            saw_aligned = true
+          end
+        end
+        assert.is_true(saw_aligned, "expected an aligned Examples row")
+        assert.is_true(
+          vim.tbl_contains(lines, "  Scenario: Y"),
+          "expected Scenario: Y to be preserved after the flush"
+        )
+
+        if vim.api.nvim_buf_is_valid(bufnr) then
+          vim.api.nvim_buf_delete(bufnr, { force = true })
+        end
+      end
+    )
+  end)
 end)

@@ -219,4 +219,70 @@ describe("commands", function()
       assert.is_true(ok)
     end)
   end)
+
+  describe("edge cases exposed by branch instrumentation", function()
+    it("warns when a command module fails to require (L16 truthy)", function()
+      -- Arrange: force one command module's require to fail so the
+      -- "Failed to load" WARN branch fires.
+      local original_preload = package.preload["yoda.commands.lazy"]
+      local original_loaded = package.loaded["yoda.commands.lazy"]
+      package.loaded["yoda.commands.lazy"] = nil
+      package.preload["yoda.commands.lazy"] = function()
+        error("simulated lazy-commands failure")
+      end
+      local warn_msgs = {}
+      vim.notify = function(msg, level)
+        if level == vim.log.levels.WARN then
+          table.insert(warn_msgs, msg)
+        end
+      end
+
+      -- Act
+      package.loaded["yoda.commands"] = nil
+      require("yoda.commands")
+
+      -- Assert
+      local saw = false
+      for _, msg in ipairs(warn_msgs) do
+        if msg:find("Failed to load yoda%.commands%.lazy") then
+          saw = true
+        end
+      end
+      assert.is_true(saw, "expected 'Failed to load' warn")
+
+      package.preload["yoda.commands.lazy"] = original_preload
+      package.loaded["yoda.commands.lazy"] = original_loaded
+    end)
+
+    it("warns when a command module's setup() raises (L23 truthy)", function()
+      -- Arrange: swap in a stub whose setup() raises.
+      local original_loaded = package.loaded["yoda.commands.diagnostics"]
+      package.loaded["yoda.commands.diagnostics"] = {
+        setup = function()
+          error("simulated setup failure")
+        end,
+      }
+      local warn_msgs = {}
+      vim.notify = function(msg, level)
+        if level == vim.log.levels.WARN then
+          table.insert(warn_msgs, msg)
+        end
+      end
+
+      -- Act
+      package.loaded["yoda.commands"] = nil
+      require("yoda.commands")
+
+      -- Assert
+      local saw = false
+      for _, msg in ipairs(warn_msgs) do
+        if msg:find("Failed to setup yoda%.commands%.diagnostics") then
+          saw = true
+        end
+      end
+      assert.is_true(saw, "expected 'Failed to setup' warn")
+
+      package.loaded["yoda.commands.diagnostics"] = original_loaded
+    end)
+  end)
 end)
