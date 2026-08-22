@@ -110,12 +110,34 @@ return {
       },
     })
 
-    -- stylua: ignore start
-    vim.keymap.set({ "x", "o" }, "af", function() require("nvim-treesitter-textobjects.select").select_textobject("@function.outer", "textobjects") end, { desc = "around function" })
-    vim.keymap.set({ "x", "o" }, "if", function() require("nvim-treesitter-textobjects.select").select_textobject("@function.inner", "textobjects") end, { desc = "inside function" })
-    vim.keymap.set({ "x", "o" }, "ac", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.outer", "textobjects") end, { desc = "around class" })
-    vim.keymap.set({ "x", "o" }, "ic", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.inner", "textobjects") end, { desc = "inside class" })
-    -- stylua: ignore end
+    -- Each function body is on its own line so LuaCov's FN hit tracker
+    -- credits invocations to the definition. Inline `function() ... end` on
+    -- the same source line as a preceding statement is not attributed by
+    -- LuaCov -- covered behaviorally by tests but reported as 0 hits.
+    vim.keymap.set({ "x", "o" }, "af", function()
+      require("nvim-treesitter-textobjects.select").select_textobject(
+        "@function.outer",
+        "textobjects"
+      )
+    end, { desc = "around function" })
+    vim.keymap.set({ "x", "o" }, "if", function()
+      require("nvim-treesitter-textobjects.select").select_textobject(
+        "@function.inner",
+        "textobjects"
+      )
+    end, { desc = "inside function" })
+    vim.keymap.set({ "x", "o" }, "ac", function()
+      require("nvim-treesitter-textobjects.select").select_textobject(
+        "@class.outer",
+        "textobjects"
+      )
+    end, { desc = "around class" })
+    vim.keymap.set({ "x", "o" }, "ic", function()
+      require("nvim-treesitter-textobjects.select").select_textobject(
+        "@class.inner",
+        "textobjects"
+      )
+    end, { desc = "inside class" })
 
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "feature",
