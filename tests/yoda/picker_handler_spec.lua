@@ -376,4 +376,115 @@ describe("picker_handler", function()
       end
     )
   end)
+
+  describe("edge cases exposed by branch instrumentation", function()
+    -- Existing tests all drive handle_yaml_selection through a happy path
+    -- with pre-populated env/region maps. Adds four tests that exercise
+    -- previously-untaken branches:
+    --   L110  extract_env_names loop with zero iterations (empty envs)
+    --   L183  wizard_step_select_region when the chosen env has no regions
+    --   L209 + L275  markers picker cancellation propagates through the chain
+    --   L232 + L281  allure picker cancellation propagates through the chain
+
+    it(
+      "handles an empty env_region without env_order (extract_env_names loop 0-iter)",
+      function()
+        -- Arrange
+        local result = "NOT_CALLED"
+
+        -- Act: no env_order, no environments key -> for pairs({}) is 0 iters
+        PickerHandler.handle_yaml_selection({}, function(selection)
+          result = selection
+        end)
+
+        -- Assert: picker gets empty items, callback receives nil (cancelled)
+        assert.is_nil(result)
+      end
+    )
+
+    it(
+      "warns and cancels when the selected environment has no regions",
+      function()
+        -- Arrange
+        local result = "NOT_CALLED"
+        local warn_msg
+        local original_notify = vim.notify
+        vim.notify = function(msg, level)
+          if level == vim.log.levels.WARN then
+            warn_msg = msg
+          end
+        end
+
+        -- Act: env exists but its region list is empty (#regions == 0 branch)
+        PickerHandler.handle_yaml_selection({
+          environments = { qa = {} },
+          env_order = { "qa" },
+        }, function(selection)
+          result = selection
+        end)
+
+        -- Assert
+        assert.is_nil(result)
+        assert.is_not_nil(warn_msg)
+        assert.matches("No regions found", warn_msg)
+
+        vim.notify = original_notify
+      end
+    )
+
+    it("cancels the wizard when the markers multiselect returns nil", function()
+      -- Arrange
+      local result = "NOT_CALLED"
+      -- yoda-adapters.picker.multiselect is what wizard_step_select_markers
+      -- uses. Its minimal_init preload returns all items by default -- swap
+      -- for a nil-returning variant to exercise the cancellation path.
+      local original_picker = package.loaded["yoda-adapters.picker"]
+      package.loaded["yoda-adapters.picker"] = {
+        select = original_picker.select,
+        multiselect = function(_items, _opts, on_choice)
+          on_choice(nil)
+        end,
+      }
+
+      -- Act
+      PickerHandler.handle_yaml_selection({
+        environments = { qa = { "auto" } },
+        env_order = { "qa" },
+      }, function(selection)
+        result = selection
+      end)
+
+      -- Assert
+      assert.is_nil(result)
+
+      package.loaded["yoda-adapters.picker"] = original_picker
+    end)
+
+    it("cancels the wizard when the allure prompt returns nil", function()
+      -- Arrange
+      local result = "NOT_CALLED"
+      -- Cancel only on the Allure prompt so env + region pickers proceed
+      -- normally; the wizard reaches step 4 and then bails.
+      package.loaded["snacks.picker"] = {
+        select = function(items, opts, callback)
+          if opts.prompt and opts.prompt:match("Allure") then
+            callback(nil)
+          else
+            callback(items[1])
+          end
+        end,
+      }
+
+      -- Act
+      PickerHandler.handle_yaml_selection({
+        environments = { qa = { "auto" } },
+        env_order = { "qa" },
+      }, function(selection)
+        result = selection
+      end)
+
+      -- Assert
+      assert.is_nil(result)
+    end)
+  end)
 end)
