@@ -251,6 +251,24 @@ describe("plugins.git", function()
         -- Assert
         helpers.assert_called_with(diffthis_data, "~")
       end)
+
+      it(
+        "[c returns the literal '[c' when the buffer is in diff mode (L94 truthy)",
+        function()
+          -- Arrange
+          local original_diff = vim.wo.diff
+          vim.wo.diff = true
+          local cb = find_keymap_by_desc("n", "Git: Prev hunk").callback
+
+          -- Act
+          local result = cb()
+
+          -- Assert
+          assert.equals("[c", result)
+
+          vim.wo.diff = original_diff
+        end
+      )
     end)
   end)
 

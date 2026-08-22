@@ -84,6 +84,28 @@ describe("extras.lang.node", function()
         assert.equals(vim.fn.getcwd(), captured.cwd())
       end
     )
+
+    it(
+      "warns without registering when the Jest adapter factory raises (L36 else)",
+      function()
+        -- Arrange
+        package.loaded["neotest-jest"] = function(_opts)
+          error("jest factory blew up")
+        end
+        local notify_spy, notify_data = helpers.spy()
+        local restore = helpers.mock(vim, "notify", notify_spy)
+
+        -- Act
+        jest_spec.config()
+
+        -- Assert
+        assert.matches("Jest adapter setup failed", notify_data.last_call[1])
+        assert.equals(vim.log.levels.WARN, notify_data.last_call[2])
+        assert.equals(0, #neotest_registry.adapters())
+
+        restore()
+      end
+    )
   end)
 
   describe("neotest-vitest config()", function()
