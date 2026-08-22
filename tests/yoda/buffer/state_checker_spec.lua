@@ -334,5 +334,23 @@ describe("buffer.state_checker", function()
       vim.api.nvim_buf_delete(scratch_buf, { force = true })
       vim.api.nvim_buf_delete(empty_buf, { force = true })
     end)
+
+    it(
+      "is_buffer_empty returns false when bufname is literally [Scratch] (L47 truthy)",
+      function()
+        -- Arrange: is_scratch_buffer keys on the literal "[Scratch]" name,
+        -- not on Neovim's scratch-buffer flag -- so the default
+        -- nvim_create_buf(false, true) doesn't trip it. Set the name
+        -- explicitly to hit the L47 return-false branch inside
+        -- is_buffer_empty.
+        local buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(buf, "[Scratch]")
+
+        -- Act / Assert
+        assert.is_false(state_checker.is_buffer_empty(buf))
+
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end
+    )
   end)
 end)

@@ -462,5 +462,48 @@ describe("keymaps.testing", function()
         )
       end
     )
+
+    it(
+      "notifies when pytest-atlas is unavailable for Clear log (L150 arm 1)",
+      function()
+        -- Arrange: no explicit package.loaded stub -> require fails -> the
+        -- else branch of the `if ok then` inside the Clear log keymap fires.
+        package.loaded["pytest-atlas"] = nil
+
+        -- Act
+        get_callback("Test: Clear pytest-atlas log")()
+
+        -- Assert
+        helpers.assert_called_with(
+          notify_spy_data,
+          "pytest-atlas not available",
+          "error"
+        )
+      end
+    )
+  end)
+
+  describe("<leader>tF unavailable-window path (L66)", function()
+    -- Mirror of the existing <leader>tO unavailability test. `<leader>tF`
+    -- (Focus summary window) had its `if not ok then` truthy branch
+    -- untested -- the analogous test only covered <leader>tO.
+    it(
+      "notifies when yoda-window.utils is unavailable (summary window)",
+      function()
+        -- Arrange
+        package.preload["yoda-window.utils"] = nil
+        package.loaded["yoda-window.utils"] = nil
+
+        -- Act
+        get_callback("Test: Focus summary window")()
+
+        -- Assert
+        helpers.assert_called_with(
+          notify_spy_data,
+          "yoda-window.utils not available",
+          "error"
+        )
+      end
+    )
   end)
 end)

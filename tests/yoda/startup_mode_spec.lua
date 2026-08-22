@@ -352,6 +352,47 @@ describe("yoda.startup_mode", function()
       -- Assert
       assert.is_true(ok)
     end)
+
+    it(
+      "deferred focus tick returns early when bufwinid reports no window (L83 truthy)",
+      function()
+        -- Arrange: claudecode.terminal loadable + bufnr present, but the
+        -- buffer has no window (bufwinid == -1). The deferred fn should
+        -- hit the L83 early-return before touching set_current_win or
+        -- startinsert.
+        package.loaded["snacks"] = {
+          explorer = { open = function() end },
+        }
+        local cmds_seen = {}
+        vim.cmd = function(c)
+          table.insert(cmds_seen, c)
+        end
+        package.loaded["claudecode.terminal"] = {
+          get_active_terminal_bufnr = function()
+            return 42
+          end,
+        }
+        -- L83's `win == -1` truthy path: bufwinid always -1 during the
+        -- deferred tick, so the guard fires.
+        vim.fn.bufwinid = function()
+          return -1
+        end
+        local set_cursor_calls = 0
+        vim.api.nvim_set_current_win = function()
+          set_cursor_calls = set_cursor_calls + 1
+        end
+
+        -- Act
+        startup_mode.start_claude_layout()
+
+        -- Assert: no `startinsert` because L83 short-circuited; also no
+        -- extra set_current_win beyond the layout-work call earlier.
+        assert.is_false(
+          vim.tbl_contains(cmds_seen, "startinsert"),
+          "startinsert must not fire when the deferred tick returns early"
+        )
+      end
+    )
   end)
 
   describe("setup", function()
