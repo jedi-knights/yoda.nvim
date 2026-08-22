@@ -116,4 +116,78 @@ describe("plugins.foundation", function()
       assert.is_true(ok, spec.name)
     end
   end)
+
+  it(
+    "emits an ERROR notify when the sibling module require fails (L38)",
+    function()
+      -- Arrange: minimal_init preloads every yoda-* module as a stub, so a
+      -- plain config() succeeds. Force yoda-adapters (the first spec's
+      -- module) to fail so the L38 branch fires.
+      local original_preload = package.preload["yoda-adapters"]
+      local original_loaded = package.loaded["yoda-adapters"]
+      package.loaded["yoda-adapters"] = nil
+      package.preload["yoda-adapters"] = function()
+        error("simulated adapter failure")
+      end
+      local specs = load(nil)
+      local adapter_spec = by_name(specs, "yoda.nvim-adapters")
+      assert.is_not_nil(adapter_spec)
+      local notify_msgs = {}
+      local original_notify = vim.notify
+      vim.notify = function(msg, level)
+        table.insert(notify_msgs, { msg = msg, level = level })
+      end
+
+      -- Act
+      adapter_spec.config()
+
+      -- Assert
+      local found = false
+      for _, entry in ipairs(notify_msgs) do
+        if entry.msg:find("Failed to load yoda%-adapters") then
+          found = true
+          assert.equals(vim.log.levels.ERROR, entry.level)
+        end
+      end
+      assert.is_true(found, "expected an ERROR notify for the load failure")
+
+      vim.notify = original_notify
+      package.preload["yoda-adapters"] = original_preload
+      package.loaded["yoda-adapters"] = original_loaded
+    end
+  )
+
+  it("emits a WARN notify when the sibling's setup() raises (L52)", function()
+    -- Arrange: swap in a yoda-core stub whose setup raises.
+    local original_loaded = package.loaded["yoda-core"]
+    package.loaded["yoda-core"] = {
+      setup = function()
+        error("simulated setup failure")
+      end,
+    }
+    local specs = load(nil)
+    local core_spec = by_name(specs, "yoda-core.nvim")
+    assert.is_not_nil(core_spec)
+    local notify_msgs = {}
+    local original_notify = vim.notify
+    vim.notify = function(msg, level)
+      table.insert(notify_msgs, { msg = msg, level = level })
+    end
+
+    -- Act
+    core_spec.config()
+
+    -- Assert
+    local found = false
+    for _, entry in ipairs(notify_msgs) do
+      if entry.msg:find("yoda%-core setup failed") then
+        found = true
+        assert.equals(vim.log.levels.WARN, entry.level)
+      end
+    end
+    assert.is_true(found, "expected a WARN notify for the setup failure")
+
+    vim.notify = original_notify
+    package.loaded["yoda-core"] = original_loaded
+  end)
 end)
