@@ -517,5 +517,48 @@ describe("python_venv", function()
       pcall(vim.api.nvim_del_user_command, "PythonVenvCache")
       pcall(vim.api.nvim_del_user_command, "PythonVenvClear")
     end)
+
+    it("PythonVenvClear empties the cache and notifies", function()
+      -- Arrange
+      local restore_stat = helpers.mock_fs_stat({
+        ["/tmp/clear-project/.venv/bin/python"] = { type = "file", mode = 493 },
+      })
+      python_venv.detect_venv_async("/tmp/clear-project", function() end)
+      vim.wait(200)
+      assert.equals(1, python_venv.get_cache_stats().total)
+      restore_stat()
+
+      local notify_msgs = {}
+      package.loaded["yoda-adapters.notification"] = {
+        notify = function(msg, level)
+          table.insert(notify_msgs, { msg = msg, level = level })
+        end,
+      }
+      package.loaded["yoda.python_venv"] = nil
+      python_venv = require("yoda.python_venv")
+      -- Re-seed cache under the new module instance so the command sees it.
+      python_venv.detect_venv_async("/tmp/clear-project", function() end)
+      vim.wait(200)
+      python_venv.setup_commands()
+
+      -- Act
+      vim.api.nvim_exec2("PythonVenvClear", {})
+
+      -- Assert
+      assert.equals(0, python_venv.get_cache_stats().total)
+      local found_notify = false
+      for _, entry in ipairs(notify_msgs) do
+        if entry.msg == "Python venv cache cleared" then
+          found_notify = true
+          assert.equals("info", entry.level)
+        end
+      end
+      assert.is_true(found_notify, "expected 'cache cleared' notify")
+
+      package.loaded["yoda-adapters.notification"] = nil
+      pcall(vim.api.nvim_del_user_command, "PythonVenvDetect")
+      pcall(vim.api.nvim_del_user_command, "PythonVenvCache")
+      pcall(vim.api.nvim_del_user_command, "PythonVenvClear")
+    end)
   end)
 end)
