@@ -320,4 +320,78 @@ environments:
     --   require("yoda-logging.logger").set_strategy("file")
     --   require("yoda-logging.logger").set_level("trace")
   end)
+
+  it("invokes logger.trace closure -- covers create_line_log helper", function()
+    -- Arrange: swap in a logger whose trace() invokes its function
+    -- argument (matches what a real logger with trace level enabled
+    -- would do). The default minimal_init logger is a noop, which is
+    -- why create_line_log (called inside the trace closure) was never
+    -- entered.
+    local trace_messages = {}
+    local original_logger = package.loaded["yoda-logging.logger"]
+    package.loaded["yoda-logging.logger"] = {
+      trace = function(fn_or_msg)
+        if type(fn_or_msg) == "function" then
+          table.insert(trace_messages, fn_or_msg())
+        else
+          table.insert(trace_messages, tostring(fn_or_msg))
+        end
+      end,
+      debug = function() end,
+      info = function() end,
+      warn = function() end,
+      error = function() end,
+      set_strategy = function() end,
+      set_level = function() end,
+    }
+    -- Re-require the parser so it captures the new logger.
+    package.loaded["yoda.yaml_parser"] = nil
+    package.loaded["yoda.core.yaml_parser"] = nil
+    local yaml_parser_fresh = require("yoda.yaml_parser")
+
+    local yaml_content = [[
+environments:
+  - name: qa
+    regions:
+      - name: auto
+]]
+    package.loaded["plenary.path"] = {
+      new = function()
+        return {
+          read = function()
+            return yaml_content
+          end,
+        }
+      end,
+    }
+    vim.fn.stdpath = function()
+      return "/tmp"
+    end
+    io.open = function()
+      return { write = function() end, close = function() end }
+    end
+
+    -- Act
+    local result = yaml_parser_fresh.parse_ingress_mapping("test.yaml")
+
+    -- Assert: parse succeeded AND trace-closure fired at least once with
+    -- the "Line N: indent=X content='...'" format produced by
+    -- create_line_log.
+    assert.is_not_nil(result)
+    local saw_line_log = false
+    for _, msg in ipairs(trace_messages) do
+      if msg:match("^Line %d+: indent=%d+ content='") then
+        saw_line_log = true
+        break
+      end
+    end
+    assert.is_true(
+      saw_line_log,
+      "expected a 'Line N: indent=X content=...' trace entry"
+    )
+
+    package.loaded["yoda-logging.logger"] = original_logger
+    package.loaded["yoda.yaml_parser"] = nil
+    package.loaded["yoda.core.yaml_parser"] = nil
+  end)
 end)

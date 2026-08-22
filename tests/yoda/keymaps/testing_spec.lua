@@ -197,6 +197,55 @@ describe("keymaps.testing", function()
         "warn"
       )
     end)
+
+    it(
+      "output-panel predicate matches Neotest Output Panel buffer name or ft",
+      function()
+        -- Arrange: capture the predicate focus_window was called with, then
+        -- invoke it directly with sample (win, buf, buf_name, ft) tuples.
+        local captured_predicate
+        package.loaded["yoda-window.utils"] = {
+          focus_window = function(predicate)
+            captured_predicate = predicate
+            return true
+          end,
+        }
+
+        -- Act
+        get_callback("Test: Focus output panel")()
+        assert.is_function(captured_predicate)
+
+        -- Assert: match on buf_name
+        assert.is_truthy(
+          captured_predicate(1, 1, "/tmp/Neotest Output Panel", "other")
+        )
+        -- Match on ft
+        assert.is_truthy(
+          captured_predicate(1, 1, "/tmp/foo", "neotest-output-panel")
+        )
+        -- Neither: no match
+        assert.is_false(captured_predicate(1, 1, "/tmp/foo", "lua"))
+      end
+    )
+
+    it("summary predicate matches ft == neotest-summary", function()
+      -- Arrange
+      local captured_predicate
+      package.loaded["yoda-window.utils"] = {
+        focus_window = function(predicate)
+          captured_predicate = predicate
+          return true
+        end,
+      }
+
+      -- Act
+      get_callback("Test: Focus summary window")()
+      assert.is_function(captured_predicate)
+
+      -- Assert
+      assert.is_true(captured_predicate(1, 1, "any", "neotest-summary"))
+      assert.is_false(captured_predicate(1, 1, "any", "lua"))
+    end)
   end)
 
   describe("<leader>tc (run current file by filetype)", function()
