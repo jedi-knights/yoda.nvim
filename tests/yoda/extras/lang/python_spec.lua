@@ -133,6 +133,31 @@ describe("extras.lang.python", function()
         neotest_registry._reset()
       end
     )
+
+    it(
+      "warns without registering when the neotest-python adapter factory raises",
+      function()
+        -- Arrange
+        local neotest_registry = require("yoda.core.neotest_registry")
+        neotest_registry._reset()
+        package.loaded["neotest-python"] = function(_opts)
+          error("neotest-python factory blew up")
+        end
+        local notify_spy, notify_data = helpers.spy()
+        local restore = helpers.mock(vim, "notify", notify_spy)
+
+        -- Act
+        neotest_spec.config()
+
+        -- Assert
+        assert.matches("Python adapter setup failed", notify_data.last_call[1])
+        assert.equals(vim.log.levels.WARN, notify_data.last_call[2])
+        assert.equals(0, #neotest_registry.adapters())
+
+        restore()
+        neotest_registry._reset()
+      end
+    )
   end)
 
   describe("pytest-atlas", function()
