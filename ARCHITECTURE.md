@@ -44,7 +44,7 @@ lua/yoda/
 ├── health.lua        -- :checkhealth yoda
 │
 ├── plugins/          -- 17 core specs, one plugin per file
-├── extras/lang/      -- opt-in language stacks (12 languages)
+├── extras/lang/      -- opt-in language stacks (20)
 │
 ├── core/             -- pure logic, NO vim.api imports (headless-testable)
 └── ui/               -- vim.api wiring (autocmds, buffer options, notifications)
