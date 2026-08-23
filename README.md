@@ -106,12 +106,33 @@ A Go developer should not pay startup cost for the Rust toolchain.
 | `lang.perl` | perlnavigator | — | perl-debug-adapter |
 | `lang.ocaml` | ocaml-lsp | — | — |
 | `lang.cobol` | cobol_ls | — | — |
+| `lang.clang` | clangd | — | codelldb³ |
+| `lang.dart` | dartls⁴ | flutter-tools⁴ | flutter-tools⁴ |
+| `lang.kotlin` | kotlin_language_server | — | kotlin-debug-adapter |
+| `lang.php` | intelephense | neotest-phpunit | php-debug-adapter |
+| `lang.shell` | bashls (+ zsh)⁵ | — | — |
+| `lang.sql` | sqlls | — | — |
+| `lang.swift` | sourcekit-lsp⁶ | — | — |
+| `lang.web` | html + cssls + emmet | — | — |
 
 ¹ jdtls needs a workspace directory and JVM flags Mason cannot supply, so
 install it out of band (`brew install jdtls`). Everything else installs
 automatically via Mason.
 
 ² omnisharp serves both C# and VB.NET — its filetypes are `cs` and `vb`.
+
+³ codelldb ships in the core mason-nvim-dap ensure_installed list, so the
+clang extra only wires the launch config — it does not re-request install.
+
+⁴ flutter-tools.nvim owns dartls setup, hot-reload, device selection and DAP
+end-to-end. Registering dartls separately would double-configure the server.
+
+⁵ bashls covers both bash and zsh — there is no dedicated zsh LSP. The extra
+extends the default filetypes list to include `zsh`.
+
+⁶ sourcekit-lsp ships with the Swift toolchain (Xcode on macOS, `swiftly` on
+Linux). The extra enables it directly instead of routing through Mason to
+avoid a 500MB toolchain download.
 
 A dash means no integration exists for that language, not that it was
 skipped. Shipping a neotest adapter for COBOL would mean inventing one.
@@ -430,7 +451,7 @@ yoda.nvim/
 │       ├── autocmds.lua     # Non-plugin autocommands — apply()
 │       ├── health.lua       # :checkhealth yoda
 │       ├── plugins/         # Core plugin specs, one plugin per file
-│       ├── extras/lang/     # Opt-in language stacks (12 languages)
+│       ├── extras/lang/     # Opt-in language stacks (20)
 │       ├── core/            # Pure logic — no vim.api, headless-testable
 │       ├── ui/              # vim.api wiring (autocmds, buffers, notifications)
 │       ├── keymaps/         # Domain-grouped keymap modules — apply()
