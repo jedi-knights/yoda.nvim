@@ -28,4 +28,18 @@ else
   end)
 end
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "swift" },
+})
+
+-- swift-format ships with the Swift toolchain; swiftlint is a separate
+-- Homebrew / SPM install. Both remain optional beyond this contribution.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { swift = { "swift_format" } },
+})
+
+require("yoda.core.linter_registry").register({
+  linters_by_ft = { swift = { "swiftlint" } },
+})
+
 return {}

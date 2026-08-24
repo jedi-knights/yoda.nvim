@@ -18,4 +18,17 @@ require("yoda.core.lsp_registry").register({
   servers = { "html", "cssls", "emmet_language_server" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "html", "css", "scss" },
+})
+
+-- Core conform already wires html -> prettier; contribute the css/scss
+-- pipeline so save-formats work symmetrically.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = {
+    css = { "prettier" },
+    scss = { "prettier" },
+  },
+})
+
 return {}

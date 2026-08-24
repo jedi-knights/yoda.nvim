@@ -1,5 +1,7 @@
 -- tests/yoda/extras/lang/ocaml_spec.lua
 local registry = require("yoda.core.lsp_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
 
 describe("extras.lang.ocaml", function()
   local specs
@@ -15,12 +17,16 @@ describe("extras.lang.ocaml", function()
 
   before_each(function()
     registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
     package.loaded["yoda.extras.lang.ocaml"] = nil
     specs = require("yoda.extras.lang.ocaml")
   end)
 
   after_each(function()
     registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
   end)
 
   it(
@@ -34,6 +40,19 @@ describe("extras.lang.ocaml", function()
   it("registers its debug adapters", function()
     -- Assert
     assert.same({}, registry.dap_adapters())
+  end)
+
+  it("contributes the ocaml treesitter parser", function()
+    -- Assert
+    assert.same({ "ocaml" }, ts_registry.parsers())
+  end)
+
+  it("contributes ocamlformat as the ocaml formatter", function()
+    -- Assert
+    assert.same(
+      { ocaml = { "ocamlformat" } },
+      formatter_registry.formatters_by_ft()
+    )
   end)
 
   it("ships no plugin specs it cannot back with a real integration", function()

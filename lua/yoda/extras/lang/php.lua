@@ -13,6 +13,18 @@ require("yoda.core.lsp_registry").register({
   dap_adapters = { "php-debug-adapter" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "php", "phpdoc" },
+})
+
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { php = { "php_cs_fixer" } },
+})
+
+require("yoda.core.linter_registry").register({
+  linters_by_ft = { php = { "phpcs" } },
+})
+
 return {
   {
     "olimorris/neotest-phpunit",

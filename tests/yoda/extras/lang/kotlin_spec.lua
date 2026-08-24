@@ -2,6 +2,9 @@
 local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
 local dap_registry = require("yoda.core.dap_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
+local linter_registry = require("yoda.core.linter_registry")
 
 describe("extras.lang.kotlin", function()
   local specs
@@ -18,6 +21,9 @@ describe("extras.lang.kotlin", function()
   before_each(function()
     registry._reset()
     dap_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["yoda.extras.lang.kotlin"] = nil
     specs = require("yoda.extras.lang.kotlin")
   end)
@@ -25,6 +31,9 @@ describe("extras.lang.kotlin", function()
   after_each(function()
     registry._reset()
     dap_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
   end)
 
   it("registers kotlin_language_server", function()
@@ -35,6 +44,24 @@ describe("extras.lang.kotlin", function()
   it("registers kotlin-debug-adapter for Mason install", function()
     -- Assert
     assert.same({ "kotlin-debug-adapter" }, registry.dap_adapters())
+  end)
+
+  it("contributes the kotlin treesitter parser", function()
+    -- Assert
+    assert.same({ "kotlin" }, ts_registry.parsers())
+  end)
+
+  it("contributes ktlint as the kotlin formatter", function()
+    -- Assert
+    assert.same(
+      { kotlin = { "ktlint" } },
+      formatter_registry.formatters_by_ft()
+    )
+  end)
+
+  it("contributes ktlint as the kotlin linter", function()
+    -- Assert
+    assert.same({ kotlin = { "ktlint" } }, linter_registry.linters_by_ft())
   end)
 
   it(

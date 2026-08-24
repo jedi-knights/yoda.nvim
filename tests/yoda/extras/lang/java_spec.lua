@@ -2,6 +2,8 @@
 local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
 local neotest_registry = require("yoda.core.neotest_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
 
 describe("extras.lang.java", function()
   local specs
@@ -18,6 +20,8 @@ describe("extras.lang.java", function()
   before_each(function()
     registry._reset()
     neotest_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
     package.loaded["yoda.extras.lang.java"] = nil
     package.loaded["neotest-java"] = nil
     specs = require("yoda.extras.lang.java")
@@ -26,6 +30,8 @@ describe("extras.lang.java", function()
   after_each(function()
     registry._reset()
     neotest_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
     package.loaded["neotest-java"] = nil
   end)
 
@@ -40,6 +46,19 @@ describe("extras.lang.java", function()
   it("registers its debug adapters", function()
     -- Assert
     assert.same({ "java-debug-adapter" }, registry.dap_adapters())
+  end)
+
+  it("contributes the java treesitter parser", function()
+    -- Assert
+    assert.same({ "java" }, ts_registry.parsers())
+  end)
+
+  it("contributes google-java-format as the java formatter", function()
+    -- Assert
+    assert.same(
+      { java = { "google-java-format" } },
+      formatter_registry.formatters_by_ft()
+    )
   end)
 
   it("declares nvim-jdtls", function()

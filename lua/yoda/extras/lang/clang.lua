@@ -16,6 +16,26 @@ require("yoda.core.lsp_registry").register({
   servers = { "clangd" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "c", "cpp" },
+})
+
+-- clang-format serves both C and C++ (it dispatches on file extension).
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = {
+    c = { "clang-format" },
+    cpp = { "clang-format" },
+  },
+})
+
+-- clangtidy is the nvim-lint identifier; the underlying binary is clang-tidy.
+require("yoda.core.linter_registry").register({
+  linters_by_ft = {
+    c = { "clangtidy" },
+    cpp = { "clangtidy" },
+  },
+})
+
 return {
   -- codelldb is installed via the core mason-nvim-dap ensure_installed; wire
   -- it into nvim-dap. Registered through dap_registry rather than by

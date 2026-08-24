@@ -12,4 +12,16 @@ require("yoda.core.lsp_registry").register({
   servers = { "sqlls" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "sql" },
+})
+
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { sql = { "sql_formatter" } },
+})
+
+require("yoda.core.linter_registry").register({
+  linters_by_ft = { sql = { "sqlfluff" } },
+})
+
 return {}

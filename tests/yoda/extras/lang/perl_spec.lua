@@ -2,6 +2,8 @@
 local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
 local dap_registry = require("yoda.core.dap_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
 
 describe("extras.lang.perl", function()
   local specs
@@ -18,6 +20,8 @@ describe("extras.lang.perl", function()
   before_each(function()
     registry._reset()
     dap_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
     package.loaded["yoda.extras.lang.perl"] = nil
     specs = require("yoda.extras.lang.perl")
   end)
@@ -25,6 +29,8 @@ describe("extras.lang.perl", function()
   after_each(function()
     registry._reset()
     dap_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
   end)
 
   it(
@@ -38,6 +44,22 @@ describe("extras.lang.perl", function()
   it("registers its debug adapters", function()
     -- Assert
     assert.same({ "perl-debug-adapter" }, registry.dap_adapters())
+  end)
+
+  it(
+    "does NOT contribute a treesitter parser -- upstream grammar is incomplete",
+    function()
+      -- Assert: intentionally empty; see the extra module's comment.
+      assert.same({}, ts_registry.parsers())
+    end
+  )
+
+  it("contributes perltidy as the perl formatter", function()
+    -- Assert
+    assert.same(
+      { perl = { "perltidy" } },
+      formatter_registry.formatters_by_ft()
+    )
   end)
 
   it("ships no plugin specs it cannot back with a real integration", function()

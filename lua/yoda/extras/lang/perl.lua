@@ -12,6 +12,14 @@ require("yoda.core.lsp_registry").register({
   dap_adapters = { "perl-debug-adapter" },
 })
 
+-- No treesitter parser: the community tree-sitter-perl grammar is
+-- incomplete for real-world Perl (missing prototypes, string ops, most
+-- CPAN idioms) -- shipping it would produce broken highlights. Fall back
+-- to vim's native regex highlighter for Perl until upstream matures.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { perl = { "perltidy" } },
+})
+
 return {
   -- The debug adapter is a Mason package rather than a Neovim plugin, so this
   -- entry exists only to attach the dap wiring. It carries no plugin of its
