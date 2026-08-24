@@ -12,6 +12,13 @@ require("yoda.core.lsp_registry").register({
   dap_adapters = { "netcoredbg" },
 })
 
+-- c_sharp treesitter parser is already in the core ensure_installed, so no
+-- treesitter contribution is needed. csharpier is the community-standard
+-- formatter; install via `dotnet tool install -g csharpier`.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { cs = { "csharpier" } },
+})
+
 return {
   {
     "Issafalcon/neotest-dotnet",

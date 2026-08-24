@@ -12,4 +12,14 @@ require("yoda.core.lsp_registry").register({
   servers = { "ocamllsp" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "ocaml" },
+})
+
+-- ocamlformat requires a `.ocamlformat` file in the project root or it
+-- refuses to format; without one, format-on-save no-ops silently.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { ocaml = { "ocamlformat" } },
+})
+
 return {}

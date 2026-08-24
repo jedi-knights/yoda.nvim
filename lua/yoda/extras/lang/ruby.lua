@@ -11,6 +11,19 @@ require("yoda.core.lsp_registry").register({
   servers = { "ruby_lsp" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "ruby" },
+})
+
+-- rubocop doubles as formatter and linter -- same binary, different flags.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { ruby = { "rubocop" } },
+})
+
+require("yoda.core.linter_registry").register({
+  linters_by_ft = { ruby = { "rubocop" } },
+})
+
 --- Build and register a neotest adapter, reporting failures without
 --- preventing the sibling adapter from loading.
 --- @param module string adapter module name

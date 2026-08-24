@@ -12,6 +12,16 @@ require("yoda.core.lsp_registry").register({
   dap_adapters = { "java-debug-adapter" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "java" },
+})
+
+-- google-java-format is the de-facto formatter; use the nvim-jdtls format
+-- action for range-format if a project has its own style file.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { java = { "google-java-format" } },
+})
+
 return {
   -- jdtls is driven per-buffer rather than by vim.lsp.enable: it needs a
   -- workspace path derived from the project root, so nvim-jdtls starts it.

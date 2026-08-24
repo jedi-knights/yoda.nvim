@@ -23,4 +23,21 @@ vim.lsp.config("bashls", {
   filetypes = { "bash", "sh", "zsh" },
 })
 
+-- Core conform already wires sh -> shfmt; extend to the bash/zsh filetypes
+-- since bashls treats them all as the same LSP surface.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = {
+    bash = { "shfmt" },
+    zsh = { "shfmt" },
+  },
+})
+
+require("yoda.core.linter_registry").register({
+  linters_by_ft = {
+    sh = { "shellcheck" },
+    bash = { "shellcheck" },
+    zsh = { "shellcheck" },
+  },
+})
+
 return {}

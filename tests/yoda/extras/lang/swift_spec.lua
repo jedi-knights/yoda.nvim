@@ -1,6 +1,9 @@
 -- tests/yoda/extras/lang/swift_spec.lua
 local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
+local linter_registry = require("yoda.core.linter_registry")
 
 describe("extras.lang.swift", function()
   local function load_module()
@@ -10,11 +13,71 @@ describe("extras.lang.swift", function()
 
   before_each(function()
     registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["yoda.extras.lang.swift"] = nil
   end)
 
   after_each(function()
     registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
+  end)
+
+  it("contributes swift treesitter parser", function()
+    -- Arrange: avoid unrelated side-effects during load.
+    local exec_restore = helpers.mock(vim.fn, "executable", function()
+      return 0
+    end)
+    local schedule_restore = helpers.mock(vim, "schedule", function() end)
+
+    -- Act
+    load_module()
+
+    -- Assert
+    assert.same({ "swift" }, ts_registry.parsers())
+
+    schedule_restore()
+    exec_restore()
+  end)
+
+  it("contributes swift_format as the swift formatter", function()
+    -- Arrange
+    local exec_restore = helpers.mock(vim.fn, "executable", function()
+      return 0
+    end)
+    local schedule_restore = helpers.mock(vim, "schedule", function() end)
+
+    -- Act
+    load_module()
+
+    -- Assert
+    assert.same(
+      { swift = { "swift_format" } },
+      formatter_registry.formatters_by_ft()
+    )
+
+    schedule_restore()
+    exec_restore()
+  end)
+
+  it("contributes swiftlint as the swift linter", function()
+    -- Arrange
+    local exec_restore = helpers.mock(vim.fn, "executable", function()
+      return 0
+    end)
+    local schedule_restore = helpers.mock(vim, "schedule", function() end)
+
+    -- Act
+    load_module()
+
+    -- Assert
+    assert.same({ swift = { "swiftlint" } }, linter_registry.linters_by_ft())
+
+    schedule_restore()
+    exec_restore()
   end)
 
   it("does NOT register sourcekit with Mason -- toolchain-provided", function()

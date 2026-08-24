@@ -13,6 +13,19 @@ require("yoda.core.lsp_registry").register({
   dap_adapters = { "kotlin-debug-adapter" },
 })
 
+require("yoda.core.treesitter_registry").register({
+  parsers = { "kotlin" },
+})
+
+-- ktlint doubles as formatter and linter -- same binary, different flags.
+require("yoda.core.formatter_registry").register({
+  formatters_by_ft = { kotlin = { "ktlint" } },
+})
+
+require("yoda.core.linter_registry").register({
+  linters_by_ft = { kotlin = { "ktlint" } },
+})
+
 return {
   -- kotlin-debug-adapter is a Mason package rather than a Neovim plugin, so
   -- this entry exists only to attach the dap wiring. It carries no plugin of

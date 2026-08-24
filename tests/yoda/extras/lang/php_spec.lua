@@ -3,6 +3,9 @@ local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
 local neotest_registry = require("yoda.core.neotest_registry")
 local dap_registry = require("yoda.core.dap_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
+local linter_registry = require("yoda.core.linter_registry")
 
 describe("extras.lang.php", function()
   local specs
@@ -20,6 +23,9 @@ describe("extras.lang.php", function()
     registry._reset()
     neotest_registry._reset()
     dap_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["yoda.extras.lang.php"] = nil
     package.loaded["neotest-phpunit"] = nil
     specs = require("yoda.extras.lang.php")
@@ -29,6 +35,9 @@ describe("extras.lang.php", function()
     registry._reset()
     neotest_registry._reset()
     dap_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["neotest-phpunit"] = nil
   end)
 
@@ -40,6 +49,24 @@ describe("extras.lang.php", function()
   it("registers php-debug-adapter for Mason install", function()
     -- Assert
     assert.same({ "php-debug-adapter" }, registry.dap_adapters())
+  end)
+
+  it("contributes php + phpdoc treesitter parsers", function()
+    -- Assert
+    assert.same({ "php", "phpdoc" }, ts_registry.parsers())
+  end)
+
+  it("contributes php_cs_fixer as the php formatter", function()
+    -- Assert
+    assert.same(
+      { php = { "php_cs_fixer" } },
+      formatter_registry.formatters_by_ft()
+    )
+  end)
+
+  it("contributes phpcs as the php linter", function()
+    -- Assert
+    assert.same({ php = { "phpcs" } }, linter_registry.linters_by_ft())
   end)
 
   it("declares neotest-phpunit, filetype-gated to *.php", function()

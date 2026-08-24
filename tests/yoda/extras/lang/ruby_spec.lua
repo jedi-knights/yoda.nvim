@@ -2,6 +2,9 @@
 local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
 local neotest_registry = require("yoda.core.neotest_registry")
+local ts_registry = require("yoda.core.treesitter_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
+local linter_registry = require("yoda.core.linter_registry")
 
 describe("extras.lang.ruby", function()
   local specs
@@ -18,6 +21,9 @@ describe("extras.lang.ruby", function()
   before_each(function()
     registry._reset()
     neotest_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["yoda.extras.lang.ruby"] = nil
     package.loaded["neotest-rspec"] = nil
     package.loaded["neotest-minitest"] = nil
@@ -28,6 +34,9 @@ describe("extras.lang.ruby", function()
   after_each(function()
     registry._reset()
     neotest_registry._reset()
+    ts_registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["neotest-rspec"] = nil
     package.loaded["neotest-minitest"] = nil
     package.loaded["dap-ruby"] = nil
@@ -41,6 +50,21 @@ describe("extras.lang.ruby", function()
   it("registers its debug adapters", function()
     -- Assert
     assert.same({}, registry.dap_adapters())
+  end)
+
+  it("contributes the ruby treesitter parser", function()
+    -- Assert
+    assert.same({ "ruby" }, ts_registry.parsers())
+  end)
+
+  it("contributes rubocop as the ruby formatter", function()
+    -- Assert
+    assert.same({ ruby = { "rubocop" } }, formatter_registry.formatters_by_ft())
+  end)
+
+  it("contributes rubocop as the ruby linter", function()
+    -- Assert
+    assert.same({ ruby = { "rubocop" } }, linter_registry.linters_by_ft())
   end)
 
   it("declares neotest-rspec", function()

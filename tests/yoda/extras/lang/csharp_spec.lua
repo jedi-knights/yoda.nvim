@@ -3,6 +3,7 @@ local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
 local dap_registry = require("yoda.core.dap_registry")
 local neotest_registry = require("yoda.core.neotest_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
 
 describe("extras.lang.csharp", function()
   local specs
@@ -20,6 +21,7 @@ describe("extras.lang.csharp", function()
     registry._reset()
     dap_registry._reset()
     neotest_registry._reset()
+    formatter_registry._reset()
     package.loaded["yoda.extras.lang.csharp"] = nil
     package.loaded["neotest-dotnet"] = nil
     specs = require("yoda.extras.lang.csharp")
@@ -29,6 +31,7 @@ describe("extras.lang.csharp", function()
     registry._reset()
     dap_registry._reset()
     neotest_registry._reset()
+    formatter_registry._reset()
     package.loaded["neotest-dotnet"] = nil
   end)
 
@@ -40,6 +43,12 @@ describe("extras.lang.csharp", function()
   it("registers its debug adapters", function()
     -- Assert
     assert.same({ "netcoredbg" }, registry.dap_adapters())
+  end)
+
+  it("contributes csharpier as the cs formatter", function()
+    -- Assert: c_sharp treesitter parser is already core, so no ts entry
+    -- is expected -- only the formatter contribution.
+    assert.same({ cs = { "csharpier" } }, formatter_registry.formatters_by_ft())
   end)
 
   it("declares neotest-dotnet gated to cs and vb", function()

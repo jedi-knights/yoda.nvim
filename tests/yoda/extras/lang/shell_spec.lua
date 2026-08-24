@@ -1,6 +1,8 @@
 -- tests/yoda/extras/lang/shell_spec.lua
 local helpers = require("tests.helpers")
 local registry = require("yoda.core.lsp_registry")
+local formatter_registry = require("yoda.core.formatter_registry")
+local linter_registry = require("yoda.core.linter_registry")
 
 describe("extras.lang.shell", function()
   local function load_module()
@@ -12,12 +14,16 @@ describe("extras.lang.shell", function()
 
   before_each(function()
     registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     package.loaded["yoda.extras.lang.shell"] = nil
     original_lsp_config = vim.lsp.config
   end)
 
   after_each(function()
     registry._reset()
+    formatter_registry._reset()
+    linter_registry._reset()
     vim.lsp.config = original_lsp_config
   end)
 
@@ -42,6 +48,35 @@ describe("extras.lang.shell", function()
 
     -- Assert
     assert.same({}, specs)
+  end)
+
+  it("contributes shfmt for bash and zsh (core covers sh)", function()
+    -- Arrange
+    vim.lsp.config = function() end
+
+    -- Act
+    load_module()
+
+    -- Assert
+    assert.same({
+      bash = { "shfmt" },
+      zsh = { "shfmt" },
+    }, formatter_registry.formatters_by_ft())
+  end)
+
+  it("contributes shellcheck as the linter for sh, bash, and zsh", function()
+    -- Arrange
+    vim.lsp.config = function() end
+
+    -- Act
+    load_module()
+
+    -- Assert
+    assert.same({
+      sh = { "shellcheck" },
+      bash = { "shellcheck" },
+      zsh = { "shellcheck" },
+    }, linter_registry.linters_by_ft())
   end)
 
   it(
