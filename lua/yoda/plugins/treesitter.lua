@@ -63,6 +63,15 @@ return {
       "gherkin",
     }
 
+    -- Drain treesitter_registry contributions so opt-in language extras can
+    -- add parsers without editing this file. De-duplicated so an extra that
+    -- names a core parser (e.g. "bash") does not create a duplicate install.
+    for _, name in ipairs(require("yoda.core.treesitter_registry").parsers()) do
+      if not vim.tbl_contains(ensure_installed, name) then
+        table.insert(ensure_installed, name)
+      end
+    end
+
     local installed = require("nvim-treesitter").get_installed()
     local missing = vim
       .iter(ensure_installed)

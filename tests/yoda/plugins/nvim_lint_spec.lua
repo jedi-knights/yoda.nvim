@@ -1,5 +1,6 @@
 -- tests/yoda/plugins/nvim_lint_spec.lua
 local helpers = require("tests.helpers")
+local linter_registry = require("yoda.core.linter_registry")
 
 describe("plugins.nvim-lint", function()
   local spec
@@ -14,6 +15,7 @@ describe("plugins.nvim-lint", function()
   end
 
   before_each(function()
+    linter_registry._reset()
     package.loaded["yoda.plugins.nvim-lint"] = nil
     spec = require("yoda.plugins.nvim-lint")
 
@@ -35,6 +37,7 @@ describe("plugins.nvim-lint", function()
   end)
 
   after_each(function()
+    linter_registry._reset()
     vim.fn.findfile = original_findfile
     vim.fn.expand = original_expand
     vim.fn.filereadable = original_filereadable
@@ -180,6 +183,62 @@ describe("plugins.nvim-lint", function()
 
       -- Assert
       assert.equals("stub-parser", lint.linters.golangcilint.parser)
+      assert.equals("golangci-lint", lint.linters.golangcilint.cmd)
+    end)
+  end)
+
+  describe("config() drain of linter_registry", function()
+    it("adds registry-contributed linters for a new filetype", function()
+      -- Arrange: an extra registers a linter for a filetype nvim-lint
+      -- core does not know about.
+      linter_registry.register({
+        linters_by_ft = { php = { "phpcs" } },
+      })
+      local lint = fresh_lint_stub()
+      package.loaded.lint = lint
+
+      -- Act
+      spec.config()
+
+      -- Assert
+      assert.same({ "phpcs" }, lint.linters_by_ft.php)
+      -- Core wiring untouched.
+      assert.same({ "clippy" }, lint.linters_by_ft.rust)
+    end)
+
+    it(
+      "appends to a core filetype without displacing existing linters",
+      function()
+        -- Arrange
+        linter_registry.register({
+          linters_by_ft = { python = { "mypy" } },
+        })
+        local lint = fresh_lint_stub()
+        package.loaded.lint = lint
+
+        -- Act
+        spec.config()
+
+        -- Assert: core `ruff` stays, contribution appends.
+        assert.same({ "ruff", "mypy" }, lint.linters_by_ft.python)
+      end
+    )
+
+    it("merges custom linter definitions from the registry", function()
+      -- Arrange
+      linter_registry.register({
+        linters = {
+          my_linter = { cmd = "my-linter", stdin = false },
+        },
+      })
+      local lint = fresh_lint_stub()
+      package.loaded.lint = lint
+
+      -- Act
+      spec.config()
+
+      -- Assert: contribution present alongside the core golangcilint entry.
+      assert.equals("my-linter", lint.linters.my_linter.cmd)
       assert.equals("golangci-lint", lint.linters.golangcilint.cmd)
     end)
   end)
