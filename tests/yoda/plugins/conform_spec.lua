@@ -1,17 +1,20 @@
 -- tests/yoda/plugins/conform_spec.lua
 local helpers = require("tests.helpers")
+local formatter_registry = require("yoda.core.formatter_registry")
 
 describe("plugins.conform", function()
   local spec
   local original_autoformat
 
   before_each(function()
+    formatter_registry._reset()
     package.loaded["yoda.plugins.conform"] = nil
     spec = require("yoda.plugins.conform")
     original_autoformat = vim.g.autoformat
   end)
 
   after_each(function()
+    formatter_registry._reset()
     vim.g.autoformat = original_autoformat
     package.loaded.conform = nil
   end)
@@ -118,5 +121,74 @@ describe("plugins.conform", function()
     )
     assert.equals("biome", spec.opts.formatters_by_ft.javascript[1])
     assert.is_true(spec.opts.formatters_by_ft.javascript.stop_after_first)
+  end)
+
+  describe("config() drain of formatter_registry", function()
+    local setup_spy, setup_data
+
+    before_each(function()
+      setup_spy, setup_data = helpers.spy()
+      package.loaded.conform = { setup = setup_spy }
+    end)
+
+    it("calls conform.setup with the received opts", function()
+      -- Act
+      spec.config(spec, spec.opts)
+
+      -- Assert
+      helpers.assert_called(setup_data, 1)
+    end)
+
+    it("adds registry-contributed formatters for a new filetype", function()
+      -- Arrange: an extra registers formatters for a filetype conform
+      -- core does not know about.
+      formatter_registry.register({
+        formatters_by_ft = { php = { "php_cs_fixer" } },
+      })
+      local opts = vim.deepcopy(spec.opts)
+
+      -- Act
+      spec.config(spec, opts)
+
+      -- Assert: php now has the contributed pipeline; core filetypes
+      -- untouched.
+      assert.same({ "php_cs_fixer" }, opts.formatters_by_ft.php)
+      assert.same({ "rustfmt" }, opts.formatters_by_ft.rust)
+    end)
+
+    it(
+      "appends to a core filetype without displacing existing formatters",
+      function()
+        -- Arrange: an extra augments a filetype conform already handles.
+        formatter_registry.register({
+          formatters_by_ft = { markdown = { "cbfmt" } },
+        })
+        local opts = vim.deepcopy(spec.opts)
+
+        -- Act
+        spec.config(spec, opts)
+
+        -- Assert: the core prettier entry stays, the contribution appends.
+        assert.same({ "prettier", "cbfmt" }, opts.formatters_by_ft.markdown)
+      end
+    )
+
+    it("merges custom formatter definitions from the registry", function()
+      -- Arrange
+      formatter_registry.register({
+        formatters = {
+          my_fmt = { command = "my-fmt", args = { "-w" } },
+        },
+      })
+      local opts = vim.deepcopy(spec.opts)
+
+      -- Act
+      spec.config(spec, opts)
+
+      -- Assert: contributed definition present alongside the core
+      -- gofumpt override.
+      assert.equals("my-fmt", opts.formatters.my_fmt.command)
+      assert.same({ "-extra" }, opts.formatters.gofumpt.prepend_args)
+    end)
   end)
 end)

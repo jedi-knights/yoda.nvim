@@ -1,5 +1,6 @@
 -- tests/yoda/plugins/treesitter_spec.lua
 local helpers = require("tests.helpers")
+local treesitter_registry = require("yoda.core.treesitter_registry")
 
 describe("plugins.treesitter", function()
   local spec
@@ -17,6 +18,7 @@ describe("plugins.treesitter", function()
   end
 
   before_each(function()
+    treesitter_registry._reset()
     package.loaded["yoda.plugins.treesitter"] = nil
     spec = require("yoda.plugins.treesitter")
     package.loaded["nvim-treesitter.parsers"] = {}
@@ -27,6 +29,7 @@ describe("plugins.treesitter", function()
   end)
 
   after_each(function()
+    treesitter_registry._reset()
     vim.fn.executable = original_executable
     package.loaded["nvim-treesitter"] = nil
     package.loaded["nvim-treesitter.parsers"] = nil
@@ -138,6 +141,70 @@ describe("plugins.treesitter", function()
         helpers.assert_not_called(install_data)
         helpers.assert_not_called(notify_data)
         restore()
+      end
+    )
+  end)
+
+  describe("config() drain of treesitter_registry", function()
+    it(
+      "installs registry-contributed parsers alongside the core list",
+      function()
+        -- Arrange: an extra contributes parsers the core list omits.
+        treesitter_registry.register({ parsers = { "php", "phpdoc" } })
+        local install_spy, install_data = helpers.spy()
+        local ts = fresh_ts_stub({ "lua" }) -- only lua pre-installed
+        ts.install = install_spy
+        package.loaded["nvim-treesitter"] = ts
+        vim.fn.executable = function()
+          return 1
+        end
+
+        -- Act
+        spec.config()
+
+        -- Assert: contributed parsers appear in the missing set alongside
+        -- core-missing entries.
+        local missing = install_data.last_call[1]
+        assert.is_true(vim.tbl_contains(missing, "php"))
+        assert.is_true(vim.tbl_contains(missing, "phpdoc"))
+        assert.is_true(vim.tbl_contains(missing, "gherkin"))
+      end
+    )
+
+    it(
+      "does not re-install a contributed parser that's already present",
+      function()
+        -- Arrange
+        treesitter_registry.register({ parsers = { "php" } })
+        local install_spy, install_data = helpers.spy()
+        local ts = fresh_ts_stub({
+          "lua",
+          "vim",
+          "vimdoc",
+          "python",
+          "rust",
+          "go",
+          "javascript",
+          "typescript",
+          "c_sharp",
+          "json",
+          "yaml",
+          "toml",
+          "markdown",
+          "markdown_inline",
+          "bash",
+          "regex",
+          "gherkin",
+          "php", -- pre-installed via :TSInstall or a prior session
+        })
+        ts.install = install_spy
+        package.loaded["nvim-treesitter"] = ts
+
+        -- Act
+        spec.config()
+
+        -- Assert
+        helpers.assert_not_called(install_data)
       end
     )
   end)

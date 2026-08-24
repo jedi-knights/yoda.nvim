@@ -61,4 +61,31 @@ return {
       ["terraform-vars"] = { "terraform_fmt" },
     },
   },
+  -- Drain formatter_registry contributions before setup so opt-in language
+  -- extras can add formatters without editing this file. Registry-contributed
+  -- entries for a filetype APPEND to any existing core pipeline; custom
+  -- formatter definitions merge with core, core-wins on name collision.
+  config = function(_, opts)
+    local reg = require("yoda.core.formatter_registry")
+
+    opts.formatters_by_ft = opts.formatters_by_ft or {}
+    for ft, fmts in pairs(reg.formatters_by_ft()) do
+      local existing = opts.formatters_by_ft[ft] or {}
+      for _, name in ipairs(fmts) do
+        if not vim.tbl_contains(existing, name) then
+          table.insert(existing, name)
+        end
+      end
+      opts.formatters_by_ft[ft] = existing
+    end
+
+    opts.formatters = opts.formatters or {}
+    for name, def in pairs(reg.formatters()) do
+      if opts.formatters[name] == nil then
+        opts.formatters[name] = def
+      end
+    end
+
+    require("conform").setup(opts)
+  end,
 }

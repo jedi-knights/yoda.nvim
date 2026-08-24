@@ -64,6 +64,26 @@ return {
       parser = require("lint.linters.golangcilint").parser,
     }
 
+    -- Drain linter_registry contributions so opt-in language extras can add
+    -- linters without editing this file. Registry-contributed entries for a
+    -- filetype APPEND to any existing core pipeline; custom linter
+    -- definitions merge with core, core-wins on name collision.
+    local reg = require("yoda.core.linter_registry")
+    for ft, names in pairs(reg.linters_by_ft()) do
+      local existing = lint.linters_by_ft[ft] or {}
+      for _, name in ipairs(names) do
+        if not vim.tbl_contains(existing, name) then
+          table.insert(existing, name)
+        end
+      end
+      lint.linters_by_ft[ft] = existing
+    end
+    for name, def in pairs(reg.linters()) do
+      if lint.linters[name] == nil then
+        lint.linters[name] = def
+      end
+    end
+
     -- Lint only on save — InsertLeave would spawn linters on every <Esc>,
     -- causing noticeable lag for slow linters (clippy, biome).
     vim.api.nvim_create_autocmd({ "BufWritePost" }, {
