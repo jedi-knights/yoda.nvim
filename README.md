@@ -15,7 +15,8 @@
 <p align="center">
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/jedi-knights/yoda.nvim/actions/workflows/badge.yaml"><img src="https://github.com/jedi-knights/yoda.nvim/actions/workflows/badge.yaml/badge.svg" alt="Badge"></a>
-  <img src="https://img.shields.io/badge/Tests-339%20passing-brightgreen" alt="Tests">
+  <!-- Tests/Coverage badges: static values, last verified 2026-10-12. Update manually when the suite changes materially, or convert to shields.io/badge/dynamic. -->
+  <img src="https://img.shields.io/badge/Tests-1030%20passing-brightgreen" alt="Tests">
   <a href="https://jedi-knights.github.io/yoda.nvim/"><img src="https://img.shields.io/badge/Coverage-95%2E0%25-brightgreen" alt="Coverage"></a>
 </p>
 
@@ -45,7 +46,12 @@ opens straight into an AI workspace, a reserved `<leader>a` namespace, and
 layout defaults built around keeping a conversation and your code on screen at
 once.
 
-Everything else is table stakes, and Yoda ships it:
+Everything else is table stakes, and Yoda ships it. See
+[Highlights](#-highlights) below for the feature inventory, and
+[The yoda way](#-the-yoda-way) for the four opinions that distinguish Yoda from
+a general-purpose distribution.
+
+## ⭐ Highlights
 
 - **🤖 AI-first ergonomics** — see [The yoda way](#-the-yoda-way) below
 - **🎨 Beautiful modern UI** with TokyoNight theme and enhanced components
@@ -159,7 +165,7 @@ One schema in `lua/yoda/config.lua`, merged and validated on the way in.
 
 ### Installation
 
-Yoda.nvim is a **plugin**, and [**yoda-starter**](https://github.com/jedi-knights/yoda-starter)
+Yoda.nvim is a **Neovim distribution**, and [**yoda-starter**](https://github.com/jedi-knights/yoda-starter)
 is the config you clone and own. That split lets you update the distribution
 without your personal configuration fighting it.
 
@@ -284,52 +290,9 @@ further updates.
 
 ## 🔧 Language Support
 
-Yoda.nvim comes with LSP support for multiple languages. Language servers can be installed via Mason.
-
-### Supported Languages
-
-#### 📦 Pre-configured LSP Servers
-- **Lua** (`lua_ls`) - Built-in configuration
-- **Go** (`gopls`) - Built-in configuration
-- **TypeScript/JavaScript** (`ts_ls`) - Built-in configuration
-- **Rust** (`rust_analyzer`) - Built-in configuration with Clippy integration
-
-### Installing Language Servers
-
-#### Method 1: Using Mason (Recommended)
-```vim
-:Mason                    " Open Mason UI
-" Navigate to desired LSP server (e.g., rust-analyzer)
-" Press 'i' to install
-" Restart Neovim
-```
-
-#### Method 2: Command Line Installation
-
-**Rust (rust-analyzer)**
-```bash
-# macOS (via Homebrew)
-brew install rust-analyzer
-
-# Or via rustup (any platform)
-rustup component add rust-analyzer
-```
-
-**TypeScript/JavaScript (ts_ls)**
-```bash
-npm install -g typescript typescript-language-server
-```
-
-**Go (gopls)**
-```bash
-go install golang.org/x/tools/gopls@latest
-```
-
-**Lua (lua_ls)**
-```bash
-brew install lua-language-server  # macOS
-# Or install via Mason
-```
+The supported-languages matrix, Mason install model, and per-language
+exceptions live in [The yoda way → §3 Language stacks are opt-in](#3-language-stacks-are-opt-in-core-is-small).
+This section only covers additions on top of that table.
 
 ### Rust-Specific Features
 
